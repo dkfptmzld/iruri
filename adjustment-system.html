@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>수업기록표 정산 시스템 v9.27</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
@@ -212,6 +212,11 @@ tbody tr:hover td{background:var(--surface2);}
 .attend-cell{width:34px;cursor:pointer;font-weight:700;font-size:13px;transition:background .1s;padding:5px 2px !important;}
 .attend-cell.att-o{background:#E8F5EE;color:#1A7A50;}
 .attend-cell.att-x{background:#F5F4F0;color:#9B9888;}
+/* 모바일 출석 셀 터치 최적화 */
+@media(max-width:600px){
+  .attend-cell{min-width:38px;min-height:38px;font-size:15px!important;}
+  #ti-ledger-body td{min-height:38px;}
+}
 .attend-cell.att-tri{background:#FDF3DC;color:#8A6010;}
 .attend-cell.att-empty{background:transparent;color:transparent;}
 .attend-cell:hover{filter:brightness(.92);}
@@ -317,6 +322,81 @@ tbody tr:hover td{background:var(--surface2);}
 .loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text2);font-size:14px;}
 .spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
+
+/* ═══ 모바일 최적화 (강사 모드) ═══ */
+@media (max-width:600px){
+  /* iOS input 자동줌 방지 - 모든 input/select 16px 이상 */
+  input, select, textarea{font-size:16px!important;}
+
+  /* 상단 바 */
+  #teacherInputScreen>div:first-child{padding:0 10px!important;height:48px!important;}
+  #teacherInputScreen>div:first-child span{display:none!important;} /* "강사 모드" 뱃지 숨김 */
+
+  /* 컨텐츠 패딩 축소 */
+  #teacherInputScreen > div:nth-child(2){padding:10px!important;gap:10px!important;}
+
+  /* 기본정보 3열 → 1열 */
+  #teacherInputScreen .ti-grid-3{grid-template-columns:1fr!important;}
+
+  /* 수업기록표 헤더 버튼 세로 배치 */
+  #teacherInputScreen div[style*="justify-content:space-between"]{flex-direction:column!important;align-items:flex-start!important;}
+
+  /* 날짜 자동채우기 + 요일추가 버튼 */
+  #teacherInputScreen div[style*="justify-content:space-between"] > div:last-child{
+    display:flex!important;gap:6px!important;width:100%!important;
+  }
+  #teacherInputScreen div[style*="justify-content:space-between"] > div:last-child button{
+    flex:1!important;height:36px!important;font-size:12px!important;
+  }
+
+  /* 수업기록표 테이블 - 가로스크롤 + 폰트 축소 */
+  #ti-ledger-table{font-size:11px!important;}
+  #ti-ledger-table th{padding:6px 2px!important;font-size:10px!important;}
+
+  /* 출석 셀 터치 영역 확대 */
+  #ti-ledger-body td{min-height:44px!important;}
+  .attend-cell{min-width:44px!important;min-height:44px!important;font-size:16px!important;}
+
+  /* 센터 선택 드롭다운 폰트 */
+  #ti-ledger-body select{font-size:12px!important;}
+
+  /* 정산 미리보기 3열 → 1열 */
+  #ti-settle-summary .ti-summary-grid{grid-template-columns:1fr!important;}
+  #ti-settle-summary .ti-summary-cell{border-right:none!important;border-bottom:1px solid var(--border)!important;}
+
+  /* 특이사항 카테고리 버튼 */
+  #ti-note-cats{gap:6px!important;}
+  #ti-note-cats button{height:36px!important;font-size:12px!important;padding:0 10px!important;}
+
+  /* 임시저장 / 제출 버튼 */
+  button[onclick="saveTiDraft()"]{height:48px!important;font-size:14px!important;width:100%!important;}
+  button[onclick="submitTiData()"]{height:56px!important;font-size:16px!important;width:100%!important;}
+
+  /* 제출 버튼 영역 세로 배치 */
+  #teacherInputScreen div[style*="submitTiData"]{flex-direction:column!important;}
+
+  /* 섹션 패딩 축소 */
+  #teacherInputScreen div[style*="padding:20px"]{padding:14px!important;}
+  #teacherInputScreen div[style*="padding:14px 20px"]{padding:12px 14px!important;}
+
+  /* 이미지 첨부 영역 */
+  #teacherInputScreen label[style*="height:72px"]{height:60px!important;font-size:12px!important;}
+
+  /* 카드 border-radius 축소 */
+  #teacherInputScreen div[style*="border-radius:14px"]{border-radius:10px!important;}
+
+  /* 처음으로 버튼 */
+  #teacherInputScreen button[onclick="exitTeacherMode()"]{
+    height:30px!important;padding:0 10px!important;font-size:12px!important;
+  }
+
+  /* 로그인 화면 */
+  #loginScreen > div{padding:0 16px!important;}
+  #loginScreen input{font-size:16px!important;} /* iOS 줌 방지 */
+
+  /* 랜딩 화면 카드 */
+  #modeSelectScreen{padding:16px!important;}
+}
 </style>
 </head>
 <body>
@@ -497,7 +577,7 @@ tbody tr:hover td{background:var(--surface2);}
  <span style="width:24px;height:24px;background:#1A7A50;border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
  <span style="font-size:14px;font-weight:600;">기본 정보</span>
  </div>
- <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+ <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;" class="ti-grid-3">
  <div>
  <label style="font-size:11px;font-weight:600;color:#9B9888;display:block;margin-bottom:6px;">강사 이름</label>
  <div id="ti-teacher-display" style="width:100%;height:38px;border:1.5px solid #E2E0D8;border-radius:8px;padding:0 10px;font-size:13px;background:#F8F7F2;color:#333;font-weight:600;display:flex;align-items:center;">—</div>
@@ -610,12 +690,12 @@ tbody tr:hover td{background:var(--surface2);}
  <span style="font-size:14px;font-weight:600;">📋 정산 미리보기</span>
  <span style="font-size:12px;color:#9B9888;">강사료 기준은 DB 설정값 기준입니다</span>
  </div>
- <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;">
- <div style="padding:16px 20px;border-right:1px solid #E2E0D8;">
+ <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;" class="ti-summary-grid">
+ <div class="ti-summary-cell" style="padding:16px 20px;border-right:1px solid #E2E0D8;">
  <div style="font-size:11px;color:#9B9888;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">수업료%</div>
  <div id="ti-s-feepct" style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:#333;">—</div>
  </div>
- <div style="padding:16px 20px;border-right:1px solid #E2E0D8;">
+ <div class="ti-summary-cell" style="padding:16px 20px;border-right:1px solid #E2E0D8;">
  <div style="font-size:11px;color:#9B9888;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">세전</div>
  <div id="ti-s-pretax" style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:#1A5FA0;">—</div>
  </div>
@@ -882,6 +962,7 @@ const DEFAULT_CENTERS = [{"name":"153","region":"인천","fee":55000,"teachers":
 
 /* ═══ STATE & STORAGE ═══ */
 const LS_T='settle_t_v3', LS_C='settle_c_v3', LS_CF='settle_cf_v2';
+const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const SKIP=new Set(['강사료','영업비']);
 const ATTEND_SET=new Set(['o','O','0','○','ㅇ']);
 
@@ -899,7 +980,7 @@ function lsSave(){
 ['settle_t_v1','settle_t_v2','settle_c_v1','settle_c_v2','settle_cf_v1'].forEach(k=>localStorage.removeItem(k));
 
 const DB = {
- teachers: lsGet(LS_T) || JSON.parse(JSON.stringify(DEFAULT_TEACHERS)),
+ teachers: lsGet(LS_T_SHEETS) || lsGet(LS_T) || JSON.parse(JSON.stringify(DEFAULT_TEACHERS)),
  centers: lsGet(LS_C) || JSON.parse(JSON.stringify(DEFAULT_CENTERS)),
  centerFees: lsGet(LS_CF) || JSON.parse(JSON.stringify(DEFAULT_CENTERFEES))
 };
@@ -922,6 +1003,21 @@ window.addEventListener('load', ()=>{
    localStorage.setItem('settle_snapshots_v1', JSON.stringify(snaps));
   }
  }catch(e){}
+
+ // Sheets 강사 DB 백그라운드 동기화
+ gasGet({ action: 'getTeachers' })
+  .then(r => {
+   if(r.ok && r.data && r.data.length > 0){
+    // Sheets 데이터로 DB 업데이트
+    DB.teachers = r.data;
+    localStorage.setItem(LS_T_SHEETS, JSON.stringify(r.data));
+    // 강사 관리 화면 열려있으면 갱신
+    if(document.getElementById('teachersView')?.style.display === 'block'){
+     renderTeacherStats(); renderTeacherMgr();
+    }
+   }
+  })
+  .catch(() => {}); // 오프라인이면 캐시 사용
 
  const session = sessionStorage.getItem('iruri_session');
  if(session && DB.teachers.find(t=>t.name===session)){
@@ -2654,6 +2750,9 @@ function saveModal(){
  const obj={name,region,feeType,feeVal,hireDate,raiseDate,account};
  if(STATE.editIdx!==null)DB.teachers[STATE.editIdx]=obj;
  else{if(DB.teachers.find(t=>t.name===name)){alert('이미 등록된 이름입니다.');return;}DB.teachers.push(obj);}
+ // Sheets에도 저장
+ gasPost({action:'saveTeacher', teacher:obj}).catch(()=>{});
+ localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
  renderTeacherMgr();
  } else {
  const region=document.getElementById('fi_region')?.value||'';
@@ -2671,9 +2770,14 @@ function saveModal(){
 function delItem(type,i){
  const arr=type==='teacher'?DB.teachers:DB.centers;
  if(!confirm(`「${arr[i].name}」를 삭제할까요?`))return;
+ const deletedName = arr[i].name;
  arr.splice(i,1);lsSave();
- if(type==='teacher')renderTeacherMgr();
- else{renderRegionStats();renderCenterMgr();}
+ if(type==='teacher'){
+  // Sheets에서도 삭제
+  gasPost({action:'deleteTeacher', name:deletedName}).catch(()=>{});
+  localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
+  renderTeacherMgr();
+ } else{renderRegionStats();renderCenterMgr();}
  showToast('삭제되었습니다');
 }
 
