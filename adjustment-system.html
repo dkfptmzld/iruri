@@ -2593,7 +2593,10 @@ function openModal(type,idx=null,prefillName=''){
  </div>
  <div class="form-row">
  <label class="form-label">주소</label>
- <input class="form-input" id="fi_addrSearch" value="${item?.address||''}" placeholder="예) 서울시 강남구 테헤란로 123">
+ <div style="display:flex;gap:6px;">
+  <input class="form-input" id="fi_addrSearch" value="${item?.address||''}" placeholder="주소 검색 버튼을 눌러 입력하세요" style="flex:1;" readonly>
+  <button class="btn sm primary" type="button" onclick="openAddrSearch()">🔍 주소 검색</button>
+ </div>
  <div class="form-hint" id="fi_addrHint"></div>
  </div>
  <div class="form-row">
@@ -3187,51 +3190,26 @@ function openAddrSearch() {
 }
 
 function _openDaumPostcode() {
- // 기존 레이어 제거
- const existing = document.getElementById('addrLayer');
- if (existing) existing.remove();
-
- // 레이어 생성
- const layer = document.createElement('div');
- layer.id = 'addrLayer';
- layer.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:white;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.3);width:500px;max-width:95vw;overflow:hidden;';
-
- layer.innerHTML = `
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #eee;background:#1A7A50;">
-   <span style="color:white;font-weight:600;font-size:14px;">📍 주소 검색</span>
-   <button onclick="document.getElementById('addrLayer').remove()" style="background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:0 4px;">✕</button>
-  </div>
-  <div id="addrLayerBody" style="height:450px;"></div>`;
-
- document.body.appendChild(layer);
-
- // 글로벌 콜백으로 등록 (embed 방식에서 가장 안정적)
- window._addrCallback = function(data) {
-  const addr = data.roadAddress || data.jibunAddress;
-  const detail = data.buildingName ? ` (${data.buildingName})` : '';
-  const full = addr + detail;
-
-  const inp = document.getElementById('fi_addrSearch');
-  if (inp) { inp.value = full; inp.dispatchEvent(new Event('input')); }
-
-  const sido = data.sido || '';
-  const sigungu = data.sigungu || '';
-  const regionSel = document.getElementById('fi_region');
-  if (regionSel && !regionSel.value) {
-   if (sido.includes('서울')) regionSel.value = '서울';
-   else if (sido.includes('인천')) regionSel.value = '인천';
-   else if (sigungu.includes('수원') || sido.includes('경기')) regionSel.value = '수원';
-  }
-
-  document.getElementById('addrLayer')?.remove();
-  showAddrHint(`✓ ${full}`);
- };
-
  new daum.Postcode({
-  oncomplete: window._addrCallback,
-  width: '100%',
-  height: '450px'
- }).embed(document.getElementById('addrLayerBody'));
+  oncomplete: function(data) {
+   const addr = data.roadAddress || data.jibunAddress;
+   const detail = data.buildingName ? ` (${data.buildingName})` : '';
+   const full = addr + detail;
+
+   const inp = document.getElementById('fi_addrSearch');
+   if (inp) inp.value = full;
+
+   const sido = data.sido || '';
+   const sigungu = data.sigungu || '';
+   const regionSel = document.getElementById('fi_region');
+   if (regionSel && !regionSel.value) {
+    if (sido.includes('서울')) regionSel.value = '서울';
+    else if (sido.includes('인천')) regionSel.value = '인천';
+    else if (sigungu.includes('수원') || sido.includes('경기')) regionSel.value = '수원';
+   }
+   showAddrHint(`✓ ${full}`);
+  }
+ }).open();
 }
 
 function showAddrHint(msg) {
