@@ -2143,6 +2143,12 @@ function renderTeacherMgr(){
  else if(diff<=30) raiseBadge=`<span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 ${fmtDate(t.raiseDate)}<br>D-${diff}</span>`;
  else raiseBadge=`<span style="font-size:11px;color:var(--text2);">${fmtDate(t.raiseDate)}<br><span style="color:var(--text3);">D-${diff}</span></span>`;
  }
+ // 계좌 변경 대기 배지
+ const pendingAccChanges = getAccountChanges();
+ const accChange = pendingAccChanges.find(c=>c.name===t.name);
+ const accChangeBadge = accChange
+  ? `<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:20px;cursor:pointer;white-space:nowrap;" onclick="event.stopPropagation();showAccountChangeDetail('${t.name}')" title="클릭하여 상세 보기">💳 계좌 변경 대기</span>`
+  : '';
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
  <div class="mgr-cell" style="font-weight:500;">${t.name}</div>
  <div class="mgr-cell" style="font-size:12px;line-height:1.6;">${formatAccountHtml(t.account)}${accChangeBadge}</div>
