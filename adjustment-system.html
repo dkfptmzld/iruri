@@ -2147,6 +2147,14 @@ function populateTeacherFilter(){
 /* ═══ 센터 관리 뷰 탭 ═══ */
 let _centerView = 'list';
 
+
+// 센터 인덱스를 이름+지역으로 안전하게 찾기 (indexOf 참조 불일치 방지)
+function centerIdx(c){
+ if(!c) return -1;
+ const idx = DB.centers.findIndex(x=>x.name===c.name && x.region===c.region);
+ return idx;
+}
+
 function switchCenterView(view){
  _centerView = 'tree';
  renderCenterTreeView();
@@ -2252,7 +2260,7 @@ function selectTreeRegion(region){
  if(!detail) return;
 
  const rows = regionCenters.map(c=>{
-  const ci = DB.centers.indexOf(c);
+  const ci = centerIdx(c);
   const teacherBadges = (c.teachers||[]).map(t=>`<span class="badge green" style="font-size:10px;">${t}</span>`).join(' ');
   const contactHtml = (c.contactName||c.phone||c.email) ? `
    <div style="font-size:11px;color:var(--text3);margin-top:2px;display:flex;flex-wrap:wrap;gap:6px;">
@@ -2330,7 +2338,7 @@ function selectTreeTeacher(region, teacher){
    <span style="width:28px;height:28px;line-height:28px;text-align:center;border-radius:7px;background:var(--green);color:white;font-size:12px;font-weight:700;flex-shrink:0;">${day}</span>
    <div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:2px;">
     ${items.map((x,i)=>{
-     const ci = DB.centers.indexOf(x.center);
+     const ci = centerIdx(x.center);
      const c = x.center;
      return `<div onclick="openModal('center',${ci})" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px;cursor:pointer;transition:border-color .12s;min-width:150px;max-width:220px;"
       onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
@@ -2353,7 +2361,7 @@ function selectTreeTeacher(region, teacher){
    <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;">요일 미등록</div>
    <div style="display:flex;flex-wrap:wrap;gap:5px;">
     ${unscheduled.map(c=>{
-     const ci=DB.centers.indexOf(c);
+     const ci=centerIdx(c);
      return `<span onclick="openModal('center',${ci})" style="font-size:12px;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;background:white;">${dispName(c)}</span>`;
     }).join('')}
    </div>
@@ -2405,7 +2413,7 @@ function renderCenterMgr(){
  const cRowsEl=document.getElementById('cRows'); if(cRowsEl) cRowsEl.innerHTML=list.length===0
  ?`<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">결과가 없습니다.</div>`
  :list.map(c=>{
- const i=DB.centers.indexOf(c);
+ const i=centerIdx(c);
  const chips=(c.teachers||[]).map(t=>{
   const sched = (c.schedule||[]).find(s=>s.teacher===t);
   const days = sched?.days||[];
@@ -2545,11 +2553,8 @@ function openModal(type,idx=null,prefillName=''){
  </div>
  <div class="form-row">
  <label class="form-label">주소</label>
- <div style="display:flex;gap:6px;">
-  <input class="form-input" id="fi_addrSearch" value="${item?.address||''}" placeholder="주소 검색 버튼을 눌러 입력하세요" style="flex:1;" readonly>
-  <button class="btn sm primary" type="button" onclick="openAddrSearch()">🔍 주소 검색</button>
- </div>
- <div class="form-hint" id="fi_addrHint"></div>
+ <input class="form-input" id="fi_addrSearch" value="${item?.address||''}" placeholder="예) 서울특별시 강남구 테헤란로 123, 2층">
+ <div class="form-hint">도로명 주소 또는 건물명을 포함한 상세주소를 직접 입력하세요</div>
  </div>
  <div class="form-row-2">
   <div><label class="form-label">담당자 이름</label><input class="form-input" id="fi_contact_name" value="${item?.contactName||''}" placeholder="홍길동"></div>
@@ -3612,6 +3617,11 @@ async function gasPost(body){
 
 // 랜딩 페이지 표시 (로그인 후 진입점)
 function showLanding(){
+ // 관리자 세션 있으면 모드선택 건너뛰고 바로 관리자 모드
+ if(sessionStorage.getItem('iruri_admin_session')==='true'){
+  _enterAdminMode();
+  return;
+ }
  // 모든 화면 숨기기
  ['loginScreen','teacherInputScreen','adminTopbar','settleView','teachersView','centersView','historyView','changelogView'].forEach(id=>{
  const el=document.getElementById(id);
