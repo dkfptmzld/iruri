@@ -479,7 +479,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -832,41 +832,39 @@ tbody tr:hover td{background:var(--surface2);}
 </div>
 
 <!-- 성장추이 뷰 -->
-<div class="mgr-view" id="historyView" style="display: none;">
- <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;">
-   <div>
-    <div style="font-size:18px;font-weight:700;">성장 추이</div>
-    <div style="font-size:13px;color:var(--text3);margin-top:2px;">월별 정산 스냅샷 기준 · 저장된 달만 표시됩니다</div>
-   </div>
-   <button class="btn" onclick="renderGrowthView()" style="gap:5px;">
-    <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>새로고침
-   </button>
+<div class="mgr-view" id="historyView" style="display:none;">
+<div id="growthRoot" style="min-height:calc(100vh-52px);background:var(--bg);padding:0;">
+
+ <!-- ① Hero 헤더 : 가장 최근 달 기준 전체 현황 -->
+ <div id="growthHero" style="background:var(--green);color:white;padding:28px 32px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;">
+  <div style="flex:1;min-width:200px;">
+   <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7;margin-bottom:6px;">이루리 실버 아카데미</div>
+   <div id="heroTitle" style="font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1;">데이터 로딩 중</div>
+   <div id="heroSub" style="font-size:13px;opacity:.75;margin-top:6px;"></div>
   </div>
-  <div id="growthSummaryCards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-   <div class="panel" style="padding:20px;">
-    <div style="font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block;"></span>월별 총 수업료</div>
-    <div id="chartRevenue"></div>
-   </div>
-   <div class="panel" style="padding:20px;">
-    <div style="font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--blue);display:inline-block;"></span>월별 센터 수</div>
-    <div id="chartCenters"></div>
-   </div>
-   <div class="panel" style="padding:20px;">
-    <div style="font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--purple);display:inline-block;"></span>강사당 평균 센터 수</div>
-    <div id="chartPerTeacher"></div>
-   </div>
-   <div class="panel" style="padding:20px;">
-    <div style="font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--amber);display:inline-block;"></span>지역별 센터 수</div>
-    <div id="chartRegion"></div>
-   </div>
-  </div>
-  <div class="panel" id="churnPanel" style="display:none;">
-   <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;">월별 센터 증감</div>
-   <div id="churnTable" style="padding:12px 16px;"></div>
-  </div>
+  <div id="heroKpis" style="display:flex;gap:24px;flex-wrap:wrap;"></div>
  </div>
+
+ <!-- ② 성장 스토리 바 (처음 대비) -->
+ <div id="growthStoryBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;"></div>
+
+ <!-- ③ 월별 타임라인 테이블 -->
+ <div style="padding:24px 32px 0;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+   <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;">월별 현황</div>
+   <div style="display:flex;gap:6px;">
+    <button class="btn sm" onclick="renderGrowthView()" title="새로고침">↺</button>
+   </div>
+  </div>
+  <div id="growthTimeline" class="panel" style="overflow:hidden;"></div>
+ </div>
+
+ <!-- ④ 상세 드릴다운 (클릭 시 펼침) -->
+ <div style="padding:16px 32px 32px;">
+  <div id="growthDetail" style="display:none;"></div>
+ </div>
+
+</div>
 </div>
 
 <!-- 영수증 뷰 -->
@@ -3855,11 +3853,6 @@ async function gasPost(body){
 
 // 랜딩 페이지 표시 (로그인 후 진입점)
 function showLanding(){
- // 관리자 세션 있으면 모드선택 건너뛰고 바로 관리자 모드
- if(sessionStorage.getItem('iruri_admin_session')==='true'){
-  _enterAdminMode();
-  return;
- }
  // 모든 화면 숨기기
  ['loginScreen','teacherInputScreen','adminTopbar','settleView','teachersView','centersView','historyView','changelogView'].forEach(id=>{
  const el=document.getElementById(id);
@@ -5650,229 +5643,310 @@ function seed2026March(){
 seed2026March(); // 페이지 로드 시 즉시 실행
 
 
-// ══════ 📈 성장 추이 기능 ══════
+// ══════════════════════════════════════════
+//  📈 성장 추이 — 완전 리뉴얼
+// ══════════════════════════════════════════
+
+function _gFmt(v){
+ if(v>=100000000) return (v/100000000).toFixed(1)+'억';
+ if(v>=10000)     return Math.round(v/10000)+'만원';
+ return v.toLocaleString()+'원';
+}
+function _gFmtShort(v){
+ if(v>=100000000) return (v/100000000).toFixed(1)+'억';
+ if(v>=10000)     return Math.round(v/10000)+'만';
+ return v.toLocaleString();
+}
+function _gSign(d, fmt){ const s=d>0?'+':''; const c=d>0?'#2DB76E':d<0?'#E05252':'#999'; return `<span style="color:${c};font-size:11px;font-weight:700;">${s}${fmt(d)}</span>`; }
 
 function getGrowthData(){
- const months = [];
- for(let i=0; i<localStorage.length; i++){
-  const k = localStorage.key(i);
-  if(k && k.startsWith(MONTHLY_KEY_PREFIX)){
-   try{
-    const raw = JSON.parse(localStorage.getItem(k));
-    const snap = raw.data || raw;
-    const ym = raw.ym || k.replace(MONTHLY_KEY_PREFIX,'').replace('_',' ');
-    if(snap && snap.teachers){
-     // 총 수업료
-     let revenue = 0;
-     let lessonCount = 0;
-     const centerSet = new Set();
-     const teacherSet = new Set();
-     const regionMap = {};
-     snap.teachers.forEach(t => {
-      teacherSet.add(t.name);
-      (t.lessons||[]).forEach(l => {
-       const fee = Number(l.feePer||l.fee||0);
-       const cnt = (l.attend||[]).filter(a=>a==='O').length;
-       revenue += fee * cnt;
-       lessonCount += cnt;
-       if(l.center){ centerSet.add(l.center); }
-       const region = DB.centers.find(c=>c.name===l.center)?.region || '기타';
-       regionMap[region] = (regionMap[region]||0) + 1;
-      });
-     });
-     months.push({
-      ym, revenue,
-      centers: centerSet.size,
-      teachers: teacherSet.size,
-      perTeacher: teacherSet.size > 0 ? (centerSet.size / teacherSet.size) : 0,
-      regionMap
-     });
-    }
-   }catch(e){}
-  }
+ const months=[];
+ for(let i=0;i<localStorage.length;i++){
+  const k=localStorage.key(i);
+  if(!k||!k.startsWith(MONTHLY_KEY_PREFIX)) continue;
+  try{
+   const raw=JSON.parse(localStorage.getItem(k));
+   const snap=raw.data||raw;
+   const ym=raw.ym||k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
+   if(!snap?.teachers) continue;
+   let revenue=0;
+   const cSet=new Set(), tSet=new Set();
+   const rMap={}, tRevMap={};
+   snap.teachers.forEach(t=>{
+    tSet.add(t.name);
+    let tRev=0;
+    (t.lessons||[]).forEach(l=>{
+     const fee=Number(l.feePer||l.fee||0);
+     const cnt=(l.attend||[]).filter(a=>a==='O').length;
+     tRev+=fee*cnt; revenue+=fee*cnt;
+     if(l.center) cSet.add(l.center);
+     const reg=DB.centers.find(c=>c.name===l.center)?.region||'기타';
+     rMap[reg]=(rMap[reg]||0)+1;
+    });
+    tRevMap[t.name]=tRev;
+   });
+   months.push({ym,revenue,centers:cSet.size,cSet,teachers:tSet.size,tSet,
+    perTeacher:tSet.size>0?(cSet.size/tSet.size):0,rMap,tRevMap});
+  }catch(e){}
  }
  months.sort((a,b)=>a.ym.localeCompare(b.ym));
  return months;
 }
 
-function makeBarChart(data, color, labelFn, W=380, H=160){
- if(!data.length) return '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">데이터 없음<br><span style="font-size:11px;">정산을 반영하면 자동으로 기록됩니다</span></div>';
- const max = Math.max(...data.map(d=>d.v), 1);
- const bw = Math.min(44, Math.floor((W - 40) / data.length) - 8);
- const gap = Math.floor((W - 40 - bw * data.length) / (data.length + 1));
- let bars = '';
- data.forEach((d,i) => {
-  const bh = Math.round((d.v / max) * (H - 50));
-  const x = 20 + gap + i * (bw + gap);
-  const y = H - 30 - bh;
-  bars += `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="${color}" opacity="0.85"/>`;
-  bars += `<text x="${x+bw/2}" y="${H-14}" text-anchor="middle" font-size="10" fill="var(--text3)">${d.label}</text>`;
-  bars += `<text x="${x+bw/2}" y="${y-4}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text)">${labelFn(d.v)}</text>`;
- });
- return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;">${bars}</svg>`;
-}
-
-function makeLineChart(datasets, W=380, H=160){
- // datasets: [{label, color, data:[{label,v}]}]
- if(!datasets[0]?.data.length) return '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">데이터 없음</div>';
- const allVals = datasets.flatMap(ds=>ds.data.map(d=>d.v));
- const max = Math.max(...allVals, 1);
- const n = datasets[0].data.length;
- const xStep = (W - 50) / Math.max(n-1, 1);
- let paths = '';
- let dots = '';
- let labels = '';
- datasets[0].data.forEach((d,i) => {
-  const x = 25 + i * xStep;
-  labels += `<text x="${x}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--text3)">${d.label}</text>`;
- });
- datasets.forEach(ds => {
-  let pts = ds.data.map((d,i) => {
-   const x = 25 + i * xStep;
-   const y = (H-35) - ((d.v/max) * (H-55));
-   return `${x},${y}`;
-  }).join(' ');
-  paths += `<polyline points="${pts}" fill="none" stroke="${ds.color}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  ds.data.forEach((d,i) => {
-   const x = 25 + i * xStep;
-   const y = (H-35) - ((d.v/max) * (H-55));
-   dots += `<circle cx="${x}" cy="${y}" r="4" fill="${ds.color}" stroke="white" stroke-width="1.5"/>`;
-   dots += `<text x="${x}" y="${y-8}" text-anchor="middle" font-size="10" font-weight="600" fill="${ds.color}">${ds.labelFn ? ds.labelFn(d.v) : d.v}</text>`;
-  });
- });
- // 범례
- let legend = '';
- datasets.forEach((ds,i) => {
-  legend += `<rect x="${10+i*90}" y="4" width="10" height="10" rx="2" fill="${ds.color}"/>`;
-  legend += `<text x="${24+i*90}" y="13" font-size="10" fill="var(--text2)">${ds.label}</text>`;
- });
- return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;">${legend}${paths}${dots}${labels}</svg>`;
-}
-
-function makeStackedBar(data, regions, W=380, H=160){
- if(!data.length) return '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">데이터 없음</div>';
- const RCOLS = {'서울':'var(--blue)','인천':'var(--green)','수원':'var(--purple)','기타':'var(--amber)'};
- const max = Math.max(...data.map(d=>Object.values(d.regionMap).reduce((a,b)=>a+b,0)), 1);
- const bw = Math.min(44, Math.floor((W-40)/data.length)-8);
- const gap = Math.floor((W-40-bw*data.length)/(data.length+1));
- let bars = '';
- data.forEach((d,i) => {
-  const x = 20+gap+i*(bw+gap);
-  let yOff = 0;
-  const total = Object.values(d.regionMap).reduce((a,b)=>a+b,0);
-  const totalH = Math.round((total/max)*(H-50));
-  Object.entries(d.regionMap).forEach(([r,v]) => {
-   const bh = Math.round((v/max)*(H-50));
-   bars += `<rect x="${x}" y="${H-30-totalH+yOff}" width="${bw}" height="${bh}" fill="${RCOLS[r]||'#888'}" opacity="0.85"/>`;
-   yOff += bh;
-  });
-  bars += `<text x="${x+bw/2}" y="${H-14}" text-anchor="middle" font-size="10" fill="var(--text3)">${d.label}</text>`;
-  bars += `<text x="${x+bw/2}" y="${H-30-totalH-4}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text)">${total}</text>`;
- });
- // 범례
- let legend = '';
- Object.entries(RCOLS).forEach(([r,c],i) => {
-  legend += `<rect x="${10+i*70}" y="4" width="10" height="10" rx="2" fill="${c}"/>`;
-  legend += `<text x="${24+i*70}" y="13" font-size="10" fill="var(--text2)">${r}</text>`;
- });
- return `<svg viewBox="0 0 ${W} ${H+20}" style="width:100%;height:auto;overflow:visible;">${legend}${bars}</svg>`;
-}
+let _gOpenIdx=null;
 
 function renderGrowthView(){
- const months = getGrowthData();
- const fmt = v => v>=100000000 ? (v/100000000).toFixed(1)+'억' : v>=10000 ? Math.round(v/10000)+'만' : v.toLocaleString();
- const shortLabel = ym => { const m = ym.match(/(\d+)월/); return m ? m[1]+'월' : ym; };
+ const months=getGrowthData();
+ const hero=document.getElementById('growthHero');
+ const heroTitle=document.getElementById('heroTitle');
+ const heroSub=document.getElementById('heroSub');
+ const heroKpis=document.getElementById('heroKpis');
+ const storyBar=document.getElementById('growthStoryBar');
+ const timeline=document.getElementById('growthTimeline');
+ const detail=document.getElementById('growthDetail');
+ _gOpenIdx=null;
+ if(detail){ detail.style.display='none'; detail.innerHTML=''; }
 
+ // ─ 데이터 없음
  if(!months.length){
-  document.getElementById('growthSummaryCards').innerHTML = `
-   <div class="panel" style="grid-column:1/-1;padding:40px;text-align:center;color:var(--text3);">
-    <div style="font-size:32px;margin-bottom:10px;">📭</div>
-    <div style="font-size:14px;font-weight:600;">저장된 정산 데이터가 없습니다</div>
-    <div style="font-size:12px;margin-top:6px;">정산 화면에서 월별 정산을 반영하면 자동으로 기록됩니다</div>
+  if(heroTitle) heroTitle.textContent='정산 데이터 없음';
+  if(heroSub) heroSub.textContent='정산을 완료하면 자동으로 기록됩니다';
+  if(heroKpis) heroKpis.innerHTML='';
+  if(storyBar) storyBar.style.display='none';
+  if(timeline) timeline.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:13px;">📭 저장된 월별 데이터가 없습니다</div>';
+  return;
+ }
+
+ const last=months[months.length-1];
+ const prev=months.length>1?months[months.length-2]:null;
+ const first=months[0];
+
+ // ─ Hero
+ if(heroTitle) heroTitle.textContent=last.ym+' 현황';
+ if(heroSub) heroSub.textContent=`총 ${months.length}개월 데이터 기록됨`;
+ if(heroKpis){
+  const kpi=(label,val,sub)=>`
+   <div style="text-align:right;">
+    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">${label}</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">${val}</div>
+    <div style="font-size:11px;opacity:.65;margin-top:3px;">${sub}</div>
    </div>`;
-  ['chartRevenue','chartCenters','chartPerTeacher','chartRegion'].forEach(id=>{
-   const el = document.getElementById(id);
-   if(el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">데이터 없음</div>';
+  const rDelta=prev?last.revenue-prev.revenue:null;
+  const cDelta=prev?last.centers-prev.centers:null;
+  heroKpis.innerHTML=
+   kpi('총 수업료',_gFmtShort(last.revenue),rDelta!==null?`전월 대비 ${rDelta>=0?'+':''}${_gFmtShort(rDelta)}`:'')+
+   kpi('활성 센터',last.centers+'개',cDelta!==null?`전월 대비 ${cDelta>=0?'+':''}${cDelta}개`:'')+
+   kpi('강사',last.teachers+'명','활성 강사 수')+
+   kpi('강사당',last.perTeacher.toFixed(1)+'개','평균 담당 센터');
+ }
+
+ // ─ 성장 스토리 바 (2달 이상일 때)
+ if(storyBar && months.length>=2){
+  const revGrowth=first.revenue>0?Math.round((last.revenue-first.revenue)/first.revenue*100):0;
+  const cenGrowth=first.centers>0?Math.round((last.centers-first.centers)/first.centers*100):0;
+  storyBar.style.display='flex';
+  storyBar.innerHTML=`
+   <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;">
+    ${first.ym} → ${last.ym} 성장
+   </div>
+   <div style="display:flex;gap:24px;flex-wrap:wrap;">
+    <div><span style="font-size:13px;color:var(--text2);">수업료 </span><span style="font-size:16px;font-weight:800;color:${revGrowth>=0?'var(--green)':'var(--red)'};">${revGrowth>=0?'+':''}${revGrowth}%</span></div>
+    <div><span style="font-size:13px;color:var(--text2);">센터 수 </span><span style="font-size:16px;font-weight:800;color:${cenGrowth>=0?'var(--green)':'var(--red)'};">${cenGrowth>=0?'+':''}${cenGrowth}%</span></div>
+    <div><span style="font-size:13px;color:var(--text2);">강사 수 </span><span style="font-size:16px;font-weight:800;color:var(--purple);">${last.teachers}명</span></div>
+   </div>`;
+ } else if(storyBar){
+  storyBar.style.display='none';
+ }
+
+ // ─ 타임라인 테이블
+ if(!timeline) return;
+
+ const RCOLS={'서울':'var(--blue)','인천':'var(--green)','수원':'var(--purple)','기타':'var(--amber)'};
+
+ // 헤더
+ let html=`
+  <div style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;background:var(--surface2);border-bottom:2px solid var(--border);">
+   ${['월','총 수업료','센터','강사','강사당','지역별'].map(h=>`<div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">${h}</div>`).join('')}
+  </div>`;
+
+ months.forEach((m,i)=>{
+  const p=i>0?months[i-1]:null;
+  const isLast=i===months.length-1;
+
+  // 전월 대비
+  const rD=p?m.revenue-p.revenue:null;
+  const cD=p?m.centers-p.centers:null;
+  const tD=p?m.teachers-p.teachers:null;
+  const ptD=p?m.perTeacher-p.perTeacher:null;
+
+  const dBadge=(d,fmt2,zero='—')=>{
+   if(d===null) return `<div style="font-size:10px;color:var(--text3);">${zero}</div>`;
+   const s=d>=0?'+':''; const c=d>0?'var(--green)':d<0?'var(--red)':'var(--text3)';
+   return `<div style="font-size:10px;font-weight:700;color:${c};">${s}${fmt2(Math.abs(d))}</div>`;
+  };
+
+  // 지역 칩
+  const regChips=Object.entries(m.rMap).sort((a,b)=>b[1]-a[1])
+   .map(([r,v])=>`<span style="font-size:10px;padding:2px 6px;border-radius:8px;background:${RCOLS[r]||'#ccc'}1a;color:${RCOLS[r]||'#666'};font-weight:600;border:1px solid ${RCOLS[r]||'#ccc'}44;">${r} ${v}</span>`)
+   .join(' ');
+
+  // 수업료 미니 바
+  const maxRev=Math.max(...months.map(x=>x.revenue),1);
+  const barW=Math.round(m.revenue/maxRev*100);
+
+  html+=`
+   <div class="g-row" data-idx="${i}" onclick="toggleGrowthDetail(${i})"
+    style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;
+    align-items:center;border-bottom:1px solid var(--border);cursor:pointer;
+    transition:background .1s;${isLast?'background:var(--green-bg);font-weight:600;':''}"
+    onmouseover="if(!this.classList.contains('g-open'))this.style.background='var(--surface2)'"
+    onmouseout="if(!this.classList.contains('g-open'))this.style.background='${isLast?'var(--green-bg)':''}'"
+   >
+    <div style="padding:12px 14px;font-size:13px;font-weight:${isLast?'700':'500'};">
+     ${m.ym.replace('년 ','\n년 ').split('\n').join('<br>').replace('년 ','년 ')}
+     ${isLast?'<span style="font-size:9px;padding:1px 5px;background:var(--green);color:white;border-radius:4px;margin-left:3px;vertical-align:middle;">최근</span>':''}
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${_gFmt(m.revenue)}</div>
+     <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <div style="flex:1;height:3px;background:var(--border);border-radius:2px;"><div style="height:3px;background:var(--green);border-radius:2px;width:${barW}%;"></div></div>
+      ${dBadge(rD,v=>_gFmtShort(v),'기준')}
+     </div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">${m.centers}개</div>
+     ${dBadge(cD,v=>v+'개','기준')}
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">${m.teachers}명</div>
+     ${dBadge(tD,v=>v+'명','기준')}
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">${m.perTeacher.toFixed(1)}개</div>
+     ${dBadge(ptD,v=>v.toFixed(1),'기준')}
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+     ${regChips}
+     <span style="margin-left:auto;font-size:16px;color:var(--text3);" class="g-arrow">›</span>
+    </div>
+   </div>`;
+ });
+
+ timeline.innerHTML=html;
+}
+
+function toggleGrowthDetail(idx){
+ const months=getGrowthData();
+ const detail=document.getElementById('growthDetail');
+ if(!detail) return;
+
+ // 같은 행 다시 클릭 → 닫기
+ if(_gOpenIdx===idx){
+  _gOpenIdx=null;
+  detail.style.display='none';
+  detail.innerHTML='';
+  document.querySelectorAll('.g-row').forEach(r=>{
+   r.classList.remove('g-open');
+   r.style.background=r.dataset.idx===String(months.length-1)?'var(--green-bg)':'';
+   const arr=r.querySelector('.g-arrow'); if(arr) arr.textContent='›';
   });
   return;
  }
 
- // 최근 달 vs 이전 달 비교
- const last = months[months.length-1];
- const prev = months.length>1 ? months[months.length-2] : null;
- const diff = (cur, pre, key) => {
-  if(!pre) return '';
-  const d = cur[key] - pre[key];
-  const sign = d>=0 ? '+' : '';
-  return `<span style="font-size:11px;color:${d>=0?'var(--green)':'var(--red)'};margin-left:4px;">${sign}${d>=0&&key==='revenue'?fmt(d):d.toFixed(key==='perTeacher'?1:0)}</span>`;
- };
+ // 기존 열린 행 닫기
+ document.querySelectorAll('.g-row').forEach(r=>{
+  r.classList.remove('g-open');
+  r.style.background=r.dataset.idx===String(months.length-1)?'var(--green-bg)':'';
+  const arr=r.querySelector('.g-arrow'); if(arr) arr.textContent='›';
+ });
 
- document.getElementById('growthSummaryCards').innerHTML = `
-  <div class="panel" style="padding:16px 18px;">
-   <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">최근 월 수업료</div>
-   <div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">${fmt(last.revenue)}${diff(last,prev,'revenue')}</div>
-   <div style="font-size:11px;color:var(--text3);margin-top:3px;">${last.ym}</div>
-  </div>
-  <div class="panel" style="padding:16px 18px;">
-   <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">활성 센터</div>
-   <div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--blue);">${last.centers}개${diff(last,prev,'centers')}</div>
-   <div style="font-size:11px;color:var(--text3);margin-top:3px;">${last.ym}</div>
-  </div>
-  <div class="panel" style="padding:16px 18px;">
-   <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">활성 강사</div>
-   <div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--purple);">${last.teachers}명${diff(last,prev,'teachers')}</div>
-   <div style="font-size:11px;color:var(--text3);margin-top:3px;">${last.ym}</div>
-  </div>
-  <div class="panel" style="padding:16px 18px;">
-   <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">강사당 센터</div>
-   <div style="font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:var(--amber);">${last.perTeacher.toFixed(1)}개${diff(last,prev,'perTeacher')}</div>
-   <div style="font-size:11px;color:var(--text3);margin-top:3px;">${last.ym}</div>
+ // 현재 행 열기
+ _gOpenIdx=idx;
+ const row=document.querySelector(`.g-row[data-idx="${idx}"]`);
+ if(row){ row.classList.add('g-open'); row.style.background='var(--amber-bg)'; const arr=row.querySelector('.g-arrow'); if(arr) arr.textContent='↓'; }
+
+ detail.style.display='block';
+ const m=months[idx];
+ const p=idx>0?months[idx-1]:null;
+ const RCOLS={'서울':'var(--blue)','인천':'var(--green)','수원':'var(--purple)','기타':'var(--amber)'};
+
+ // 강사별 수업료 (내림차순)
+ const maxRev=Math.max(...Object.values(m.tRevMap),1);
+ const teacherRows=Object.entries(m.tRevMap).sort((a,b)=>b[1]-a[1]).map(([name,rev])=>{
+  const pRev=p?.tRevMap?.[name];
+  const d=pRev!=null?rev-pRev:null;
+  const dHtml=d===null?'':` <span style="font-size:10px;font-weight:700;color:${d>0?'var(--green)':d<0?'var(--red)':'var(--text3)'};">${d>=0?'+':''}${_gFmtShort(d)}</span>`;
+  const barW=Math.round(rev/maxRev*100);
+  return `<div style="display:grid;grid-template-columns:90px 1fr 100px;align-items:center;gap:10px;padding:8px 16px;border-bottom:1px solid var(--border);">
+   <div style="font-size:13px;font-weight:600;">${name}</div>
+   <div style="height:6px;background:var(--surface2);border-radius:3px;"><div style="height:6px;background:var(--green);opacity:.8;border-radius:3px;width:${barW}%;transition:width .3s;"></div></div>
+   <div style="text-align:right;font-size:12px;font-family:'DM Mono',monospace;">${_gFmt(rev)}${dHtml}</div>
+  </div>`;
+ }).join('');
+
+ // 신규/이탈 센터
+ let churnHtml='';
+ if(p){
+  const newC=[...m.cSet].filter(c=>!p.cSet.has(c));
+  const goneC=[...p.cSet].filter(c=>!m.cSet.has(c));
+  const chip=(name,col,bg)=>`<span style="font-size:12px;padding:3px 9px;border-radius:8px;background:${bg};color:${col};display:inline-block;margin:2px;">${name}</span>`;
+  churnHtml=`
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border);">
+    <div style="padding:14px 16px;border-right:1px solid var(--border);">
+     <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">✅ 신규 ${newC.length}개</div>
+     <div>${newC.length?newC.map(c=>chip(c,'var(--green)','var(--green-bg)')).join(''):'<span style="font-size:12px;color:var(--text3);">없음</span>'}</div>
+    </div>
+    <div style="padding:14px 16px;">
+     <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">❌ 이탈 ${goneC.length}개</div>
+     <div>${goneC.length?goneC.map(c=>chip(c,'var(--red)','var(--red-bg)')).join(''):'<span style="font-size:12px;color:var(--text3);">없음</span>'}</div>
+    </div>
+   </div>`;
+ }
+
+ // 지역별 현황
+ const regRows=Object.entries(m.rMap).sort((a,b)=>b[1]-a[1]).map(([r,v])=>{
+  const pv=p?.rMap?.[r]||0; const d=p?v-pv:null;
+  const maxV=Math.max(...Object.values(m.rMap));
+  const w=Math.round(v/maxV*100);
+  return `<div style="display:grid;grid-template-columns:60px 1fr 60px 60px;align-items:center;gap:8px;padding:7px 16px;border-bottom:1px solid var(--border);">
+   <div style="font-size:12px;font-weight:600;color:${RCOLS[r]||'#888'};">${r}</div>
+   <div style="height:5px;background:var(--surface2);border-radius:2px;"><div style="height:5px;border-radius:2px;background:${RCOLS[r]||'#888'};opacity:.7;width:${w}%;"></div></div>
+   <div style="font-size:13px;font-weight:600;text-align:right;">${v}개</div>
+   <div style="text-align:right;">${d===null?'':_gSign(d,v=>v+'개')}</div>
+  </div>`;
+ }).join('');
+
+ detail.innerHTML=`
+  <div class="panel" style="overflow:hidden;">
+   <!-- 상세 헤더 -->
+   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--amber-bg);border-bottom:1px solid var(--border);">
+    <div style="font-size:14px;font-weight:700;">${m.ym} 상세 내역</div>
+    <button onclick="toggleGrowthDetail(${idx})" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);line-height:1;padding:0 4px;">×</button>
+   </div>
+
+   <!-- 2단 분할 -->
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+
+    <!-- 강사별 수업료 -->
+    <div style="border-right:1px solid var(--border);">
+     <div style="padding:10px 16px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--surface2);">강사별 수업료 (높은 순)</div>
+     ${teacherRows}
+    </div>
+
+    <!-- 지역별 + 신규이탈 -->
+    <div>
+     <div style="padding:10px 16px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--surface2);">지역별 센터 수</div>
+     ${regRows}
+     ${churnHtml}
+    </div>
+
+   </div>
   </div>`;
 
- const labels = months.map(m => shortLabel(m.ym));
-
- // 총 수업료 차트
- document.getElementById('chartRevenue').innerHTML = makeBarChart(
-  months.map((m,i)=>({v:m.revenue, label:labels[i]})),
-  'var(--green)', fmt
- );
-
- // 센터 수 차트
- document.getElementById('chartCenters').innerHTML = makeLineChart([
-  {label:'센터 수', color:'var(--blue)', labelFn:v=>v+'개', data: months.map((m,i)=>({v:m.centers, label:labels[i]}))}
- ]);
-
- // 강사당 평균 센터
- document.getElementById('chartPerTeacher').innerHTML = makeLineChart([
-  {label:'강사당 센터', color:'var(--purple)', labelFn:v=>v.toFixed(1), data: months.map((m,i)=>({v:parseFloat(m.perTeacher.toFixed(1)), label:labels[i]}))}
- ]);
-
- // 지역별 스택
- document.getElementById('chartRegion').innerHTML = makeStackedBar(
-  months.map((m,i)=>({...m, label:labels[i]}))
- );
-
- // 신규/이탈
- if(months.length >= 2){
-  const churnPanel = document.getElementById('churnPanel');
-  const churnTable = document.getElementById('churnTable');
-  if(churnPanel && churnTable){
-   churnPanel.style.display = 'block';
-   let rows = '';
-   for(let i=1; i<months.length; i++){
-    const cur = months[i]; const prv = months[i-1];
-    const diff = cur.centers - prv.centers;
-    const sign = diff >= 0 ? '+' : '';
-    rows += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
-     <span style="width:100px;font-weight:600;">${cur.ym}</span>
-     <span style="color:var(--text2);">${prv.centers}개 → ${cur.centers}개</span>
-     <span style="font-weight:700;color:${diff>=0?'var(--green)':'var(--red)'};">${sign}${diff}개</span>
-    </div>`;
-   }
-   churnTable.innerHTML = rows || '<div style="color:var(--text3);font-size:13px;">비교 데이터 없음</div>';
-  }
- }
+ // 스크롤
+ setTimeout(()=>detail.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
+
 
 </script>
 
