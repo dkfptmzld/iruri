@@ -438,7 +438,7 @@ tbody tr:hover td{background:var(--surface2);}
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
  <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
- <div id="login-err" style="color: rgb(229, 57, 53); font-size: 12px; margin-bottom: 12px; display: none;">비밀번호가 틀렸습니다</div>
+ <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
@@ -537,7 +537,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:13px;color:#888;">비밀번호를 입력해주세요</div>
  </div>
  <input id="adminPwInput" type="password" placeholder="비밀번호" style="width: 100%; height: 42px; border: 1.5px solid rgb(224, 224, 224); border-radius: 10px; padding: 0px 14px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#e0e0e0'" onkeydown="if(event.key==='Enter')checkAdminPw()">
- <div id="adminPwError" style="color:#e53935;font-size:12px;margin-top:6px;display:none;">비밀번호가 틀렸습니다</div>
+ <div id="adminPwError" style="color: rgb(229, 57, 53); font-size: 12px; margin-top: 6px; display: block;">비밀번호가 틀렸습니다</div>
  <div style="display:flex;gap:8px;margin-top:20px;">
  <button onclick="document.getElementById('adminLoginModal').style.display='none'" style="flex:1;height:40px;border:1px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:13px;">취소</button>
  <button onclick="checkAdminPw()" style="flex:1;height:40px;border:none;border-radius:8px;background:#1A7A50;color:white;cursor:pointer;font-size:13px;font-weight:600;">로그인</button>
@@ -728,7 +728,7 @@ tbody tr:hover td{background:var(--surface2);}
  <button class="nav-tab" id="nav1" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav2" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">5</span></button>
+<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">6</span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -5420,6 +5420,15 @@ function submitTiData(){
 
  clearTiDraft(); // 임시저장 삭제
  stopAutoSave(); // v11.20: 제출 완료 후 자동저장 중단
+ // v11.20 fix: 제출 성공 시 applied 목록에서 해당 항목 제거 (삭제 후 재제출해도 관리자에게 표시되도록)
+ try{
+  const appliedKey = 'ti_submissions_applied';
+  let applied = [];
+  try{ applied = JSON.parse(localStorage.getItem(appliedKey)||'[]'); }catch{}
+  const ym = submitData.yearMonth;
+  applied = applied.filter(a=>!(a.name===teacher && a.yearMonth===ym));
+  localStorage.setItem(appliedKey, JSON.stringify(applied));
+ }catch(e){}
 
  // ── Google Sheets에 제출 ──
  const btn = document.querySelector('button[onclick="submitTiData()"]');
