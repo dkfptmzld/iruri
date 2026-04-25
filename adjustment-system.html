@@ -736,7 +736,7 @@ tbody tr:hover td{background:var(--surface2);}
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
- <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;" disabled=""><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> 업로드 중...</button>
+ <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;" disabled=""><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> 인코딩 중...</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
@@ -754,7 +754,9 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ </button>
+ <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
  <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">—</div></div>
@@ -3971,55 +3973,58 @@ async function githubUpload(){
  }
  const btn = document.getElementById('githubUploadBtn');
  const origHTML = btn.innerHTML;
- btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> 업로드 중...';
+ const setBtn = (html, bg='#24292e') => {
+  btn.innerHTML = html;
+  btn.style.background = bg;
+  btn.style.borderColor = bg;
+ };
+ const spinIcon = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+ setBtn(spinIcon + ' SHA 확인 중...', '#24292e');
  btn.disabled = true;
 
+ // 30초 타임아웃 헬퍼
+ const fetchWithTimeout = (url, opts, ms=30000) => {
+  const ctrl = new AbortController();
+  const id = setTimeout(()=>ctrl.abort(), ms);
+  return fetch(url, {...opts, signal:ctrl.signal}).finally(()=>clearTimeout(id));
+ };
+
+ const reset = (ok, msg) => {
+  setBtn(ok ? '✅ 업로드 완료' : '❌ 업로드 실패', ok ? '#1A7A50' : '#dc2626');
+  showToast(msg);
+  setTimeout(()=>{ setBtn(origHTML); btn.disabled=false; }, 3000);
+ };
+
  try{
-  // 1. 현재 파일의 SHA 가져오기
-  const getRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`,{
+  // 1. SHA 가져오기
+  const getRes = await fetchWithTimeout(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`,{
    headers:{ 'Authorization':`token ${cfg.token}`, 'Accept':'application/vnd.github.v3+json' }
   });
   if(!getRes.ok){ const e=await getRes.json(); throw new Error(e.message||'파일 조회 실패'); }
-  const fileData = await getRes.json();
-  const sha = fileData.sha;
+  const sha = (await getRes.json()).sha;
 
-  // 2. 현재 HTML 내용을 base64로 인코딩
+  // 2. HTML 인코딩 — 홈 화면으로 이동해 DOM을 최소화 후 인코딩
+  setBtn(spinIcon + ' 인코딩 중...', '#24292e');
   const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
   const encoded = btoa(unescape(encodeURIComponent(html)));
 
-  // 3. GitHub에 업로드
+  // 3. 업로드
+  setBtn(spinIcon + ' 업로드 중...', '#24292e');
   const now = new Date();
   const msg = `수업기록표 업데이트 ${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const putRes = await fetch(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`,{
+  const putRes = await fetchWithTimeout(`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`,{
    method:'PUT',
    headers:{ 'Authorization':`token ${cfg.token}`, 'Content-Type':'application/json', 'Accept':'application/vnd.github.v3+json' },
-   body: JSON.stringify({ message: msg, content: encoded, sha: sha })
-  });
+   body: JSON.stringify({ message: msg, content: encoded, sha })
+  }, 60000); // 업로드는 60초 여유
   if(!putRes.ok){ const e=await putRes.json(); throw new Error(e.message||'업로드 실패'); }
 
-  btn.innerHTML = '✅ 업로드 완료';
-  btn.style.background = '#1A7A50';
-  btn.style.borderColor = '#1A7A50';
-  showToast('GitHub Pages 반영까지 1~2분 소요됩니다');
-  setTimeout(()=>{
-   btn.innerHTML = origHTML;
-   btn.style.background = '#24292e';
-   btn.style.borderColor = '#24292e';
-   btn.disabled = false;
-  }, 3000);
+  reset(true, 'GitHub Pages 반영까지 1~2분 소요됩니다');
 
  }catch(e){
   console.error('GitHub 업로드 오류:', e);
-  btn.innerHTML = '❌ 업로드 실패';
-  btn.style.background = '#dc2626';
-  btn.style.borderColor = '#dc2626';
-  showToast('오류: ' + e.message);
-  setTimeout(()=>{
-   btn.innerHTML = origHTML;
-   btn.style.background = '#24292e';
-   btn.style.borderColor = '#24292e';
-   btn.disabled = false;
-  }, 3000);
+  const msg = e.name==='AbortError' ? '시간 초과 — GitHub 응답이 없어요. 잠시 후 다시 시도해주세요.' : ('오류: '+e.message);
+  reset(false, msg);
  }
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
@@ -5485,21 +5490,25 @@ function _renderHistoryArea(history){
  const area = document.getElementById('ti-history-area');
  if(!area) return;
  if(!history.length){ area.innerHTML=''; return; }
+ // v11.20: yearMonth ISO 날짜 문자열 → 한국어 변환
+ // Google Sheets가 "2026년 4월" 텍스트를 날짜로 자동변환하는 현상 처리 (KST +9h)
+ function normalizeYm(ym){
+  if(!ym) return ym;
+  if(/\d{4}년 \d+월/.test(ym)) return ym;
+  const d = new Date(ym);
+  if(isNaN(d.getTime())) return ym;
+  const kst = new Date(d.getTime() + 9*60*60*1000);
+  return `${kst.getUTCFullYear()}년 ${kst.getUTCMonth()+1}월`;
+ }
  area.innerHTML = `
  <div style="background:white;border:1px solid #E2E0D8;border-radius:12px;overflow:hidden;">
  <div style="padding:10px 16px;background:#F8F7F2;font-size:12px;font-weight:600;color:#555;text-align:left;border-bottom:1px solid #E2E0D8;">
  📋 제출 이력 (최근 ${history.length}건)
  </div>
- ${history.map((h,i)=>`
- <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #F0EFE9;gap:10px;">
- <div style="text-align:left;">
- <div style="font-size:13px;font-weight:600;color:#333;">${h.yearMonth}</div>
+ ${history.map((h)=>`
+ <div style="padding:10px 16px;border-bottom:1px solid #F0EFE9;">
+ <div style="font-size:13px;font-weight:600;color:#333;">${normalizeYm(h.yearMonth)}</div>
  <div style="font-size:11px;color:#9B9888;margin-top:2px;">제출: ${h.submittedAt}</div>
- </div>
- <button onclick="loadSubmitHistory(${i}, ${JSON.stringify(h).replace(/"/g,'&quot;')})"
- style="flex-shrink:0;height:30px;padding:0 14px;border-radius:8px;border:1px solid #1A7A50;background:#E8F5EE;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;">
- 불러와서 수정
- </button>
  </div>`).join('')}
  </div>`;
 }
