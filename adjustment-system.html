@@ -438,7 +438,7 @@ tbody tr:hover td{background:var(--surface2);}
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
  <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
- <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
+ <div id="login-err" style="color: rgb(229, 57, 53); font-size: 12px; margin-bottom: 12px; display: none;">비밀번호가 틀렸습니다</div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
@@ -498,7 +498,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -754,7 +754,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
@@ -1730,8 +1730,21 @@ function deleteTeacherRecord(i){
  const ym=t.yearMonth||STATE.data.teachers[0]?.yearMonth||'';
  if(!confirm(`「${t.name}」의 ${ym} 수업기록을 삭제할까요?\n삭제 후에는 되돌릴 수 없어요.`)) return;
  pushChangelog({type:'record_delete',desc:`수업기록 삭제 — ${t.name} (${ym})`,snapshot:{ym,data:JSON.parse(JSON.stringify(STATE.data))}});
- // v11.20: Sheets에서도 동시 삭제 (기존엔 로컬만 삭제 → 재로드 시 다시 나타나는 버그 수정)
+ // v11.20: Sheets에서도 동시 삭제
  gasPost({ action:'deleteSubmission', teacher:t.name, yearMonth:ym }).catch(()=>{});
+ // v11.20: Sheets A열 blank 버그 대비 — applied 목록에 7일 등록해서 재출현 방지
+ try{
+  const appliedKey = 'ti_submissions_applied';
+  let applied = [];
+  try{ applied = JSON.parse(localStorage.getItem(appliedKey)||'[]'); }catch{}
+  const now = Date.now();
+  const SEVEN_DAYS = 7*24*60*60*1000;
+  applied = applied.filter(a=>(now - a.appliedAt) < SEVEN_DAYS);
+  if(!applied.some(a=>a.name===t.name && a.yearMonth===ym)){
+   applied.push({name:t.name, yearMonth:ym, appliedAt:now});
+  }
+  localStorage.setItem(appliedKey, JSON.stringify(applied));
+ }catch(e){}
  STATE.data.teachers.splice(i,1);
  if(STATE.data.teachers.length===0){
   if(ym){const key=MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_');localStorage.removeItem(key);}
@@ -4013,10 +4026,16 @@ async function githubUpload(){
   if(!getRes.ok){ const e=await getRes.json(); throw new Error(e.message||'파일 조회 실패'); }
   const sha = (await getRes.json()).sha;
 
-  // 2. HTML 인코딩 — 홈 화면으로 이동해 DOM을 최소화 후 인코딩
+  // 2. HTML 비동기 인코딩 (FileReader — 메인 스레드 블로킹 없음)
   setBtn(spinIcon + ' 인코딩 중...', '#24292e');
   const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-  const encoded = btoa(unescape(encodeURIComponent(html)));
+  const encoded = await new Promise((resolve, reject)=>{
+   const blob = new Blob([html], {type:'text/html'});
+   const reader = new FileReader();
+   reader.onload = ()=> resolve(reader.result.split(',')[1]);
+   reader.onerror = ()=> reject(new Error('인코딩 실패'));
+   reader.readAsDataURL(blob);
+  });
 
   // 3. 업로드
   setBtn(spinIcon + ' 업로드 중...', '#24292e');
@@ -4453,7 +4472,7 @@ function loadSubmissions(){
   let applied = [];
   try{ applied = JSON.parse(localStorage.getItem(appliedKey)||'[]'); }catch{}
   const now = Date.now();
-  applied = applied.filter(a=>(now - a.appliedAt) < 86400000); // 24시간 내 것만 유지
+  applied = applied.filter(a=>(now - a.appliedAt) < 604800000); // 24시간 내 것만 유지
   cachedSubs.forEach(s=> applied.push({name:s.name, yearMonth:s.yearMonth, appliedAt:now}));
   localStorage.setItem(appliedKey, JSON.stringify(applied));
   // 백그라운드: GAS에서도 삭제 처리
@@ -4475,7 +4494,7 @@ function loadSubmissions(){
    let applied2 = [];
    try{ applied2 = JSON.parse(localStorage.getItem(appliedKey)||'[]'); }catch{}
    const now2 = Date.now();
-   applied2 = applied2.filter(a=>(now2 - a.appliedAt) < 86400000);
+   applied2 = applied2.filter(a=>(now2 - a.appliedAt) < 604800000);
    subs.forEach(s=> applied2.push({name:s.name, yearMonth:s.yearMonth, appliedAt:now2}));
    localStorage.setItem(appliedKey, JSON.stringify(applied2));
    // 백그라운드: GAS에서도 삭제
