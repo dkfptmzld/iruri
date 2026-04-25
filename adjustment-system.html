@@ -498,7 +498,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -517,9 +517,12 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 가이드 링크 (두 모드 박스 공통 하단) -->
  <div style="margin-top:20px;text-align:center;">
-  <a href="https://dkfptmzld.github.io/iruri/guide.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;color:#5a8a6a;font-size:13px;font-weight:500;text-decoration:none;padding:8px 16px;border:1px solid #B8E0CC;border-radius:20px;background:white;transition:all .15s;" onmouseover="this.style.background='#E8F5EE';this.style.color='#1A7A50';" onmouseout="this.style.background='white';this.style.color='#5a8a6a';">
+  <a href="https://dkfptmzld.github.io/iruri/guide.html" target="_blank"
+     style="display:inline-flex;align-items:center;gap:6px;color:#5a8a6a;font-size:13px;font-weight:500;text-decoration:none;padding:8px 16px;border:1px solid #B8E0CC;border-radius:20px;background:white;transition:all .15s;"
+     onmouseover="this.style.background='#E8F5EE';this.style.color='#1A7A50';"
+     onmouseout="this.style.background='white';this.style.color='#5a8a6a';">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"></path>
+    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/>
    </svg>
    사용 가이드 보기
   </a>
@@ -576,7 +579,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div>
  <label style="font-size:11px;font-weight:600;color:#9B9888;display:block;margin-bottom:6px;">년도</label>
  <select id="ti-year" style="width:100%;height:38px;border:1.5px solid #E2E0D8;border-radius:8px;padding:0 10px;font-size:13px;background:white;outline:none;">
- <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option></select>
+ </select>
  <script>
  (function(){
   const sel=document.getElementById('ti-year');
@@ -728,34 +731,32 @@ tbody tr:hover td{background:var(--surface2);}
  <button class="nav-tab" id="nav1" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav2" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">3</span></button>
+<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  </div>
- <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
-  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
+ <div id="adminTimerChip" style="display:none;align-items:center;gap:6px;padding:4px 10px;background:var(--green-bg);border:1px solid var(--green);border-radius:20px;font-size:12px;font-weight:600;color:var(--green);white-space:nowrap;cursor:default;" title="남은 세션 시간 (활동 시 자동 갱신)">
+  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
   <span id="adminTimerText">30:00</span>
-  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
+  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left:2px;width:18px;height:18px;border-radius:50%;border:1px solid var(--green);background:transparent;color:var(--green);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
- <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;" disabled=""><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg> 인코딩 중...</button>
+ <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
- <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
+ <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>DB 동기화
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 4/25 오후 04:16 · 강사 30명 · 센터 277개</span>
+<span id="syncStatusChip" style="display:none;font-size:11px;padding:3px 8px;border-radius:12px;font-weight:600;white-space:nowrap;"></span>
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
  </button>
 </div>
 
 <!-- 정산 뷰 -->
-<div class="layout" id="settleView" style="display: none;">
+<div class="layout" id="settleView" style="display: flex;">
  <div class="sidebar" id="sidebar">
  <div id="month-selector" style="display: block; padding: 10px 12px; border-bottom: 1px solid var(--border);">
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
- </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
@@ -841,8 +842,9 @@ tbody tr:hover td{background:var(--surface2);}
   <!-- 지역별 검색창 -->
   <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
    <div style="position:relative;flex:1;">
-    <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width:100%;height:36px;padding:0 12px 0 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+    <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width:100%;height:36px;padding:0 12px 0 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;"
+     onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
    </div>
    <select id="cTreeRegionFilter" onchange="filterCenterTree()" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
     <option value="">전체 지역</option>
