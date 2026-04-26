@@ -2009,6 +2009,21 @@ function deleteTeacherRecord(i){
   localStorage.setItem(deletedKey, JSON.stringify(deleted));
  }catch(e){}
  STATE.data.teachers.splice(i,1);
+
+ // v11.22: 즉시 UI 처리 ──────────────────────────────────
+ // 1. 제출 배너 즉시 제거
+ document.getElementById('sub-banner')?.remove();
+ // 2. ti_submissions localStorage에서도 해당 항목 제거 (재출현 방지)
+ try{
+  let subs = JSON.parse(localStorage.getItem('ti_submissions')||'[]');
+  subs = subs.filter(s=>!(s.name===t.name && s.yearMonth===ym));
+  if(subs.length) localStorage.setItem('ti_submissions', JSON.stringify(subs));
+  else localStorage.removeItem('ti_submissions');
+ }catch(e){}
+ // 3. 모바일 사이드바 패널 닫기
+ if(typeof _closeSidebarOverlay==='function') _closeSidebarOverlay();
+ // ─────────────────────────────────────────────────────────
+
  if(STATE.data.teachers.length===0){
   if(ym){const key=MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_');localStorage.removeItem(key);}
   showToast(`${ym} 수업기록표가 모두 삭제됐어요`);
