@@ -739,7 +739,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -2570,24 +2570,30 @@ function renderRaiseAlert(){
  el.style.display='block';
 
  const rows = [
- ...overdue.map(t=>{
- const d=new Date(t.raiseDate); const diff=Math.floor((today-d)/(1000*60*60*24));
- return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #E8CC80;">
- <span style="font-weight:600;color:var(--red);">⚠ ${t.name}</span>
- <span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${t.region}</span>
- <span style="font-size:12px;">인상예정일 <b>${fmtDate(t.raiseDate)}</b> — <span style="color:var(--red);">${diff}일 지남</span></span>
- <span style="font-size:12px;margin-left:auto;">현재 ${Number(t.feeVal).toLocaleString()}원 → <b style="color:var(--green);">42,000원으로 인상 필요</b></span>
- </div>`;
- }),
- ...upcoming.map(t=>{
- const d=new Date(t.raiseDate); const diff=Math.floor((d-today)/(1000*60*60*24));
- return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #E8CC80;">
- <span style="font-weight:600;color:var(--amber);">🔔 ${t.name}</span>
- <span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${t.region}</span>
- <span style="font-size:12px;">인상예정일 <b>${fmtDate(t.raiseDate)}</b> — <span style="color:var(--amber);">${diff}일 후</span></span>
- <span style="font-size:12px;margin-left:auto;">현재 ${Number(t.feeVal).toLocaleString()}원 → <b>42,000원으로 인상 예정</b></span>
- </div>`;
- })
+  ...overdue.map(t=>{
+   const d=new Date(t.raiseDate); const diff=Math.floor((today-d)/(1000*60*60*24));
+   const rc=t.region==='서울'?'blue':t.region==='인천'?'teal':'purple';
+   return `<div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+     <span style="font-size:14px;font-weight:700;color:var(--red);white-space:nowrap;">⚠ ${t.name}</span>
+     <span class="badge ${rc}" style="flex-shrink:0;">${t.region}</span>
+     <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--red);white-space:nowrap;">${diff}일 지남</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">인상예정일 <b>${fmtDate(t.raiseDate)}</b> &nbsp;&middot;&nbsp; ${Number(t.feeVal).toLocaleString()}원 &rarr; <b style="color:var(--green);">42,000원으로 인상 필요</b></div>
+   </div>`;
+  }),
+  ...upcoming.map(t=>{
+   const d=new Date(t.raiseDate); const diff=Math.floor((d-today)/(1000*60*60*24));
+   const rc=t.region==='서울'?'blue':t.region==='인천'?'teal':'purple';
+   return `<div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 ${t.name}</span>
+     <span class="badge ${rc}" style="flex-shrink:0;">${t.region}</span>
+     <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap;">${diff}일 후</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">인상예정일 <b>${fmtDate(t.raiseDate)}</b> &nbsp;&middot;&nbsp; ${Number(t.feeVal).toLocaleString()}원 &rarr; <b>42,000원으로 인상 예정</b></div>
+   </div>`;
+  })
  ].join('');
 
  el.innerHTML=`<div style="background:var(--amber-bg);border:1px solid #E8CC80;border-radius:var(--radius-lg);padding:14px 18px;">
