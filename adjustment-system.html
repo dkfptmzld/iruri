@@ -535,7 +535,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -769,7 +769,7 @@ tbody tr:hover td{background:var(--surface2);}
  <button class="nav-tab" id="nav1" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav2" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">5</span></button>
+<button class="nav-tab" id="nav4" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">6</span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -782,7 +782,7 @@ tbody tr:hover td{background:var(--surface2);}
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 4/25 오후 04:16 · 강사 30명 · 센터 277개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 4/26 오후 05:02 · 강사 30명 · 센터 277개</span>
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
  </button>
@@ -795,7 +795,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
@@ -5604,6 +5604,10 @@ function renderMobileLedger(){
   '△': {bg:'#FDF3DC', color:'#8A6010', border:'#F0D899'},
  };
 
+ // v11.21: 로그인 강사 정보 (센터 필터 + 보강 강사 선택에 사용)
+ const teacherEl = document.getElementById('ti-teacher');
+ const teacherName = teacherEl ? teacherEl.value : '';
+
  tiDayGroups.forEach((g, gi)=>{
   if(g.day === '미등록'){
    // 미등록 그룹 간단 표시
@@ -5699,45 +5703,93 @@ function renderMobileLedger(){
 
    // 센터명 셀 (드롭다운)
    const nameTd = document.createElement('div');
-   nameTd.style.cssText = 'padding:4px 8px;display:flex;flex-direction:column;gap:2px;border-right:1px solid #E2E0D8;justify-content:center;min-width:0;';
+   nameTd.style.cssText = 'padding:4px 6px;display:flex;flex-direction:column;gap:2px;border-right:1px solid #E2E0D8;justify-content:center;min-width:0;';
 
-   // 보강 체크박스
-   const bkRow = document.createElement('label');
-   bkRow.style.cssText='display:flex;align-items:center;gap:3px;font-size:10px;color:#888;cursor:pointer;margin-bottom:2px;';
+   // ── 보강 체크박스 + 강사 선택 (PC 버전과 동일한 로직) ──
+   const isSubst = !!c.isSubstitute;
+
+   const bkRow = document.createElement('div');
+   bkRow.style.cssText='display:flex;align-items:center;gap:4px;margin-bottom:2px;';
+
+   const bkLabel = document.createElement('label');
+   bkLabel.style.cssText='display:flex;align-items:center;gap:3px;font-size:10px;color:#888;cursor:pointer;white-space:nowrap;flex-shrink:0;';
    const bkChk = document.createElement('input');
-   bkChk.type='checkbox'; bkChk.checked=!!c.isSub;
+   bkChk.type='checkbox'; bkChk.checked=isSubst;
    bkChk.style.cssText='width:12px;height:12px;accent-color:#1A7A50;';
-   bkChk.onchange=function(){ c.isSub=this.checked; };
-   bkRow.appendChild(bkChk);
-   bkRow.appendChild(document.createTextNode('보강'));
+   bkLabel.appendChild(bkChk);
+   bkLabel.appendChild(document.createTextNode('보강'));
+   bkRow.appendChild(bkLabel);
+
+   // 보강 강사 선택 드롭다운 (보강 체크 시 표시)
+   const substSel = document.createElement('select');
+   substSel.style.cssText=`display:${isSubst?'block':'none'};flex:1;min-width:0;height:20px;border:1px solid #E2E0D8;border-radius:4px;padding:0 2px;font-size:10px;background:#FDF3DC;outline:none;`;
+   substSel.innerHTML='<option value="">누구?</option>';
+   DB.teachers.filter(t=>t.name!==teacherName).sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(t=>{
+    const o=document.createElement('option');
+    o.value=t.name; o.textContent=t.name;
+    if(t.name===c.substituteFor) o.selected=true;
+    substSel.appendChild(o);
+   });
+   bkRow.appendChild(substSel);
    nameTd.appendChild(bkRow);
 
-   // 센터 드롭다운
+   // 센터 선택 드롭다운 (PC 버전 updateCenterOptions 로직 동일)
    const centerSel = document.createElement('select');
-   centerSel.style.cssText = 'font-size:11px;border:1px solid #E2E0D8;border-radius:5px;padding:2px 4px;background:white;color:#333;width:100%;outline:none;';
+   centerSel.style.cssText = 'font-size:10px;border:1px solid #E2E0D8;border-radius:5px;padding:2px 2px;background:white;color:#333;width:100%;outline:none;';
 
-   // 지역 필터된 센터 목록
-   const teacherEl = document.getElementById('ti-teacher');
-   const teacherName = teacherEl ? teacherEl.value : '';
-   const teacherObj = DB.teachers.find(t=>t.name===teacherName);
-   const teacherRegion = teacherObj ? teacherObj.region : '';
-   const filteredCenters = DB.centers.filter(ct=> !teacherRegion || ct.region===teacherRegion || !ct.region);
+   const nameCountM = {};
+   DB.centers.forEach(ct=>{ nameCountM[ct.name]=(nameCountM[ct.name]||0)+1; });
 
-   const emptyOpt = document.createElement('option');
-   emptyOpt.value=''; emptyOpt.textContent='센터 선택';
-   centerSel.appendChild(emptyOpt);
-   filteredCenters.forEach(ct=>{
-    const opt=document.createElement('option');
-    const allNames=DB.centers.map(x=>x.name);
-    const isDup=allNames.filter(n=>n===ct.name).length>1;
-    opt.value=ct.name; opt.textContent=isDup&&ct.region?`${ct.name}(${ct.region})`:ct.name;
-    if(ct.name===c.name) opt.selected=true;
-    centerSel.appendChild(opt);
-   });
+   function mUpdateCenterOptions(){
+    const isS = c.isSubstitute;
+    const forT = c.substituteFor;
+    let displayCtrs;
+    if(isS && forT){
+     displayCtrs = DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(forT));
+    } else if(isS && !forT){
+     displayCtrs = DB.centers;
+    } else {
+     // 일반: 본인 담당 센터만 (PC 버전과 동일)
+     displayCtrs = teacherName ? DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(teacherName)) : DB.centers;
+    }
+    const sorted=[...displayCtrs].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+    const prev = centerSel.value;
+    centerSel.innerHTML='<option value="">센터 선택</option>';
+    sorted.forEach(ct=>{
+     const o=document.createElement('option');
+     const isDup = nameCountM[ct.name] > 1;
+     o.value = isDup ? `${ct.name}||${ct.region}` : ct.name;
+     o.textContent = isDup ? `${ct.name}(${ct.region})` : ct.name;
+     const curKey = isDup ? `${c.name}||${c.region||''}` : c.name;
+     if(o.value===prev || o.value===curKey) o.selected=true;
+     centerSel.appendChild(o);
+    });
+   }
+   mUpdateCenterOptions();
+
+   // 보강 체크박스 이벤트
+   bkChk.onchange=function(){
+    c.isSubstitute=this.checked;
+    substSel.style.display=this.checked?'block':'none';
+    if(!this.checked){ c.substituteFor=''; substSel.value=''; }
+    mUpdateCenterOptions();
+   };
+   // 보강 강사 선택 이벤트
+   substSel.onchange=function(){
+    c.substituteFor=this.value;
+    mUpdateCenterOptions();
+   };
+   // 센터 선택 이벤트
    centerSel.onchange=function(){
-    c.name=this.value;
-    const found=DB.centers.find(ct=>ct.name===this.value);
-    c.region=found?(found.region||''):'';
+    const val=this.value;
+    if(val.includes('||')){
+     const [nm,rg]=val.split('||');
+     c.name=nm; c.region=rg;
+    } else {
+     c.name=val;
+     const found=DB.centers.find(ct=>ct.name===val);
+     c.region=found?(found.region||''):'';
+    }
     centerRow.style.background=c.name?'rgba(26,122,80,0.04)':'';
     renderTiLedger();
    };
