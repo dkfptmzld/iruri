@@ -5360,20 +5360,27 @@ function renderTiLedger(){
  dateLabelTd.textContent='날짜';
  dateTr.appendChild(dateLabelTd);
 
- // 날짜 입력 셀 5개
+ // 날짜 헤더 셀 5개 (v11.23: 가운데 정렬 텍스트)
  for(let w=0;w<5;w++){
  const td=document.createElement('td');
- td.style.cssText='border:1px solid #C8C6B8;background:#F0EFE6;padding:2px;text-align:center;';
- const inp=document.createElement('input');
- inp.type='number'; inp.min=1; inp.max=31;
- inp.value=g.dates[w]||'';
- inp.placeholder=`${w+1}주`;
- // v11.23: null 슬롯(해당 주에 이 요일 없음)은 배경 어둡게
  const hasDate = g.dates[w] != null;
- td.style.background = hasDate ? '#F0EFE6' : '#E8E6DC';
- inp.style.cssText='width:100%;height:28px;border:none;background:transparent;text-align:center;font-size:12px;font-weight:600;color:#555;outline:none;';
- inp.oninput=function(){ g.dates[w]=parseInt(this.value)||null; renderTiLedger(); };
- td.appendChild(inp); dateTr.appendChild(td);
+ td.style.cssText=`border:1px solid #C8C6B8;background:${hasDate?'#F0EFE6':'#E8E6DC'};padding:4px 2px;text-align:center;vertical-align:middle;`;
+ // 날짜 있으면 날짜 숫자, 없으면 빈칸 (주차는 헤더 th에 이미 있음)
+ const span=document.createElement('span');
+ span.style.cssText='font-size:12px;font-weight:700;color:#555;display:block;text-align:center;cursor:text;';
+ span.textContent = hasDate ? g.dates[w] : '';
+ span.title = `${w+1}주 날짜 (클릭해서 수정)`;
+ // 클릭 시 인라인 편집
+ span.onclick=function(){
+  const inp=document.createElement('input');
+  inp.type='number'; inp.min=1; inp.max=31;
+  inp.value=g.dates[w]||'';
+  inp.style.cssText='width:100%;height:24px;border:none;background:transparent;text-align:center;font-size:12px;font-weight:700;color:#555;outline:none;';
+  inp.oninput=function(){ g.dates[w]=parseInt(this.value)||null; };
+  inp.onblur=function(){ renderTiLedger(); };
+  td.replaceChild(inp,span); inp.focus(); inp.select();
+ };
+ td.appendChild(span); dateTr.appendChild(td);
  }
  // 빈 마지막 셀
  const emptyTd=document.createElement('td');
@@ -5520,14 +5527,21 @@ function renderTiLedger(){
  td.style.cssText=`border:1px solid #C8C6B8;text-align:center;font-weight:700;font-size:13px;cursor:pointer;padding:6px 2px;background:${s.bg};color:${s.color};`;
  td.textContent=s.text;
  };
+  // v11.23: null 슬롯 → X 자동 + 클릭 비활성
+ const noDate = g.dates[w] == null;
+ if(noDate && c.attend[w] !== 'X') c.attend[w] = 'X';
  applyStyle(td, c.attend[w]||'');
- td.onclick=function(){
- const cur=c.attend[w]||'';
- const next=cur===''?'O':cur==='O'?'X':cur==='X'?'△':'';
- c.attend[w]=next; applyStyle(this,next);
- const teacher=document.getElementById('ti-teacher').value;
- if(teacher) tiUpdateSettleSummary(teacher);
- };
+ if(noDate){
+  td.style.cursor='default'; td.style.opacity='0.55';
+ } else {
+  td.onclick=function(){
+  const cur=c.attend[w]||'';
+  const next=cur===''?'O':cur==='O'?'X':cur==='X'?'△':'';
+  c.attend[w]=next; applyStyle(this,next);
+  const teacher=document.getElementById('ti-teacher').value;
+  if(teacher) tiUpdateSettleSummary(teacher);
+  };
+ }
  tr.appendChild(td);
  }
 
@@ -6135,7 +6149,7 @@ function renderMobileLedger(){
   }
 
   const dates = g.dates || [];
-  const weekCount = Math.max(1, dates.filter(Boolean).length || 5);
+  const weekCount = 5; // v11.23 fix: 항상 5주 열 고정 (null 슬롯도 열 차지)
 
   // 카드 컨테이너
   const card = document.createElement('div');
@@ -6195,12 +6209,13 @@ function renderMobileLedger(){
 
    // 날짜 입력 (탭)
    const dateInp = document.createElement('input');
+   // v11.23: 모바일 날짜 헤더 - 숫자만 굵게 가운데
+   const hasDateM = dates[w] != null;
    dateInp.type='number'; dateInp.min=1; dateInp.max=31;
    dateInp.value = dates[w]||'';
-   // v11.23: null 슬롯 배경 표시
-   dateInp.parentElement && (dateInp.parentElement.style.background = dates[w]!=null?'#F0EFE6':'#E8E6DC');
-   dateInp.placeholder = `${w+1}주`;
-   dateInp.style.cssText = 'width:100%;border:none;background:transparent;text-align:center;font-size:12px;font-weight:600;color:#555;outline:none;';
+   dateCell.style.background = hasDateM ? '#F5F4F0' : '#ECEAE4';
+   dateInp.placeholder = hasDateM ? '' : '';
+   dateInp.style.cssText = 'width:100%;border:none;background:transparent;text-align:center;font-size:14px;font-weight:700;color:#444;outline:none;padding:0;';
    const _w=w;
    dateInp.oninput=function(){ g.dates[_w]=parseInt(this.value)||null; renderTiLedger(); };
    dateCell.appendChild(dateInp);
@@ -6318,29 +6333,33 @@ function renderMobileLedger(){
    for(let w=0;w<weekCount;w++){
     const attCell = document.createElement('div');
     attCell.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:52px;border-right:1px solid #F0EFE9;';
+    // v11.23: null 슬롯 X 자동 설정
+    const noDate = g.dates[w] == null;
+    if(noDate && c.attend[w] !== 'X') c.attend[w] = 'X';
     const val = c.attend[w]||'';
     const s = ATT_STYLE[val]||ATT_STYLE[''];
     const btn = document.createElement('div');
-    btn.style.cssText = `width:36px;height:36px;border-radius:8px;border:1.5px solid ${s.border};background:${s.bg};color:${s.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;`;
+    const opacityStr = noDate ? ';opacity:0.55' : '';
+    btn.style.cssText = `width:36px;height:36px;border-radius:8px;border:1.5px solid ${s.border};background:${s.bg};color:${s.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;cursor:${noDate?'default':'pointer'};user-select:none;-webkit-tap-highlight-color:transparent${opacityStr};`;
     btn.textContent = val||'';
 
-    const _w=w;
-    btn.onclick=function(){
-     const cur=c.attend[_w]||'';
-     const idx=ATT_CYCLE.indexOf(cur);
-     const next=ATT_CYCLE[(idx+1)%ATT_CYCLE.length];
-     c.attend[_w]=next;
-     const ns=ATT_STYLE[next]||ATT_STYLE[''];
-     this.style.background=ns.bg;
-     this.style.color=ns.color;
-     this.style.borderColor=ns.border;
-     this.textContent=next;
-     // 정산 요약 업데이트
-     const teacher=document.getElementById('ti-teacher').value;
-     if(teacher) tiUpdateSettleSummary(teacher);
-     // PC 테이블도 동기화
-     renderTiLedger();
-    };
+    if(!noDate){
+     const _w=w;
+     btn.onclick=function(){
+      const cur=c.attend[_w]||'';
+      const idx=ATT_CYCLE.indexOf(cur);
+      const next=ATT_CYCLE[(idx+1)%ATT_CYCLE.length];
+      c.attend[_w]=next;
+      const ns=ATT_STYLE[next]||ATT_STYLE[''];
+      this.style.background=ns.bg;
+      this.style.color=ns.color;
+      this.style.borderColor=ns.border;
+      this.textContent=next;
+      const teacher=document.getElementById('ti-teacher').value;
+      if(teacher) tiUpdateSettleSummary(teacher);
+      renderTiLedger();
+     };
+    }
     attCell.appendChild(btn);
 
     centerRow.appendChild(attCell);
