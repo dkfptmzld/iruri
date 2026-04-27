@@ -739,7 +739,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background:white;border:2px solid #c8e6c9;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(26,122,80,.1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -1040,7 +1040,15 @@ tbody tr:hover td{background:var(--surface2);}
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
- <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
+ <div class="topbar-right" id="topbarRight">
+ <span class="chip green">2026년 3월</span>
+ <div style="display:flex;gap:4px;align-items:center;">
+ <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
+ <button class="btn region-tab " onclick="setRegionFilter('서울')">서울</button><button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button><button class="btn region-tab " onclick="setRegionFilter('수원')">수원</button>
+ </div>
+ <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>CSV</button>
+ <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
+ <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
@@ -1059,19 +1067,416 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ </button>
+ <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 3월
  </button>
  </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">—</div></div>
- <div class="teacher-scroll" id="teacherList"></div>
+ <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 3월 · 30명</div></div>
+ <div class="teacher-scroll" id="teacherList"><div class="region-group-label">서울</div><div class="t-item " id="ti-11" onclick="selT(11)" style="position:relative;">
+ <div class="t-avatar">구</div>
+ <div class="t-info"><div class="t-name">구명훈</div><div class="t-pay">2,278,252</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(11)" class="t-del-btn" title="구명훈 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-12" onclick="selT(12)" style="position:relative;">
+ <div class="t-avatar">변</div>
+ <div class="t-info"><div class="t-name">변동</div><div class="t-pay">2,436,840</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(12)" class="t-del-btn" title="변동 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-13" onclick="selT(13)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info"><div class="t-name">김은영</div><div class="t-pay">348,120</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(13)" class="t-del-btn" title="김은영 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-14" onclick="selT(14)" style="position:relative;">
+ <div class="t-avatar">양</div>
+ <div class="t-info"><div class="t-name">양재원</div><div class="t-pay">2,193,156</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(14)" class="t-del-btn" title="양재원 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-15" onclick="selT(15)" style="position:relative;">
+ <div class="t-avatar">양</div>
+ <div class="t-info"><div class="t-name">양성모</div><div class="t-pay">1,665,174</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(15)" class="t-del-btn" title="양성모 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-16" onclick="selT(16)" style="position:relative;">
+ <div class="t-avatar">장</div>
+ <div class="t-info"><div class="t-name">장성기</div><div class="t-pay">1,817,960</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(16)" class="t-del-btn" title="장성기 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-17" onclick="selT(17)" style="position:relative;">
+ <div class="t-avatar">이</div>
+ <div class="t-info"><div class="t-name">이인경</div><div class="t-pay">2,233,770</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(17)" class="t-del-btn" title="이인경 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-18" onclick="selT(18)" style="position:relative;">
+ <div class="t-avatar">조</div>
+ <div class="t-info"><div class="t-name">조영미</div><div class="t-pay">1,299,648</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(18)" class="t-del-btn" title="조영미 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-19" onclick="selT(19)" style="position:relative;">
+ <div class="t-avatar">윤</div>
+ <div class="t-info"><div class="t-name">윤혜미</div><div class="t-pay">2,436,840</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(19)" class="t-del-btn" title="윤혜미 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-20" onclick="selT(20)" style="position:relative;">
+ <div class="t-avatar">오</div>
+ <div class="t-info"><div class="t-name">오건</div><div class="t-pay">348,120</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(20)" class="t-del-btn" title="오건 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-21" onclick="selT(21)" style="position:relative;">
+ <div class="t-avatar">신</div>
+ <div class="t-info"><div class="t-name">신기윤</div><div class="t-pay">1,315,120</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(21)" class="t-del-btn" title="신기윤 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-22" onclick="selT(22)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info"><div class="t-name">박준형</div><div class="t-pay">2,436,840</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(22)" class="t-del-btn" title="박준형 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-23" onclick="selT(23)" style="position:relative;">
+ <div class="t-avatar">송</div>
+ <div class="t-info"><div class="t-name">송준기</div><div class="t-pay">804,544</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(23)" class="t-del-btn" title="송준기 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-24" onclick="selT(24)" style="position:relative;">
+ <div class="t-avatar">정</div>
+ <div class="t-info"><div class="t-name">정상준</div><div class="t-pay">2,919,131</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(24)" class="t-del-btn" title="정상준 기록 삭제">✕</span>
+ </div><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info"><div class="t-name">박기남</div><div class="t-pay">2,317,899</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
+ <div class="t-avatar">홍</div>
+ <div class="t-info"><div class="t-name">홍예은</div><div class="t-pay">1,624,560</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="홍예은 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-2" onclick="selT(2)" style="position:relative;">
+ <div class="t-avatar">이</div>
+ <div class="t-info"><div class="t-name">이재윤</div><div class="t-pay">1,353,800</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(2)" class="t-del-btn" title="이재윤 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-3" onclick="selT(3)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info"><div class="t-name">박종일</div><div class="t-pay">1,908,858</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(3)" class="t-del-btn" title="박종일 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-4" onclick="selT(4)" style="position:relative;">
+ <div class="t-avatar">길</div>
+ <div class="t-info"><div class="t-name">길범준</div><div class="t-pay">1,543,332</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(4)" class="t-del-btn" title="길범준 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-5" onclick="selT(5)" style="position:relative;">
+ <div class="t-avatar">방</div>
+ <div class="t-info"><div class="t-name">방진수</div><div class="t-pay">1,431,160</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(5)" class="t-del-btn" title="방진수 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-6" onclick="selT(6)" style="position:relative;">
+ <div class="t-avatar">한</div>
+ <div class="t-info"><div class="t-name">한수희</div><div class="t-pay">2,486,399</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(6)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-7" onclick="selT(7)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info"><div class="t-name">김수민</div><div class="t-pay">1,949,472</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(7)" class="t-del-btn" title="김수민 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-8" onclick="selT(8)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info"><div class="t-name">김효민</div><div class="t-pay">3,187,716</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(8)" class="t-del-btn" title="김효민 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-9" onclick="selT(9)" style="position:relative;">
+ <div class="t-avatar">장</div>
+ <div class="t-info"><div class="t-name">장호준</div><div class="t-pay">2,084,852</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(9)" class="t-del-btn" title="장호준 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-10" onclick="selT(10)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info"><div class="t-name">김유천</div><div class="t-pay">212,740</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(10)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
+ </div><div class="region-group-label">수원</div><div class="t-item " id="ti-25" onclick="selT(25)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info"><div class="t-name">김수도</div><div class="t-pay">1,746,402</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(25)" class="t-del-btn" title="김수도 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-26" onclick="selT(26)" style="position:relative;">
+ <div class="t-avatar">안</div>
+ <div class="t-info"><div class="t-name">안지훈</div><div class="t-pay">3,016,557</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(26)" class="t-del-btn" title="안지훈 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-27" onclick="selT(27)" style="position:relative;">
+ <div class="t-avatar">원</div>
+ <div class="t-info"><div class="t-name">원보영</div><div class="t-pay">1,096,578</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(27)" class="t-del-btn" title="원보영 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-28" onclick="selT(28)" style="position:relative;">
+ <div class="t-avatar">최</div>
+ <div class="t-info"><div class="t-name">최정안</div><div class="t-pay">3,042,424</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(28)" class="t-del-btn" title="최정안 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-29" onclick="selT(29)" style="position:relative;">
+ <div class="t-avatar">오</div>
+ <div class="t-info"><div class="t-name">오수정</div><div class="t-pay">1,237,760</div></div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(29)" class="t-del-btn" title="오수정 기록 삭제">✕</span>
+ </div></div>
  </div>
  <div class="content" id="mainContent">
-  <div class="upload-wrap">
-   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
-    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
-    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
-   </div>
-  </div></div>
+ <div class="profile-row">
+ <div class="profile-avatar">박</div>
+ <div><div class="profile-name">박기남 강사</div><div class="profile-sub">2026년 3월 · 강사료 85%</div></div>
+ <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
+   <span style="color:var(--text3);font-size:11px;">국민은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">597302-04-146046</span><br><span>박기남</span>
+ </div>
+ </div>
+ <div class="metrics">
+ <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">52<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
+ <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">2,820,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">423,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">2,317,899<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ </div>
+ <div>
+ <div class="tabs-bar">
+ <div class="tab active" data-tab="ledger" onclick="setTab('ledger')">📋 수업기록표</div>
+ <div class="tab" data-tab="settle" onclick="setTab('settle')">정산 상세</div>
+ <div class="tab" data-tab="all" onclick="setTab('all')">전체 강사 비교</div>
+ <div class="tab" data-tab="receipts_teacher" onclick="setTab('receipts_teacher')">🧾 영수증</div>
+ </div>
+ <div id="tabBody"><div class="ledger-wrap">
+ <div class="ledger-title">2026년 3월 수업 기록표 ( 박기남 ) 강사</div>
+ <div style="overflow-x:auto;">
+ <table class="ledger-table">
+ <colgroup>
+ <col style="width:24px"><col style="width:130px">
+ <col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px">
+ <col style="width:38px"><col style="width:28px">
+ <col style="width:62px"><col style="width:70px"></colgroup>
+ <thead>
+ <tr style="background:#E8E6DC;">
+ <th style="width:24px;">요일</th>
+ <th style="text-align:left;padding-left:6px;">센터명</th>
+ <th>1주</th><th>2주</th><th>3주</th><th>4주</th><th>5주</th>
+ <th>수업<br>횟수</th><th></th>
+ <th>수업료</th><th>금액</th>
+ </tr>
+ </thead>
+ <tbody><tr>
+ <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">월</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="효명" onclick="openCenterPicker(0,0,this)">
+ <span class="">효명</span>
+ 
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(0,0,0)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,3)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,4)" title="일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="서부어르신" onclick="openCenterPicker(0,1,this)">
+ <span class="">서부어르신</span>
+ 
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(0,1,0)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,3)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,4)" title="일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="더사랑" onclick="openCenterPicker(0,2,this)">
+ <span class="">더사랑</span>
+ 
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(0,2,0)" title="일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,2,1)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,3)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,4)" title="일">O</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">165,000</td>
+ </tr><tr>
+ <td class="center-cell" title="정다운" onclick="openCenterPicker(0,3,this)">
+ <span class="">정다운</span>
+ 
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(0,3,0)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,3)" title="일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,3,4)" title="일">X</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">165,000</td>
+ </tr><tr>
+ <td class="center-cell" title="소새울" onclick="openCenterPicker(0,4,this)">
+ <span class="">소새울</span>
+ 
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(0,4,0)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,1)" title="일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,4,2)" title="일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,3)" title="일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,4,4)" title="일">X</td>
+ <td class="count-cell">2</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">110,000</td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">수</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="늘푸른" onclick="openCenterPicker(0,5,this)">
+ <span class="">늘푸른</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,5,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">240,000</td>
+ </tr><tr>
+ <td class="center-cell" title="미추홀" onclick="openCenterPicker(0,6,this)">
+ <span class="">미추홀</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,6,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">200,000</td>
+ </tr><tr>
+ <td class="center-cell" title="소래" onclick="openCenterPicker(0,7,this)">
+ <span class="">소래</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,7,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">목</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="금천노인" onclick="openCenterPicker(0,8,this)">
+ <span class="">금천노인</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,8,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">200,000</td>
+ </tr><tr>
+ <td class="center-cell" title="프라임" onclick="openCenterPicker(0,9,this)">
+ <span class="">프라임</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,9,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="무지개" onclick="openCenterPicker(0,10,this)">
+ <span class="">무지개</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,10,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="주은" onclick="openCenterPicker(0,11,this)">
+ <span class="">주은</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,11,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="가가호호봉천" onclick="openCenterPicker(0,12,this)">
+ <span class="">가가호호봉천</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,12,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">200,000</td>
+ </tr><tr>
+ <td class="center-cell" title="두드림" onclick="openCenterPicker(0,13,this)">
+ <span class="">두드림</span>
+ 
+ </td>
+ <td class="attend-cell att-o" onclick="toggleAttend(0,13,0)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,1)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,2)" title="일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,3)" title="일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,4)" title="일"></td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,13,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr></tbody>
+ <tfoot>
+ <tr class="ledger-foot">
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">국민은행 597302-04-146046 박기남</td>
+ <td style="font-size:11px;font-weight:600;">수업료%</td>
+ <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
+ <td style="font-size:11px;font-weight:600;">세전</td>
+ </tr>
+ <tr class="ledger-foot">
+ <td colspan="7"></td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">85%</td>
+ <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">2,820,000</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">2,397,000</td>
+ </tr>
+ </tfoot>
+ </table>
+ </div>
+ <!-- 가로 정산 요약 + 비용 입력 -->
+ <div class="settle-summary-row">
+ <table class="settle-summary-table">
+ <thead>
+ <tr>
+ <th>수업료%</th>
+ <th>수업료 합계</th>
+ <th>세전</th>
+ <th>영업이익</th>
+ <th>확정 월급</th>
+ <th class="cost-col">비용처리<div class="cost-hint">주차료 등</div></th>
+ <th class="cost-col">모의수업<div class="cost-hint">△ 1회=20,000원</div></th>
+ <th class="cost-col">기타비용</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td style="font-weight:700;color:#1A5FA0;">85%</td>
+ <td style="font-weight:700;">₩2,820,000</td>
+ <td style="font-weight:700;color:#1A5FA0;">₩2,397,000</td>
+ <td style="font-weight:700;color:#1A7A50;">+423,000</td>
+ <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩2,317,899</td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'costExtra',this.value)" min="0"></td>
+ <td class="cost-col">
+ <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △0회 = 0원</div>
+ <input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
+ </td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'otherCost',this.value)" min="0"></td>
+ </tr>
+ <tr class="cost-display-row">
+ <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
+ <td class="cost-col" id="extraCost-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ <td class="cost-col" id="extraOther-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ <div class="ledger-note"><strong style="display:block;margin-bottom:6px;color:#6A4A08;">특이사항</strong>1. 3/2 [효명, 서부어르신] 5주차 휴강<br>2. 3/3 [더사랑, 정다운, 소새울] 5주차 휴강<br>3. 3/10 [더사랑] 교통사고 보강대체(이재윤)<br>4. 3/17 [소새울] 센터 내 생일잔치 휴강<br>5. 3/31 [정다운] 대상웰라이프 미팅 보강(홍예은) / [소새울] 자체수업<br>비용처리: 40,435원 / 대상 웰라이프 미팅 수업료 지원(2개): 90,420원</div>
+ <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+ <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+ O/X 클릭으로 출석 토글 · 센터명·수업료 클릭으로 직접 수정
+ <button class="btn sm primary" onclick="recalcAndRefresh(0)" style="margin-left:auto;">재계산 적용</button>
+ </div>
+ </div></div>
+ </div></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1257,7 +1662,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ 2026년 4월 수업기록표가 모두 삭제됐어요</div>
+<div class="save-toast" id="saveToast">✓ 불러오기 실패</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -1794,21 +2199,41 @@ function _normFeePct(teachers){
 }
 
 function loadMonthlySnapshot(ym){
- try{
  const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
  const raw = localStorage.getItem(key);
- if(!raw){ showToast('저장된 데이터가 없어요'); return; }
- // v11.23 fix: feePct 정규화 후 파싱
- let parsedSnap; try{ parsedSnap = JSON.parse(raw); }catch{ showToast('데이터 오류'); return; }
- if(parsedSnap?.data?.teachers) parsedSnap.data.teachers = _normFeePct(parsedSnap.data.teachers);
- if(parsedSnap?.teachers) parsedSnap.teachers = _normFeePct(parsedSnap.teachers);
- const raw2 = JSON.stringify(parsedSnap);
- const snap = JSON.parse(raw);
- STATE.data = snap.data;
- STATE.cur = 0;
- STATE.regionFilter = null;
- renderSettle();
- showToast(`${ym} 수업기록표를 불러왔어요`);
+
+ // v11.23: 삭제된 월이면 로드 차단
+ try{
+  const dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]');
+  if(dm.some(d=>d.ym===ym)){ showToast(`${ym}은 삭제된 데이터예요`); return; }
+ }catch{}
+ // v11.23: localStorage에 없으면 GAS에서 자동 로드
+ if(!raw){
+  showToast(`${ym} 로컬 데이터 없음 — GAS에서 불러오는 중...`);
+  gasGet({action:'getMonthlySnapshot', yearMonth:ym})
+   .then(r=>{
+    if(!r.ok || !r.data){ showToast('GAS에도 데이터가 없어요'); return; }
+    const data = r.data;
+    if(data.teachers) data.teachers = _normFeePct(data.teachers);
+    // localStorage에도 저장
+    const snap = {ym, savedAt:new Date().toISOString(), data};
+    localStorage.setItem(key, JSON.stringify(snap));
+    STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
+    renderSettle();
+    showToast(`✅ ${ym} GAS에서 불러왔어요`);
+   })
+   .catch(()=>showToast('GAS 연결 실패'));
+  return;
+ }
+
+ try{
+  let parsedSnap; try{ parsedSnap = JSON.parse(raw); }catch{ showToast('데이터 오류'); return; }
+  if(parsedSnap?.data?.teachers) parsedSnap.data.teachers = _normFeePct(parsedSnap.data.teachers);
+  if(parsedSnap?.teachers) parsedSnap.teachers = _normFeePct(parsedSnap.teachers);
+  const snap = parsedSnap;
+  STATE.data = snap.data; STATE.cur=0; STATE.regionFilter=null;
+  renderSettle();
+  showToast(`${ym} 수업기록표를 불러왔어요`);
  } catch(e){ showToast('불러오기 실패'); }
 }
 
@@ -2099,7 +2524,19 @@ function deleteTeacherRecord(i){
  // ─────────────────────────────────────────────────────────
 
  if(STATE.data.teachers.length===0){
-  if(ym){const key=MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_');localStorage.removeItem(key);}
+  if(ym){
+   const key=MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_');
+   localStorage.removeItem(key);
+   // v11.23 fix: 삭제된 월 이력 저장 (재로그인 시 GAS 재출현 차단)
+   try{
+    const dmKey='iruri_deleted_months';
+    let dm=JSON.parse(localStorage.getItem(dmKey)||'[]');
+    const now=Date.now(); const NINETY=90*24*60*60*1000;
+    dm=dm.filter(d=>(now-d.deletedAt)<NINETY);
+    if(!dm.some(d=>d.ym===ym)) dm.push({ym,deletedAt:now});
+    localStorage.setItem(dmKey,JSON.stringify(dm));
+   }catch(e){}
+  }
   showToast(`${ym} 수업기록표가 모두 삭제됐어요`);
   goHome(true);
  } else {
@@ -4261,9 +4698,22 @@ async function syncAllToDB(){
  if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> 동기화 중...'; btn.disabled=true; }
  if(chip){ chip.style.display='none'; }
  try{
+  // v11.23: 월별 스냅샷도 함께 동기화
+  const localMonths = getSavedMonths();
+  const snapPromises = localMonths.map(ym => {
+   const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
+   const raw = localStorage.getItem(key);
+   if(!raw) return Promise.resolve();
+   try{
+    const snap = JSON.parse(raw);
+    return gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:snap.data}).catch(()=>{});
+   }catch(e){ return Promise.resolve(); }
+  });
+
   const [tr, cr] = await Promise.all([
    gasPost({action:'syncTeachers', teachers:DB.teachers}),
-   gasPost({action:'syncCenters', centers:DB.centers})
+   gasPost({action:'syncCenters', centers:DB.centers}),
+   ...snapPromises
   ]);
   const now = new Date().toISOString();
   if(tr.ok && cr.ok){
@@ -4739,7 +5189,7 @@ function checkAdminPw(){
 function _enterAdminMode(){
  _initSyncChip();
  setTimeout(updateChangelogBadge, 300);
- // v11.20: 앱 내 이동 플래그 설정 (새 로드 시 세션 클리어 방지)
+ // v11.20: 앱 내 이동 플래그 설정
  sessionStorage.setItem('iruri_nav_flag', '1');
  document.getElementById('adminLoginModal').style.display = 'none';
  document.getElementById('modeSelectScreen').style.display = 'none';
@@ -4750,9 +5200,42 @@ function _enterAdminMode(){
  goHome();
  checkAndApplyRaises();
  checkPendingSubmissions();
- startAdminAutoLogout(); // 자동 로그아웃 타이머 시작
- // v11.23: 모바일 UI 초기화
+ startAdminAutoLogout();
  if(window.innerWidth <= 600) _initAdminMobile();
+ // v11.23: GAS에서 저장된 월 목록 가져와 사이드바 보완
+ _syncMonthListFromGAS();
+}
+
+async function _syncMonthListFromGAS(){
+ try{
+  const r = await gasGet({action:'getMonthlySnapshots'});
+  if(!r.ok || !r.data?.length) return;
+  // v11.23 fix: 삭제된 월은 GAS에서 목록에 있어도 무시
+  let deletedMonths=[];
+  try{ deletedMonths=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); }catch{}
+  const now=Date.now(); const NINETY=90*24*60*60*1000;
+  deletedMonths=deletedMonths.filter(d=>(now-d.deletedAt)<NINETY);
+  let added = 0;
+  r.data.forEach(({yearMonth:ym})=>{
+   // 삭제된 월이면 스킵 + GAS에서도 재삭제 시도
+   if(deletedMonths.some(d=>d.ym===ym)){
+    gasPost({action:'deleteMonthlySnapshot',yearMonth:ym}).catch(()=>{});
+    return;
+   }
+   const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
+   if(!localStorage.getItem(key)){
+    localStorage.setItem(key, JSON.stringify({ym, savedAt:'GAS', data:null, gasOnly:true}));
+    added++;
+   }
+  });
+  if(added > 0){
+   const savedMonths = getSavedMonths();
+   const curYm = STATE.data?.teachers?.[0]?.yearMonth||'';
+   const monthSel = document.getElementById('month-selector');
+   if(monthSel) renderSidebarMonths(savedMonths, curYm);
+   showToast(`📂 GAS에서 ${added}개월 목록을 가져왔어요`);
+  }
+ }catch(e){ console.warn('GAS 월 목록 조회 실패:', e); }
 }
 
 /* ═══ v11.23: 관리자 모드 모바일 헬퍼 ═══ */
@@ -7349,7 +7832,7 @@ function _pushToGAS(){
 </script>
 
 <!-- 센터 피커 모달 -->
-<div id="centerPickerModal" class="">
+<div id="centerPickerModal">
  <div class="cpicker-box">
  <div class="cpicker-header">
  <h3>센터 선택</h3>
@@ -7366,71 +7849,7 @@ function _pushToGAS(){
  </select>
  </div>
  </div>
- <div class="cpicker-list" id="cpickerList"><div class="cpicker-section">📌 담당센터 <span class="cpicker-count">14개</span></div><div class="cpicker-item" onclick="selectCenter('효명',55000)">
- <span>효명</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('다사랑',55000)">
- <span>다사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item selected" onclick="selectCenter('더사랑',55000)">
- <span>더사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('정다운',55000)">
- <span>정다운</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('소새울',55000)">
- <span>소새울</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('늘푸른',60000)">
- <span>늘푸른</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('미추홀',50000)">
- <span>미추홀</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('소래',55000)">
- <span>소래</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('금천노인',50000)">
- <span>금천노인</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('프라임',55000)">
- <span>프라임</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('무지개',55000)">
- <span>무지개</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('주은',55000)">
- <span>주은</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가가호호봉천',50000)">
- <span>가가호호봉천</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('두드림',55000)">
- <span>두드림</span><span class="fee-tag">55,000원</span></div><div class="cpicker-section">🏢 전체 센터 <span class="cpicker-count">261개</span></div><div class="cpicker-item" onclick="selectCenter('153',55000)">
- <span>153</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('88등촌',50000)">
- <span>88등촌</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('A+우리',55000)">
- <span>A+우리</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('A+하남행복',55000)">
- <span>A+하남행복</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가가호호시흥',55000)">
- <span>가가호호시흥</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가나안',55000)">
- <span>가나안</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가람',55000)">
- <span>가람</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가로등',55000)">
- <span>가로등</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가온1',45000)">
- <span>가온1</span><span class="fee-tag">45,000원</span></div><div class="cpicker-item" onclick="selectCenter('가온2',45000)">
- <span>가온2</span><span class="fee-tag">45,000원</span></div><div class="cpicker-item" onclick="selectCenter('가은',55000)">
- <span>가은</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가족데이케어',55000)">
- <span>가족데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가족사랑',55000)">
- <span>가족사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가평A+',60000)">
- <span>가평A+</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('가평길누리',60000)">
- <span>가평길누리</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('가현산요양',55000)">
- <span>가현산요양</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('간석3층',55000)">
- <span>간석3층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('간석4층',55000)">
- <span>간석4층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('갈산',55000)">
- <span>갈산</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강동데이케어',55000)">
- <span>강동데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강북희망',55000)">
- <span>강북희망</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강서힐링',50000)">
- <span>강서힐링</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('강일데이케어',55000)">
- <span>강일데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('검암',55000)">
- <span>검암</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('경인',55000)">
- <span>경인</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('고양1호점',55000)">
- <span>고양1호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('고양2호점',55000)">
- <span>고양2호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어',55000)">
- <span>골든케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어1',55000)">
- <span>골든케어1</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어2',55000)">
- <span>골든케어2</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('광교빌리지3층',55000)">
- <span>광교빌리지3층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('광교빌리지4층',55000)">
- <span>광교빌리지4층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구리온케어발달',55000)">
- <span>구리온케어발달</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구리온케어주간',55000)">
- <span>구리온케어주간</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구립우면',55000)">
- <span>구립우면</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('굿모닝',55000)">
- <span>굿모닝</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('굿모닝',55000)">
- <span>굿모닝</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('그라시아요양',55000)">
- <span>그라시아요양</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('금오사랑',55000)">
- <span>금오사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('금호',55000)">
- <span>금호</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('기쁜우리',55000)">
- <span>기쁜우리</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김간호사1호점',55000)">
- <span>김간호사1호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김간호사2호점',55000)">
- <span>김간호사2호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김진성데이케어',55000)">
- <span>김진성데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포다사랑',60000)">
- <span>김포다사랑</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포스마일',60000)">
- <span>김포스마일</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포엘림',55000)">
- <span>김포엘림</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포한강',55000)">
- <span>김포한강</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('나날',55000)">
- <span>나날</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('나눔요양',55000)">
- <span>나눔요양</span><span class="fee-tag">55,000원</span></div></div>
+ <div class="cpicker-list" id="cpickerList"></div>
  <div class="cpicker-footer">
  <button class="btn sm" onclick="addNewCenterFromPicker()">+ 신규 센터 추가</button>
  <button class="btn sm danger" onclick="closeCenterPicker()">취소</button>
