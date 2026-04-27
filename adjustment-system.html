@@ -2251,9 +2251,12 @@ function renderLedger(ti){
  const rowspan=g.items.length;
 
  // 날짜 가로 행 (텍스트 없이)
- const dateCells=Array(maxWeeks).fill('').map((_,wi)=>
- `<td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">${g.dates[wi]?g.dates[wi]+'일':''}</td>`
- ).join('');
+ // v11.23: null 슬롯(해당 주에 요일 없음)은 배경 다르게
+ const dateCells=Array(maxWeeks).fill('').map((_,wi)=>{
+  const hasD = g.dates[wi]!=null;
+  const bg = hasD ? '#F0EFE6' : '#E8E6DC';
+  return `<td style="background:${bg};font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">${hasD?g.dates[wi]+'일':''}</td>`;
+ }).join('');
  bodyRows+=`<tr>
  <td class="day-cell" rowspan="${rowspan+1}" style="border-right:2px solid #AAA8A0;">${day}</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -5161,14 +5164,19 @@ let tiImages = [];
 
 /* 현재 연월 기준 요일별 날짜 자동 계산 */
 function calcDatesForMonth(year, month){
- const result = {}; // {월:[2,9,..], 화:[3,10,..], ...}
- DAYS_ORDER.forEach(d => result[d] = []);
- const dayIdx = {월:1,화:2,수:3,목:4,금:5,토:6,일:0};
+ // v11.23: 달력 기준 주차 (1일이 속한 주 = 1주)
+ // 5슬롯 배열: 인덱스 = 주차-1, 해당 주에 요일 없으면 null
+ const result = {};
+ DAYS_ORDER.forEach(d => result[d] = [null,null,null,null,null]);
+ const firstDow = new Date(year, month-1, 1).getDay(); // 1일의 요일(0=일)
  const daysInMonth = new Date(year, month, 0).getDate();
  for(let d=1; d<=daysInMonth; d++){
- const dow = new Date(year, month-1, d).getDay();
- const dayName = DAYS_KR[dow];
- if(result[dayName] && result[dayName].length < 5) result[dayName].push(d);
+  const dow = new Date(year, month-1, d).getDay();
+  const dayName = DAYS_KR[dow];
+  if(!result[dayName]) continue;
+  // 달력 기준 주차: 1일 포함 주가 1주
+  const weekIdx = Math.ceil((d + firstDow) / 7) - 1; // 0~4
+  if(weekIdx >= 0 && weekIdx < 5) result[dayName][weekIdx] = d;
  }
  return result;
 }
@@ -5360,6 +5368,9 @@ function renderTiLedger(){
  inp.type='number'; inp.min=1; inp.max=31;
  inp.value=g.dates[w]||'';
  inp.placeholder=`${w+1}주`;
+ // v11.23: null 슬롯(해당 주에 이 요일 없음)은 배경 어둡게
+ const hasDate = g.dates[w] != null;
+ td.style.background = hasDate ? '#F0EFE6' : '#E8E6DC';
  inp.style.cssText='width:100%;height:28px;border:none;background:transparent;text-align:center;font-size:12px;font-weight:600;color:#555;outline:none;';
  inp.oninput=function(){ g.dates[w]=parseInt(this.value)||null; renderTiLedger(); };
  td.appendChild(inp); dateTr.appendChild(td);
@@ -6186,6 +6197,8 @@ function renderMobileLedger(){
    const dateInp = document.createElement('input');
    dateInp.type='number'; dateInp.min=1; dateInp.max=31;
    dateInp.value = dates[w]||'';
+   // v11.23: null 슬롯 배경 표시
+   dateInp.parentElement && (dateInp.parentElement.style.background = dates[w]!=null?'#F0EFE6':'#E8E6DC');
    dateInp.placeholder = `${w+1}주`;
    dateInp.style.cssText = 'width:100%;border:none;background:transparent;text-align:center;font-size:12px;font-weight:600;color:#555;outline:none;';
    const _w=w;
