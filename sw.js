@@ -1,8 +1,6 @@
 /* ═══════════════════════════════════════════
-   이루리 실버아카데미 — Service Worker
-   전략: 네트워크 우선(Network-First)
-   - 온라인: 항상 최신 버전 서빙 (GitHub Push 즉시 반영)
-   - 오프라인: 캐시에서 서빙
+   이루리 실버아카데미 — Service Worker v1.1
+   fix: chrome-extension:// URL 캐시 오류 수정
 ═══════════════════════════════════════════ */
 const CACHE_NAME = 'iruri-v1';
 const ASSETS = [
@@ -12,7 +10,6 @@ const ASSETS = [
   '/iruri/icon-512.png'
 ];
 
-/* 설치: 핵심 파일 캐시 */
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME)
@@ -21,28 +18,29 @@ self.addEventListener('install', e => {
   );
 });
 
-/* 활성화: 이전 캐시 정리 */
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-/* 요청 처리: 네트워크 우선 → 실패 시 캐시 */
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const url = e.request.url;
 
-  /* Google Apps Script 요청은 캐시 제외 (항상 네트워크) */
-  if (e.request.url.includes('script.google.com')) return;
+  // v1.1 fix: http/https 아닌 요청은 모두 무시 (chrome-extension:// 등)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
+
+  // GAS 요청 캐시 제외
+  if (url.includes('script.google.com')) return;
+
+  // GET만 처리
+  if (e.request.method !== 'GET') return;
 
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        /* 성공 시 캐시 갱신 */
         if (res && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
