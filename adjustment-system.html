@@ -1329,7 +1329,7 @@ tbody tr:hover td{background:var(--surface2);}
 </div>
 
 <!-- v11.30: 접속 현황 플로팅 위젯 (관리자 전용) -->
-<div id="presenceWidget" style="display:none;position:fixed;bottom:24px;right:24px;z-index:9000;font-family:inherit;">
+<div id="presenceWidget" style="display: block; position: fixed; bottom: 24px; right: 24px; z-index: 9000; font-family: inherit;">
  <!-- 토글 버튼 -->
  <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width:52px;height:52px;border-radius:50%;background:var(--green);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
   <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
@@ -5495,6 +5495,12 @@ function _enterAdminMode(){
  checkPendingSubmissions();
  startAdminAutoLogout();
  if(window.innerWidth <= 600) _initAdminMobile();
+ // v11.30: 접속 현황 위젯 표시 + 30초 자동 갱신
+ const _pw = document.getElementById('presenceWidget');
+ if(_pw) _pw.style.display = 'block';
+ if(_presenceAutoRefresh) clearInterval(_presenceAutoRefresh);
+ _refreshPresenceWidget();
+ _presenceAutoRefresh = setInterval(_refreshPresenceWidget, 30000);
  // v11.30: GAS에서 저장된 월 목록 가져와 사이드바 보완
  _syncMonthListFromGAS();
 }
