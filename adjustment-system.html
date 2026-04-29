@@ -1331,20 +1331,32 @@ tbody tr:hover td{background:var(--surface2);}
 <!-- v11.30: 접속 현황 플로팅 위젯 (관리자 전용) -->
 <div id="presenceWidget" style="display: block; position: fixed; bottom: 24px; right: 24px; z-index: 9000; font-family: inherit;">
  <!-- 토글 버튼 -->
- <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width:52px;height:52px;border-radius:50%;background:var(--green);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+ <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width: 52px; height: 52px; border-radius: 50%; background: var(--green); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.18) 0px 4px 16px; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.15s; transform: scale(1);" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
   <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
   <span id="presenceOnlineBadge" style="display:none;position:absolute;top:2px;right:2px;background:#4CAF50;border:2px solid white;border-radius:50%;width:14px;height:14px;"></span>
  </button>
  <!-- 팝업 패널 -->
- <div id="presencePanel" style="display:none;position:absolute;bottom:62px;right:0;width:240px;background:white;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;">
+ <div id="presencePanel" style="display: block; position: absolute; bottom: 62px; right: 0px; width: 240px; background: white; border-radius: 14px; box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 32px; overflow: hidden;">
   <div style="padding:12px 14px;background:var(--green);display:flex;align-items:center;justify-content:space-between;">
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;">
-   <div style="text-align:center;padding:16px;color:var(--text3);font-size:13px;">불러오는 중...</div>
-  </div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">-</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">0</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">0</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">-</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:08:59</div>
  </div>
 </div>
 
@@ -4548,65 +4560,80 @@ async function _refreshPresenceWidget(){
  }
 }
 
+let _presenceOnlineOpen  = true;
+let _presenceOfflineOpen = false; // 오프라인은 기본 접힘
+
+function _togglePresenceSection(sec){
+ if(sec==='online')  _presenceOnlineOpen  = !_presenceOnlineOpen;
+ if(sec==='offline') _presenceOfflineOpen = !_presenceOfflineOpen;
+ // 토글 후 마지막 data 재렌더 (저장된 값 재사용)
+ if(window._lastPresenceList !== undefined) _renderPresenceWidget(window._lastPresenceList);
+}
+
 function _renderPresenceWidget(list){
+ window._lastPresenceList = list; // 토글 재렌더용 저장
  const listEl = document.getElementById('presenceList');
  const badge  = document.getElementById('presenceOnlineBadge');
  if(!listEl) return;
 
  const now = Date.now();
- const ONLINE_MS  = 5  * 60 * 1000; // 5분 이내 = 온라인
- const RECENT_MS  = 30 * 60 * 1000; // 30분 이내 = 최근 접속
+ // heartbeat 주기 2분 기준
+ const ONLINE_MS = 3 * 60 * 1000; // 3분 이내 = 온라인 (heartbeat 2분 + 버퍼 1분)
 
- // DB 강사 전체 목록
- const allTeachers = (window.DB?.teachers||[]).map(t=>t.name);
+ // DB 강사 전체 목록 (가나다순)
+ const allTeachers = [...new Set([
+  ...(window.DB?.teachers||[]).map(t=>t.name),
+  ...list.map(p=>p.teacher)
+ ])].sort((a,b)=>a.localeCompare(b,'ko'));
 
- const onlineSet = new Set(
-  list.filter(p=>(now - new Date(p.lastSeen).getTime()) < ONLINE_MS).map(p=>p.teacher)
- );
- const recentMap = {};
+ // 접속 시간 맵 (전체)
+ const seenMap = {};
  list.forEach(p=>{
   const ago = now - new Date(p.lastSeen).getTime();
-  if(ago < RECENT_MS) recentMap[p.teacher] = ago;
+  seenMap[p.teacher] = ago;
  });
 
- const onlineCount = onlineSet.size;
+ const online  = allTeachers.filter(n=> seenMap[n]!==undefined && seenMap[n] < ONLINE_MS);
+ const offline = allTeachers.filter(n=> seenMap[n]===undefined || seenMap[n] >= ONLINE_MS);
+ const onlineCount = online.length;
+
  if(badge) badge.style.display = onlineCount > 0 ? 'block' : 'none';
 
- if(!allTeachers.length && !list.length){
-  listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 정보 없음</div>';
-  return;
- }
-
- // 온라인 먼저, 그 다음 최근, 나머지 오프라인
- const sorted = [...new Set([...allTeachers, ...list.map(p=>p.teacher)])].sort((a,b)=>{
-  const aOn = onlineSet.has(a), bOn = onlineSet.has(b);
-  if(aOn !== bOn) return aOn ? -1 : 1;
-  const aRec = recentMap[a]||Infinity, bRec = recentMap[b]||Infinity;
-  return aRec - bRec;
- });
-
- listEl.innerHTML = sorted.map(name=>{
-  const isOnline = onlineSet.has(name);
-  const recentAgo = recentMap[name];
-  let statusDot, statusText;
-  if(isOnline){
-   statusDot = `<span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;"></span>`;
-   const mins = Math.floor((recentMap[name]||0)/60000);
-   statusText = `<span style="color:#2e7d32;font-size:11px;">${mins===0?'방금 접속':mins+'분 전'}</span>`;
-  } else if(recentAgo !== undefined){
-   const mins = Math.floor(recentAgo/60000);
-   statusDot = `<span style="width:8px;height:8px;border-radius:50%;background:#FF9800;display:inline-block;flex-shrink:0;"></span>`;
-   statusText = `<span style="color:#e65100;font-size:11px;">${mins}분 전 접속</span>`;
-  } else {
-   statusDot = `<span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;flex-shrink:0;"></span>`;
-   statusText = `<span style="color:var(--text3);font-size:11px;">오프라인</span>`;
-  }
-  return `<div style="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;${isOnline?'background:var(--green-bg);':''}">
-   ${statusDot}
+ const renderRow = (name, isOnline) => {
+  const ago = seenMap[name];
+  const dot = isOnline
+   ? `<span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>`
+   : `<span style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;display:inline-block;"></span>`;
+  const timeStr = isOnline
+   ? `<span style="font-size:11px;color:#2e7d32;">${Math.floor(ago/60000)===0?'방금':Math.floor(ago/60000)+'분 전'}</span>`
+   : (ago!==undefined ? `<span style="font-size:11px;color:var(--text3);">${Math.floor(ago/60000)}분 전</span>` : '');
+  return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;${isOnline?'background:var(--green-bg);':''}">
+   ${dot}
    <span style="font-size:13px;font-weight:${isOnline?'600':'400'};color:${isOnline?'var(--green)':'var(--text2)'};flex:1;">${name}</span>
-   ${statusText}
+   ${timeStr}
   </div>`;
- }).join('');
+ };
+
+ const sectionHeader = (label, count, sec, isOpen, color) =>
+  `<div onclick="_togglePresenceSection('${sec}')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">${label}</span>
+    <span style="font-size:11px;background:${color}22;color:${color};border-radius:20px;padding:1px 7px;font-weight:600;">${count}</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(${isOpen?0:180}deg);">▾</span>
+  </div>`;
+
+ listEl.innerHTML =
+  sectionHeader('온라인', onlineCount, 'online', _presenceOnlineOpen, '#4CAF50') +
+  (_presenceOnlineOpen
+   ? (online.length ? online.map(n=>renderRow(n,true)).join('') : `<div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div>`)
+   : '') +
+  `<div style="height:1px;background:var(--border);margin:4px 0;"></div>` +
+  sectionHeader('오프라인', offline.length, 'offline', _presenceOfflineOpen, '#ccc') +
+  (_presenceOfflineOpen
+   ? (offline.length ? offline.map(n=>renderRow(n,false)).join('') : `<div style="padding:6px 10px;font-size:12px;color:var(--text3);">-</div>`)
+   : '');
 }
 
 // 기록표 관리 탭 렌더 시 위젯도 같이 갱신 (탭에서 presence는 제거됨)
