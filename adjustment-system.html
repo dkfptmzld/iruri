@@ -1105,7 +1105,7 @@ tbody tr:hover td{background:var(--surface2);}
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: none; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">4</span></button>
+<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">1</span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -1122,7 +1122,7 @@ tbody tr:hover td{background:var(--surface2);}
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 4/29 오전 10:28 · 강사 31명 · 센터 290개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 4/29 오후 07:25 · 강사 31명 · 센터 294개</span>
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
  </button>
@@ -1336,7 +1336,7 @@ tbody tr:hover td{background:var(--surface2);}
   <span id="presenceOnlineBadge" style="display: block; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
  </button>
  <!-- 팝업 패널 -->
- <div id="presencePanel" style="display: block; position: absolute; bottom: 62px; right: 0px; width: 240px; background: white; border-radius: 14px; box-shadow: rgba(0, 0, 0, 0.15) 0px 8px 32px; overflow: hidden;">
+ <div id="presencePanel" style="display:none;position:absolute;bottom:62px;right:0;width:240px;background:white;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;">
   <div style="padding:12px 14px;background:var(--green);display:flex;align-items:center;justify-content:space-between;">
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
@@ -1345,9 +1345,13 @@ tbody tr:hover td{background:var(--surface2);}
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">2</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
+   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
+   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">관리자</span>
+   <span style="font-size:11px;color:#2e7d32;">방금</span>
   </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
    <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
@@ -1360,7 +1364,7 @@ tbody tr:hover td{background:var(--surface2);}
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:25:00</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:33:51</div>
  </div>
 </div>
 
@@ -4517,7 +4521,7 @@ function clearChangelog(){
 }
 /* ═══ 접속 현황 (Presence) ═══ */
 let _presenceInterval = null;
-const PRESENCE_INTERVAL = 2 * 60 * 1000; // 2분마다 heartbeat
+const PRESENCE_INTERVAL = 30 * 1000; // 30초마다 heartbeat
 
 function _startPresence(teacher){
  if(!teacher) return;
@@ -4595,7 +4599,7 @@ function _renderPresenceWidget(list){
 
  const now = Date.now();
  // heartbeat 주기 2분 기준
- const ONLINE_MS = 3 * 60 * 1000; // 3분 이내 = 온라인 (heartbeat 2분 + 버퍼 1분)
+ const ONLINE_MS = 90 * 1000; // 90초 이내 = 온라인 (heartbeat 30초 + 버퍼 60초)
 
  // DB 강사 전체 목록 (가나다순)
  const allTeachers = [...new Set([
@@ -5064,7 +5068,7 @@ function stopAdminAutoLogout(){
   document.removeEventListener(ev, resetAdminTimer);
  });
  // v11.30: 위젯 숨기기 + 자동 갱신 중단
- if(!window._loggedInTeacher) _stopPresence('관리자');
+ // 관리자 presence 해제 불필요 (등록 안 하므로)
  const pw = document.getElementById('presenceWidget');
  if(pw) pw.style.display = 'none';
  if(_presenceAutoRefresh){ clearInterval(_presenceAutoRefresh); _presenceAutoRefresh=null; }
@@ -5544,11 +5548,12 @@ function _enterAdminMode(){
  const _pw = document.getElementById('presenceWidget');
  if(_pw) _pw.style.display = 'block';
  if(_presenceAutoRefresh) clearInterval(_presenceAutoRefresh);
- // 강사로 로그인 후 관리자 전환이면 이미 presence 등록됨 → 재등록 불필요
- // 관리자 전용 로그인이면 로그인한 이름 없으니 '관리자'로 등록
- if(!window._loggedInTeacher) _startPresence('관리자');
+ // v11.30 fix: 페이지 새로고침 시 _loggedInTeacher가 null이 될 수 있음
+ // sessionStorage에서 강사 이름 복원 후 하트비트 재시작
+ const _presTeacher = window._loggedInTeacher || sessionStorage.getItem('iruri_session');
+ if(_presTeacher) _startPresence(_presTeacher);
  _refreshPresenceWidget();
- _presenceAutoRefresh = setInterval(_refreshPresenceWidget, 30000);
+ _presenceAutoRefresh = setInterval(_refreshPresenceWidget, 15000);
  // v11.30: GAS에서 저장된 월 목록 가져와 사이드바 보완
  _syncMonthListFromGAS();
 }
