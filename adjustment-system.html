@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko"><head>
+<style>#adminTopbar{display:none}</style><!-- v11.26: 깜빡임 방지 -->
 <meta charset="UTF-8">
-  <!-- ═══ PWA v11.25 ═══ -->
+  <!-- ═══ PWA v11.26 ═══ -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -12,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.25">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -21,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.25">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.25</title>
+<title>수업기록표 정산 시스템 v11.26</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 :root{
@@ -366,7 +367,7 @@ tbody tr:hover td{background:var(--surface2);}
   #landing-user-name { font-size:17px!important; font-weight:700!important; }
 
   /* ══ 강사 모드 헤더 ══ */
-  /* v11.25: 헤더 높이 유연하게 — draft 배너 겹침 방지 */
+  /* v11.26: 헤더 높이 유연하게 — draft 배너 겹침 방지 */
   #teacherInputScreen > div:first-child {
     height:auto!important; min-height:50px!important;
     padding:8px 14px!important; gap:8px!important;
@@ -447,7 +448,7 @@ tbody tr:hover td{background:var(--surface2);}
 }
 
 /* ════════════════════════════════════════
-   v11.25: 관리자 모드 모바일 최적화
+   v11.26: 관리자 모드 모바일 최적화
    전략: CSS @media만 추가 — 기존 HTML/JS 무손상
 ════════════════════════════════════════ */
 @media (max-width:600px){
@@ -777,7 +778,7 @@ tbody tr:hover td{background:var(--surface2);}
    </svg>
    사용 가이드 보기
   </a>
-  <!-- v11.25: 앱 설치 버튼 (모바일 전용) -->
+  <!-- v11.26: 앱 설치 버튼 (모바일 전용) -->
   <button id="pwa-install-btn" onclick="pwaInstallClick()" style="display:none;align-items:center;gap:6px;margin-top:10px;color:white;font-size:13px;font-weight:600;padding:10px 22px;border:none;border-radius:20px;background:#1A7A50;cursor:pointer;box-shadow:0 2px 8px rgba(26,122,80,.3);transition:all .15s;font-family:inherit;" onmouseover="this.style.background='#15603e';" onmouseout="this.style.background='#1A7A50';">
    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <path d="M12 2v13M7 10l5 5 5-5"></path><rect x="3" y="17" width="18" height="4" rx="2"></rect>
@@ -786,7 +787,7 @@ tbody tr:hover td{background:var(--surface2);}
   </button>
  </div>
 
- <!-- v11.25: iOS 설치 가이드 모달 (이미지 포함) -->
+ <!-- v11.26: iOS 설치 가이드 모달 (이미지 포함) -->
  <div id="ios-install-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;align-items:flex-end;justify-content:center;">
   <div style="background:#f2f2f7;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 20px 36px;box-shadow:0 -8px 40px rgba(0,0,0,.2);max-height:92vh;overflow-y:auto;">
    <!-- 핸들 -->
@@ -843,7 +844,7 @@ tbody tr:hover td{background:var(--surface2);}
 </div>
 
 <!-- 관리자 비밀번호 모달 -->
-<!-- v11.25: 점검 모드 모달 -->
+<!-- v11.26: 점검 모드 모달 -->
 <div id="maintenanceModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10002;align-items:center;justify-content:center;padding:16px;">
  <div style="background:white;border-radius:20px;width:100%;max-width:420px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.2);">
   <div style="text-align:center;margin-bottom:20px;">
@@ -883,7 +884,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
-<!-- v11.25: 점검 화면 -->
+<!-- v11.26: 점검 화면 -->
 <div id="maintenanceScreen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#f7faf4,#e8f5e2,#d4edda);z-index:9998;align-items:center;justify-content:center;padding:20px;">
  <div style="text-align:center;max-width:400px;width:100%;">
   <div style="font-size:72px;margin-bottom:20px;">🔧</div>
@@ -1005,7 +1006,7 @@ tbody tr:hover td{background:var(--surface2);}
  <tbody id="ti-ledger-body"></tbody>
  </table>
  </div>
- <!-- v11.25: 모바일 전용 카드형 수업기록표 (PC에서는 숨김) -->
+ <!-- v11.26: 모바일 전용 카드형 수업기록표 (PC에서는 숨김) -->
  <div id="ti-mobile-ledger" style="display:none;"></div>
  </div>
 
@@ -1106,7 +1107,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
-  <span id="adminTimerText">29:59</span>
+  <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
@@ -1115,7 +1116,7 @@ tbody tr:hover td{background:var(--surface2);}
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
 </button>
-<!-- v11.25: 점검 모드 버튼 -->
+<!-- v11.26: 점검 모드 버튼 -->
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
@@ -1341,7 +1342,7 @@ const DEFAULT_TEACHERS = [{"name":"김은영","region":"서울","feeType":"fixed
 const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["화"], "order": 1}]}, {"name": "88등촌", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 2}]}, {"name": "A+우리", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "이인경"], "source": "자동"}, {"name": "A+하남행복", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "가가호호봉천", "region": "인천", "fee": 50000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 2}, {"teacher": "박종일", "days": ["월"], "order": 2}]}, {"name": "가가호호시흥", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["수"], "order": 2}]}, {"name": "가나안", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 1}]}, {"name": "가람", "region": "서울", "fee": 55000, "teachers": ["송준기"], "source": "자동"}, {"name": "가로등", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 1}]}, {"name": "가온1", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가온2", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가은", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 1}]}, {"name": "가족데이케어", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 2}]}, {"name": "가족사랑", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "가평A+", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가평길누리", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가현산요양", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 2}]}, {"name": "간석3층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 1}]}, {"name": "간석4층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 2}]}, {"name": "갈산", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 2}]}, {"name": "강동데이케어", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "강북희망", "region": "서울", "fee": 55000, "teachers": ["송준기", "신기윤"], "source": "자동"}, {"name": "강서힐링", "region": "인천", "fee": 50000, "teachers": ["김수민", "방진수"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 2}, {"teacher": "방진수", "days": ["화"], "order": 2}]}, {"name": "강일데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "검암", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 3}]}, {"name": "경인", "region": "인천", "fee": 55000, "teachers": ["방진수", "한수희"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["금"], "order": 2}, {"teacher": "한수희", "days": ["수"], "order": 2}]}, {"name": "고양1호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 3}]}, {"name": "고양2호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 3}]}, {"name": "골든케어", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 3}]}, {"name": "골든케어1", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "골든케어2", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "광교빌리지3층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "광교빌리지4층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "구리온케어발달", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "구리온케어주간", "region": "서울", "fee": 55000, "teachers": ["신기윤", "장성기"], "source": "자동"}, {"name": "구립우면", "region": "수원", "fee": 55000, "teachers": ["오수정", "최정안"], "source": "자동"}, {"name": "굿모닝", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "굿모닝", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 1}]}, {"name": "그라시아요양", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 3}]}, {"name": "금오사랑", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "금천노인", "region": "인천", "fee": 50000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 1}, {"teacher": "홍예은", "days": ["월"], "order": 1}]}, {"name": "금호", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "기쁜우리", "region": "서울", "fee": 55000, "teachers": ["구명훈", "변동"], "source": "자동"}, {"name": "김간호사1호점", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 2}]}, {"name": "김간호사2호점", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 1}]}, {"name": "김진성데이케어", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "김포다사랑", "region": "인천", "fee": 60000, "teachers": ["박종일", "홍예은"], "source": "자동"}, {"name": "김포스마일", "region": "인천", "fee": 60000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 1}]}, {"name": "김포엘림", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 1}]}, {"name": "김포한강", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 1}]}, {"name": "나날", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동"}, {"name": "나눔요양", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "나눔주간", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "남구", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 1}]}, {"name": "남동", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 3}]}, {"name": "너른뜰", "region": "서울", "fee": 55000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "노아", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "누네", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "누리요양", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "누리요양원", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["수"], "order": 3}]}, {"name": "누리주간", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "늘봄", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "늘푸른", "region": "인천", "fee": 55000, "teachers": ["김유천", "박기남", "한수희"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 1}, {"teacher": "김유천", "days": ["목"], "order": 2}, {"teacher": "한수희", "days": ["화"], "order": 2}]}, {"name": "늘푸른", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "다사랑", "region": "인천", "fee": 55000, "teachers": ["김수민", "방진수", "박종일"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["화"], "order": 2}, {"teacher": "방진수", "days": ["금"], "order": 1}]}, {"name": "다시봄", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "다시봄", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["화"], "order": 1}]}, {"name": "다시봄날", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 2}]}, {"name": "다지기", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "다지기1", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다지기2", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다효", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 2}]}, {"name": "대교", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "대교남양주", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "대교분당", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "대교성남", "region": "수원", "fee": 65000, "teachers": ["최정안"], "source": "자동"}, {"name": "대교성북", "region": "서울", "fee": 60000, "teachers": ["구명훈"], "source": "자동"}, {"name": "더드림", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "더사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "더사랑", "region": "인천", "fee": 55000, "teachers": ["길범준", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 1}, {"teacher": "길범준", "days": ["목"], "order": 3}]}, {"name": "더쉼", "region": "수원", "fee": 50000, "teachers": ["오수정"], "source": "자동"}, {"name": "더조은", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "더조은", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "더케어", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "더편한", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "데이지", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈", "원보영"], "source": "자동"}, {"name": "도봉실버웨이", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동소문", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동안사랑", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "동탄", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "동행", "region": "서울", "fee": 55000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "동행", "region": "인천", "fee": 55000, "teachers": ["김효민", "장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["월"], "order": 2}]}, {"name": "두꺼비", "region": "서울", "fee": 55000, "teachers": ["박준형", "양성모", "오건"], "source": "자동"}, {"name": "두드림", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 3}]}, {"name": "둥지요양원", "region": "인천", "fee": 50000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 3}]}, {"name": "마석굿데이", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "마실1", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마실2", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마음과마음", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기", "조영미"], "source": "자동"}, {"name": "마음다함", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["월"], "order": 2}]}, {"name": "마주봄", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 1}]}, {"name": "매일동행", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "명품", "region": "인천", "fee": 50000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["금"], "order": 1}, {"teacher": "박종일", "days": ["화"], "order": 3}]}, {"name": "명화", "region": "서울", "fee": 50000, "teachers": ["박준형", "양재원", "조영미"], "source": "자동"}, {"name": "목동데이", "region": "인천", "fee": 50000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["화"], "order": 3}]}, {"name": "목동연세", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 3}]}, {"name": "무지개", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 3}]}, {"name": "문정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "미르", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "미추홀", "region": "인천", "fee": 55000, "teachers": ["김효민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["수"], "order": 1}]}, {"name": "바른", "region": "서울", "fee": 55000, "teachers": ["양성모", "이인경"], "source": "자동"}, {"name": "배곧프리미엄", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동"}, {"name": "백세", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 1}]}, {"name": "백세만세", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "베들레", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "벨포레스트", "region": "서울", "fee": 65000, "teachers": ["양재원", "정상준"], "source": "자동"}, {"name": "보노요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "보담", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["수"], "order": 3}]}, {"name": "보람찬1", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보람찬2", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보리수", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 3}]}, {"name": "보아스", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "보훈케어", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "복지콜", "region": "인천", "fee": 55000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["토"], "order": 1}, {"teacher": "박종일", "days": ["목"], "order": 2}]}, {"name": "봄날한강", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "봄봄", "region": "서울", "fee": 55000, "teachers": ["변동", "정상준"], "source": "자동"}, {"name": "봄봄", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 2}]}, {"name": "부천남부", "region": "인천", "fee": 55000, "teachers": ["김유천"], "source": "자동", "schedule": [{"teacher": "김유천", "days": ["월"], "order": 2}]}, {"name": "북부노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "북수원", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘2", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "비타재활", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "사랑365", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑노인", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 1}]}, {"name": "사랑마루", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방1", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "사랑방2", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "삼선1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "삼선2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "상계", "region": "서울", "fee": 50000, "teachers": ["구명훈"], "source": "자동"}, {"name": "상계데이케어", "region": "서울", "fee": 50000, "teachers": ["변동"], "source": "자동"}, {"name": "새봄", "region": "서울", "fee": 55000, "teachers": ["장성기", "조영미"], "source": "자동"}, {"name": "생명나무", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "서구재활", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["화"], "order": 1}]}, {"name": "서부어르신", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동"}, {"name": "서울 데이케어", "region": "서울", "fee": 55000, "teachers": ["박준형", "윤혜미"], "source": "자동"}, {"name": "서은요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "선암", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "섬김", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 1}]}, {"name": "성동", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "성동데이케어", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성북복지관", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "성북희망", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성심", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "성심", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "세심정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "세심정", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "소나무", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 3}]}, {"name": "소래", "region": "인천", "fee": 55000, "teachers": ["김수민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 3}, {"teacher": "김수민", "days": ["월"], "order": 1}]}, {"name": "소새울", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 3}]}, {"name": "수석", "region": "서울", "fee": 55000, "teachers": ["구명훈", "이인경"], "source": "자동"}, {"name": "수원성감리교회", "region": "수원", "fee": 100000, "teachers": ["안지훈"], "source": "자동"}, {"name": "수원중부", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "수지실버", "region": "수원", "fee": 60000, "teachers": ["김수도"], "source": "자동"}, {"name": "순애", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 2}]}, {"name": "스마일", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "스마일 데이케어", "region": "서울", "fee": 60000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "시니어학교 성내", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시니어학교 천호", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시온", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "시온성", "region": "서울", "fee": 50000, "teachers": ["이인경"], "source": "자동"}, {"name": "시흥동행", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동"}, {"name": "실버빌", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "실버웨이강북", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "실버웨이성북", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "아름", "region": "인천", "fee": 55000, "teachers": ["한수희", "이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["화"], "order": 2}, {"teacher": "한수희", "days": ["목"], "order": 2}]}, {"name": "아름다운", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 2}]}, {"name": "아현장로교회", "region": "서울", "fee": 50000, "teachers": ["양성모"], "source": "자동"}, {"name": "양주실버타운", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "양천힐링", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["월"], "order": 2}]}, {"name": "어르신사랑요양", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어르신사랑주간", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어울림서창", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 1}]}, {"name": "에녹", "region": "인천", "fee": 50000, "teachers": ["방진수", "홍예은"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 2}, {"teacher": "홍예은", "days": ["월"], "order": 3}]}, {"name": "에이원", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "엔젤재활", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 3}]}, {"name": "연세", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기"], "source": "자동"}, {"name": "연지곤지", "region": "서울", "fee": 60000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "염리데이케어", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "영등포치매", "region": "인천", "fee": 50000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 1}]}, {"name": "예다인", "region": "인천", "fee": 55000, "teachers": ["박종일", "한수희"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["목"], "order": 3}, {"teacher": "한수희", "days": ["월"], "order": 3}]}, {"name": "예반", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "예사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "예스케어", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "옥련뜰", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 3}]}, {"name": "온누리", "region": "인천", "fee": 50000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 2}]}, {"name": "온정", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 2}]}, {"name": "온하루", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["금"], "order": 3}]}, {"name": "우리들", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "우리들 남양주", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "우리들 의정부", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "우리복지", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "웰케어", "region": "서울", "fee": 50000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "은나라", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "은빛정원", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "이팔청춘", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이팔청춘본점", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이화", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "인천365", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 1}]}, {"name": "인천나눔요양원", "region": "인천", "fee": 60000, "teachers": ["김효민"], "source": "자동"}, {"name": "인천중구", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 1}]}, {"name": "일산노인", "region": "인천", "fee": 60000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 1}]}, {"name": "자광원", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "장안데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "장안참사랑", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "장위데이케어", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "정가원", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정다운", "region": "인천", "fee": 55000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["목"], "order": 1}]}, {"name": "정드림", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "정릉복지관", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정성", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 3}]}, {"name": "제일사랑", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "좋은날", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "주은", "region": "인천", "fee": 55000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 1}, {"teacher": "홍예은", "days": ["화"], "order": 1}]}, {"name": "중랑사랑방", "region": "서울", "fee": 55000, "teachers": ["양재원", "이인경"], "source": "자동"}, {"name": "중랑스마일", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "중랑제일", "region": "서울", "fee": 60000, "teachers": ["박준형"], "source": "자동"}, {"name": "중부1", "region": "인천", "fee": 50000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["금"], "order": 1}]}, {"name": "중부3", "region": "인천", "fee": 50000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 2}]}, {"name": "진접굿데이", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "참사랑동대문", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "참조은", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "처음처럼", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 2}]}, {"name": "천마산", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "천사노인", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 2}]}, {"name": "청담하늘채", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "청솔", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 2}]}, {"name": "청춘", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "청평", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "파라다이스", "region": "서울", "fee": 55000, "teachers": ["변동", "이인경"], "source": "자동"}, {"name": "파랑새", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 3}]}, {"name": "파마", "region": "서울", "fee": 55000, "teachers": ["구명훈", "정상준"], "source": "자동"}, {"name": "파마노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "파인", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 3}]}, {"name": "포레스트", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "프라임", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 2}]}, {"name": "하남 참사랑", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "하남경복궁", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "하남참사랑", "region": "서울", "fee": 50000, "teachers": ["장성기"], "source": "자동"}, {"name": "학수정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "한결", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 1}]}, {"name": "한빛", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 1}]}, {"name": "해드림요양", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해드림주간", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해피실버", "region": "서울", "fee": 50000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "해피홈", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "햇빛", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "행복", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "행복재활", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "행복플러스", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 2}]}, {"name": "행복한", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "호매실", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "홍은1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "홍은2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "황송", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 3}]}, {"name": "효녀심청", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효누리", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "효담채", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 1}]}, {"name": "효드림", "region": "서울", "fee": 55000, "teachers": ["이인경", "정상준"], "source": "자동"}, {"name": "효명", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["월"], "order": 1}]}, {"name": "효벤트", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효실버", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "효실버센터", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "휘경사랑", "region": "서울", "fee": 55000, "teachers": ["이인경", "조영미"], "source": "자동"}, {"name": "희망", "region": "인천", "fee": 65000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 1}]}, {"name": "힘찬", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}];
 
 /* ═══ STATE & STORAGE ═══ */
-/* v11.25 (2026-04-25): 오늘 세션 hotfix 모음 (v11.20 이후 누적)
+/* v11.26 (2026-04-25): 오늘 세션 hotfix 모음 (v11.20 이후 누적)
  * - saveToast 초기 show 클래스 제거 → "GitHub 설정 저장 완료" 항상 표시되던 버그 수정
  * - deleteTeacherRecord → Sheets 삭제 + applied 7일 등록 (재출현 방지)
  * - ti_submissions_applied 만료 24시간 → 7일 연장
@@ -1493,7 +1494,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.25';
+const SYSTEM_VERSION='v11.26';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -1681,7 +1682,7 @@ window.addEventListener('load', ()=>{
    window._loggedInTeacher = session;
    showLanding();
   } else {
-   // v11.25 fix: 로그인 화면 즉시 표시 (GAS fetch 기다리지 않음 → 공백 화면 제거)
+   // v11.26 fix: 로그인 화면 즉시 표시 (GAS fetch 기다리지 않음 → 공백 화면 제거)
    document.getElementById('modeSelectScreen').style.display='none';
    document.getElementById('loginScreen').style.display='flex';
    initLoginScreen();
@@ -1704,18 +1705,18 @@ function switchView(v){
  if(v==='history') renderGrowthView();
  const _clv=document.getElementById('changelogView'); if(_clv) _clv.style.display=v==='changelog'?'block':'none';
  if(v==='teachers'){
-  // v11.25: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
+  // v11.26: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
   _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); });
  }
  if(v==='centers'){
-  // v11.25: 탭 전환 시 GAS에서 최신 센터 DB 자동 로드
+  // v11.26: 탭 전환 시 GAS에서 최신 센터 DB 자동 로드
   _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); renderCenterTreeView(); });
  }
  if(v==='history') populateHistorySelects();
  if(v==='changelog') renderChangelog();
 }
 
-/* v11.25: 탭 전환 시 GAS DB 자동 동기화 */
+/* v11.26: 탭 전환 시 GAS DB 자동 동기화 */
 async function _syncDBOnTabSwitch(tab, renderFn){
  // 즉시 현재 로컬 데이터로 먼저 렌더 (빠른 응답)
  renderFn();
@@ -1735,7 +1736,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
   } else if(tab === 'centers'){
    const r = await gasGet({action:'getCenters'});
    if(!r.ok || !r.data?.length) return;
-   // v11.25 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
+   // v11.26 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
    // 스케줄 없는 GAS 데이터로 DB 덮어쓰기 방지
    const hasSchedule = r.data.some(c => c.schedule && c.schedule.length > 0);
    if(!hasSchedule){
@@ -1744,7 +1745,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    }
    if(JSON.stringify(r.data) !== JSON.stringify(DB.centers)){
     DB.centers = r.data;
-    // v11.25 fix: LS_C_SHEETS(구버전 키, 매 로드 삭제됨) 대신 LS_C에 저장
+    // v11.26 fix: LS_C_SHEETS(구버전 키, 매 로드 삭제됨) 대신 LS_C에 저장
     localStorage.setItem(LS_C, JSON.stringify(DB.centers));
     cleanInvalidData();
     renderFn(); // 최신 데이터로 다시 렌더
@@ -1802,7 +1803,7 @@ function getCenterFee(centerName,teacherName,excelFee,lessonRegion){
   ? DB.centers.find(c=>c.name.replace(/\(.+?\)/g,'').trim()===baseName && c.region===lessonRegion)
     || DB.centers.find(c=>c.name.replace(/\(.+?\)/g,'').trim()===baseName)
   : DB.centers.find(c=>c.name.replace(/\(.+?\)/g,'').trim()===baseName);
- // v11.25: schedule.fee — 강사별 개별 수업료 우선 적용
+ // v11.26: schedule.fee — 강사별 개별 수업료 우선 적용
  if(m && teacherName){
   const sched=(m.schedule||[]).find(s=>s.teacher===teacherName);
   if(sched?.fee) return sched.fee;
@@ -1856,7 +1857,7 @@ function renderSettle(){
  const ym=teachers[0]?.yearMonth||'';
  document.getElementById('sidebarMeta').textContent=`${ym} · ${teachers.length}명`;
 
- // v11.25 fix: GAS 자동 저장 제거 (삭제 레이스컨디션 방지)
+ // v11.26 fix: GAS 자동 저장 제거 (삭제 레이스컨디션 방지)
  // localStorage만 갱신 - GAS 저장은 명시적 변경 시에만
  if(ym){
   const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
@@ -1882,7 +1883,7 @@ function renderSettle(){
  <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>CSV</button>
  <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>PDF</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button>`;
- STATE.cur = 0; // v11.25 fix: cur 초기화 안하면 탭 클릭 시 undefined
+ STATE.cur = 0; // v11.26 fix: cur 초기화 안하면 탭 클릭 시 undefined
  STATE.tab = 'ledger'; // 기본 탭 설정
  document.getElementById('teacherList').innerHTML=buildTeacherListHtml(teachers, 0);
  renderTeacher(0);
@@ -1921,7 +1922,7 @@ function getSavedMonths(){
 
 let _normRepairCount = 0; // 마지막 _normFeePct 호출에서 복구된 건수
 function _normFeePct(teachers){
- // v11.25 fix: feePct 2단계 정규화 + 손상값 자동 복구
+ // v11.26 fix: feePct 2단계 정규화 + 손상값 자동 복구
  // [1단계] feePct가 1~99 사이 정수(예: 85) → 소수(0.85)로 변환
  // [1단계] feePct가 100 이상(예: 40000원/회) → 고정금액이므로 그대로 유지
  // [1단계] feePct가 이미 소수(0.85) → 그대로 유지
@@ -1953,13 +1954,13 @@ function loadMonthlySnapshot(ym){
  const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
  const raw = localStorage.getItem(key);
 
- // v11.25: 삭제된 월이면 로드 차단
+ // v11.26: 삭제된 월이면 로드 차단
  try{
   const dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]');
   if(dm.some(d=>d.ym===ym)){ showToast(`${ym}은 삭제된 데이터예요`); return; }
  }catch{}
 
- // v11.25: GAS 타임스탬프 비교 후 최신 버전 로드
+ // v11.26: GAS 타임스탬프 비교 후 최신 버전 로드
  // localStorage가 있어도 GAS가 더 최신이면 GAS 우선
  const localSnap = raw ? (() => { try{ return JSON.parse(raw); }catch{ return null; } })() : null;
  const localSavedAt = localSnap?.savedAt && localSnap.savedAt !== 'GAS'
@@ -1969,7 +1970,7 @@ function loadMonthlySnapshot(ym){
  if(localSnap?.data?.teachers){
   let d = localSnap.data;
   if(d.teachers) d.teachers = _normFeePct(d.teachers);
-  // v11.25: 손상된 feePct 복구된 경우 즉시 재저장 (로컬 + GAS)
+  // v11.26: 손상된 feePct 복구된 경우 즉시 재저장 (로컬 + GAS)
   if(_normRepairCount > 0){
    saveMonthlySnapshot(ym, d, true);
    showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
@@ -1996,7 +1997,7 @@ function loadMonthlySnapshot(ym){
     if(data.teachers) data.teachers = _normFeePct(data.teachers);
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
     localStorage.setItem(key, JSON.stringify(snap));
-    // v11.25: GAS에서 받은 데이터에도 손상 복구됐으면 GAS에도 재저장
+    // v11.26: GAS에서 받은 데이터에도 손상 복구됐으면 GAS에도 재저장
     if(_normRepairCount > 0){
      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data}).catch(()=>{});
      showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
@@ -2277,7 +2278,7 @@ function deleteTeacherRecord(i){
   applied = applied.filter(a=>(now-a.appliedAt)<SEVEN_DAYS);
   if(!applied.some(a=>a.name===t.name&&a.yearMonth===ym)) applied.push({name:t.name,yearMonth:ym,appliedAt:now});
   localStorage.setItem(appliedKey, JSON.stringify(applied));
-  // v11.25: deleted_records (30일) — 재생성 원천 차단
+  // v11.26: deleted_records (30일) — 재생성 원천 차단
   const deletedKey = 'iruri_deleted_records';
   let deleted = [];
   try{ deleted = JSON.parse(localStorage.getItem(deletedKey)||'[]'); }catch{}
@@ -2287,7 +2288,7 @@ function deleteTeacherRecord(i){
  }catch(e){}
  STATE.data.teachers.splice(i,1);
 
- // v11.25: 즉시 UI 처리 ──────────────────────────────────
+ // v11.26: 즉시 UI 처리 ──────────────────────────────────
  // 1. 제출 배너 즉시 제거
  document.getElementById('sub-banner')?.remove();
  // 2. ti_submissions localStorage에서도 해당 항목 제거 (재출현 방지)
@@ -2305,7 +2306,7 @@ function deleteTeacherRecord(i){
   if(ym){
    const key=MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_');
    localStorage.removeItem(key);
-   // v11.25 fix: 삭제된 월 이력 저장 (재로그인 시 GAS 재출현 차단)
+   // v11.26 fix: 삭제된 월 이력 저장 (재로그인 시 GAS 재출현 차단)
    try{
     const dmKey='iruri_deleted_months';
     let dm=JSON.parse(localStorage.getItem(dmKey)||'[]');
@@ -2318,14 +2319,14 @@ function deleteTeacherRecord(i){
   showToast(`${ym} 수업기록표가 모두 삭제됐어요`);
   goHome(true);
  } else {
-  // v11.25 fix: 스냅샷 갱신 (삭제된 강사 제외한 상태로 덮어씀)
+  // v11.26 fix: 스냅샷 갱신 (삭제된 강사 제외한 상태로 덮어씀)
   if(ym) saveMonthlySnapshot(ym, STATE.data);
   STATE.cur=Math.min(i,STATE.data.teachers.length-1);
   renderSettle();
   showToast(`${t.name} 수업기록이 삭제됐어요`);
  }
 
- // v11.25 fix: GAS에도 스냅샷 동기화 (삭제 반영)
+ // v11.26 fix: GAS에도 스냅샷 동기화 (삭제 반영)
  if(ym && STATE.data.teachers.length > 0){
   gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:STATE.data}).catch(()=>{});
  } else if(ym && STATE.data.teachers.length === 0){
@@ -2334,7 +2335,7 @@ function deleteTeacherRecord(i){
  }
 }
 function renderTeacher(i){
- STATE.cur = i; // v11.25 fix: cur 항상 동기화
+ STATE.cur = i; // v11.26 fix: cur 항상 동기화
  const t=STATE.data.teachers[i];
  const cnt=t.lessons.reduce((s,l)=>s+l.count,0);
  document.getElementById('mainContent').innerHTML=`
@@ -2389,7 +2390,7 @@ function renderTeacherReceiptsTab(ti){
  </div>
  </div>`;
 
- // v11.25 fix: yearMonth 한글 URL인코딩 불일치 방지 → 강사만 조회 후 클라이언트 필터
+ // v11.26 fix: yearMonth 한글 URL인코딩 불일치 방지 → 강사만 조회 후 클라이언트 필터
  gasGet({ action:'getReceipts', teacher })
  .then(r=>{
  const grid = document.getElementById('teacher-receipts-grid');
@@ -2445,7 +2446,7 @@ function renderLedger(ti){
  dayMap.get(day).items.push({lesson:l, idx});
  });
 
- // v11.25 fix: 항상 5주 고정 (null 슬롯 포함, filter(Boolean) 제거)
+ // v11.26 fix: 항상 5주 고정 (null 슬롯 포함, filter(Boolean) 제거)
  const maxWeeks=5;
 
  const headerCols=`
@@ -2461,7 +2462,7 @@ function renderLedger(ti){
  const rowspan=g.items.length;
 
  // 날짜 가로 행 (텍스트 없이)
- // v11.25: null 슬롯(해당 주에 요일 없음)은 배경 다르게
+ // v11.26: null 슬롯(해당 주에 요일 없음)은 배경 다르게
  const dateCells=Array(maxWeeks).fill('').map((_,wi)=>{
   const hasD = g.dates[wi]!=null;
   const bg = hasD ? '#F0EFE6' : '#E8E6DC';
@@ -2479,7 +2480,7 @@ function renderLedger(ti){
 
  g.items.forEach(({lesson:l, idx:lessonIdx})=>{
  const attendCells=Array(maxWeeks).fill('').map((_,wi)=>{
- // v11.25 fix: null 슬롯(해당 주 날짜 없음) → X 표시 + 클릭 비활성
+ // v11.26 fix: null 슬롯(해당 주 날짜 없음) → X 표시 + 클릭 비활성
  const isNullSlot = g.dates[wi] == null;
  if(isNullSlot){
   return`<td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>`;
@@ -2617,7 +2618,7 @@ function toggleAttend(ti,li,wi){
  // 전체 강사의 △ 합산 → t.mockLessonAuto
  t.mockLessonAuto=t.lessons.reduce((s,l)=>s+(l.triCount||0),0);
  recalcTeacher(ti);
- // v11.25 fix: 현재 탭 유지하며 재렌더 + 즉시 저장
+ // v11.26 fix: 현재 탭 유지하며 재렌더 + 즉시 저장
  renderTab(STATE.tab || 'ledger', ti);
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
@@ -2776,7 +2777,7 @@ function updateFee(ti,li,val){
  l.total=l.count*fee;
  recalcTeacher(ti);
  renderTab('ledger',ti);
- // v11.25 fix: 수업료 변경 즉시 저장 (toggleAttend와 동일하게)
+ // v11.26 fix: 수업료 변경 즉시 저장 (toggleAttend와 동일하게)
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
 }
@@ -3148,7 +3149,7 @@ function renderCenterTreeView(searchQ='', regionFilter=''){
      const ci = centerIdx(c);
      const displayName = dupAll.has(c.name) ? `${c.name} <span style="font-size:10px;color:var(--text3);">(${c.region})</span>` : c.name;
      const teacherBadges = (c.teachers||[]).map(t=>`<span class="badge green" style="font-size:10px;">${t}</span>`).join(' ');
-     // v11.25 fix: 검색 결과에도 수정/삭제 버튼 추가
+     // v11.26 fix: 검색 결과에도 수정/삭제 버튼 추가
      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;"
       onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''"
       onclick="openModal('center',${ci})">
@@ -3293,12 +3294,12 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:center;border-bottom:2px solid var(--border);width:60px;">작업</th>
  </tr></thead>`;
 
- // v11.25 fix: 교시 동적화 — 요일별 실제 등록 수만큼 슬롯 생성 (고정 3 제거)
+ // v11.26 fix: 교시 동적화 — 요일별 실제 등록 수만큼 슬롯 생성 (고정 3 제거)
  const rows = ['월','화','수','목','금'].flatMap(day=>{
   const items = (dayMap[day]||[]).sort((a,b)=>(a.order||1)-(b.order||1));
   if(!items.length) return []; // 등록 없는 요일은 행 생략
   // 실제 슬롯 수: 등록된 센터 수 OR 최대 order 값 중 큰 것 (최소 1)
-  // v11.25 fix: slotCount = 실제 센터 수만 (maxOrder 제거)
+  // v11.26 fix: slotCount = 실제 센터 수만 (maxOrder 제거)
   // order 값이 비정상적으로 크면 빈 슬롯이 수십 개 생기는 버그 방지
   const slotCount = items.length;
   // order 기준으로 정렬해서 순서대로 슬롯에 배치
@@ -3386,7 +3387,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   ${tableHTML}`;
 }
 
-// v11.25 fix: 동적 슬롯 기반 교시 이동 (등록 수만큼 슬롯)
+// v11.26 fix: 동적 슬롯 기반 교시 이동 (등록 수만큼 슬롯)
 function movePeriodSlot(region, teacher, day, slotIdx, dir){
  // 해당 요일 센터 목록
  const dayCenters = DB.centers.filter(c=>{
@@ -3415,13 +3416,13 @@ function movePeriodSlot(region, teacher, day, slotIdx, dir){
 
  // DB 저장
  DB.centers.forEach(c=>gasPost({action:'saveCenter',center:c}).catch(()=>{}));
- localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.25 fix: LS_C_SHEETS → LS_C
+ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.26 fix: LS_C_SHEETS → LS_C
 
  selectTreeTeacher(region, teacher, window.innerWidth<=600);
  showToast('교시 순서가 변경됐어요');
 }
 
-// v11.25: 트리뷰 교시 순서 변경 (구버전 호환)
+// v11.26: 트리뷰 교시 순서 변경 (구버전 호환)
 function movePeriod(region, teacher, day, idx, dir){
  // 해당 요일의 센터 목록을 order 순으로 가져와서 교환
  const affected = DB.centers.filter(c => {
@@ -3443,7 +3444,7 @@ function movePeriod(region, teacher, day, idx, dir){
 
  // DB 저장 + GAS 동기화
  DB.centers.forEach(c => gasPost({action:'saveCenter', center:c}).catch(()=>{}));
- localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.25 fix: LS_C_SHEETS → LS_C
+ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.26 fix: LS_C_SHEETS → LS_C
 
  // 화면 갱신 + 모바일 스크롤
  selectTreeTeacher(region, teacher, true); // scrollToDetail=true
@@ -3456,7 +3457,7 @@ function selectTreeTeacher(region, teacher, scrollToDetail=false){
  });
  const sel = document.getElementById('cnav-'+region+'-'+teacher.replace(/\s/g,'_'));
  if(sel){ sel.style.background='var(--green-bg)'; sel.dataset.sel='1'; }
- // v11.25: 모바일에서 detail 패널로 자동 스크롤
+ // v11.26: 모바일에서 detail 패널로 자동 스크롤
  if(scrollToDetail && window.innerWidth<=600){
   setTimeout(()=>{
    const d = document.getElementById('cTreeDetail');
@@ -3637,7 +3638,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher=''){
  if(item?.schedule){
   item.schedule.forEach(s=>{
    STATE.modalSchedule[s.teacher]=s.days||[];
-   // v11.25: 강사별 수업료 로드
+   // v11.26: 강사별 수업료 로드
    STATE.modalSchedule[s.teacher+'__fee']=s.fee||null;
   });
  } else {
@@ -3752,7 +3753,7 @@ function updateFeeHint(){
 }
 function closeModal(){document.getElementById('modalOverlay').style.display='none';}
 
-// v11.25: 동명+동일지역 센터 발견 시 → 강사 추가 안내 플로우
+// v11.26: 동명+동일지역 센터 발견 시 → 강사 추가 안내 플로우
 function _openDupCenterFlow(existingCenter, newChips, newSchedule){
  const dupIdx = centerIdx(existingCenter);
  const existingTeachers = (existingCenter.teachers||[]).join(', ') || '(없음)';
@@ -3793,7 +3794,7 @@ function _openDupCenterFlow(existingCenter, newChips, newSchedule){
   }, 100);
  }
 }
-// v11.25: 센터 이름/지역 입력 시 실시간 중복 체크
+// v11.26: 센터 이름/지역 입력 시 실시간 중복 체크
 function _checkCenterDup(){
  const hint = document.getElementById('fi_dupHint');
  if(!hint) return;
@@ -3858,7 +3859,7 @@ function saveModal(){
  const fee=parseFloat(document.getElementById('fi_fee')?.value);
  if(isNaN(fee)||fee<=0){alert('수업료를 입력하세요.');return;}
  const address=document.getElementById('fi_addrSearch')?.value.trim()||'';
- // v11.25: modalChips 인덱스 순서 = 교시 순서, 강사별 수업료 포함
+ // v11.26: modalChips 인덱스 순서 = 교시 순서, 강사별 수업료 포함
  const schedule = STATE.modalChips.map((t,i)=>{
   const entry = {teacher:t, days:STATE.modalSchedule[t]||[], order:i+1};
   const fee = STATE.modalSchedule[t+'__fee'];
@@ -3875,12 +3876,12 @@ function saveModal(){
   pushChangelog({type:'center_edit',desc:`센터 수정 — ${old.name}`,detail:`수업료 ${Number(old.fee||0).toLocaleString()}원 → ${Number(obj.fee||0).toLocaleString()}원`,snapshot:{centers:prev}});
   DB.centers[STATE.editIdx]=obj;
  } else{
-  // v11.25 fix: norm() 제거 → 정확한 이름 비교
+  // v11.26 fix: norm() 제거 → 정확한 이름 비교
   const dupCenter = DB.centers.find(c =>
    c.name.trim().toLowerCase() === name.trim().toLowerCase() && c.region === region
   );
   if(dupCenter){
-   // v11.25: 같은 이름+지역 센터 발견 → 강사 추가 안내 플로우
+   // v11.26: 같은 이름+지역 센터 발견 → 강사 추가 안내 플로우
    _openDupCenterFlow(dupCenter, [...STATE.modalChips], {...STATE.modalSchedule});
    return;
   }
@@ -4696,7 +4697,7 @@ async function syncAllToDB(){
  if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> 동기화 중...'; btn.disabled=true; }
  if(chip){ chip.style.display='none'; }
  try{
-  // v11.25: 월별 스냅샷도 함께 동기화
+  // v11.26: 월별 스냅샷도 함께 동기화
   const localMonths = getSavedMonths();
   const snapPromises = localMonths.map(ym => {
    const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
@@ -4856,7 +4857,7 @@ async function githubUpload(){
   });
   await new Promise(r=>setTimeout(r, 150)); // DOM 갱신 대기
 
-  // v11.25 fix: outerHTML 캡처 전 버튼 상태 원복 → 업로드된 파일에 "인코딩 중..." 상태 오염 방지
+  // v11.26 fix: outerHTML 캡처 전 버튼 상태 원복 → 업로드된 파일에 "인코딩 중..." 상태 오염 방지
   btn.innerHTML = origHTML;
   btn.disabled = false;
   const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
@@ -5212,7 +5213,7 @@ function _enterAdminMode(){
  checkPendingSubmissions();
  startAdminAutoLogout();
  if(window.innerWidth <= 600) _initAdminMobile();
- // v11.25: GAS에서 저장된 월 목록 가져와 사이드바 보완
+ // v11.26: GAS에서 저장된 월 목록 가져와 사이드바 보완
  _syncMonthListFromGAS();
 }
 
@@ -5220,7 +5221,7 @@ async function _syncMonthListFromGAS(){
  try{
   const r = await gasGet({action:'getMonthlySnapshots'});
   if(!r.ok || !r.data?.length) return;
-  // v11.25 fix: 삭제된 월은 GAS에서 목록에 있어도 무시
+  // v11.26 fix: 삭제된 월은 GAS에서 목록에 있어도 무시
   let deletedMonths=[];
   try{ deletedMonths=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); }catch{}
   const now=Date.now(); const NINETY=90*24*60*60*1000;
@@ -5248,7 +5249,7 @@ async function _syncMonthListFromGAS(){
  }catch(e){ console.warn('GAS 월 목록 조회 실패:', e); }
 }
 
-/* ═══ v11.25: 관리자 모드 모바일 헬퍼 ═══ */
+/* ═══ v11.26: 관리자 모드 모바일 헬퍼 ═══ */
 function _initAdminMobile(){
  _injectMgrTeacherBar();
  _injectSidebarOverlay();
@@ -5449,7 +5450,7 @@ function checkPendingSubmissions(){
   .then(r=>{
    if(!r.ok || !r.data || !r.data.length) return;
    // 이미 반영한 항목은 제외
-   // v11.25: deleted_records(30일)도 함께 필터
+   // v11.26: deleted_records(30일)도 함께 필터
    let deleted30 = [];
    try{ deleted30 = JSON.parse(localStorage.getItem('iruri_deleted_records')||'[]'); }catch{}
    const now30 = Date.now(); const THIRTY = 30*24*60*60*1000;
@@ -5504,7 +5505,7 @@ function dismissSubmissions(){
 }
 
 function loadSubmissions(){
- // v11.25: 로딩 상태 표시
+ // v11.26: 로딩 상태 표시
  const applyBtn = document.getElementById('applyBtn');
  if(applyBtn){ applyBtn.textContent='반영 중...'; applyBtn.disabled=true; applyBtn.style.opacity='0.7'; }
  // ── 즉시 반영: localStorage 캐시 먼저 사용 ──
@@ -5557,9 +5558,9 @@ function loadSubmissions(){
 }
 
 function _applySubmissions(subs){
- // v11.25 fix: feePct 정규화 (구버전 캐시 대응)
+ // v11.26 fix: feePct 정규화 (구버전 캐시 대응)
  subs = _normFeePct(subs);
- // v11.25: 삭제 이력(30일)에 있는 기록은 재생성 차단
+ // v11.26: 삭제 이력(30일)에 있는 기록은 재생성 차단
  try{
   const deletedKey = 'iruri_deleted_records';
   const deleted = JSON.parse(localStorage.getItem(deletedKey)||'[]');
@@ -5592,7 +5593,7 @@ function _applySubmissions(subs){
  const btn = document.getElementById('applyBtn');
  if(btn){ btn.textContent='반영하기'; btn.disabled=false; btn.style.opacity='1'; }
 
- // v11.25 fix: 반영 성공 시 삭제 이력(deleted_months, deleted_records) 클리어
+ // v11.26 fix: 반영 성공 시 삭제 이력(deleted_months, deleted_records) 클리어
  // → 이전에 삭제했던 월이라도 새로 반영하면 정상 표시
  try{
   const yms = [...new Set(subs.map(s=>s.yearMonth).filter(Boolean))];
@@ -5693,7 +5694,7 @@ let tiImages = [];
 
 /* 현재 연월 기준 요일별 날짜 자동 계산 */
 function calcDatesForMonth(year, month){
- // v11.25: 달력 기준 주차 (1일이 속한 주 = 1주)
+ // v11.26: 달력 기준 주차 (1일이 속한 주 = 1주)
  // 5슬롯 배열: 인덱스 = 주차-1, 해당 주에 요일 없으면 null
  const result = {};
  DAYS_ORDER.forEach(d => result[d] = [null,null,null,null,null]);
@@ -5889,7 +5890,7 @@ function renderTiLedger(){
  dateLabelTd.textContent='날짜';
  dateTr.appendChild(dateLabelTd);
 
- // 날짜 헤더 셀 5개 (v11.25: 가운데 정렬 텍스트)
+ // 날짜 헤더 셀 5개 (v11.26: 가운데 정렬 텍스트)
  for(let w=0;w<5;w++){
  const td=document.createElement('td');
  const hasDate = g.dates[w] != null;
@@ -6056,7 +6057,7 @@ function renderTiLedger(){
  td.style.cssText=`border:1px solid #C8C6B8;text-align:center;font-weight:700;font-size:13px;cursor:pointer;padding:6px 2px;background:${s.bg};color:${s.color};`;
  td.textContent=s.text;
  };
-  // v11.25: null 슬롯 → X 자동 + 클릭 비활성
+  // v11.26: null 슬롯 → X 자동 + 클릭 비활성
  const noDate = g.dates[w] == null;
  if(noDate && c.attend[w] !== 'X') c.attend[w] = 'X';
  applyStyle(td, c.attend[w]||'');
@@ -6074,7 +6075,7 @@ function renderTiLedger(){
  tr.appendChild(td);
  }
 
- // 행 삭제/이동 버튼 (v11.25)
+ // 행 삭제/이동 버튼 (v11.26)
  const delTd=document.createElement('td');
  delTd.style.cssText='border:1px solid #C8C6B8;text-align:center;padding:2px;vertical-align:middle;';
  const btnWrap=document.createElement('div');
@@ -6114,7 +6115,7 @@ function renderTiLedger(){
  addTd.appendChild(addBtn); addTr.appendChild(addTd);
  tbody.appendChild(addTr);
  });
- // v11.25: 모바일 카드뷰 동기화
+ // v11.26: 모바일 카드뷰 동기화
  renderMobileLedger();
 }
 
@@ -6228,7 +6229,7 @@ function showDraftBanner(savedAt){
  banner = document.createElement('div');
  banner.id = 'ti-draft-banner';
  banner.style.cssText = 'position:sticky;top:52px;z-index:99;background:#FDF3DC;border-bottom:1px solid #E8CC80;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;flex-wrap:wrap;';
- // v11.25: topbar 다음 형제 위치에 삽입 (topbar 내부가 아닌 teacherInputScreen 레벨)
+ // v11.26: topbar 다음 형제 위치에 삽입 (topbar 내부가 아닌 teacherInputScreen 레벨)
  const teacherScreen = document.getElementById('teacherInputScreen');
  const topbar = teacherScreen.querySelector(':scope > div:first-child');
  if(topbar && topbar.nextSibling){
@@ -6594,7 +6595,7 @@ function submitTiData(){
 // 이미지 파일 → base64 → Drive 업로드
 function uploadReceiptFile(file, teacher, yearMonth){
  return new Promise((resolve)=>{
-  // v11.25: 이미지 압축 후 업로드 (GAS 요청 크기 제한 대응)
+  // v11.26: 이미지 압축 후 업로드 (GAS 요청 크기 제한 대응)
   const MAX_W = 1600, MAX_H = 1600, QUALITY = 0.75;
   const img = new Image();
   const url = URL.createObjectURL(file);
@@ -6677,7 +6678,7 @@ function showTiSubmitSuccess(teacher, month){
  </div>`;
 }
 
-// v11.25: 모바일 전용 카드형 수업기록표 렌더러
+// v11.26: 모바일 전용 카드형 수업기록표 렌더러
 // 기존 tiDayGroups 데이터를 그대로 사용, 변경 시 tiDayGroups 직접 수정 후 양쪽 동기화
 function renderMobileLedger(){
  const wrap = document.getElementById('ti-mobile-ledger');
@@ -6692,7 +6693,7 @@ function renderMobileLedger(){
   '△': {bg:'#FDF3DC', color:'#8A6010', border:'#F0D899'},
  };
 
- // v11.25: 로그인 강사 정보 (센터 필터 + 보강 강사 선택에 사용)
+ // v11.26: 로그인 강사 정보 (센터 필터 + 보강 강사 선택에 사용)
  const teacherEl = document.getElementById('ti-teacher');
  const teacherName = teacherEl ? teacherEl.value : '';
 
@@ -6707,7 +6708,7 @@ function renderMobileLedger(){
   }
 
   const dates = g.dates || [];
-  const weekCount = 5; // v11.25 fix: 항상 5주 열 고정 (null 슬롯도 열 차지)
+  const weekCount = 5; // v11.26 fix: 항상 5주 열 고정 (null 슬롯도 열 차지)
 
   // 카드 컨테이너
   const card = document.createElement('div');
@@ -6754,7 +6755,7 @@ function renderMobileLedger(){
   // 날짜 헤더 행
   const dateRow = document.createElement('div');
   dateRow.style.cssText = 'display:grid;align-items:center;border-bottom:1px solid #E2E0D8;background:#F5F4F0;';
-  dateRow.style.gridTemplateColumns = `108px repeat(${weekCount}, 1fr) 28px`; // v11.25: X열 포함
+  dateRow.style.gridTemplateColumns = `108px repeat(${weekCount}, 1fr) 28px`; // v11.26: X열 포함
 
   const dateLabelCell = document.createElement('div');
   dateLabelCell.style.cssText = 'padding:6px 10px;font-size:10px;color:#999;font-weight:500;';
@@ -6767,7 +6768,7 @@ function renderMobileLedger(){
 
    // 날짜 입력 (탭)
    const dateInp = document.createElement('input');
-   // v11.25: 모바일 날짜 헤더 - 숫자만 굵게 가운데
+   // v11.26: 모바일 날짜 헤더 - 숫자만 굵게 가운데
    const hasDateM = dates[w] != null;
    dateInp.type='number'; dateInp.min=1; dateInp.max=31;
    dateInp.value = dates[w]||'';
@@ -6779,7 +6780,7 @@ function renderMobileLedger(){
    dateCell.appendChild(dateInp);
    dateRow.appendChild(dateCell);
   }
-  // v11.25: 날짜 헤더 X열 placeholder
+  // v11.26: 날짜 헤더 X열 placeholder
   const dateXPlaceholder = document.createElement('div');
   dateXPlaceholder.style.cssText = 'width:28px;';
   dateRow.appendChild(dateXPlaceholder);
@@ -6891,7 +6892,7 @@ function renderMobileLedger(){
    for(let w=0;w<weekCount;w++){
     const attCell = document.createElement('div');
     attCell.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:52px;border-right:1px solid #F0EFE9;';
-    // v11.25: null 슬롯 X 자동 설정
+    // v11.26: null 슬롯 X 자동 설정
     const noDate = g.dates[w] == null;
     if(noDate && c.attend[w] !== 'X') c.attend[w] = 'X';
     const val = c.attend[w]||'';
@@ -6922,7 +6923,7 @@ function renderMobileLedger(){
 
     centerRow.appendChild(attCell);
    }
-   // v11.25: X 버튼 전용 셀 (별도 열)
+   // v11.26: X 버튼 전용 셀 (별도 열)
    const delCell = document.createElement('div');
    delCell.style.cssText = 'display:flex;align-items:center;justify-content:center;padding:2px;';
    const delBtn2 = document.createElement('button');
@@ -7973,7 +7974,7 @@ function _pushToGAS(){
 
 
 <script>
-/* ═══ v11.25: 점검 모드 ═══ */
+/* ═══ v11.26: 점검 모드 ═══ */
 const MAINTENANCE_KEY = 'iruri_maintenance';
 
 // 점검 설정 로드 (동기 — localStorage 캐시)
@@ -7981,7 +7982,7 @@ function _loadMaintenanceSettings(){
  try{ return JSON.parse(localStorage.getItem(MAINTENANCE_KEY)||'{}'); }catch{ return {}; }
 }
 
-// v11.25: GAS에서 점검 설정 가져와 localStorage에 캐시
+// v11.26: GAS에서 점검 설정 가져와 localStorage에 캐시
 // → 모바일 등 다른 기기에서 PC 설정이 반영되도록
 async function _fetchMaintenanceFromGAS(){
  try{
@@ -8034,7 +8035,7 @@ function saveMaintenanceSettings(){
  const start   = document.getElementById('maintenanceStart').value;
  const end     = document.getElementById('maintenanceEnd').value;
  const settings = { on, message, start, end, updatedAt: new Date().toISOString() };
- // v11.25: localStorage + GAS 동시 저장 (모바일 실시간 반영)
+ // v11.26: localStorage + GAS 동시 저장 (모바일 실시간 반영)
  localStorage.setItem(MAINTENANCE_KEY, JSON.stringify(settings));
  document.getElementById('maintenanceModal').style.display = 'none';
  const btn = document.getElementById('maintenanceBtn');
@@ -8094,7 +8095,7 @@ window.addEventListener('load', function(){
 </script>
 
 <script>
-/* ═══ PWA v11.25: 설치 프롬프트 처리 ═══ */
+/* ═══ PWA v11.26: 설치 프롬프트 처리 ═══ */
 let _pwaInstallPrompt = null;
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const _isAndroid = /Android/.test(navigator.userAgent);
@@ -8150,7 +8151,7 @@ window.addEventListener('load', function(){
 </script>
 
 <script>
-/* ═══ PWA v11.25: Service Worker 등록 ═══ */
+/* ═══ PWA v11.26: Service Worker 등록 ═══ */
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('/iruri/sw.js', {scope:'/iruri/'})
