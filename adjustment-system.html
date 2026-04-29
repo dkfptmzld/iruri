@@ -1774,7 +1774,7 @@ tbody tr:hover td{background:var(--surface2);}
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:51:53</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:59:17</div>
  </div>
 </div>
 
@@ -1809,7 +1809,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
-<div class="save-toast show" id="saveToast">✓ ✅ 2026년 3월 수업기록표 로드 완료</div>
+<div class="save-toast" id="saveToast">✓ 2026년 3월 불러오는 중...</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -5213,7 +5213,7 @@ async function _applyOneSub(idx){
  // 기존 _applySubmissions 재사용 (단건)
  _applySubmissions([s]);
  // GAS에서 삭제
- await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth }).catch(()=>{});
+ await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`✅ ${s.name} ${s.yearMonth} 반영 완료`);
  renderSubmissionsView();
 }
@@ -5222,7 +5222,7 @@ async function _rejectOneSub(idx){
  const s = _subPendingData[idx];
  if(!s) return;
  if(!confirm(`${s.name} 강사의 ${s.yearMonth} 수업기록표를 거절(삭제)할까요?\n\n거절된 기록표는 복구할 수 없어요.`)) return;
- await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth }).catch(()=>{});
+ await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`🗑 ${s.name} ${s.yearMonth} 거절됨`);
  renderSubmissionsView();
 }
