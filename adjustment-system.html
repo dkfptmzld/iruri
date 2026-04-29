@@ -1681,14 +1681,14 @@ window.addEventListener('load', ()=>{
    window._loggedInTeacher = session;
    showLanding();
   } else {
-   // v11.25: GAS에서 점검 설정 먼저 동기화 → 모바일에서도 PC 설정 반영
-   _fetchMaintenanceFromGAS().finally(()=>{
-    if(checkMaintenanceMode()) return;
-    // 없으면 로그인 화면
-    document.getElementById('modeSelectScreen').style.display='none';
-    document.getElementById('loginScreen').style.display='flex';
-    initLoginScreen();
-   });
+   // v11.25 fix: 로그인 화면 즉시 표시 (GAS fetch 기다리지 않음 → 공백 화면 제거)
+   document.getElementById('modeSelectScreen').style.display='none';
+   document.getElementById('loginScreen').style.display='flex';
+   initLoginScreen();
+   // 백그라운드로 GAS 점검 설정 동기화 → 점검 ON이면 화면 전환
+   _fetchMaintenanceFromGAS().then(()=>{
+    checkMaintenanceMode(); // 점검 ON이면 로그인 화면 덮어쓰기
+   }).catch(()=>{});
   }
  }
 });
@@ -5092,16 +5092,16 @@ async function gasPost(body){
 // 랜딩 페이지 표시 (로그인 후 진입점)
 function showLanding(){
  stopAdminAutoLogout();
- // v11.25: 관리자는 점검 모드 무관하게 진입 허용
- // 강사 세션이면 GAS에서 설정 동기화 후 점검 체크
- if(!sessionStorage.getItem('iruri_admin_session')){
-  _fetchMaintenanceFromGAS().finally(()=>{
-   if(checkMaintenanceMode()) return;
-   _showLandingUI();
-  });
+ // 관리자는 점검 모드 무관하게 즉시 진입
+ if(sessionStorage.getItem('iruri_admin_session')){
+  _showLandingUI();
   return;
  }
+ // 강사: 랜딩 즉시 표시 후 백그라운드로 점검 체크
  _showLandingUI();
+ _fetchMaintenanceFromGAS().then(()=>{
+  checkMaintenanceMode(); // 점검 ON이면 화면 전환
+ }).catch(()=>{});
 }
 function _showLandingUI(){
  // v11.20: 앱 내 이동 플래그 유지 (로그인 상태에서 화면 이동 시 세션 보존)
