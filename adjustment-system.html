@@ -1341,14 +1341,14 @@ tbody tr:hover td{background:var(--surface2);}
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; cursor: pointer; border-radius: 7px; user-select: none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
     <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">0</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; cursor: pointer; border-radius: 7px; user-select: none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
@@ -1480,7 +1480,7 @@ tbody tr:hover td{background:var(--surface2);}
    <span style="font-size:13px;font-weight:400;color:var(--text2);flex:1;">홍예은</span>
    
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:14:48</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:17:09</div>
  </div>
 </div>
 
@@ -5184,7 +5184,7 @@ function stopAdminAutoLogout(){
   document.removeEventListener(ev, resetAdminTimer);
  });
  // v11.30: 위젯 숨기기 + 자동 갱신 중단
- _stopPresence('관리자');
+ if(!window._loggedInTeacher) _stopPresence('관리자');
  const pw = document.getElementById('presenceWidget');
  if(pw) pw.style.display = 'none';
  if(_presenceAutoRefresh){ clearInterval(_presenceAutoRefresh); _presenceAutoRefresh=null; }
@@ -5664,7 +5664,9 @@ function _enterAdminMode(){
  const _pw = document.getElementById('presenceWidget');
  if(_pw) _pw.style.display = 'block';
  if(_presenceAutoRefresh) clearInterval(_presenceAutoRefresh);
- _startPresence('관리자');
+ // 강사로 로그인 후 관리자 전환이면 이미 presence 등록됨 → 재등록 불필요
+ // 관리자 전용 로그인이면 로그인한 이름 없으니 '관리자'로 등록
+ if(!window._loggedInTeacher) _startPresence('관리자');
  _refreshPresenceWidget();
  _presenceAutoRefresh = setInterval(_refreshPresenceWidget, 30000);
  // v11.30: GAS에서 저장된 월 목록 가져와 사이드바 보완
