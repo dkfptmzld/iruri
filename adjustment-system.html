@@ -742,13 +742,13 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:24px;font-weight:800;color:#1a4a2e;letter-spacing:-.5px;margin-bottom:4px;">수업기록표 정산 시스템</div>
  <div style="font-size:13px;color:#5a8a6a;margin-bottom:8px;font-weight:500;">이루리 실버 아카데미</div>
  <!-- 로그인 사용자 표시 -->
- <div id="landing-user-info" style="display: none; align-items: center; gap: 8px; justify-content: center; margin-bottom: 28px;">
+ <div id="landing-user-info" style="display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 28px;">
  <div style="background:#E8F5EE;border:1px solid #B8E0CC;border-radius:20px;padding:5px 14px;font-size:13px;color:#1a4a2e;font-weight:600;">
  <span id="landing-user-name">박기남</span> 강사님
  </div>
  <span onclick="doLogout()" style="font-size:12px;color:#9B9888;cursor:pointer;text-decoration:underline;">로그아웃</span>
  </div>
- <div id="landing-no-user" style="margin-bottom: 28px; font-size: 13px; color: rgb(155, 152, 136); display: block;"></div>
+ <div id="landing-no-user" style="margin-bottom: 28px; font-size: 13px; color: rgb(155, 152, 136); display: none;"></div>
 
  <!-- 모드 카드 -->
  <div style="display:flex;gap:16px;justify-content:center;">
@@ -771,7 +771,7 @@ tbody tr:hover td{background:var(--surface2);}
 
  <!-- 가이드 링크 (두 모드 박스 공통 하단) -->
  <div style="margin-top:20px;text-align:center;">
-  <a href="https://dkfptmzld.github.io/iruri/guide.html" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; color: rgb(90, 138, 106); font-size: 13px; font-weight: 500; text-decoration: none; padding: 8px 16px; border: 1px solid rgb(184, 224, 204); border-radius: 20px; background: white; transition: 0.15s;" onmouseover="this.style.background='#E8F5EE';this.style.color='#1A7A50';" onmouseout="this.style.background='white';this.style.color='#5a8a6a';">
+  <a href="https://dkfptmzld.github.io/iruri/guide.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;color:#5a8a6a;font-size:13px;font-weight:500;text-decoration:none;padding:8px 16px;border:1px solid #B8E0CC;border-radius:20px;background:white;transition:all .15s;" onmouseover="this.style.background='#E8F5EE';this.style.color='#1A7A50';" onmouseout="this.style.background='white';this.style.color='#5a8a6a';">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"></path>
    </svg>
@@ -1107,7 +1107,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
   <span id="adminTimerText">30:00</span>
-  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
+  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
@@ -1208,9 +1208,9 @@ tbody tr:hover td{background:var(--surface2);}
 
   <!-- 지역별 통계 -->
   <div class="region-stats">
-   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">291</div><div class="region-sub">개 센터</div></div>
+   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">290</div><div class="region-sub">개 센터</div></div>
    <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">130</div><div class="region-sub" id="rs-seoul-t">강사 14명 담당</div></div>
-   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">106</div><div class="region-sub" id="rs-incheon-t">강사 11명 담당</div></div>
+   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">105</div><div class="region-sub" id="rs-incheon-t">강사 11명 담당</div></div>
    <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">55</div><div class="region-sub" id="rs-suwon-t">강사 5명 담당</div></div>
   </div>
 
@@ -1218,7 +1218,7 @@ tbody tr:hover td{background:var(--surface2);}
   <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
    <div style="position:relative;flex:1;">
     <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width: 100%; height: 36px; padding: 0px 12px 0px 32px; border-color: var(--border); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width:100%;height:36px;padding:0 12px 0 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
    </div>
    <select id="cTreeRegionFilter" onchange="filterCenterTree()" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
     <option value="">전체 지역</option>
@@ -1234,56 +1234,154 @@ tbody tr:hover td{background:var(--surface2);}
     <!-- 좌측: 탐색 패널 -->
     <div style="background:var(--surface2);border-right:1px solid var(--border);overflow-y:auto;">
      <div id="cTreeNav"><div>
-   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); user-select: none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">1개</span>
-    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);">▾</span>
+   <div id="cnav-서울-btn" onclick="toggleNavRegion('서울')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-sel="0">
+    <span class="badge blue" style="font-size:11px;padding:2px 8px;">서울</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">130개</span>
+    <span id="cnav-서울-arrow" style="font-size:12px;color:var(--text3);" data-sel="0">▾</span>
    </div>
-   <div id="cnav-인천-list" style="display:block;">
+   <div id="cnav-서울-list" style="display:block;" data-sel="0">
     
-     <div id="cnav-인천-길범준" onclick="selectTreeTeacher('인천','길범준',(window.innerWidth&lt;=600))" style="display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 22px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-서울-구명훈" onclick="selectTreeTeacher('서울','구명훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">구</div>
+      <span style="flex:1;">구명훈</span>
+     </div>
+     <div id="cnav-서울-김은영" onclick="selectTreeTeacher('서울','김은영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김은영</span>
+     </div>
+     <div id="cnav-서울-박준형" onclick="selectTreeTeacher('서울','박준형',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
+      <span style="flex:1;">박준형</span>
+     </div>
+     <div id="cnav-서울-변동" onclick="selectTreeTeacher('서울','변동',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">변</div>
+      <span style="flex:1;">변동</span>
+     </div>
+     <div id="cnav-서울-송준기" onclick="selectTreeTeacher('서울','송준기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">송</div>
+      <span style="flex:1;">송준기</span>
+     </div>
+     <div id="cnav-서울-신기윤" onclick="selectTreeTeacher('서울','신기윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">신</div>
+      <span style="flex:1;">신기윤</span>
+     </div>
+     <div id="cnav-서울-양성모" onclick="selectTreeTeacher('서울','양성모',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
+      <span style="flex:1;">양성모</span>
+     </div>
+     <div id="cnav-서울-양재원" onclick="selectTreeTeacher('서울','양재원',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
+      <span style="flex:1;">양재원</span>
+     </div>
+     <div id="cnav-서울-오건" onclick="selectTreeTeacher('서울','오건',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
+      <span style="flex:1;">오건</span>
+     </div>
+     <div id="cnav-서울-윤혜미" onclick="selectTreeTeacher('서울','윤혜미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">윤</div>
+      <span style="flex:1;">윤혜미</span>
+     </div>
+     <div id="cnav-서울-이인경" onclick="selectTreeTeacher('서울','이인경',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이인경</span>
+     </div>
+     <div id="cnav-서울-이재하" onclick="selectTreeTeacher('서울','이재하',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이재하</span>
+     </div>
+     <div id="cnav-서울-장성기" onclick="selectTreeTeacher('서울','장성기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
+      <span style="flex:1;">장성기</span>
+     </div>
+     <div id="cnav-서울-정상준" onclick="selectTreeTeacher('서울','정상준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">정</div>
+      <span style="flex:1;">정상준</span>
+     </div>
+     <div id="cnav-서울-조영미" onclick="selectTreeTeacher('서울','조영미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
+      <span style="flex:1;">조영미</span>
+     </div>
+   </div>
+  </div><div>
+   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-sel="0">
+    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">105개</span>
+    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);" data-sel="0">▾</span>
+   </div>
+   <div id="cnav-인천-list" style="display:block;" data-sel="0">
+    
+     <div id="cnav-인천-길범준" onclick="selectTreeTeacher('인천','길범준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">길</div>
       <span style="flex:1;">길범준</span>
      </div>
-     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 22px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
       <span style="flex:1;">김수민</span>
      </div>
-     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 22px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
       <span style="flex:1;">김유천</span>
      </div>
-     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 22px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
       <span style="flex:1;">김효민</span>
      </div>
-     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
       <span style="flex:1;">박기남</span>
      </div>
-     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display: flex; align-items: center; gap: 8px; padding: 9px 14px 9px 22px; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 13px; background: var(--green-bg);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="1">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
       <span style="flex:1;">박종일</span>
      </div>
-     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">방</div>
       <span style="flex:1;">방진수</span>
      </div>
-     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
       <span style="flex:1;">이재윤</span>
      </div>
-     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
       <span style="flex:1;">장호준</span>
      </div>
-     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">한</div>
       <span style="flex:1;">한수희</span>
      </div>
-     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
       <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">홍</div>
       <span style="flex:1;">홍예은</span>
+     </div>
+   </div>
+  </div><div>
+   <div id="cnav-수원-btn" onclick="toggleNavRegion('수원')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" data-sel="0">
+    <span class="badge purple" style="font-size:11px;padding:2px 8px;">수원</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">55개</span>
+    <span id="cnav-수원-arrow" style="font-size:12px;color:var(--text3);" data-sel="0">▾</span>
+   </div>
+   <div id="cnav-수원-list" style="display:block;" data-sel="0">
+    
+     <div id="cnav-수원-김수도" onclick="selectTreeTeacher('수원','김수도',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김수도</span>
+     </div>
+     <div id="cnav-수원-안지훈" onclick="selectTreeTeacher('수원','안지훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">안</div>
+      <span style="flex:1;">안지훈</span>
+     </div>
+     <div id="cnav-수원-오수정" onclick="selectTreeTeacher('수원','오수정',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
+      <span style="flex:1;">오수정</span>
+     </div>
+     <div id="cnav-수원-원보영" onclick="selectTreeTeacher('수원','원보영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">원</div>
+      <span style="flex:1;">원보영</span>
+     </div>
+     <div id="cnav-수원-최정안" onclick="selectTreeTeacher('수원','최정안',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''" data-sel="0">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">최</div>
+      <span style="flex:1;">최정안</span>
      </div>
    </div>
   </div></div>
@@ -1291,20 +1389,272 @@ tbody tr:hover td{background:var(--surface2);}
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
      <div id="cTreeDetail" style="padding:20px;">
-     <div style="padding:14px;border-bottom:1px solid var(--border);background:var(--bg);">
-      🔍 "<strong>늘푸른</strong>" 검색 결과 <span style="color:var(--text3);">1개</span>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+   <div style="width:40px;height:40px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">박</div>
+   <div style="flex:1;">
+    <div style="font-size:16px;font-weight:700;">박종일</div>
+    <div style="display:flex;gap:6px;margin-top:3px;">
+     <span class="badge teal" style="font-size:11px;">인천</span>
+     <span style="font-size:12px;color:var(--text2);">총 13개 센터</span>
+    </div>
+   </div>
+   <button class="btn sm primary" onclick="openModal('center', null, '', '박종일')" style="flex-shrink:0;gap:4px;">
+    <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>센터 추가
+   </button>
+  </div>
+  
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:12px;border:1px solid var(--border);">
+   <span style="font-size:11px;font-weight:600;color:var(--text3);">표시할 정보:</span>
+   
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--text);">
+     <input type="checkbox" checked="" onchange="window._teacherCols['fee']=this.checked; selectTreeTeacher('인천','박종일');" style="accent-color:var(--green);cursor:pointer;">
+     수업료
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--text);">
+     <input type="checkbox" checked="" onchange="window._teacherCols['address']=this.checked; selectTreeTeacher('인천','박종일');" style="accent-color:var(--green);cursor:pointer;">
+     주소
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--text);">
+     <input type="checkbox" checked="" onchange="window._teacherCols['contact']=this.checked; selectTreeTeacher('인천','박종일');" style="accent-color:var(--green);cursor:pointer;">
+     담당자·연락처
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:12px;color:var(--text);">
+     <input type="checkbox" checked="" onchange="window._teacherCols['email']=this.checked; selectTreeTeacher('인천','박종일');" style="accent-color:var(--green);cursor:pointer;">
+     이메일
+    </label>
+  </div>
+  
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;">
+   <table style="width:100%;border-collapse:collapse;min-width:400px;">
+    <thead><tr style="background:var(--surface2);">
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;min-width:40px;">요일</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">교시</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">센터명</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">수업료</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">주소</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">담당자·연락처</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">이메일</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:center;border-bottom:2px solid var(--border);width:60px;">작업</th>
+ </tr></thead>
+    <tbody><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',43)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    <td rowspan="3" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">월</span></td>
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>1교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',0,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',0,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
      </div>
-     <div style="display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); cursor: pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',277)">
-      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
-      <div style="flex:1;min-width:0;">
-       <div style="font-weight:500;font-size:13px;color:var(--green);">늘푸른 <span style="font-size:11px;color:var(--text3);font-weight:400;">60,000원</span></div>
-       <div style="margin-top:3px;"><span class="badge green" style="font-size:10px;">한수희</span> <span class="badge green" style="font-size:10px;">박기남</span> <span class="badge green" style="font-size:10px;">김유천</span></div>
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-       <button onclick="event.stopPropagation();openModal('center',277)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
-       <button onclick="event.stopPropagation();delItem('center',277)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
-      </div>
-     </div></div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">김간호사2호점</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',43)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',43)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',3)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>2교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',1,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',1,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">가가호호봉천</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">50,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',3)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',3)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',171)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>3교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',2,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','월',2,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">엔젤재활</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',171)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',171)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',0)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    <td rowspan="3" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">화</span></td>
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>1교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',0,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',0,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">153</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',0)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',0)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',61)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>2교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',1,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',1,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">다사랑</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',61)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',61)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',91)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>3교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',2,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','화',2,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">명품</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">50,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',91)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',91)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',4)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    <td rowspan="1" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">수</span></td>
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>1교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','수',0,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','수',0,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">가가호호시흥</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',4)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',4)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',111)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    <td rowspan="3" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">목</span></td>
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>1교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',0,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',0,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">복지콜</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',111)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',111)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',175)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>2교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',1,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',1,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">예다인</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',175)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',175)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',201)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>3교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',2,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','목',2,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">정다운</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',201)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',201)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',195)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    <td rowspan="2" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">금</span></td>
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>1교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','금',0,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','금',0,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">인천중구</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',195)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',195)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer;" onclick="openModal('center',218)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background=''">
+    
+    <td style="padding:5px 8px;font-size:11px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;color:var(--text2);">
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span>2교시</span>
+     <div style="display:flex;flex-direction:column;gap:2px;">
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','금',1,-1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▲</button>
+      <button onclick="event.stopPropagation();movePeriodSlot('인천','박종일','금',1,1)" style="width:16px;height:14px;border:1px solid var(--border);border-radius:3px;background:white;cursor:pointer;font-size:8px;padding:0;line-height:1;opacity:.25;pointer-events:none;" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='white'">▼</button>
+     </div>
+    </div>
+   </td>
+    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">천사노인</td>
+    <td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">55,000원</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</td><td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">—</td><td style="font-size:11px;color:var(--text2);padding:7px 10px;">—</td>
+    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+     <button onclick="event.stopPropagation();openModal('center',218)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+     <button onclick="event.stopPropagation();delItem('center',218)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    </td>
+   </tr><tr style="border-bottom: 1px solid var(--border); cursor: pointer; background: var(--surface2);" onclick="openModal('center',45)" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='var(--surface2)'">
+   <td style="padding:7px 10px;border-right:1px solid var(--border);"><span style="font-size:10px;color:var(--text3);">미등록</span></td>
+   <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);">—</td>
+   <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);">김포다사랑</td>
+   <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:12px;color:var(--text2);">60,000원</td>
+   <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">—</td>
+   <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">—</td>
+   <td style="padding:7px 10px;font-size:11px;color:var(--text2);border-right:1px solid var(--border);">—</td>
+   <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
+    <button onclick="event.stopPropagation();openModal('center',45)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+    <button onclick="event.stopPropagation();delItem('center',45)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+   </td>
+  </tr></tbody>
+   </table>
+  </div></div>
     </div>
    </div>
   </div>
@@ -1384,56 +1734,15 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
  </div>
 </div>
-<div class="modal-overlay" id="modalOverlay" style="display: none;" onclick="if(event.target===this)closeModal()">
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
  <div class="modal">
- <h3 id="modalTitle">신규 센터 추가</h3><p id="modalDesc">마스터 수업료가 강사 입력값보다 우선 적용됩니다. 담당 강사를 등록하면 강사별 센터 조회가 가능합니다.</p>
- <div id="modalBody">
- <div class="form-row-2">
- <div><label class="form-label">센터명</label><input class="form-input" id="fi_name" value="" placeholder="행복요양원"></div>
- <div><label class="form-label">지역</label>
- <select class="form-select" id="fi_region">
- <option value="">선택</option><option>서울</option><option selected="">인천</option><option>수원</option>
- </select></div>
- </div>
- <div class="form-row">
- <label class="form-label">수업료 (원)</label>
- <input class="form-input" id="fi_fee" value="" type="number" placeholder="55000">
- <div class="form-hint">강사가 수업기록표에 입력한 금액이 우선 사용되며, 수업료가 누락된 경우 이 값이 적용됩니다.</div>
- </div>
- <div class="form-row">
- <label class="form-label">주소</label>
- <input class="form-input" id="fi_addrSearch" value="" placeholder="예) 서울특별시 강남구 테헤란로 123, 2층">
- <div class="form-hint">도로명 주소 또는 건물명을 포함한 상세주소를 직접 입력하세요</div>
- </div>
- <div class="form-row-2">
-  <div><label class="form-label">담당자 이름</label><input class="form-input" id="fi_contact_name" value="" placeholder="홍길동"></div>
-  <div><label class="form-label">담당자 연락처</label><input class="form-input" id="fi_phone" value="" placeholder="010-0000-0000"></div>
- </div>
- <div class="form-row">
-  <label class="form-label">담당자 이메일</label>
-  <input class="form-input" id="fi_email" value="" placeholder="example@email.com">
- </div>
- <div class="form-row">
- <label class="form-label">담당 강사</label>
- <div style="display:flex;gap:6px;margin-bottom:6px;">
- <select class="form-select" id="fi_tAdd" style="flex:1;"><option value="">— 담당할 강사를 선택하세요 —</option><option value="김은영">김은영</option><option value="장호준">장호준</option><option value="최정안">최정안</option><option value="오건">오건</option><option value="김유천">김유천</option><option value="안지훈">안지훈</option><option value="구명훈">구명훈</option><option value="한수희">한수희</option><option value="오수정">오수정</option><option value="송준기">송준기</option><option value="박기남">박기남</option><option value="원보영">원보영</option><option value="정상준">정상준</option><option value="김효민">김효민</option><option value="김수도">김수도</option><option value="양성모">양성모</option><option value="길범준">길범준</option><option value="이인경">이인경</option><option value="방진수">방진수</option><option value="조영미">조영미</option><option value="김수민">김수민</option><option value="윤혜미">윤혜미</option><option value="장성기">장성기</option><option value="홍예은">홍예은</option><option value="변동">변동</option><option value="박종일">박종일</option><option value="박준형">박준형</option><option value="이재윤">이재윤</option><option value="양재원">양재원</option><option value="신기윤">신기윤</option><option value="이재하">이재하</option></select>
- <button class="btn sm" type="button" onclick="addChip()">추가</button>
- </div>
- <div class="teacher-chips" id="chipContainer"><div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg);border-radius:8px;margin-bottom:4px;flex-wrap:wrap;">
-   <span class="t-chip" style="margin:0;">박기남<span class="rm" onclick="rmChip(0)">×</span></span>
-   <div style="display:flex;align-items:center;gap:4px;">
-    <span style="font-size:11px;color:var(--text3);">수업료</span>
-    <input type="number" value="" placeholder="0" min="0" step="1000" oninput="STATE.modalSchedule['박기남__fee']=this.value?Number(this.value):null" style="width:80px;height:24px;border:1px solid var(--border);border-radius:6px;padding:0 6px;font-size:11px;font-family:inherit;text-align:right;outline:none;">
-    <span style="font-size:11px;color:var(--text3);">원</span>
-   </div>
-   <div style="display:flex;gap:3px;flex-wrap:wrap;"><button type="button" onclick="toggleScheduleDay('박기남','월')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">월</button><button type="button" onclick="toggleScheduleDay('박기남','화')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">화</button><button type="button" onclick="toggleScheduleDay('박기남','수')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--green);background:var(--green);color:white;font-size:11px;font-weight:600;cursor:pointer;padding:0;">수</button><button type="button" onclick="toggleScheduleDay('박기남','목')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">목</button><button type="button" onclick="toggleScheduleDay('박기남','금')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">금</button><button type="button" onclick="toggleScheduleDay('박기남','토')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">토</button><button type="button" onclick="toggleScheduleDay('박기남','일')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid var(--border);background:white;color:var(--text3);font-size:11px;font-weight:600;cursor:pointer;padding:0;">일</button></div>
-  </div></div>
- </div></div>
- <div class="modal-btns"><button class="btn" onclick="closeModal()">취소</button><button class="btn primary" id="modalOk" onclick="saveModal()">추가</button></div>
+ <h3 id="modalTitle"></h3><p id="modalDesc"></p>
+ <div id="modalBody"></div>
+ <div class="modal-btns"><button class="btn" onclick="closeModal()">취소</button><button class="btn primary" id="modalOk" onclick="saveModal()">저장</button></div>
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ ✅ 동기화 완료 — 강사 31명, 센터 292개 Sheets 저장 확인</div>
+<div class="save-toast" id="saveToast">✓ 삭제되었습니다</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -3399,17 +3708,12 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   const items = (dayMap[day]||[]).sort((a,b)=>(a.order||1)-(b.order||1));
   if(!items.length) return []; // 등록 없는 요일은 행 생략
   // 실제 슬롯 수: 등록된 센터 수 OR 최대 order 값 중 큰 것 (최소 1)
-  const maxOrder = items.reduce((m,x)=>Math.max(m,x.order||1),1);
-  const slotCount = Math.max(items.length, maxOrder);
-  const slots = Array(slotCount).fill(null);
-  items.forEach(x=>{
-   const slot = Math.min(Math.max((x.order||1)-1, 0), slotCount-1);
-   if(!slots[slot]) slots[slot]=x;
-   else{
-    const empty = slots.findIndex(s=>!s);
-    if(empty>=0) slots[empty]=x;
-   }
-  });
+  // v11.25 fix: slotCount = 실제 센터 수만 (maxOrder 제거)
+  // order 값이 비정상적으로 크면 빈 슬롯이 수십 개 생기는 버그 방지
+  const slotCount = items.length;
+  // order 기준으로 정렬해서 순서대로 슬롯에 배치
+  const sorted = [...items].sort((a,b)=>(a.order||99)-(b.order||99));
+  const slots = sorted;
   return slots.map((x,i)=>{
    const dayCell = i===0
     ? `<td rowspan="${slotCount}" style="text-align:center;vertical-align:middle;padding:7px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:var(--green);color:white;font-size:12px;font-weight:700;">${day}</span></td>`
@@ -3503,18 +3807,13 @@ function movePeriodSlot(region, teacher, day, slotIdx, dir){
   sched:(c.schedule||[]).find(s=>s.teacher===teacher)
  }));
 
- // 실제 슬롯 수 동적 계산
- const maxOrder = dayCenters.reduce((m,x)=>Math.max(m,x.sched.order||1),1);
- const slotCount = Math.max(dayCenters.length, maxOrder);
+ // 실제 슬롯 수 = 실제 센터 수
+ const slotCount = dayCenters.length;
  const j = slotIdx + dir;
  if(j<0 || j>=slotCount) return;
 
- // 슬롯 배열 구성
- const slots = Array(slotCount).fill(null);
- dayCenters.forEach(x=>{
-  const s=Math.min(Math.max((x.sched.order||1)-1,0),slotCount-1);
-  if(!slots[s]) slots[s]=x; else{ const e=slots.findIndex(v=>!v); if(e>=0) slots[e]=x; }
- });
+ // order 기준 정렬 → 슬롯 배열
+ const slots = [...dayCenters].sort((a,b)=>(a.sched.order||99)-(b.sched.order||99));
 
  // slotIdx ↔ j 교환 (null 포함)
  const tmp = slots[slotIdx];
@@ -3858,6 +4157,48 @@ function updateFeeHint(){
  document.getElementById('fi_feeHint').textContent=t==='pct'?'예) 85 → 수업료 합계의 85%':'예) 42000 → 수업 1회당 42,000원';
 }
 function closeModal(){document.getElementById('modalOverlay').style.display='none';}
+
+// v11.25: 동명+동일지역 센터 발견 시 → 강사 추가 안내 플로우
+function _openDupCenterFlow(existingCenter, newChips, newSchedule){
+ const dupIdx = centerIdx(existingCenter);
+ const existingTeachers = (existingCenter.teachers||[]).join(', ') || '(없음)';
+ // 새로 추가하려는 강사 중 기존에 없는 강사만 추출
+ const newTeachers = newChips.filter(t => !(existingCenter.teachers||[]).includes(t));
+
+ const msg = [
+  `⚠️ 이미 등록된 센터입니다`,
+  ``,
+  `📍 ${existingCenter.region}  ${existingCenter.name}`,
+  `💰 수업료: ${Number(existingCenter.fee||0).toLocaleString()}원`,
+  `👤 현재 담당 강사: ${existingTeachers}`,
+  ``,
+  newTeachers.length
+   ? `이 센터에 [${newTeachers.join(', ')}] 강사를 추가하시겠어요?`
+   : `새로 선택한 강사가 이미 모두 담당 중이에요.\n기존 센터 정보를 수정하시겠어요?`
+ ].join('\n');
+
+ if(!confirm(msg)) return;
+
+ // 기존 센터 수정 모달 열기
+ closeModal();
+ openModal('center', dupIdx);
+
+ // 새 강사들 자동 추가 (중복 제외)
+ if(newTeachers.length){
+  setTimeout(()=>{
+   newTeachers.forEach(t=>{
+    if(!STATE.modalChips.includes(t)){
+     STATE.modalChips.push(t);
+     STATE.modalSchedule[t] = newSchedule[t] || [];
+     if(newSchedule[t+'__fee']) STATE.modalSchedule[t+'__fee'] = newSchedule[t+'__fee'];
+    }
+   });
+   const chipContainer = document.getElementById('chipContainer');
+   if(chipContainer) chipContainer.innerHTML = renderChips();
+   showToast(`✅ ${newTeachers.join(', ')} 강사가 추가됐어요. 요일을 설정하고 저장하세요.`);
+  }, 100);
+ }
+}
 function saveModal(){
  const type=STATE.modalType;
  const name=document.getElementById('fi_name')?.value.trim();
@@ -3908,12 +4249,14 @@ function saveModal(){
   DB.centers[STATE.editIdx]=obj;
  } else{
   // v11.25 fix: norm() 제거 → 정확한 이름 비교
-  // norm()은 괄호 내용을 제거하므로 "굿모닝(수원)"과 "굿모닝"을 같다고 판단 → 잘못된 차단
-  // 같은 이름이라도 지역이 다르면 별개 센터로 등록 가능
-  const isDup = DB.centers.find(c =>
+  const dupCenter = DB.centers.find(c =>
    c.name.trim().toLowerCase() === name.trim().toLowerCase() && c.region === region
   );
-  if(isDup){ alert(`이미 등록된 센터입니다. (${region} ${name})\n\n같은 이름이라도 지역이 다르면 별개로 등록 가능합니다.`); return; }
+  if(dupCenter){
+   // v11.25: 같은 이름+지역 센터 발견 → 강사 추가 안내 플로우
+   _openDupCenterFlow(dupCenter, [...STATE.modalChips], {...STATE.modalSchedule});
+   return;
+  }
   DB.centers.push(obj);
  }
  // Sheets에도 저장
