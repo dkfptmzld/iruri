@@ -1135,7 +1135,7 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
@@ -1298,7 +1298,10 @@ tbody tr:hover td{background:var(--surface2);}
     <div style="font-size:18px;font-weight:700;">📋 기록표 관리</div>
     <div style="font-size:13px;color:var(--text3);margin-top:2px;">강사가 제출한 수업기록표를 검토하고 반영합니다</div>
    </div>
-   <button class="btn sm" onclick="renderSubmissionsView()" style="gap:4px;">🔄 새로고침</button>
+   <div style="display:flex;gap:6px;">
+    <button class="btn sm" onclick="renderSubmissionsView()" style="gap:4px;">🔄 새로고침</button>
+    <button class="btn sm primary" onclick="_applyAllSubs()" id="applyAllBtn" style="gap:4px;">✅ 전체 반영</button>
+   </div>
   </div>
 
   <!-- 탭: 대기중 / 반영완료 -->
@@ -1341,8 +1344,10 @@ tbody tr:hover td{background:var(--surface2);}
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:58:51</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;">
+   <div style="text-align:center;padding:16px;color:var(--text3);font-size:13px;">불러오는 중...</div>
+  </div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">-</div>
  </div>
 </div>
 
@@ -4772,6 +4777,21 @@ function _renderSubDoneList(list){
    <div style="font-size:11px;color:var(--text3);">제출 ${submittedAt}</div>
   </div>`;
  }).join('');
+}
+
+async function _applyAllSubs(){
+ if(!_subPendingData.length){ showToast('대기 중인 수업기록표가 없어요'); return; }
+ if(!confirm(`대기 중인 수업기록표 ${_subPendingData.length}건을 전체 반영할까요?`)) return;
+ const btn = document.getElementById('applyAllBtn');
+ if(btn){ btn.disabled=true; btn.textContent='반영 중...'; }
+ // 전체 반영
+ _applySubmissions([..._subPendingData]);
+ // 순차적으로 GAS 삭제
+ for(const s of _subPendingData){
+  await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
+ }
+ showToast(`✅ ${_subPendingData.length}건 전체 반영 완료`);
+ renderSubmissionsView();
 }
 
 async function _applyOneSub(idx){
