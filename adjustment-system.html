@@ -1112,15 +1112,7 @@ tbody tr:hover td{background:var(--surface2);}
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
- <div class="topbar-right" id="topbarRight">
- <span class="chip green">2026년 3월</span>
- <div style="display:flex;gap:4px;align-items:center;">
- <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
- <button class="btn region-tab " onclick="setRegionFilter('서울')">서울</button><button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button><button class="btn region-tab " onclick="setRegionFilter('수원')">수원</button>
- </div>
- <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>CSV</button>
- <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
- <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
+ <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
@@ -1143,427 +1135,21 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 3월
+ <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 3월 · 30명</div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label">서울</div><div class="t-item " id="ti-11" onclick="selT(11)" style="position:relative;">
- <div class="t-avatar">구</div>
- <div class="t-info"><div class="t-name">구명훈</div><div class="t-pay">2,278,252</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(11)" class="t-del-btn" title="구명훈 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-12" onclick="selT(12)" style="position:relative;">
- <div class="t-avatar">변</div>
- <div class="t-info"><div class="t-name">변동</div><div class="t-pay">2,436,840</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(12)" class="t-del-btn" title="변동 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-13" onclick="selT(13)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info"><div class="t-name">김은영</div><div class="t-pay">348,120</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(13)" class="t-del-btn" title="김은영 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-14" onclick="selT(14)" style="position:relative;">
- <div class="t-avatar">양</div>
- <div class="t-info"><div class="t-name">양재원</div><div class="t-pay">2,193,156</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(14)" class="t-del-btn" title="양재원 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-15" onclick="selT(15)" style="position:relative;">
- <div class="t-avatar">양</div>
- <div class="t-info"><div class="t-name">양성모</div><div class="t-pay">1,665,174</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(15)" class="t-del-btn" title="양성모 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-16" onclick="selT(16)" style="position:relative;">
- <div class="t-avatar">장</div>
- <div class="t-info"><div class="t-name">장성기</div><div class="t-pay">1,817,960</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(16)" class="t-del-btn" title="장성기 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-17" onclick="selT(17)" style="position:relative;">
- <div class="t-avatar">이</div>
- <div class="t-info"><div class="t-name">이인경</div><div class="t-pay">2,233,770</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(17)" class="t-del-btn" title="이인경 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-18" onclick="selT(18)" style="position:relative;">
- <div class="t-avatar">조</div>
- <div class="t-info"><div class="t-name">조영미</div><div class="t-pay">1,299,648</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(18)" class="t-del-btn" title="조영미 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-19" onclick="selT(19)" style="position:relative;">
- <div class="t-avatar">윤</div>
- <div class="t-info"><div class="t-name">윤혜미</div><div class="t-pay">2,436,840</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(19)" class="t-del-btn" title="윤혜미 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-20" onclick="selT(20)" style="position:relative;">
- <div class="t-avatar">오</div>
- <div class="t-info"><div class="t-name">오건</div><div class="t-pay">348,120</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(20)" class="t-del-btn" title="오건 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-21" onclick="selT(21)" style="position:relative;">
- <div class="t-avatar">신</div>
- <div class="t-info"><div class="t-name">신기윤</div><div class="t-pay">1,315,120</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(21)" class="t-del-btn" title="신기윤 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-22" onclick="selT(22)" style="position:relative;">
- <div class="t-avatar">박</div>
- <div class="t-info"><div class="t-name">박준형</div><div class="t-pay">2,436,840</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(22)" class="t-del-btn" title="박준형 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-23" onclick="selT(23)" style="position:relative;">
- <div class="t-avatar">송</div>
- <div class="t-info"><div class="t-name">송준기</div><div class="t-pay">804,544</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(23)" class="t-del-btn" title="송준기 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-24" onclick="selT(24)" style="position:relative;">
- <div class="t-avatar">정</div>
- <div class="t-info"><div class="t-name">정상준</div><div class="t-pay">2,919,131</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(24)" class="t-del-btn" title="정상준 기록 삭제">✕</span>
- </div><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
- <div class="t-avatar">박</div>
- <div class="t-info"><div class="t-name">박기남</div><div class="t-pay">2,317,899</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
- <div class="t-avatar">홍</div>
- <div class="t-info"><div class="t-name">홍예은</div><div class="t-pay">1,624,560</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="홍예은 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-2" onclick="selT(2)" style="position:relative;">
- <div class="t-avatar">이</div>
- <div class="t-info"><div class="t-name">이재윤</div><div class="t-pay">1,353,800</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(2)" class="t-del-btn" title="이재윤 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-3" onclick="selT(3)" style="position:relative;">
- <div class="t-avatar">박</div>
- <div class="t-info"><div class="t-name">박종일</div><div class="t-pay">1,908,858</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(3)" class="t-del-btn" title="박종일 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-4" onclick="selT(4)" style="position:relative;">
- <div class="t-avatar">길</div>
- <div class="t-info"><div class="t-name">길범준</div><div class="t-pay">1,543,332</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(4)" class="t-del-btn" title="길범준 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-5" onclick="selT(5)" style="position:relative;">
- <div class="t-avatar">방</div>
- <div class="t-info"><div class="t-name">방진수</div><div class="t-pay">1,431,160</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(5)" class="t-del-btn" title="방진수 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-6" onclick="selT(6)" style="position:relative;">
- <div class="t-avatar">한</div>
- <div class="t-info"><div class="t-name">한수희</div><div class="t-pay">2,486,399</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(6)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-7" onclick="selT(7)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info"><div class="t-name">김수민</div><div class="t-pay">1,949,472</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(7)" class="t-del-btn" title="김수민 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-8" onclick="selT(8)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info"><div class="t-name">김효민</div><div class="t-pay">3,187,716</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(8)" class="t-del-btn" title="김효민 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-9" onclick="selT(9)" style="position:relative;">
- <div class="t-avatar">장</div>
- <div class="t-info"><div class="t-name">장호준</div><div class="t-pay">2,084,852</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(9)" class="t-del-btn" title="장호준 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-10" onclick="selT(10)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info"><div class="t-name">김유천</div><div class="t-pay">212,740</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(10)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
- </div><div class="region-group-label">수원</div><div class="t-item " id="ti-25" onclick="selT(25)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info"><div class="t-name">김수도</div><div class="t-pay">1,746,402</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(25)" class="t-del-btn" title="김수도 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-26" onclick="selT(26)" style="position:relative;">
- <div class="t-avatar">안</div>
- <div class="t-info"><div class="t-name">안지훈</div><div class="t-pay">3,016,557</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(26)" class="t-del-btn" title="안지훈 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-27" onclick="selT(27)" style="position:relative;">
- <div class="t-avatar">원</div>
- <div class="t-info"><div class="t-name">원보영</div><div class="t-pay">1,096,578</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(27)" class="t-del-btn" title="원보영 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-28" onclick="selT(28)" style="position:relative;">
- <div class="t-avatar">최</div>
- <div class="t-info"><div class="t-name">최정안</div><div class="t-pay">3,042,424</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(28)" class="t-del-btn" title="최정안 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-29" onclick="selT(29)" style="position:relative;">
- <div class="t-avatar">오</div>
- <div class="t-info"><div class="t-name">오수정</div><div class="t-pay">1,299,648</div></div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(29)" class="t-del-btn" title="오수정 기록 삭제">✕</span>
- </div></div>
+ <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">—</div></div>
+ <div class="teacher-scroll" id="teacherList"></div>
  </div>
  <div class="content" id="mainContent">
- <div class="profile-row">
- <div class="profile-avatar">박</div>
- <div><div class="profile-name">박기남 강사</div><div class="profile-sub">2026년 3월 · 강사료 85%</div></div>
- <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
-   <span style="color:var(--text3);font-size:11px;">국민은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">597302-04-146046</span><br><span>박기남</span>
- </div>
- </div>
- <div class="metrics">
- <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">52<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
- <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">2,820,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">423,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">2,317,899<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- </div>
- <div>
- <div class="tabs-bar">
- <div class="tab active" data-tab="ledger" onclick="setTab('ledger')">📋 수업기록표</div>
- <div class="tab" data-tab="settle" onclick="setTab('settle')">정산 상세</div>
- <div class="tab" data-tab="all" onclick="setTab('all')">전체 강사 비교</div>
- <div class="tab" data-tab="receipts_teacher" onclick="setTab('receipts_teacher')">🧾 영수증</div>
- </div>
- <div id="tabBody"><div class="ledger-wrap">
- <div class="ledger-title">2026년 3월 수업 기록표 ( 박기남 ) 강사</div>
- <div style="overflow-x:auto;">
- <table class="ledger-table">
- <colgroup>
- <col style="width:24px"><col style="width:130px">
- <col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px">
- <col style="width:38px"><col style="width:28px">
- <col style="width:62px"><col style="width:70px"></colgroup>
- <thead>
- <tr style="background:#E8E6DC;">
- <th style="width:24px;">요일</th>
- <th style="text-align:left;padding-left:6px;">센터명</th>
- <th>1주</th><th>2주</th><th>3주</th><th>4주</th><th>5주</th>
- <th>수업<br>횟수</th><th></th>
- <th>수업료</th><th>금액</th>
- </tr>
- </thead>
- <tbody><tr>
- <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">월</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">2일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">9일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">16일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">23일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">30일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="효명" onclick="openCenterPicker(0,0,this)">
- <span class="">효명</span>
- 
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,0,0)" title="2일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,1)" title="9일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,2)" title="16일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,3)" title="23일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,4)" title="30일">O</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="center-cell" title="서부어르신" onclick="openCenterPicker(0,1,this)">
- <span class="">서부어르신</span>
- 
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,1,0)" title="2일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,1)" title="9일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,2)" title="16일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,3)" title="23일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,4)" title="30일">O</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">3일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">10일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">17일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">24일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">31일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="더사랑" onclick="openCenterPicker(0,2,this)">
- <span class="">더사랑</span>
- 
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,2,0)" title="3일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,2,1)" title="10일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,2)" title="17일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,3)" title="24일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,4)" title="31일">O</td>
- <td class="count-cell">3</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">165,000</td>
- </tr><tr>
- <td class="center-cell" title="정다운" onclick="openCenterPicker(0,3,this)">
- <span class="">정다운</span>
- 
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,3,0)" title="3일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,1)" title="10일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,2)" title="17일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,3)" title="24일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,3,4)" title="31일">X</td>
- <td class="count-cell">3</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">165,000</td>
- </tr><tr>
- <td class="center-cell" title="소새울" onclick="openCenterPicker(0,4,this)">
- <span class="">소새울</span>
- 
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,4,0)" title="3일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,1)" title="10일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,4,2)" title="17일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,3)" title="24일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,4,4)" title="31일">X</td>
- <td class="count-cell">2</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">110,000</td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">수</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">4일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">11일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">18일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">25일</td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="늘푸른" onclick="openCenterPicker(0,5,this)">
- <span class="">늘푸른</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,5,0)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,1)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,2)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,3)" title="25일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">240,000</td>
- </tr><tr>
- <td class="center-cell" title="미추홀" onclick="openCenterPicker(0,6,this)">
- <span class="">미추홀</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,6,0)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,1)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,2)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,3)" title="25일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">200,000</td>
- </tr><tr>
- <td class="center-cell" title="소래" onclick="openCenterPicker(0,7,this)">
- <span class="">소래</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,7,0)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,1)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,2)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,7,3)" title="25일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">목</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">5일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">12일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">19일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">26일</td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="금천노인" onclick="openCenterPicker(0,8,this)">
- <span class="">금천노인</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,8,0)" title="5일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,1)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,2)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,3)" title="26일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">200,000</td>
- </tr><tr>
- <td class="center-cell" title="프라임" onclick="openCenterPicker(0,9,this)">
- <span class="">프라임</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,9,0)" title="5일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,1)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,2)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,3)" title="26일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="center-cell" title="무지개" onclick="openCenterPicker(0,10,this)">
- <span class="">무지개</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,10,0)" title="5일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,1)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,2)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,10,3)" title="26일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">6일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">13일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">20일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">27일</td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="주은" onclick="openCenterPicker(0,11,this)">
- <span class="">주은</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,11,0)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,1)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,2)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,11,3)" title="27일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="center-cell" title="가가호호봉천" onclick="openCenterPicker(0,12,this)">
- <span class="">가가호호봉천</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,12,0)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,1)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,2)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,3)" title="27일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">200,000</td>
- </tr><tr>
- <td class="center-cell" title="두드림" onclick="openCenterPicker(0,13,this)">
- <span class="">두드림</span>
- 
- </td>
- <td class="attend-cell att-o" onclick="toggleAttend(0,13,0)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,1)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,2)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,13,3)" title="27일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
- <td class="count-cell">4</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,13,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">220,000</td>
- </tr></tbody>
- <tfoot>
- <tr class="ledger-foot">
- <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">국민은행 597302-04-146046 박기남</td>
- <td style="font-size:11px;font-weight:600;">수업료%</td>
- <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
- <td style="font-size:11px;font-weight:600;">세전</td>
- </tr>
- <tr class="ledger-foot">
- <td colspan="7"></td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">85%</td>
- <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">2,820,000</td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">2,397,000</td>
- </tr>
- </tfoot>
- </table>
- </div>
- <!-- 가로 정산 요약 + 비용 입력 -->
- <div class="settle-summary-row">
- <table class="settle-summary-table">
- <thead>
- <tr>
- <th>수업료%</th>
- <th>수업료 합계</th>
- <th>세전</th>
- <th>영업이익</th>
- <th>확정 월급</th>
- <th class="cost-col">비용처리<div class="cost-hint">주차료 등</div></th>
- <th class="cost-col">모의수업<div class="cost-hint">△ 1회=20,000원</div></th>
- <th class="cost-col">기타비용</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td style="font-weight:700;color:#1A5FA0;">85%</td>
- <td style="font-weight:700;">₩2,820,000</td>
- <td style="font-weight:700;color:#1A5FA0;">₩2,397,000</td>
- <td style="font-weight:700;color:#1A7A50;">+423,000</td>
- <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩2,317,899</td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'costExtra',this.value)" min="0"></td>
- <td class="cost-col">
- <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △0회 = 0원</div>
- <input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
- </td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'otherCost',this.value)" min="0"></td>
- </tr>
- <tr class="cost-display-row">
- <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
- <td class="cost-col" id="extraCost-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
- <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
- <td class="cost-col" id="extraOther-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
- </tr>
- </tbody>
- </table>
- </div>
- <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
- <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
-  특이사항
-  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
- </div>
- <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">1. 3/2 [효명, 서부어르신] 5주차 휴강
-2. 3/3 [더사랑, 정다운, 소새울] 5주차 휴강
-3. 3/10 [더사랑] 교통사고 보강대체(이재윤)
-4. 3/17 [소새울] 센터 내 생일잔치 휴강
-5. 3/31 [정다운] 대상웰라이프 미팅 보강(홍예은) / [소새울] 자체수업
-비용처리: 40,435원 / 대상 웰라이프 미팅 수업료 지원(2개): 90,420원</textarea>
- </div>
- <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
- <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
- O/X 클릭으로 출석 토글 · 센터명·수업료 클릭으로 직접 수정
- </div>
- </div></div>
- </div></div>
+  <div class="upload-wrap">
+   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
+    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
+    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
+   </div>
+  </div></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1747,7 +1333,7 @@ tbody tr:hover td{background:var(--surface2);}
  <!-- 토글 버튼 -->
  <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width:52px;height:52px;border-radius:50%;background:var(--green);border:none;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
   <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
-  <span id="presenceOnlineBadge" style="display: block; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
+  <span id="presenceOnlineBadge" style="display:none;position:absolute;top:2px;right:2px;background:#4CAF50;border:2px solid white;border-radius:50%;width:14px;height:14px;"></span>
  </button>
  <!-- 팝업 패널 -->
  <div id="presencePanel" style="display:none;position:absolute;bottom:62px;right:0;width:240px;background:white;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;">
@@ -1755,26 +1341,8 @@ tbody tr:hover td{background:var(--surface2);}
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
-   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
-   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
-   <span style="font-size:11px;color:#2e7d32;">방금</span>
-  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">30</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
-  </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 07:59:17</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:58:51</div>
  </div>
 </div>
 
@@ -1809,7 +1377,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ 2026년 3월 불러오는 중...</div>
+<div class="save-toast" id="saveToast">✓ 2026년 4월은 삭제된 데이터예요</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -6264,8 +5832,7 @@ function checkPendingSubmissions(){
     return true;
    });
    if(pending.length){
-    _showSubmissionBanner(pending);
-    // 기록표 관리 탭 뱃지도 업데이트
+    // 배너 제거 → 기록표 관리 탭 뱃지만 업데이트
     const badge = document.getElementById('submissionsBadge');
     const cntEl = document.getElementById('subPendingCount');
     if(badge){ badge.textContent=pending.length; badge.style.display='block'; }
@@ -6296,7 +5863,7 @@ function _showSubmissionBanner(subs){
  <span style="display:flex;gap:4px;flex-wrap:wrap;">${nameList}</span>
  </div>
  <div style="display:flex;gap:8px;flex-shrink:0;">
- <button id="applyBtn" onclick="loadSubmissions()" style="height:32px;padding:0 16px;border-radius:8px;border:none;background:white;color:#1A7A50;font-size:13px;font-weight:700;cursor:pointer;">반영하기</button>
+ <button id="applyBtn" onclick="switchView('submissions');dismissSubmissions();" style="height:32px;padding:0 16px;border-radius:8px;border:none;background:white;color:#1A7A50;font-size:13px;font-weight:700;cursor:pointer;">기록표 관리 탭으로</button>
  <button onclick="dismissSubmissions()" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid rgba(255,255,255,.4);background:transparent;color:white;font-size:12px;cursor:pointer;">나중에</button>
  </div>`;
  document.body.appendChild(banner);
@@ -6335,9 +5902,9 @@ function loadSubmissions(){
    applied2 = applied2.filter(a=>(now2 - a.appliedAt) < 604800000);
    subs.forEach(s=> applied2.push({name:s.name, yearMonth:s.yearMonth, appliedAt:now2}));
    localStorage.setItem(appliedKey, JSON.stringify(applied2));
-   // 백그라운드: GAS에서도 삭제
+   // 백그라운드: GAS에서도 삭제 (submittedAt으로 특정 건만 삭제)
    subs.forEach(s=>{
-    gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth }).catch(()=>{});
+    gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
    });
   })
   .catch(()=>{ showToast('서버 연결 실패. 잠시 후 다시 시도해주세요.'); });
