@@ -82,7 +82,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 /* LAYOUT */
 .layout{display:flex;height:calc(100vh - 52px);overflow:hidden;}
-.sidebar{width:230px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar{width:256px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .sidebar-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
 .sidebar-head h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px;}
 .sidebar-meta{font-size:12px;color:var(--text2);}
@@ -99,10 +99,13 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .t-avatar{width:30px;height:30px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;}
 .t-item.active .t-avatar{background:var(--green);color:white;}
 .t-info{flex:1;min-width:0;}
-.t-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-name{font-size:13px;font-weight:500;white-space:normal;word-break:keep-all;line-height:1.35;}
 .t-item.active .t-name{color:var(--green);}
 .t-pay{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;}
 .t-item.active .t-pay{color:var(--green);}
+/* 정산완료 뱃지 */
+.t-done-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;background:var(--green-bg);color:var(--green);border:1px solid #B8E0CC;white-space:nowrap;letter-spacing:.2px;}
+.t-item.active .t-done-badge{background:var(--green);color:white;border-color:var(--green);}
 .region-group-label{font-size:10px;font-weight:700;color:#999;letter-spacing:.6px;text-transform:uppercase;padding:6px 10px 2px;margin-top:4px;}
 .region-tab{font-size:11px;padding:4px 10px;height:28px;}
 .region-tab.active{background:var(--green);color:white;border-color:var(--green);}
@@ -2961,9 +2964,23 @@ function buildTeacherListHtml(teachers, curIdx){
  if(filter&&r!==filter) return; // 지역 필터 적용
  html+=`<div class="region-group-label">${r}</div>`;
  g.forEach(({t,i})=>{
+  // 정산완료 판단: finalPay 확정 + 모든 수업에 출석 입력됨
+  const hasPay = t.finalPay > 0;
+  const hasAllAttend = t.lessons?.length > 0 && t.lessons.every(l =>
+   (l.attend||[]).some(a => a==='O' || a==='X' || a==='△')
+  );
+  const isDone = hasPay && hasAllAttend;
+  const badgeHtml = isDone
+   ? `<span class="t-done-badge">✓ 완료</span>`
+   : (t.lessons?.length > 0 && !hasPay)
+    ? `<span class="t-done-badge" style="background:var(--amber-bg);color:var(--amber);border-color:#E8CC80;">미정산</span>`
+    : '';
  html+=`<div class="t-item ${i===curIdx?'active':''}" id="ti-${i}" onclick="selT(${i})" style="position:relative;">
  <div class="t-avatar">${t.name[0]}</div>
- <div class="t-info"><div class="t-name">${t.name}</div><div class="t-pay">${t.finalPay?Math.round(t.finalPay).toLocaleString():'-'}</div></div>
+ <div class="t-info">
+  <div class="t-name">${t.name}${badgeHtml}</div>
+  <div class="t-pay">${t.finalPay?Math.round(t.finalPay).toLocaleString()+' 원':'-'}</div>
+ </div>
  <span onclick="event.stopPropagation();deleteTeacherRecord(${i})" class="t-del-btn" title="${t.name} 기록 삭제">✕</span>
  </div>`;
  });
