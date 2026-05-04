@@ -211,10 +211,23 @@ tbody tr:hover td{background:var(--surface2);}
 .ledger-table thead th{background:#E8E6DC;font-weight:600;font-size:11px;padding:5px 3px;color:#333;}
 .ledger-table .day-cell{background:#E8E6DC;font-weight:700;font-size:13px;writing-mode:vertical-lr;text-orientation:mixed;width:24px;padding:4px 2px;border-right:2px solid #AAA8A0;}
 .ledger-table .date-row td{background:#F5F4F0;font-size:11px;color:#666;font-weight:600;padding:3px 2px;}
-.ledger-table .center-cell{text-align:left;padding:4px 6px;font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.ledger-table .center-cell{text-align:left;padding:4px 6px 4px 6px;font-size:12px;max-width:130px;overflow:visible;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;position:relative;}
 .ledger-table .center-cell:hover{background:#F0EFE9;}
 .ledger-table .center-cell input{width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:inherit;color:var(--text);}
 .ledger-table .center-cell input:focus{background:var(--green-bg);}
+/* 센터 삭제 X버튼 */
+.ledger-table .center-cell .del-lesson-btn{
+  position:absolute;right:-8px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:#E05252;color:white;border:none;
+  font-size:11px;font-weight:700;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .15s;
+  z-index:10;padding:0;flex-shrink:0;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.ledger-table .center-cell:hover .del-lesson-btn{opacity:1;}
+.ledger-table .center-cell .del-lesson-btn:hover{background:#C03030;transform:translateY(-50%) scale(1.15);}
 .center-missing{color:var(--red);font-style:italic;}
 /* 센터 피커 모달 */
 #centerPickerModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;}
@@ -3211,9 +3224,10 @@ function renderLedger(ti){
  }).join('');
 
  bodyRows+=`<tr>
- <td class="center-cell" title="${l.center}" onclick="openCenterPicker(${ti},${lessonIdx},this)"">
+ <td class="center-cell" title="${l.center}" onclick="openCenterPicker(${ti},${lessonIdx},this)">
  <span class="${l.feePer?'':'center-missing'}">${l.center||'(미설정)'}</span>
  ${l.isSubstitute?`<span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강${l.substituteFor?` (${l.substituteFor})`:''}</span>`:''}
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(${ti},${lessonIdx})" title="${l.center||'수업'} 삭제">✕</button>
  </td>
  ${attendCells}
  <td class="count-cell">${l.count}</td>
@@ -3571,6 +3585,43 @@ function recalcAndRefresh(ti){
  recalcTeacher(ti);
  renderTab('ledger',ti);
  showToast('재계산 완료');
+}
+
+function deleteLesson(ti, lessonIdx){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t) return;
+ const lesson = t.lessons[lessonIdx];
+ if(!lesson) return;
+
+ const centerName = lesson.center || '(미설정)';
+ if(!confirm(`「${centerName}」 수업을 삭제할까요?\n삭제 후에는 변경이력에서 복원할 수 있어요.`)) return;
+
+ // 변경이력 저장 (복원 가능하도록 스냅샷 포함)
+ pushChangelog({
+  type: 'record_delete',
+  desc: `수업 삭제 — ${t.name} › ${centerName} (${lesson.day||''})`,
+  detail: `${t.yearMonth} · 수업료 ${lesson.feePer?lesson.feePer.toLocaleString()+' 원/회':'미설정'} · ${lesson.count||0}회`,
+  snapshot: { ym: t.yearMonth, data: JSON.parse(JSON.stringify(STATE.data)) }
+ });
+
+ // 수업 배열에서 제거
+ t.lessons.splice(lessonIdx, 1);
+
+ // dayGroups도 동기화: 해당 day의 수업이 0개면 그룹도 제거
+ if(t.dayGroups){
+  const remaining = t.lessons.filter(l => l.day === lesson.day);
+  if(!remaining.length){
+   t.dayGroups = t.dayGroups.filter(g => g.day !== lesson.day);
+  }
+ }
+
+ // 재계산 → 저장 → 화면 갱신
+ recalcTeacher(ti);
+ const ym = t.yearMonth;
+ lsSave();
+ saveMonthlySnapshot(ym, STATE.data);
+ renderTab('ledger', ti);
+ showToast(`🗑 ${centerName} 수업이 삭제됐어요`);
 }
 
 function renderDetail(i){
