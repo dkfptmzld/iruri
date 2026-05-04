@@ -1811,6 +1811,19 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
+<!-- 커스텀 confirm 모달 -->
+<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
+  <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
+  </div>
+ </div>
+</div>
+
 <div class="save-toast" id="saveToast">✓ 2026년 4월 불러오는 중...</div>
 
 <!-- 전역 로딩 오버레이 -->
@@ -3594,34 +3607,45 @@ function deleteLesson(ti, lessonIdx){
  if(!lesson) return;
 
  const centerName = lesson.center || '(미설정)';
- if(!confirm(`「${centerName}」 수업을 삭제할까요?\n삭제 후에는 변경이력에서 복원할 수 있어요.`)) return;
+ const dayLabel = lesson.day ? lesson.day + '요일' : '';
+ const feeLabel = lesson.feePer ? lesson.feePer.toLocaleString() + '원/회' : '수업료 미설정';
 
- // 변경이력 저장 (복원 가능하도록 스냅샷 포함)
- pushChangelog({
-  type: 'record_delete',
-  desc: `수업 삭제 — ${t.name} › ${centerName} (${lesson.day||''})`,
-  detail: `${t.yearMonth} · 수업료 ${lesson.feePer?lesson.feePer.toLocaleString()+' 원/회':'미설정'} · ${lesson.count||0}회`,
-  snapshot: { ym: t.yearMonth, data: JSON.parse(JSON.stringify(STATE.data)) }
- });
+ showConfirm({
+  icon: '🗑',
+  title: `「${centerName}」 수업을 삭제할까요?`,
+  desc: `${dayLabel ? dayLabel + ' · ' : ''}${feeLabel}<br><span style="font-size:12px;color:var(--text3);margin-top:6px;display:block;">변경이력에서 언제든 복원할 수 있어요</span>`,
+  okText: '삭제',
+  okStyle: 'danger',
+  cancelText: '취소',
+  onOk: ()=>{
+   // 변경이력 저장 (복원 가능하도록 스냅샷 포함)
+   pushChangelog({
+    type: 'record_delete',
+    desc: `수업 삭제 — ${t.name} › ${centerName} (${lesson.day||''})`,
+    detail: `${t.yearMonth} · ${feeLabel} · ${lesson.count||0}회`,
+    snapshot: { ym: t.yearMonth, data: JSON.parse(JSON.stringify(STATE.data)) }
+   });
 
- // 수업 배열에서 제거
- t.lessons.splice(lessonIdx, 1);
+   // 수업 배열에서 제거
+   t.lessons.splice(lessonIdx, 1);
 
- // dayGroups도 동기화: 해당 day의 수업이 0개면 그룹도 제거
- if(t.dayGroups){
-  const remaining = t.lessons.filter(l => l.day === lesson.day);
-  if(!remaining.length){
-   t.dayGroups = t.dayGroups.filter(g => g.day !== lesson.day);
+   // dayGroups도 동기화: 해당 day의 수업이 0개면 그룹도 제거
+   if(t.dayGroups){
+    const remaining = t.lessons.filter(l => l.day === lesson.day);
+    if(!remaining.length){
+     t.dayGroups = t.dayGroups.filter(g => g.day !== lesson.day);
+    }
+   }
+
+   // 재계산 → 저장 → 화면 갱신
+   recalcTeacher(ti);
+   const ym = t.yearMonth;
+   lsSave();
+   saveMonthlySnapshot(ym, STATE.data);
+   renderTab('ledger', ti);
+   showToast(`🗑 ${centerName} 수업이 삭제됐어요`);
   }
- }
-
- // 재계산 → 저장 → 화면 갱신
- recalcTeacher(ti);
- const ym = t.yearMonth;
- lsSave();
- saveMonthlySnapshot(ym, STATE.data);
- renderTab('ledger', ti);
- showToast(`🗑 ${centerName} 수업이 삭제됐어요`);
+ });
 }
 
 function renderDetail(i){
@@ -6192,6 +6216,50 @@ function removeAdminAutoLogoutUI(){
 }
 
 function showToast(msg){const el=document.getElementById('saveToast');el.textContent='✓ '+msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);}
+
+/* ═══ 커스텀 Confirm 모달 ═══ */
+let _confirmCallback = null;
+
+function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle='danger', cancelText='취소', onOk=null }={}){
+ document.getElementById('confirmIcon').textContent = icon;
+ document.getElementById('confirmTitle').textContent = title;
+ document.getElementById('confirmDesc').innerHTML = desc;
+
+ const okBtn = document.getElementById('confirmOkBtn');
+ okBtn.textContent = okText;
+ // 버튼 색상: danger=빨강 / primary=초록 / 기본
+ okBtn.className = 'btn';
+ if(okStyle === 'danger'){
+  okBtn.style.cssText = 'min-width:90px;background:#E05252;color:white;border-color:#C03030;font-weight:700;';
+ } else if(okStyle === 'primary'){
+  okBtn.style.cssText = 'min-width:90px;background:var(--green);color:white;border-color:var(--green);font-weight:700;';
+ } else {
+  okBtn.style.cssText = 'min-width:90px;';
+ }
+
+ document.getElementById('confirmCancelBtn').textContent = cancelText;
+ _confirmCallback = onOk;
+
+ const overlay = document.getElementById('confirmOverlay');
+ overlay.style.display = 'flex';
+ // 모달 등장 애니메이션
+ const box = overlay.querySelector('.modal');
+ box.style.transform = 'scale(.92)';
+ box.style.opacity = '0';
+ box.style.transition = 'transform .18s cubic-bezier(.34,1.56,.64,1), opacity .15s';
+ requestAnimationFrame(()=>{ box.style.transform = 'scale(1)'; box.style.opacity = '1'; });
+}
+
+function _confirmOk(){
+ document.getElementById('confirmOverlay').style.display = 'none';
+ if(typeof _confirmCallback === 'function') _confirmCallback();
+ _confirmCallback = null;
+}
+
+function _confirmCancel(){
+ document.getElementById('confirmOverlay').style.display = 'none';
+ _confirmCallback = null;
+}
 
 /* ═══ 로딩 오버레이 ═══ */
 let _loaderTimer = null;
