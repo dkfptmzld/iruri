@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.36">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.39">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.36">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.39">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.36</title>
+<title>수업기록표 정산 시스템 v11.39</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1181,7 +1181,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
  <div class="nav-tabs">
  <button class="nav-tab active" id="nav0" onclick="switchView('settle')">📊 정산</button>
- <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
+ <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">1</span></button>
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
@@ -1192,7 +1192,15 @@ tbody tr:hover td{background:var(--surface2);}
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
- <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
+ <div class="topbar-right" id="topbarRight">
+ <span class="chip green">2026년 4월</span>
+ <div style="display:flex;gap:4px;align-items:center;">
+ <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
+ <button class="btn region-tab " onclick="setRegionFilter('서울')">서울</button><button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button><button class="btn region-tab " onclick="setRegionFilter('수원')">수원</button>
+ </div>
+ <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>CSV</button>
+ <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
+ <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
@@ -1223,21 +1231,457 @@ tbody tr:hover td{background:var(--surface2);}
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 4월
  </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">—</div></div>
- <div class="teacher-scroll" id="teacherList"></div>
+ <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 4월 · 30명</div></div>
+ <div class="teacher-scroll" id="teacherList"><div class="region-group-label">서울</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info">
+  <div class="t-name">김은영<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">502,840 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="김은영 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-6" onclick="selT(6)" style="position:relative;">
+ <div class="t-avatar">조</div>
+ <div class="t-info">
+  <div class="t-name">조영미<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(6)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,177,806 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(6)" class="t-del-btn" title="조영미 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-8" onclick="selT(8)" style="position:relative;">
+ <div class="t-avatar">이</div>
+ <div class="t-info">
+  <div class="t-name">이인경<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(8)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,949,472 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(8)" class="t-del-btn" title="이인경 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-9" onclick="selT(9)" style="position:relative;">
+ <div class="t-avatar">송</div>
+ <div class="t-info">
+  <div class="t-name">송준기<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(9)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">684,636 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(9)" class="t-del-btn" title="송준기 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-10" onclick="selT(10)" style="position:relative;">
+ <div class="t-avatar">오</div>
+ <div class="t-info">
+  <div class="t-name">오건<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(10)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,353,800 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(10)" class="t-del-btn" title="오건 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-11" onclick="selT(11)" style="position:relative;">
+ <div class="t-avatar">정</div>
+ <div class="t-info">
+  <div class="t-name">정상준<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(11)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">3,160,398 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(11)" class="t-del-btn" title="정상준 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-12" onclick="selT(12)" style="position:relative;">
+ <div class="t-avatar">구</div>
+ <div class="t-info">
+  <div class="t-name">구명훈<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(12)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,537,408 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(12)" class="t-del-btn" title="구명훈 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-18" onclick="selT(18)" style="position:relative;">
+ <div class="t-avatar">신</div>
+ <div class="t-info">
+  <div class="t-name">신기윤<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(18)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,353,800 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(18)" class="t-del-btn" title="신기윤 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-19" onclick="selT(19)" style="position:relative;">
+ <div class="t-avatar">장</div>
+ <div class="t-info">
+  <div class="t-name">장성기<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(19)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,817,960 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(19)" class="t-del-btn" title="장성기 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-20" onclick="selT(20)" style="position:relative;">
+ <div class="t-avatar">변</div>
+ <div class="t-info">
+  <div class="t-name">변동<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(20)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,355,612 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(20)" class="t-del-btn" title="변동 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-21" onclick="selT(21)" style="position:relative;">
+ <div class="t-avatar">윤</div>
+ <div class="t-info">
+  <div class="t-name">윤혜미<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(21)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,518,068 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(21)" class="t-del-btn" title="윤혜미 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-22" onclick="selT(22)" style="position:relative;">
+ <div class="t-avatar">양</div>
+ <div class="t-info">
+  <div class="t-name">양재원<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(22)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,233,770 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(22)" class="t-del-btn" title="양재원 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-25" onclick="selT(25)" style="position:relative;">
+ <div class="t-avatar">양</div>
+ <div class="t-info">
+  <div class="t-name">양성모<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(25)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,868,244 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(25)" class="t-del-btn" title="양성모 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-29" onclick="selT(29)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info">
+  <div class="t-name">박준형<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(29)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,436,840 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(29)" class="t-del-btn" title="박준형 기록 삭제">✕</span>
+ </div><div class="region-group-label">인천</div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
+ <div class="t-avatar">장</div>
+ <div class="t-info">
+  <div class="t-name">장호준<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,042,304 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="장호준 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-2" onclick="selT(2)" style="position:relative;">
+ <div class="t-avatar">이</div>
+ <div class="t-info">
+  <div class="t-name">이재윤<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(2)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,160,400 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(2)" class="t-del-btn" title="이재윤 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-3" onclick="selT(3)" style="position:relative;">
+ <div class="t-avatar">홍</div>
+ <div class="t-info">
+  <div class="t-name">홍예은<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(3)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,624,560 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(3)" class="t-del-btn" title="홍예은 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-4" onclick="selT(4)" style="position:relative;">
+ <div class="t-avatar">한</div>
+ <div class="t-info">
+  <div class="t-name">한수희<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(4)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,548,045 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(4)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-5" onclick="selT(5)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info">
+  <div class="t-name">김효민<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(5)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">3,389,819 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(5)" class="t-del-btn" title="김효민 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-7" onclick="selT(7)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info">
+  <div class="t-name">박기남<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(7)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,404,204 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(7)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-13" onclick="selT(13)" style="position:relative;">
+ <div class="t-avatar">방</div>
+ <div class="t-info">
+  <div class="t-name">방진수<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(13)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,315,120 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(13)" class="t-del-btn" title="방진수 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-14" onclick="selT(14)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info">
+  <div class="t-name">김수민<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(14)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,908,858 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(14)" class="t-del-btn" title="김수민 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-15" onclick="selT(15)" style="position:relative;">
+ <div class="t-avatar">길</div>
+ <div class="t-info">
+  <div class="t-name">길범준<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(15)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,299,648 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(15)" class="t-del-btn" title="길범준 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-16" onclick="selT(16)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info">
+  <div class="t-name">김유천<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(16)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">460,292 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(16)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-17" onclick="selT(17)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info">
+  <div class="t-name">박종일<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(17)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,949,472 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(17)" class="t-del-btn" title="박종일 기록 삭제">✕</span>
+ </div><div class="region-group-label">수원</div><div class="t-item " id="ti-23" onclick="selT(23)" style="position:relative;">
+ <div class="t-avatar">김</div>
+ <div class="t-info">
+  <div class="t-name">김수도<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(23)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,949,472 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(23)" class="t-del-btn" title="김수도 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-24" onclick="selT(24)" style="position:relative;">
+ <div class="t-avatar">안</div>
+ <div class="t-info">
+  <div class="t-name">안지훈<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(24)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,511,057 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(24)" class="t-del-btn" title="안지훈 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-26" onclick="selT(26)" style="position:relative;">
+ <div class="t-avatar">최</div>
+ <div class="t-info">
+  <div class="t-name">최정안<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(26)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">2,893,264 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(26)" class="t-del-btn" title="최정안 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-27" onclick="selT(27)" style="position:relative;">
+ <div class="t-avatar">원</div>
+ <div class="t-info">
+  <div class="t-name">원보영<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(27)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,218,420 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(27)" class="t-del-btn" title="원보영 기록 삭제">✕</span>
+ </div><div class="t-item " id="ti-28" onclick="selT(28)" style="position:relative;">
+ <div class="t-avatar">오</div>
+ <div class="t-info">
+  <div class="t-name">오수정<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(28)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-pay">1,421,490 원</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(28)" class="t-del-btn" title="오수정 기록 삭제">✕</span>
+ </div></div>
  </div>
  <div class="content" id="mainContent">
-  <div class="upload-wrap">
-   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
-    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
-    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
-   </div>
-  </div></div>
+ <div class="profile-row">
+ <div class="profile-avatar">김</div>
+ <div><div class="profile-name">김은영 강사</div><div class="profile-sub">2026년 4월 · 강사료 40,000원/회</div></div>
+ <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
+   <span style="color:var(--text3);font-size:11px;">농협</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">352-1704-2930-23</span><br><span>김은영</span>
+ </div>
+ </div>
+ <div class="metrics">
+ <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">13<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
+ <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">710,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">190,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">502,840<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ </div>
+ <div>
+ <div class="tabs-bar">
+ <div class="tab active" data-tab="ledger" onclick="setTab('ledger')">📋 수업기록표</div>
+ <div class="tab" data-tab="settle" onclick="setTab('settle')">정산 상세</div>
+ <div class="tab" data-tab="all" onclick="setTab('all')">전체 강사 비교</div>
+ <div class="tab" data-tab="receipts_teacher" onclick="setTab('receipts_teacher')">🧾 영수증</div>
+ </div>
+ <div id="tabBody"><div class="ledger-wrap">
+ <div class="ledger-title">2026년 4월 수업 기록표 ( 김은영 ) 강사</div>
+  <div style="overflow-x:auto;">
+ <table class="ledger-table">
+ <colgroup>
+ <col style="width:24px"><col style="width:130px">
+ <col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px">
+ <col style="width:38px"><col style="width:28px">
+ <col style="width:62px"><col style="width:70px"></colgroup>
+ <thead>
+ <tr style="background:#E8E6DC;">
+ <th style="width:24px;">요일</th>
+ <th style="text-align:left;padding-left:6px;">센터명</th>
+ <th>1주</th><th>2주</th><th>3주</th><th>4주</th><th>5주</th>
+ <th>수업<br>횟수</th><th></th>
+ <th>수업료</th><th>금액</th>
+ </tr>
+ </thead>
+ <tbody><tr>
+ <td class="day-cell" rowspan="2" style="border-right:2px solid #AAA8A0;">월</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">6일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">13일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">20일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">27일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="봄날한강" onclick="openCenterPicker(0,0,this)">
+ <span class="">봄날한강</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,0)" title="봄날한강 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,1)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,2)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,3)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,4)" title="27일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'월')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">화</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">7일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">14일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">21일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">28일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="서은요양원" onclick="openCenterPicker(0,1,this)">
+ <span class="">서은요양원</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,1)" title="서은요양원 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,1)" title="7일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,4)" title="28일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="효실버센터" onclick="openCenterPicker(0,2,this)">
+ <span class="">효실버센터</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,2)" title="효실버센터 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,1)" title="7일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,4)" title="28일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">3일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">10일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">17일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">24일</td><td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="너른뜰" onclick="openCenterPicker(0,3,this)">
+ <span class="">너른뜰</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,3)" title="너른뜰 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,3,0)" title="3일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,1)" title="10일"></td><td class="attend-cell att-tri" onclick="toggleAttend(0,3,2)" title="17일">△</td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,3)" title="24일"></td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="양주정원산책" onclick="openCenterPicker(0,4,this)">
+ <span class="">양주정원산책</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,4)" title="양주정원산책 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,4,0)" title="3일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,1)" title="10일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,2)" title="17일"></td><td class="attend-cell att-tri" onclick="toggleAttend(0,4,3)" title="24일">△</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="우리들 의정부" onclick="openCenterPicker(0,5,this)">
+ <span class="">우리들 의정부</span>
+ <span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강</span>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,5)" title="우리들 의정부 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,5,0)" title="3일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,1)" title="10일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,2)" title="17일"></td><td class="attend-cell att-o" onclick="toggleAttend(0,5,3)" title="24일">O</td><td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td>
+ <td class="count-cell">1</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">50,000</td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'금')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr></tbody>
+ <tfoot>
+ <tr class="ledger-foot">
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협 352-1704-2930-23 김은영</td>
+ <td style="font-size:11px;font-weight:600;">수업료%</td>
+ <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
+ <td style="font-size:11px;font-weight:600;">세전</td>
+ </tr>
+ <tr class="ledger-foot">
+ <td colspan="7"></td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">40,000원/회</td>
+ <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">710,000</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">520,000</td>
+ </tr>
+ </tfoot>
+ </table>
+ </div>
+ <!-- 가로 정산 요약 + 비용 입력 -->
+ <div class="settle-summary-row">
+ <table class="settle-summary-table">
+ <thead>
+ <tr>
+ <th>수업료%</th>
+ <th>수업료 합계</th>
+ <th>세전</th>
+ <th>영업이익</th>
+ <th>확정 월급</th>
+ <th class="cost-col">비용처리<div class="cost-hint">주차료 등</div></th>
+ <th class="cost-col">모의수업<div class="cost-hint">△ 1회=20,000원</div></th>
+ <th class="cost-col">기타비용</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td style="font-weight:700;color:#1A5FA0;">40,000원/회</td>
+ <td style="font-weight:700;">₩710,000</td>
+ <td style="font-weight:700;color:#1A5FA0;">₩520,000</td>
+ <td style="font-weight:700;color:#1A7A50;">+190,000</td>
+ <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩502,840</td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'costExtra',this.value)" min="0"></td>
+ <td class="cost-col">
+ <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △2회 = 40,000원</div>
+ <input type="number" class="cost-input" placeholder="0" value="40000" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
+ </td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'otherCost',this.value)" min="0"></td>
+ </tr>
+ <tr class="cost-display-row">
+ <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
+ <td class="cost-col" id="extraCost-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">₩40,000</td>
+ <td class="cost-col" id="extraOther-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
+ <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
+  특이사항
+  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
+ </div>
+ <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">신규(모의) 수업: 17일 너른뜰 모의수업
+신규(모의) 수업: 24일 정원산책 모의수업
+보강: 24일 의정부 우리들 보강수업</textarea>
+ </div>
+ <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+ <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+ O/X 클릭으로 출석 토글 · 센터명·수업료 클릭으로 직접 수정
+ </div>
+ </div></div>
+ </div></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1408,7 +1852,7 @@ tbody tr:hover td{background:var(--surface2);}
   <!-- 탭: 대기중 / 반영완료 -->
   <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border-radius:10px;padding:4px;">
    <button id="subTab0" onclick="switchSubTab('pending')" style="flex:1;padding:7px 0;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:white;color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,.08);">
-    대기중 <span id="subPendingCount" style="background:var(--red);color:white;border-radius:20px;padding:1px 6px;font-size:11px;margin-left:3px;">0</span>
+    대기중 <span id="subPendingCount" style="background:var(--red);color:white;border-radius:20px;padding:1px 6px;font-size:11px;margin-left:3px;">1</span>
    </button>
    <button id="subTab1" onclick="switchSubTab('done')" style="flex:1;padding:7px 0;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--text2);">
     반영완료
@@ -1445,8 +1889,26 @@ tbody tr:hover td{background:var(--surface2);}
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
+   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
+   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
+   <span style="font-size:11px;color:#2e7d32;">방금</span>
+  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
+  </div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:56:39</div>
  </div>
 </div>
 
@@ -1494,7 +1956,7 @@ tbody tr:hover td{background:var(--surface2);}
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ 2026년 4월 불러오는 중...</div>
+<div class="save-toast" id="saveToast">✓ ✅ 2026년 3월 수업기록표 로드 완료</div>
 
 <!-- 전역 로딩 오버레이 -->
 <div id="globalLoader">
@@ -1509,7 +1971,39 @@ const DEFAULT_TEACHERS = [{"name":"김은영","region":"서울","feeType":"fixed
 const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["화"], "order": 1}]}, {"name": "88등촌", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 2}]}, {"name": "A+우리", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "이인경"], "source": "자동"}, {"name": "A+하남행복", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "가가호호봉천", "region": "인천", "fee": 50000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 2}, {"teacher": "박종일", "days": ["월"], "order": 2}]}, {"name": "가가호호시흥", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["수"], "order": 2}]}, {"name": "가나안", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 1}]}, {"name": "가람", "region": "서울", "fee": 55000, "teachers": ["송준기"], "source": "자동"}, {"name": "가로등", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 1}]}, {"name": "가온1", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가온2", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가은", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 1}]}, {"name": "가족데이케어", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 2}]}, {"name": "가족사랑", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "가평A+", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가평길누리", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가현산요양", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 2}]}, {"name": "간석3층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 1}]}, {"name": "간석4층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 2}]}, {"name": "갈산", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 2}]}, {"name": "강동데이케어", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "강북희망", "region": "서울", "fee": 55000, "teachers": ["송준기", "신기윤"], "source": "자동"}, {"name": "강서힐링", "region": "인천", "fee": 50000, "teachers": ["김수민", "방진수"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 2}, {"teacher": "방진수", "days": ["화"], "order": 2}]}, {"name": "강일데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "검암", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 3}]}, {"name": "경인", "region": "인천", "fee": 55000, "teachers": ["방진수", "한수희"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["금"], "order": 2}, {"teacher": "한수희", "days": ["수"], "order": 2}]}, {"name": "고양1호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 3}]}, {"name": "고양2호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 3}]}, {"name": "골든케어", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 3}]}, {"name": "골든케어1", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "골든케어2", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "광교빌리지3층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "광교빌리지4층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "구리온케어발달", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "구리온케어주간", "region": "서울", "fee": 55000, "teachers": ["신기윤", "장성기"], "source": "자동"}, {"name": "구립우면", "region": "수원", "fee": 55000, "teachers": ["오수정", "최정안"], "source": "자동"}, {"name": "굿모닝", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "굿모닝", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 1}]}, {"name": "그라시아요양", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 3}]}, {"name": "금오사랑", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "금천노인", "region": "인천", "fee": 50000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 1}, {"teacher": "홍예은", "days": ["월"], "order": 1}]}, {"name": "금호", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "기쁜우리", "region": "서울", "fee": 55000, "teachers": ["구명훈", "변동"], "source": "자동"}, {"name": "김간호사1호점", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 2}]}, {"name": "김간호사2호점", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 1}]}, {"name": "김진성데이케어", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "김포다사랑", "region": "인천", "fee": 60000, "teachers": ["박종일", "홍예은"], "source": "자동"}, {"name": "김포스마일", "region": "인천", "fee": 60000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 1}]}, {"name": "김포엘림", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 1}]}, {"name": "김포한강", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 1}]}, {"name": "나날", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동"}, {"name": "나눔요양", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "나눔주간", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "남구", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 1}]}, {"name": "남동", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 3}]}, {"name": "너른뜰", "region": "서울", "fee": 55000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "노아", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "누네", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "누리요양", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "누리요양원", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["수"], "order": 3}]}, {"name": "누리주간", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "늘봄", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "늘푸른", "region": "인천", "fee": 55000, "teachers": ["김유천", "박기남", "한수희"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 1}, {"teacher": "김유천", "days": ["목"], "order": 2}, {"teacher": "한수희", "days": ["화"], "order": 2}]}, {"name": "늘푸른", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "다사랑", "region": "인천", "fee": 55000, "teachers": ["김수민", "방진수", "박종일"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["화"], "order": 2}, {"teacher": "방진수", "days": ["금"], "order": 1}]}, {"name": "다시봄", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "다시봄", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["화"], "order": 1}]}, {"name": "다시봄날", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 2}]}, {"name": "다지기", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "다지기1", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다지기2", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다효", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 2}]}, {"name": "대교", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "대교남양주", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "대교분당", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "대교성남", "region": "수원", "fee": 65000, "teachers": ["최정안"], "source": "자동"}, {"name": "대교성북", "region": "서울", "fee": 60000, "teachers": ["구명훈"], "source": "자동"}, {"name": "더드림", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "더사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "더사랑", "region": "인천", "fee": 55000, "teachers": ["길범준", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 1}, {"teacher": "길범준", "days": ["목"], "order": 3}]}, {"name": "더쉼", "region": "수원", "fee": 50000, "teachers": ["오수정"], "source": "자동"}, {"name": "더조은", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "더조은", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "더케어", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "더편한", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "데이지", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈", "원보영"], "source": "자동"}, {"name": "도봉실버웨이", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동소문", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동안사랑", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "동탄", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "동행", "region": "서울", "fee": 55000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "동행", "region": "인천", "fee": 55000, "teachers": ["김효민", "장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["월"], "order": 2}]}, {"name": "두꺼비", "region": "서울", "fee": 55000, "teachers": ["박준형", "양성모", "오건"], "source": "자동"}, {"name": "두드림", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 3}]}, {"name": "둥지요양원", "region": "인천", "fee": 50000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 3}]}, {"name": "마석굿데이", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "마실1", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마실2", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마음과마음", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기", "조영미"], "source": "자동"}, {"name": "마음다함", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["월"], "order": 2}]}, {"name": "마주봄", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 1}]}, {"name": "매일동행", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "명품", "region": "인천", "fee": 50000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["금"], "order": 1}, {"teacher": "박종일", "days": ["화"], "order": 3}]}, {"name": "명화", "region": "서울", "fee": 50000, "teachers": ["박준형", "양재원", "조영미"], "source": "자동"}, {"name": "목동데이", "region": "인천", "fee": 50000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["화"], "order": 3}]}, {"name": "목동연세", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 3}]}, {"name": "무지개", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 3}]}, {"name": "문정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "미르", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "미추홀", "region": "인천", "fee": 55000, "teachers": ["김효민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["수"], "order": 1}]}, {"name": "바른", "region": "서울", "fee": 55000, "teachers": ["양성모", "이인경"], "source": "자동"}, {"name": "배곧프리미엄", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동"}, {"name": "백세", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 1}]}, {"name": "백세만세", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "베들레", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "벨포레스트", "region": "서울", "fee": 65000, "teachers": ["양재원", "정상준"], "source": "자동"}, {"name": "보노요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "보담", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["수"], "order": 3}]}, {"name": "보람찬1", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보람찬2", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보리수", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 3}]}, {"name": "보아스", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "보훈케어", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "복지콜", "region": "인천", "fee": 55000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["토"], "order": 1}, {"teacher": "박종일", "days": ["목"], "order": 2}]}, {"name": "봄날한강", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "봄봄", "region": "서울", "fee": 55000, "teachers": ["변동", "정상준"], "source": "자동"}, {"name": "봄봄", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 2}]}, {"name": "부천남부", "region": "인천", "fee": 55000, "teachers": ["김유천"], "source": "자동", "schedule": [{"teacher": "김유천", "days": ["월"], "order": 2}]}, {"name": "북부노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "북수원", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘2", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "비타재활", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "사랑365", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑노인", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 1}]}, {"name": "사랑마루", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방1", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "사랑방2", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "삼선1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "삼선2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "상계", "region": "서울", "fee": 50000, "teachers": ["구명훈"], "source": "자동"}, {"name": "상계데이케어", "region": "서울", "fee": 50000, "teachers": ["변동"], "source": "자동"}, {"name": "새봄", "region": "서울", "fee": 55000, "teachers": ["장성기", "조영미"], "source": "자동"}, {"name": "생명나무", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "서구재활", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["화"], "order": 1}]}, {"name": "서부어르신", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동"}, {"name": "서울 데이케어", "region": "서울", "fee": 55000, "teachers": ["박준형", "윤혜미"], "source": "자동"}, {"name": "서은요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "선암", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "섬김", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 1}]}, {"name": "성동", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "성동데이케어", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성북복지관", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "성북희망", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성심", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "성심", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "세심정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "세심정", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "소나무", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 3}]}, {"name": "소래", "region": "인천", "fee": 55000, "teachers": ["김수민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 3}, {"teacher": "김수민", "days": ["월"], "order": 1}]}, {"name": "소새울", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 3}]}, {"name": "수석", "region": "서울", "fee": 55000, "teachers": ["구명훈", "이인경"], "source": "자동"}, {"name": "수원성감리교회", "region": "수원", "fee": 100000, "teachers": ["안지훈"], "source": "자동"}, {"name": "수원중부", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "수지실버", "region": "수원", "fee": 60000, "teachers": ["김수도"], "source": "자동"}, {"name": "순애", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 2}]}, {"name": "스마일", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "스마일 데이케어", "region": "서울", "fee": 60000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "시니어학교 성내", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시니어학교 천호", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시온", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "시온성", "region": "서울", "fee": 50000, "teachers": ["이인경"], "source": "자동"}, {"name": "시흥동행", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동"}, {"name": "실버빌", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "실버웨이강북", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "실버웨이성북", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "아름", "region": "인천", "fee": 55000, "teachers": ["한수희", "이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["화"], "order": 2}, {"teacher": "한수희", "days": ["목"], "order": 2}]}, {"name": "아름다운", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 2}]}, {"name": "아현장로교회", "region": "서울", "fee": 50000, "teachers": ["양성모"], "source": "자동"}, {"name": "양주실버타운", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "양천힐링", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["월"], "order": 2}]}, {"name": "어르신사랑요양", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어르신사랑주간", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어울림서창", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 1}]}, {"name": "에녹", "region": "인천", "fee": 50000, "teachers": ["방진수", "홍예은"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 2}, {"teacher": "홍예은", "days": ["월"], "order": 3}]}, {"name": "에이원", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "엔젤재활", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 3}]}, {"name": "연세", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기"], "source": "자동"}, {"name": "연지곤지", "region": "서울", "fee": 60000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "염리데이케어", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "영등포치매", "region": "인천", "fee": 50000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 1}]}, {"name": "예다인", "region": "인천", "fee": 55000, "teachers": ["박종일", "한수희"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["목"], "order": 3}, {"teacher": "한수희", "days": ["월"], "order": 3}]}, {"name": "예반", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "예사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "예스케어", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "옥련뜰", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 3}]}, {"name": "온누리", "region": "인천", "fee": 50000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 2}]}, {"name": "온정", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 2}]}, {"name": "온하루", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["금"], "order": 3}]}, {"name": "우리들", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "우리들 남양주", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "우리들 의정부", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "우리복지", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "웰케어", "region": "서울", "fee": 50000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "은나라", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "은빛정원", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "이팔청춘", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이팔청춘본점", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이화", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "인천365", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 1}]}, {"name": "인천나눔요양원", "region": "인천", "fee": 60000, "teachers": ["김효민"], "source": "자동"}, {"name": "인천중구", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 1}]}, {"name": "일산노인", "region": "인천", "fee": 60000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 1}]}, {"name": "자광원", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "장안데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "장안참사랑", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "장위데이케어", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "정가원", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정다운", "region": "인천", "fee": 55000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["목"], "order": 1}]}, {"name": "정드림", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "정릉복지관", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정성", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 3}]}, {"name": "제일사랑", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "좋은날", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "주은", "region": "인천", "fee": 55000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 1}, {"teacher": "홍예은", "days": ["화"], "order": 1}]}, {"name": "중랑사랑방", "region": "서울", "fee": 55000, "teachers": ["양재원", "이인경"], "source": "자동"}, {"name": "중랑스마일", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "중랑제일", "region": "서울", "fee": 60000, "teachers": ["박준형"], "source": "자동"}, {"name": "중부1", "region": "인천", "fee": 50000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["금"], "order": 1}]}, {"name": "중부3", "region": "인천", "fee": 50000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 2}]}, {"name": "진접굿데이", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "참사랑동대문", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "참조은", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "처음처럼", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 2}]}, {"name": "천마산", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "천사노인", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 2}]}, {"name": "청담하늘채", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "청솔", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 2}]}, {"name": "청춘", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "청평", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "파라다이스", "region": "서울", "fee": 55000, "teachers": ["변동", "이인경"], "source": "자동"}, {"name": "파랑새", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 3}]}, {"name": "파마", "region": "서울", "fee": 55000, "teachers": ["구명훈", "정상준"], "source": "자동"}, {"name": "파마노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "파인", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 3}]}, {"name": "포레스트", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "프라임", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 2}]}, {"name": "하남 참사랑", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "하남경복궁", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "하남참사랑", "region": "서울", "fee": 50000, "teachers": ["장성기"], "source": "자동"}, {"name": "학수정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "한결", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 1}]}, {"name": "한빛", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 1}]}, {"name": "해드림요양", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해드림주간", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해피실버", "region": "서울", "fee": 50000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "해피홈", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "햇빛", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "행복", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "행복재활", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "행복플러스", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 2}]}, {"name": "행복한", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "호매실", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "홍은1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "홍은2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "황송", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 3}]}, {"name": "효녀심청", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효누리", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "효담채", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 1}]}, {"name": "효드림", "region": "서울", "fee": 55000, "teachers": ["이인경", "정상준"], "source": "자동"}, {"name": "효명", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["월"], "order": 1}]}, {"name": "효벤트", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효실버", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "효실버센터", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "휘경사랑", "region": "서울", "fee": 55000, "teachers": ["이인경", "조영미"], "source": "자동"}, {"name": "희망", "region": "인천", "fee": 65000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 1}]}, {"name": "힘찬", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}];
 
 /* ═══ STATE & STORAGE ═══ */
-/* v11.36 (2026-05-08): PDF 정산서 가로 A4 한 페이지 압축
+/* v11.39 (2026-05-08): PDF 지역 표지에서 출력일 제거
+ * 변경: region-meta에서 "출력일: YYYY년 M월 D일" 부분 제거
+ *       이전: "2026년 4월 정산서 · 출력일: 2026년 5월 8일"
+ *       이후: "2026년 4월 정산서"
+ * 이유: 출력일은 인쇄 시 브라우저가 자동으로 헤더에 넣을 수 있어 중복 표기 불필요
+ *
+ * v11.38 (2026-05-08): PDF 정산서 지역별 정렬 + 지역 표지 페이지 추가
+ * 변경 이유: 강사 PDF 출력 시 정산 데이터 입력 순서대로 뒤죽박죽 출력되어
+ *           인쇄본 정리 시 지역별 분류가 어려움
+ * 수정:
+ *   - getFilteredTeachers: REGION_ORDER ['서울','인천','수원','기타'] 순으로 정렬 추가
+ *                          (같은 지역 내에서는 원본 순서 유지)
+ *   - dlPDF forEach: 지역 바뀔 때마다 표지 페이지 자동 삽입
+ *                    (지역명 + 강사 수 + 합계 + 출력일)
+ *                    단일 지역 필터 사용 시 표지 생략 (이미 한 지역만 출력)
+ *   - CSS: .region-cover, .region-cover-inner, .region-name 등 표지 스타일 추가
+ * 영향: PDF 페이지 수가 약 3장 증가 (지역 표지) - 단 단일 지역 필터 시엔 변화 없음
+ *
+ * v11.37 (2026-05-08): PDF 정산서 패딩 미세 조정 (한 페이지 압축 강화)
+ * 변경 이유: v11.36 적용 후 정상준(18센터·5요일), 안지훈(17센터·6요일) 강사가
+ *           테이블+정산표 합쳐 한 페이지를 약 30~50px 초과해 분할 인쇄됨
+ * 수정 (모두 dlPDF 함수 안의 CSS):
+ *   - .top-bar: padding-bottom 6px → 4px, margin-bottom 6px → 4px
+ *   - .lesson-table th,td: padding 3px 4px → 2px 3px (행 높이 약 1px씩 감소 × 25행 = 25px)
+ *   - .center-td: padding 3px 7px → 2px 6px
+ *   - .day-cell: padding 3px → 2px
+ *   - .bottom-grid: gap 8px → 6px
+ *   - .note-box: padding 6px 9px → 4px 7px
+ *   - .settle-table 셀: padding 3px 8px → 2px 6px
+ * 폰트는 그대로 유지 (가독성 보존). 다음 단계에서 부족하면 폰트도 조정 검토
+ * 검증 필요: 정상준, 안지훈 강사 + 평소 강사들 모두 한 페이지에 들어가는지
+ *
+ * v11.36 (2026-05-08): PDF 정산서 가로 A4 한 페이지 압축
  * 변경 이유: v11.35에서 추가한 PDF 디자인이 정보 과다로 한 페이지에 안 들어감
  *           정산 시즌마다 강사 30명 × 여러 페이지 출력으로 종이·시간 낭비
  * 제거: 상단 로고 헤더 / 큰 아바타 배너 / 3열 카드 (계좌·수업료·확정월급) / 서명란 3개
@@ -1719,7 +2213,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.36';
+const SYSTEM_VERSION='v11.39';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -2345,10 +2839,26 @@ function setRegionFilter(region){
 
 function getFilteredTeachers(){
  if(!STATE.data?.teachers) return [];
- return STATE.data.teachers.map((t,i)=>({t,i})).filter(({t})=>{
- if(!STATE.regionFilter) return true;
- const dbT=DB.teachers.find(d=>d.name===t.name);
- return (dbT?.region||'기타')===STATE.regionFilter;
+ // v11.38: 지역별 정렬 (서울 → 인천 → 수원 → 기타)
+ //         이전: STATE.data.teachers 배열 순서 그대로 (뒤죽박죽)
+ //         이후: 같은 지역끼리 모임 - PDF 출력 시 정리 용이
+ const REGION_ORDER=['서울','인천','수원','기타'];
+ const filtered = STATE.data.teachers.map((t,i)=>({t,i})).filter(({t})=>{
+  if(!STATE.regionFilter) return true;
+  const dbT=DB.teachers.find(d=>d.name===t.name);
+  return (dbT?.region||'기타')===STATE.regionFilter;
+ });
+ // 지역별 정렬 (같은 지역 내에서는 원본 순서 유지)
+ return filtered.sort((a,b)=>{
+  const regionA = DB.teachers.find(d=>d.name===a.t.name)?.region || '기타';
+  const regionB = DB.teachers.find(d=>d.name===b.t.name)?.region || '기타';
+  const idxA = REGION_ORDER.indexOf(regionA);
+  const idxB = REGION_ORDER.indexOf(regionB);
+  // REGION_ORDER에 없는 지역은 마지막으로
+  const safeA = idxA === -1 ? REGION_ORDER.length : idxA;
+  const safeB = idxB === -1 ? REGION_ORDER.length : idxB;
+  if (safeA !== safeB) return safeA - safeB;
+  return a.i - b.i;
  });
 }
 
@@ -2359,8 +2869,38 @@ function dlPDF(){
  if(!filtered.length){showToast('출력할 데이터가 없어요');return;}
 
  const printDate = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'});
+ // v11.38: 지역별 그룹핑을 위한 사전 계산
+ //         단일 지역 필터일 땐 표지 생략 (이미 한 지역만 출력하는 상황)
+ const isMultiRegion = !STATE.regionFilter;
+ let lastRegion = null;
  let pages='';
  filtered.forEach(({t,i})=>{
+ // v11.38: 지역 바뀔 때마다 표지 페이지 삽입
+ const _dbT = DB.teachers.find(d=>d.name===t.name);
+ const _region = _dbT?.region || '기타';
+ if (isMultiRegion && _region !== lastRegion) {
+  // 같은 지역 강사들 모아서 합계 계산
+  const _sameRegion = filtered.filter(({t:t2}) => {
+   const r = DB.teachers.find(d=>d.name===t2.name)?.region || '기타';
+   return r === _region;
+  });
+  const _regionTotal = _sameRegion.reduce((s, {t:t2}) => {
+   const m = t2.mockLesson!==undefined ? t2.mockLesson : (t2.mockLessonAuto||0)*20000;
+   return s + (t2.finalPay||0) + (t2.costExtra||0) + m + (t2.otherCost||0);
+  }, 0);
+  pages += `<div class="page region-cover">
+   <div class="region-cover-inner">
+    <div class="region-tag">지역 정산서</div>
+    <div class="region-name">${_region} 지역</div>
+    <div class="region-stats">
+     <div><span class="stat-num">${_sameRegion.length}</span><span class="stat-label">명 강사</span></div>
+     <div><span class="stat-num">${_regionTotal.toLocaleString()}</span><span class="stat-label">원 합계</span></div>
+    </div>
+    <div class="region-meta">${t.yearMonth} 정산서</div>
+   </div>
+  </div>`;
+  lastRegion = _region;
+ }
  const feePctDisp=t.feePct?(t.feePct<10?Math.round(t.feePct*100)+'%':Math.round(t.feePct).toLocaleString()+'원/회'):'-';
  const mockVal=t.mockLesson!==undefined?t.mockLesson:(t.mockLessonAuto||0)*20000;
  const totalExtra=(t.costExtra||0)+mockVal+(t.otherCost||0);
@@ -2489,7 +3029,7 @@ function dlPDF(){
  .page:last-child{page-break-after:auto;}
 
  /* 상단 한 줄: 강사명 + 정보 + 최종지급액 */
- .top-bar{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:6px;border-bottom:2px solid #1A7A50;margin-bottom:6px;}
+ .top-bar{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:4px;border-bottom:2px solid #1A7A50;margin-bottom:4px;}
  .top-info{flex:1;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
  .t-name{font-size:15px;font-weight:600;letter-spacing:-.3px;}
  .t-meta{font-size:10px;color:#888;}
@@ -2499,35 +3039,46 @@ function dlPDF(){
 
  /* 수업 기록 테이블 */
  .lesson-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:6px;}
- .lesson-table th,.lesson-table td{border:1px solid #C8C6B8;padding:3px 4px;text-align:center;vertical-align:middle;}
+ .lesson-table th,.lesson-table td{border:1px solid #C8C6B8;padding:2px 3px;text-align:center;vertical-align:middle;}
  .lesson-table thead th{background:#E8E6DC;font-weight:600;font-size:10px;color:#333;}
  .center-th{text-align:left;padding-left:7px;}
  .num-th{width:36px;}
  .fee-th{width:60px;}
  .amt-th{width:72px;}
- .center-td{text-align:left;padding:3px 7px;max-width:200px;}
+ .center-td{text-align:left;padding:2px 6px;max-width:200px;}
  .att-td{font-weight:600;}
  .att-o{color:#1A7A50;}
  .att-x{color:#A03020;}
  .att-tri{color:#8A6010;}
  .amt{text-align:right;padding-right:6px;font-family:'DM Mono',monospace;font-weight:500;}
- .day-cell{background:#1A7A50;color:white;font-weight:700;font-size:11px;writing-mode:vertical-lr;padding:3px;width:22px;}
+ .day-cell{background:#1A7A50;color:white;font-weight:700;font-size:11px;writing-mode:vertical-lr;padding:2px;width:22px;}
  .date-hdr-row td{background:#F0EFE6;}
  .date-hdr-td{font-size:9px;color:#555;font-weight:600;}
  .date-label-td{background:#F0EFE6;}
  .sub-badge{font-size:9px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:3px;padding:1px 4px;margin-left:2px;}
 
  /* 하단 2단 그리드 */
- .bottom-grid{display:grid;grid-template-columns:1fr 220px;gap:8px;}
- .note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:6px 9px;font-size:10px;}
+ .bottom-grid{display:grid;grid-template-columns:1fr 220px;gap:6px;}
+ .note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:4px 7px;font-size:10px;}
  .note-title{font-weight:600;font-size:9px;color:#8A6010;margin-bottom:3px;letter-spacing:.3px;text-transform:uppercase;}
  .note-content{color:#555;line-height:1.6;white-space:pre-wrap;word-break:break-all;}
  .settle-table{border-collapse:collapse;font-size:10px;border:1px solid #e2e0d8;border-radius:5px;overflow:hidden;height:fit-content;}
- .settle-table tr td:first-child{background:#f5f4f0;padding:3px 8px;font-weight:600;color:#555;border-bottom:1px solid #e2e0d8;}
- .settle-table tr td:last-child{padding:3px 8px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;border-bottom:1px solid #e2e0d8;}
+ .settle-table tr td:first-child{background:#f5f4f0;padding:2px 6px;font-weight:600;color:#555;border-bottom:1px solid #e2e0d8;}
+ .settle-table tr td:last-child{padding:2px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;border-bottom:1px solid #e2e0d8;}
  .settle-table .plus{color:#1A7A50;}
  .settle-table .final-row td:first-child{background:#156840;color:white;font-weight:700;}
  .settle-table .final-row td:last-child{background:#1A7A50;color:white;font-weight:700;font-size:11px;}
+
+ /* v11.38: 지역 표지 페이지 */
+ .region-cover{display:flex;align-items:center;justify-content:center;min-height:90vh;}
+ .region-cover-inner{text-align:center;}
+ .region-tag{font-size:11px;color:#888;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;font-weight:600;}
+ .region-name{font-size:48px;font-weight:700;color:#1A7A50;letter-spacing:-1.5px;margin-bottom:36px;}
+ .region-stats{display:flex;gap:60px;justify-content:center;margin-bottom:24px;align-items:baseline;}
+ .region-stats > div{display:flex;align-items:baseline;gap:6px;}
+ .region-stats .stat-num{font-size:26px;font-weight:700;color:#1A7A50;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
+ .region-stats .stat-label{font-size:12px;color:#888;font-weight:500;}
+ .region-meta{font-size:11px;color:#888;margin-top:14px;}
 
  @media print{
   body{background:white;}
