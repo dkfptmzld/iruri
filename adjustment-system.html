@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.75">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.76">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.75">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.76">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.75</title>
+<title>수업기록표 정산 시스템 v11.76</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1002,8 +1002,9 @@ body.edit-mode-active .ledger-wrap textarea {
  <style>
   /* v11.59 단계 10 보완: 강사 모드 헤더 모바일 반응형 */
   /* v11.62: ❓ 도움말 버튼 모바일 대응 */
+  /* v11.76: 모바일에서 헤더 상단 고정 (sticky 작동 안 하는 환경 대응) */
   @media (max-width: 480px) {
-   .ti-mode-header { min-height: auto !important; padding: 8px 10px !important; gap: 6px !important; flex-wrap: wrap !important; }
+   .ti-mode-header { min-height: auto !important; padding: 8px 10px !important; gap: 6px !important; flex-wrap: wrap !important; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; }
    .ti-mode-header > div:first-child { font-size: 13px !important; }
    .ti-mode-header > div:first-child img { width: 24px !important; height: 24px !important; }
    .ti-mode-header .ti-mode-badge { display: none !important; }
@@ -1011,6 +1012,8 @@ body.edit-mode-active .ledger-wrap textarea {
    .ti-mode-header .ti-mode-actions button { font-size: 11px !important; padding: 0 8px !important; height: 28px !important; }
    /* v11.62: ❓ 도움말 버튼 - 모바일에선 아이콘만 */
    .ti-mode-header #ti-help-btn { padding: 0 8px !important; }
+   /* v11.76: 헤더 fixed로 가려진 부분 padding으로 보정 */
+   #teacherInputScreen { padding-top: 60px !important; }
   }
  </style>
  <div class="ti-mode-header" style="height:52px;background:white;border-bottom:1px solid #E2E0D8;display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:100;">
@@ -1237,7 +1240,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
-  <span id="adminTimerText">30:00</span>
+  <span id="adminTimerText">29:58</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
@@ -2556,7 +2559,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.75';
+const SYSTEM_VERSION='v11.76';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -8587,6 +8590,8 @@ function _ttShowStep(idx){
    }
    // v11.75: 모바일에서는 block:'start' (영역을 상단에), 박스는 하단 고정
    const isMobile = window.innerWidth <= 768;
+   // v11.76: scrollIntoView 작동 위해 잠시 overflow 해제
+   if (isMobile) document.body.style.overflow = '';
    targets[0].scrollIntoView({ behavior: 'smooth', block: isMobile ? 'start' : 'center' });
    setTimeout(() => {
     // 모든 element 묶는 영역 계산
@@ -8627,7 +8632,9 @@ function _ttShowStep(idx){
     tooltip.style.top = ttTop + 'px';
     tooltip.style.left = '50%';
     tooltip.style.transform = 'translateX(-50%)';
-   }, 150); // v11.65: 300 → 150 (스크롤 완료 대기 빠르게)
+    // v11.76: 모바일에서 위치 설정 완료 후 스크롤 잠금
+    if (isMobile) document.body.style.overflow = 'hidden';
+   }, 350); // v11.76: 스크롤 완료 충분히 대기 (150 → 350)
   }
  }, 30); // v11.65: 50 → 30
 }
@@ -8667,6 +8674,8 @@ function _closeTeacherTutorial(){
  if (spotlight) spotlight.style.display = 'none';
  if (tooltip) tooltip.style.display = 'none';
  _ttIsOpen = false;
+ // v11.76: 모바일 스크롤 잠금 해제
+ document.body.style.overflow = '';
 }
 
 // ESC 키로 닫기
