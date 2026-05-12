@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.79">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.80">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.79">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.80">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.79</title>
+<title>수업기록표 정산 시스템 v11.80</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -777,7 +777,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
  <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
- <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
+ <div id="login-err" style="color: rgb(229, 57, 53); font-size: 12px; margin-bottom: 12px; display: block;">비밀번호가 틀렸습니다</div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
@@ -1509,7 +1509,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
   <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 11:15:26</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
  </div>
 </div>
 
@@ -2559,7 +2559,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.79';
+const SYSTEM_VERSION='v11.80';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -8480,21 +8480,21 @@ function exitTeacherMode(){
 
 const TEACHER_TUTORIAL_STEPS = [
  {title:"👋 환영합니다!", desc:"이 시스템으로 매월 수업한 내역을 정리해서 제출하실 수 있어요.<br>잠깐 시간 내서 사용법을 같이 살펴봐요!", target:null, isFirst:true},
- {title:"1️⃣ 강사 이름 확인", desc:"강사님 이름이 자동으로 입력되어 있어요.<br>본인 이름이 맞는지 확인해주세요.", target:"#ti-teacher-display"},
- {title:"2️⃣ 정산받을 년/월 선택", desc:"정산받으실 그 달을 선택하세요.<br>보통 <b>이전 달</b>을 선택합니다.<br>(예: 5월에 작성하면 4월 선택)", target:"#ti-year"},
+ {title:"1️⃣ 강사 이름 확인", desc:"강사님 이름이 자동으로 입력되어 있어요.<br>본인 이름이 맞는지 확인해주세요.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:5px;'>📌 예시:</div><div style='font-size:9px;color:#888;margin-bottom:3px;'>강사 이름</div><div style='background:white;border:1px solid #1A7A50;border-radius:5px;padding:8px 10px;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:space-between;'><span>박기남</span><span style='color:#1A7A50;font-size:14px;'>✓</span></div></div>", target:"#ti-teacher-display"},
+ {title:"2️⃣ 정산받을 년/월 선택", desc:"정산받으실 그 달을 선택하세요.<br>보통 <b>이전 달</b>을 선택합니다.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:5px;'>📌 예: 5월에 작성하면 4월 선택</div><div style='display:flex;gap:6px;'><div style='flex:1;'><div style='font-size:9px;color:#888;margin-bottom:3px;'>년도</div><div style='background:white;border:1px solid #E2E0D8;border-radius:5px;padding:6px 8px;font-size:11px;display:flex;justify-content:space-between;'><span>2026</span><span style='color:#888;'>▾</span></div></div><div style='flex:1;'><div style='font-size:9px;color:#888;margin-bottom:3px;'>월</div><div style='background:#FFFBEC;border:1.5px solid #BA7517;border-radius:5px;padding:6px 8px;font-size:11px;font-weight:600;color:#856404;display:flex;justify-content:space-between;'><span>4월</span><span>▾</span></div></div></div></div>", target:"#ti-year"},
  {title:"3️⃣ 요일과 센터 자동 표시", desc:"강사님이 등록된 요일별 센터가 자동으로 보여요.<br>드롭다운으로 다른 센터를 선택하실 수도 있어요.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:5px;'>📌 예시:</div><div style='background:white;border:1px solid #1A7A50;border-radius:5px;overflow:hidden;'><div style='padding:5px 8px;border-bottom:1px solid #f0f0f0;'>효명</div><div style='padding:5px 8px;border-bottom:1px solid #f0f0f0;'>다사랑</div><div style='padding:5px 8px;'>정다운</div></div></div>", target:".ti-tutorial-day1-row"},
  {title:"  ✏️ 직접 추가 (목록에 없는 센터)", desc:"센터명이 드롭다운에 보이지 않거나 <b>새로운 곳에서 수업</b>하셨다면 <b>직접 추가</b>로 센터명을 입력할 수 있어요.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:5px;'>📌 예시:</div><div style='background:white;border:1px solid #E2E0D8;border-radius:5px;overflow:hidden;'><div style='padding:5px 8px;border-bottom:1px solid #f0f0f0;'>효명</div><div style='padding:5px 8px;border-bottom:1px solid #f0f0f0;'>다사랑</div><div style='padding:6px 8px;background:#FFFBEC;color:#856404;font-weight:600;'>✏️ 직접 입력 (목록에 없는 새 센터)</div></div></div>", target:"#ti-first-center-row"},
  {title:"4️⃣ 출석 표시 (가장 중요!)", desc:"각 셀을 클릭하면 <b>O → X → △</b> 순서로 바뀝니다.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 클릭하면 순환:</div><div style='display:flex;gap:8px;align-items:center;justify-content:center;'><div style='padding:6px 12px;background:#E8F5EE;color:#1A7A50;border-radius:4px;font-weight:700;'>O</div><span style='color:#888;font-size:12px;'>→</span><div style='padding:6px 12px;background:#FBEAEA;color:#A03020;border-radius:4px;font-weight:700;'>X</div><span style='color:#888;font-size:12px;'>→</span><div style='padding:6px 12px;background:#FFFBEC;color:#856404;border-radius:4px;font-weight:700;'>△</div></div><div style='display:flex;gap:14px;justify-content:center;margin-top:8px;color:#666;font-size:9px;'><span><b>O</b> 수업/보강</span><span><b>X</b> 휴강</span><span><b>△</b> 모의수업</span></div></div>", target:".ti-tutorial-day1-attend"},
  {title:"5️⃣ 보강 표시", desc:"다른 강사 대신 수업하셨다면 <b>보강 체크박스</b> 누르고 원래 강사 이름을 <b>선택</b>하세요.<br>정산 시 별도로 표시됩니다.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 예시:</div><div style='display:flex;align-items:center;gap:8px;padding:6px 8px;background:white;border:1px solid #E2E0D8;border-radius:4px;'><span style='display:inline-flex;width:14px;height:14px;border:1.5px solid #1A7A50;background:#1A7A50;border-radius:2px;align-items:center;justify-content:center;color:white;font-size:9px;'>✓</span><span style='font-weight:600;'>보강</span><span style='color:#888;'>|</span><span style='flex:1;border:1px solid #1A7A50;border-radius:3px;padding:3px 8px;background:#F8FDF8;color:#1A7A50;font-weight:500;display:flex;align-items:center;justify-content:space-between;'>방진수 강사<span style='color:#888;'>▾</span></span></div></div>", target:"#ti-first-center-row"},
- {title:"6️⃣ 특이사항 메모", desc:"보강 사유, 휴강 이유, 모의수업 정보, 물품 구매 등 관리자에게 알려줄 내용을 <b>되도록 상세하게</b> 적어주세요.<br>5가지 카테고리 버튼이 있어요 — 다음 단계에서 하나씩 살펴봐요!", target:"#ti-note-section"},
+ {title:"6️⃣ 특이사항 메모", desc:"보강 사유, 휴강 이유, 모의수업 정보, 물품 구매 등 관리자에게 알려줄 내용을 <b>되도록 상세하게</b> 적어주세요.<br>5가지 카테고리 버튼이 있어요 — 다음 단계에서 하나씩 살펴봐요!<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 예시:</div><div style='display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;'><span style='background:#E8F5EE;color:#1A7A50;padding:3px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 휴강</span><span style='background:#E8F5EE;color:#1A7A50;padding:3px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 보강</span><span style='background:#E8F5EE;color:#1A7A50;padding:3px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 주차료</span></div><div style='background:white;border:1px solid #E2E0D8;border-radius:5px;padding:6px 8px;font-size:10px;color:#333;'>4/29 미추홀 5주차로 인한 휴강</div></div>", target:"#ti-note-section"},
  {title:"  + 신규(모의) 수업", desc:"새로 들어온 수업이나 모의수업이 있을 때 누르세요.<br>날짜, 센터명, 시간을 함께 적어주시면 좋아요.<div style='margin-top:10px;padding:10px 12px;background:#E8F5EE;border-left:3px solid #1A7A50;border-radius:4px;'><span style='color:#1A7A50;font-weight:600;font-size:11px;'>📌 예: \"덕양(모의)수업 4/7 10시반\"</span></div>", target:"button[onclick=\"tiNoteAddLine('신규(모의) 수업')\"]"},
  {title:"  + 휴강", desc:"수업을 진행하지 못한 사유를 적어주세요.<br>5주차 또는 공휴일 등으로 인한 휴강.<div style='margin-top:10px;padding:10px 12px;background:#E8F5EE;border-left:3px solid #1A7A50;border-radius:4px;'><span style='color:#1A7A50;font-weight:600;font-size:11px;'>📌 예: \"4/29 미추홀, 늘푸른 5주차로 인한 휴강\"</span></div>", target:"button[onclick=\"tiNoteAddLine('휴강')\"]"},
  {title:"  + 보강", desc:"다른 강사 수업을 대신 진행한 경우 적어주세요.<br>날짜, 센터, 원래 강사명 포함.<div style='margin-top:10px;padding:10px 12px;background:#E8F5EE;border-left:3px solid #1A7A50;border-radius:4px;'><span style='color:#1A7A50;font-weight:600;font-size:11px;'>📌 예: \"4/20 양천힐링(방진수 강사) 보강\"</span></div>", target:"button[onclick=\"tiNoteAddLine('보강')\"]"},
  {title:"  + 주차료", desc:"수업을 위해 사용한 주차료를 적어주세요.<br>날짜, 센터별로 작성.<div style='margin-top:10px;padding:10px 12px;background:#E8F5EE;border-left:3px solid #1A7A50;border-radius:4px;'><span style='color:#1A7A50;font-weight:600;font-size:11px;'>📌 예: \"4/6 인천사무실 주차권 미결제로 인한 주차료 7500원\"</span></div>", target:"button[onclick=\"tiNoteAddLine('주차료')\"]"},
  {title:"  + 기타", desc:"위 카테고리에 해당하지 않는 모든 내용을 적어주세요.<br>물품 구매, 행정업무 등.<div style='margin-top:10px;padding:10px 12px;background:#E8F5EE;border-left:3px solid #1A7A50;border-radius:4px;'><span style='color:#1A7A50;font-weight:600;font-size:11px;'>📌 예: \"물품구매: 바구니 4개 4000원 / 핸들바구니 2개 13,500원\"</span></div>", target:"button[onclick=\"tiNoteAddLine('기타')\"]"},
  {title:"7️⃣ 영수증 업로드", desc:"교통비, 물품 구매 영수증 사진을 올려주세요.<br>비용처리 정산에 포함됩니다.<div style='margin-top:10px;padding:10px 12px;background:#FBEAEA;border-left:3px solid #C53030;border-radius:4px;'><span style='color:#C53030;font-weight:600;'>⚠️ 영수증이 없으면 비용처리가 불가하다는 점 인지해주세요.</span></div>", target:"#ti-receipt-section"},
- {title:"8️⃣ 관리자에게 제출", desc:"모두 작성했으면 <b>[관리자에게 제출]</b> 버튼을 누르세요.<br>제출 후에도 수정해서 <b>다시 제출 가능</b>해요.<br>마지막 제출이 적용됩니다.", target:"button[onclick=\"submitTiData()\"]"},
- {title:"9️⃣ 내 제출 내역", desc:"상단의 <b>📋 내 제출 내역</b> 버튼을 누르면 예전에 제출했던 내역을 확인하실 수 있어요.<br>데스크탑/모바일 어디서든 같은 내역이 보입니다.", target:"button[onclick=\"showHistoryModal(window._loggedInTeacher)\"]"},
+ {title:"8️⃣ 관리자에게 제출", desc:"모두 작성했으면 <b>[관리자에게 제출]</b> 버튼을 누르세요.<br>제출 후에도 수정해서 <b>다시 제출 가능</b>해요.<br>마지막 제출이 적용됩니다.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 예시:</div><div style='background:#1A7A50;color:white;padding:12px;border-radius:6px;text-align:center;font-size:12px;font-weight:600;'>📨 관리자에게 제출</div><div style='text-align:center;font-size:9px;color:#888;margin-top:6px;'>제출 후 관리자 모드에서 바로 확인 가능</div></div>", target:"button[onclick=\"submitTiData()\"]"},
+ {title:"9️⃣ 내 제출 내역", desc:"상단의 <b>📋 내 제출 내역</b> 버튼을 누르면 예전에 제출했던 내역을 확인하실 수 있어요.<br>데스크탑/모바일 어디서든 같은 내역이 보입니다.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 예시:</div><div style='background:white;border:1px solid #E2E0D8;border-radius:6px;overflow:hidden;'><div style='padding:8px 10px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:11px;'><span style='font-weight:600;'>2026년 4월</span><span style='background:#E8F5EE;color:#1A7A50;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;'>✓ 정산 완료</span></div><div style='padding:8px 10px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;font-size:11px;'><span style='font-weight:600;'>2026년 3월</span><span style='background:#E8F5EE;color:#1A7A50;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;'>✓ 정산 완료</span></div><div style='padding:8px 10px;display:flex;justify-content:space-between;align-items:center;font-size:11px;'><span style='font-weight:600;'>2026년 2월</span><span style='background:#FFFBEC;color:#856404;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;'>검토 중</span></div></div></div>", target:"button[onclick=\"showHistoryModal(window._loggedInTeacher)\"]"},
  {title:"🎉 준비 완료!", desc:"이제 수업기록표를 작성하실 수 있어요.<br><b>상단의 ❓ 도움말 버튼</b>으로 수업기록표 튜토리얼은 언제든 다시 보실 수 있습니다.", target:null, isLast:true}
 ];
 
@@ -8537,9 +8537,9 @@ function startTeacherTutorial(isAuto){
   const ttStyle = document.createElement('style');
   ttStyle.textContent = `
    @media (max-width:480px){
-    #teacher-tutorial-tooltip { max-width:92vw !important; padding:12px 14px !important; }
-    #teacher-tutorial-tooltip #tt-title { font-size:13px !important; }
-    #teacher-tutorial-tooltip #tt-desc { font-size:11px !important; }
+    #teacher-tutorial-tooltip { max-width:92vw !important; max-height:85vh !important; overflow-y:auto !important; padding:16px 18px !important; }
+    #teacher-tutorial-tooltip #tt-title { font-size:14px !important; }
+    #teacher-tutorial-tooltip #tt-desc { font-size:12px !important; line-height:1.7 !important; }
    }
   `;
   document.head.appendChild(ttStyle);
@@ -8582,6 +8582,15 @@ function _ttShowStep(idx){
    tooltip.style.left = '50%';
    tooltip.style.transform = 'translate(-50%, -50%)';
   } else {
+   // v11.80: 모바일은 스포트라이트 X, 박스만 중앙 크게 (시각 예시로 안내)
+   const isMobile = window.innerWidth <= 768;
+   if (isMobile) {
+    spotlight.style.display = 'none';
+    tooltip.style.top = '50%';
+    tooltip.style.left = '50%';
+    tooltip.style.transform = 'translate(-50%, -50%)';
+    return;
+   }
    // v11.72: querySelectorAll로 단일/다중 element 모두 지원 (월요일 행 3개 등)
    const targets = document.querySelectorAll(step.target);
    if (targets.length === 0){
@@ -8592,20 +8601,8 @@ function _ttShowStep(idx){
     tooltip.style.transform = 'translate(-50%, -50%)';
     return;
    }
-   // v11.75: 모바일에서는 block:'start' (영역을 상단에), 박스는 하단 고정
-   // v11.77: 모바일 헤더(fixed 60px)에 가려지지 않게 수동 스크롤로 70px offset 보정
-   // v11.79: body overflow 잠금 제거 (scrollTo 작동 보장), 스크롤 차단은 overlay touchmove로
-   const isMobile = window.innerWidth <= 768;
-   if (isMobile) {
-    // 수동 스크롤: 영역을 viewport top + 70px 위치에 두기 (헤더 가림 방지)
-    // v11.78: behavior:'smooth' → 즉시 스크롤 (위치 계산 시점에 스크롤 완료 보장)
-    const rect = targets[0].getBoundingClientRect();
-    const headerOffset = 70;
-    const targetY = window.scrollY + rect.top - headerOffset;
-    window.scrollTo(0, targetY);
-   } else {
-    targets[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-   }
+   // 데스크탑: 영역으로 스크롤 + 스포트라이트 정밀 배치
+   targets[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
    setTimeout(() => {
     // 모든 element 묶는 영역 계산
     let minTop = Infinity, minLeft = Infinity, maxRight = -Infinity, maxBottom = -Infinity;
@@ -8627,28 +8624,23 @@ function _ttShowStep(idx){
     spotlight.style.width = (maxRight - minLeft + 8) + 'px';
     spotlight.style.height = (maxBottom - minTop + 8) + 'px';
 
-    // v11.75: 모바일은 박스 화면 하단 고정 / 데스크탑은 기존 스마트 배치
+    // 데스크탑: 스마트 배치
+    const spaceBelow = wH - maxBottom - edgePad;
+    const spaceAbove = minTop - edgePad;
     let ttTop;
-    if (isMobile) {
-     ttTop = wH - tooltipH - edgePad;
+    if (spaceBelow >= tooltipH + margin){
+     ttTop = maxBottom + margin;
+    } else if (spaceAbove >= tooltipH + margin){
+     ttTop = minTop - tooltipH - margin;
     } else {
-     const spaceBelow = wH - maxBottom - edgePad;
-     const spaceAbove = minTop - edgePad;
-     if (spaceBelow >= tooltipH + margin){
-      ttTop = maxBottom + margin;
-     } else if (spaceAbove >= tooltipH + margin){
-      ttTop = minTop - tooltipH - margin;
-     } else {
-      ttTop = Math.max(edgePad, wH - tooltipH - edgePad);
-     }
+     ttTop = Math.max(edgePad, wH - tooltipH - edgePad);
     }
     tooltip.style.top = ttTop + 'px';
     tooltip.style.left = '50%';
     tooltip.style.transform = 'translateX(-50%)';
-    // v11.79: body.overflow 잠금 제거 (overlay touchmove로 대체)
-   }, 350); // v11.76: 스크롤 완료 충분히 대기 (150 → 350)
+   }, 150);
   }
- }, 30); // v11.65: 50 → 30
+ }, 30);
 }
 
 function _ttNext(){
@@ -8718,12 +8710,15 @@ function startTutorialFromStep(idx){
 
 // v11.67: 스크롤 시 스포트라이트 + 박스 위치 자동 동기화 (분리 버그 픽스)
 // v11.72: 다중 element (월요일 전체 행 등) 영역 계산 지원
-// v11.75: 모바일에서 박스 하단 고정
+// v11.80: 모바일은 박스 중앙 고정이라 업데이트 불필요
 let _ttScrollRafId = null;
 function _ttUpdatePosition(){
  if (!_ttIsOpen) return;
  const step = TEACHER_TUTORIAL_STEPS[_ttCurrentStep];
  if (!step || !step.target) return;
+ // v11.80: 모바일은 박스 중앙 고정, 스크롤 차단되어 있으므로 업데이트 불필요
+ const isMobile = window.innerWidth <= 768;
+ if (isMobile) return;
  const targets = document.querySelectorAll(step.target);
  if (targets.length === 0) return;
  const spotlight = document.getElementById('teacher-tutorial-spotlight');
@@ -8743,24 +8738,17 @@ function _ttUpdatePosition(){
  spotlight.style.left = (minLeft - 4) + 'px';
  spotlight.style.width = (maxRight - minLeft + 8) + 'px';
  spotlight.style.height = (maxBottom - minTop + 8) + 'px';
- // 박스도 동기화
+ // 박스 동기화 (데스크탑 스마트 배치)
  const wH = window.innerHeight;
  const tooltipH = tooltip.offsetHeight || 200;
  const margin = 16;
  const edgePad = 14;
- const isMobile = window.innerWidth <= 768;
+ const spaceBelow = wH - maxBottom - edgePad;
+ const spaceAbove = minTop - edgePad;
  let ttTop;
- if (isMobile) {
-  // v11.75: 모바일은 항상 화면 하단 고정
-  ttTop = wH - tooltipH - edgePad;
- } else {
-  // 데스크탑: 스마트 배치
-  const spaceBelow = wH - maxBottom - edgePad;
-  const spaceAbove = minTop - edgePad;
-  if (spaceBelow >= tooltipH + margin) ttTop = maxBottom + margin;
-  else if (spaceAbove >= tooltipH + margin) ttTop = minTop - tooltipH - margin;
-  else ttTop = Math.max(edgePad, wH - tooltipH - edgePad);
- }
+ if (spaceBelow >= tooltipH + margin) ttTop = maxBottom + margin;
+ else if (spaceAbove >= tooltipH + margin) ttTop = minTop - tooltipH - margin;
+ else ttTop = Math.max(edgePad, wH - tooltipH - edgePad);
  tooltip.style.top = ttTop + 'px';
 }
 window.addEventListener('scroll', () => {
