@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.82">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.85">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.82">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.85">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.82</title>
+<title>수업기록표 정산 시스템 v11.85</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2032,93 +2032,136 @@ body.edit-mode-active .ledger-wrap textarea {
     <div><span style="font-size:13px;color:var(--text2);">강사 수 </span><span style="font-size:16px;font-weight:800;color:var(--purple);">32명</span></div>
    </div></div>
 
- <!-- v11.82: 신호등 카드 데모 (검증용, 추후 옵션 1 구현 시 실데이터로 교체) -->
+ <!-- v11.83: 옵션 1 — KPI 6개 신호등 카드 (실데이터) -->
  <div style="padding:24px 32px 0;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-   <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;">🚦 신호등 카드 컴포넌트 (데모)</div>
-   <div style="font-size:11px;color:var(--text3);">옵션 1·4·5·6·7·8 재사용</div>
+  <div id="signalCardDemo">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+   <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 2026년 4월 핵심 지표 (옵션 1)</div>
+   <div style="font-size:11px;color:var(--text3);">2개월 데이터</div>
   </div>
-  <div id="signalCardDemo"><div class="signal-card-grid cols-3">
-  <div class="signal-card green clickable">
+  <div class="signal-card-grid cols-3">
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revenue')">
    <div class="signal-card-label">💰 총 매출</div>
-   <div class="signal-card-value">1,245만원</div>
-   <div class="signal-card-subvalue">12,450,000원</div>
-   <div class="signal-card-delta up">▲ 12.3% (지난달 대비) · ▲ 28.7% (작년 같은 달 대비)</div>
+   <div class="signal-card-value">7,785만원</div>
+   <div class="signal-card-subvalue">77,850,000원</div>
+   <div class="signal-card-delta up">▲ +672만원 (9.4%, 지난달 대비)</div>
    
     <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:60%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:65%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:73%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:78%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:89%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:91%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
     </div>
    
    
    <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
   </div>
  
-  <div class="signal-card green clickable">
+  <div class="signal-card blue clickable" onclick="_growthExpandKpi('teachers')">
    <div class="signal-card-label">👥 활동 강사</div>
-   <div class="signal-card-value">33명</div>
-   
-   <div class="signal-card-delta up">▲ 2명 (지난달 대비) · ▲ 5명 (작년 같은 달 대비)</div>
+   <div class="signal-card-value">32명</div>
+   <div class="signal-card-subvalue">활동 중</div>
+   <div class="signal-card-delta up">▲ +2명 (6.7%, 지난달 대비)</div>
    
     <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:80%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:84%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:87%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:90%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:93%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+     <div class="signal-card-mini-bar" style="background:#1F6B9E;height:94%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:100%;"></div>
     </div>
    
    
    <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
   </div>
  
-  <div class="signal-card green clickable">
+  <div class="signal-card amber clickable" onclick="_growthExpandKpi('centers')">
    <div class="signal-card-label">🏢 활동 센터</div>
-   <div class="signal-card-value">334곳</div>
-   
-   <div class="signal-card-delta up">▲ 8곳 (지난달 대비) · ▲ 12곳 (작년 같은 달 대비)</div>
+   <div class="signal-card-value">315곳</div>
+   <div class="signal-card-subvalue">활동 중</div>
+   <div class="signal-card-delta up">▲ +46곳 (17.1%, 지난달 대비)</div>
    
     <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:88%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:90%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:93%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:95%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:97%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+     <div class="signal-card-mini-bar" style="background:#BA7517;height:85%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:100%;"></div>
     </div>
    
    
    <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
   </div>
  
-  <div class="signal-card red clickable">
-   <div class="signal-card-label">⚠️ 휴강</div>
-   <div class="signal-card-value">5%</div>
-   
-   <div class="signal-card-delta down">▲ 2%p (지난달 대비, 전월 3%)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#C53030;height:40%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:60%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:70%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:30%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:60%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:100%;"></div>
-    </div>
-   
-   <div class="signal-card-warn">⚠️ 휴강 증가 — 사유 확인 권장</div>
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card blue clickable">
-   <div class="signal-card-label">🆕 강사 변동</div>
-   <div class="signal-card-value">+2</div>
-   <div class="signal-card-subvalue">신규 3명 · 이탈 1명</div>
-   <div class="signal-card-delta up">순증 2명 (지난달 대비)</div>
+  <div class="signal-card purple clickable" onclick="_growthExpandKpi('lessonHours')">
+   <div class="signal-card-label">⏰ 총 수업 시간</div>
+   <div class="signal-card-value">1,414시간</div>
+   <div class="signal-card-subvalue">O 출석 합계</div>
+   <div class="signal-card-delta up">▲ +116시간 (8.9%, 지난달 대비)</div>
    
     <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1F6B9E;height:60%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:80%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:40%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:70%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:60%;"></div>
+     <div class="signal-card-mini-bar" style="background:#5A3FB8;height:92%;"></div><div class="signal-card-mini-bar" style="background:#5A3FB8;height:100%;"></div>
     </div>
    
    
    <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
   </div>
  
-  <div class="signal-card new clickable">
-   <div class="signal-card-label">🆕 신규 과목 도입</div>
-   <div class="signal-card-value">0곳</div>
-   <div class="signal-card-subvalue">연 목표 30곳</div>
-   <div class="signal-card-delta flat">도입 진행 전</div>
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerTeacher')">
+   <div class="signal-card-label">👤 강사 1인당 평균</div>
+   <div class="signal-card-value">243만원</div>
+   <div class="signal-card-subvalue">매출/강사 수</div>
+   <div class="signal-card-delta up">▲ +6만원 (2.6%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:97%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
    
    
    <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
   </div>
- </div></div>
+ 
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerCenter')">
+   <div class="signal-card-label">🏪 센터 1곳당 평균</div>
+   <div class="signal-card-value">25만원</div>
+   <div class="signal-card-subvalue">매출/센터 수</div>
+   <div class="signal-card-delta down">▼ -2만원 (6.5%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:93%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- v11.85: KPI 카드 클릭 시 12개월 막대 펼침 영역 -->
+ <div id="kpiExpandArea" style="padding: 0px 32px; display: block;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">👤 강사 1인당 평균</div>
+     <div style="font-size:11px;color:var(--text3);">최근 2개월</div>
+    </div>
+    <button onclick="_growthExpandKpi('revPerTeacher')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   </div>
+   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+    <div style="font-size:24px;font-weight:700;color:#1A7A50;">243만원</div>
+    <div style="font-size:12px;color:#1A7A50;font-weight:500;">▲ +2.6% (지난달 대비)</div>
+   </div>
+   <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
+    
+   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
+    <div style="height:14px;"></div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:500;">237만</div>
+    <div style="width:70%;background:#1A7A50;height:97.46606722329265%;border-radius:3px 3px 0 0;opacity:0.55;"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;">3월월</div>
+   </div>
+  
+   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
+    <div style="font-size:9px;color:#1A7A50;margin-bottom:3px;font-weight:500;">+2.6%</div>
+    <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:700;color:#1A7A50;">243만</div>
+    <div style="width:70%;background:#1A7A50;height:100%;border-radius:3px 3px 0 0;opacity:1;box-shadow:0 0 0 2px #1A7A5044;"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;color:#1A7A50;font-weight:600;">4월월</div>
+   </div>
+  
+   </div>
+   <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
+    💡 막대 위 작은 % = 그 달의 지난달 대비 변화 · 진한 색 = 2026년 4월 (현재 달)
+   </div>
+  </div>
  </div>
 
  <!-- ③ 월별 수익 비교 차트 -->
@@ -2291,7 +2334,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 02:39:11</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 02:59:25</div>
  </div>
 </div>
 
@@ -3341,7 +3384,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.82';
+const SYSTEM_VERSION='v11.85';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -12252,6 +12295,7 @@ function getGrowthData(){
    const ym=raw.ym||k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
    if(!snap?.teachers) continue;
    let revenue=0;
+   let lessonHours=0; // v11.83: 총 수업 시간 = O 출석 횟수
    const cSet=new Set(), tSet=new Set();
    const rMap={}, tRevMap={};
    snap.teachers.forEach(t=>{
@@ -12261,6 +12305,7 @@ function getGrowthData(){
      const fee=Number(l.feePer||l.fee||0);
      const cnt=(l.attend||[]).filter(a=>a==='O').length;
      tRev+=fee*cnt; revenue+=fee*cnt;
+     lessonHours+=cnt; // v11.83: O 출석 횟수 누적
      if(l.center) cSet.add(l.center);
      // l.region이 제출 데이터에 있으면 그대로 사용, 없으면 DB에서 동명 중 첫 매칭 (fallback)
      const reg=l.region||DB.centers.find(c=>c.name===l.center)?.region||'기타';
@@ -12268,8 +12313,11 @@ function getGrowthData(){
     });
     tRevMap[t.name]=tRev;
    });
-   months.push({ym,revenue,centers:cSet.size,cSet,teachers:tSet.size,tSet,
-    perTeacher:tSet.size>0?(cSet.size/tSet.size):0,rMap,tRevMap});
+   months.push({ym,revenue,lessonHours,centers:cSet.size,cSet,teachers:tSet.size,tSet,
+    perTeacher:tSet.size>0?(cSet.size/tSet.size):0,rMap,tRevMap,
+    // v11.83: 옵션 1 KPI용 평균값
+    revPerTeacher:tSet.size>0?(revenue/tSet.size):0,
+    revPerCenter:cSet.size>0?(revenue/cSet.size):0});
   }catch(e){}
  }
  months.sort((a,b)=>a.ym.localeCompare(b.ym));
@@ -12424,63 +12472,300 @@ function renderGrowthView(){
  _renderSignalCardDemo();
 }
 
-// v11.82: 신호등 카드 데모 (옵션 1·4·5·6·7·8 구현 전 컴포넌트 확인용)
+// v11.82: 신호등 카드 컴포넌트 데모 렌더링 (검증용)
+// v11.83: 데모 → 옵션 1 실데이터 (KPI 6개 신호등 카드)
 function _renderSignalCardDemo(){
- const demo=document.getElementById('signalCardDemo');
- if(!demo) return;
- const cards=[
-  // 옵션 1 — KPI (지난달 대비/작년 같은 달 대비)
-  renderSignalCard({
-   color:'green', label:'💰 총 매출', value:'1,245만원',
-   subvalue:'12,450,000원',
-   delta:'▲ 12.3% (지난달 대비) · ▲ 28.7% (작년 같은 달 대비)',
-   deltaType:'up',
-   miniTrend:[60,65,73,78,89,100],
-   expandable:true
-  }),
-  renderSignalCard({
-   color:'green', label:'👥 활동 강사', value:'33명',
-   delta:'▲ 2명 (지난달 대비) · ▲ 5명 (작년 같은 달 대비)',
-   deltaType:'up',
-   miniTrend:[80,84,87,90,93,100],
-   expandable:true
-  }),
-  renderSignalCard({
-   color:'green', label:'🏢 활동 센터', value:'334곳',
-   delta:'▲ 8곳 (지난달 대비) · ▲ 12곳 (작년 같은 달 대비)',
-   deltaType:'up',
-   miniTrend:[88,90,93,95,97,100],
-   expandable:true
-  }),
-  // 옵션 6 — 출석 분류 (휴강 경고 예시)
-  renderSignalCard({
-   color:'red', label:'⚠️ 휴강', value:'5%',
-   delta:'▲ 2%p (지난달 대비, 전월 3%)',
-   deltaType:'down',
-   miniTrend:[40,60,70,30,60,100],
-   warn:'휴강 증가 — 사유 확인 권장',
-   expandable:true
-  }),
-  // 옵션 5 — 신규/이탈
-  renderSignalCard({
-   color:'blue', label:'🆕 강사 변동', value:'+2',
-   subvalue:'신규 3명 · 이탈 1명',
-   delta:'순증 2명 (지난달 대비)',
-   deltaType:'up',
-   miniTrend:[60,80,40,100,70,60],
-   expandable:true
-  }),
-  // 옵션 8 — 신규 과목 도입
-  renderSignalCard({
-   color:'new', label:'🆕 신규 과목 도입', value:'0곳',
-   subvalue:'연 목표 30곳',
-   delta:'도입 진행 전',
-   deltaType:'flat',
-   expandable:true
-  })
- ];
- demo.innerHTML=renderSignalCardGrid(cards, 3);
+ // v11.83: 실데이터로 교체. 데모는 폐기.
+ _renderOption1Kpis();
 }
+
+/* ══════════════════════════════════
+   v11.83: 옵션 1 — KPI 6개 신호등 카드
+   ══════════════════════════════════ */
+
+/**
+ * 변화율 계산
+ * @param {number} curr - 현재 값
+ * @param {number} prev - 비교 대상 값
+ * @param {boolean} asPercent - %로 표시할지 (false면 절대 차이)
+ * @returns {Object} {value: number, deltaType: 'up'|'down'|'flat', text: string}
+ */
+function _growthCalcDelta(curr, prev, asPercent=true){
+ if(prev===undefined||prev===null) return {value:null, deltaType:'flat', text:''};
+ if(prev===0&&curr===0) return {value:0, deltaType:'flat', text:'변화 없음'};
+ const diff=curr-prev;
+ const deltaType=diff>0?'up':diff<0?'down':'flat';
+ const arrow=diff>0?'▲':diff<0?'▼':'=';
+ if(asPercent){
+  if(prev===0) return {value:null, deltaType, text:`${arrow} 신규`};
+  const pct=Math.round((diff/prev)*1000)/10; // 소수 1자리
+  return {value:pct, deltaType, text:`${arrow} ${Math.abs(pct)}%`};
+ } else {
+  return {value:diff, deltaType, text:`${arrow} ${Math.abs(diff).toLocaleString()}`};
+ }
+}
+
+/**
+ * 6개월 미니 추세 데이터 생성 (0~100 정규화)
+ * @param {Array} months - 전체 월 데이터
+ * @param {number} currIdx - 현재 달 인덱스
+ * @param {string} field - 필드명 ('revenue', 'teachers', 등)
+ * @returns {number[]} 0~100 값 6개
+ */
+function _growthMiniTrend(months, currIdx, field){
+ const start=Math.max(0, currIdx-5);
+ const slice=months.slice(start, currIdx+1).map(m=>m[field]||0);
+ const max=Math.max(...slice, 1);
+ return slice.map(v=>Math.round((v/max)*100));
+}
+
+/**
+ * 한국식 숫자 표기 (만/억)
+ * @param {number} v - 값
+ * @returns {string} 예: "1,245만원", "1.5억원"
+ */
+function _krMoney(v){
+ if(!v) return '0원';
+ if(v>=100000000) return (v/100000000).toFixed(2).replace(/\.?0+$/,'')+'억원';
+ if(v>=10000) return Math.round(v/10000).toLocaleString()+'만원';
+ return v.toLocaleString()+'원';
+}
+
+/**
+ * 옵션 1 KPI 6개 신호등 카드 렌더링 (월별 탭 — 12개월 기준)
+ * v11.84: 변화량을 절대값 + % 같이 표시 (예: "▲ +1,245만원 (12.3%)")
+ */
+function _renderOption1Kpis(){
+ const target=document.getElementById('signalCardDemo');
+ if(!target) return;
+
+ const months=getGrowthData();
+ if(months.length===0){
+  target.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">아직 정산 데이터가 없습니다.</div>';
+  return;
+ }
+
+ const currIdx=months.length-1;
+ const curr=months[currIdx];
+ const prev=currIdx>0?months[currIdx-1]:null;
+
+ // 작년 같은 달 찾기 (ym이 YYYY-MM 형식)
+ const yoyYm=_calcYoyYm(curr.ym);
+ const yoy=yoyYm?months.find(m=>m.ym===yoyYm):null;
+
+ // KPI 6개 정의 (단위별 포맷 함수 포함)
+ const fmtMoney=v=>{ // 금액 (만/억 자동, 절대 차이 표시용)
+  if(v===0) return '0원';
+  const abs=Math.abs(v);
+  const sign=v<0?'-':'';
+  if(abs>=100000000) return sign+(abs/100000000).toFixed(2).replace(/\.?0+$/,'')+'억원';
+  if(abs>=10000) return sign+Math.round(abs/10000).toLocaleString()+'만원';
+  return sign+abs.toLocaleString()+'원';
+ };
+ const fmtCount=unit=>v=>v.toLocaleString()+unit;
+
+ const kpis=[
+  {key:'revenue', label:'💰 총 매출', color:'green',
+   value:_krMoney(curr.revenue), subvalue:curr.revenue.toLocaleString()+'원', fmt:fmtMoney},
+  {key:'teachers', label:'👥 활동 강사', color:'blue',
+   value:curr.teachers+'명', subvalue:'활동 중', fmt:fmtCount('명')},
+  {key:'centers', label:'🏢 활동 센터', color:'amber',
+   value:curr.centers+'곳', subvalue:'활동 중', fmt:fmtCount('곳')},
+  {key:'lessonHours', label:'⏰ 총 수업 시간', color:'purple',
+   value:curr.lessonHours.toLocaleString()+'시간', subvalue:'O 출석 합계', fmt:fmtCount('시간')},
+  {key:'revPerTeacher', label:'👤 강사 1인당 평균', color:'green',
+   value:_krMoney(curr.revPerTeacher), subvalue:'매출/강사 수', fmt:fmtMoney},
+  {key:'revPerCenter', label:'🏪 센터 1곳당 평균', color:'green',
+   value:_krMoney(curr.revPerCenter), subvalue:'매출/센터 수', fmt:fmtMoney}
+ ];
+
+ const cards=kpis.map(k=>{
+  // 변화량 계산 (절대값 + %)
+  let deltaLines=[];
+  let deltaType='flat';
+
+  if(prev){
+   const diff=curr[k.key]-prev[k.key];
+   const pct=prev[k.key]!==0?Math.round((diff/prev[k.key])*1000)/10:null;
+   const arrow=diff>0?'▲':diff<0?'▼':'=';
+   if(diff>0) deltaType='up';
+   else if(diff<0) deltaType='down';
+   const absText=k.fmt(Math.abs(diff));
+   const sign=diff>0?'+':diff<0?'-':'';
+   if(pct!==null){
+    deltaLines.push(`${arrow} ${sign}${absText} (${Math.abs(pct)}%, 지난달 대비)`);
+   } else {
+    deltaLines.push(`${arrow} ${sign}${absText} (신규, 지난달 대비)`);
+   }
+  }
+
+  if(yoy){
+   const diff=curr[k.key]-yoy[k.key];
+   const pct=yoy[k.key]!==0?Math.round((diff/yoy[k.key])*1000)/10:null;
+   const arrow=diff>0?'▲':diff<0?'▼':'=';
+   const absText=k.fmt(Math.abs(diff));
+   const sign=diff>0?'+':diff<0?'-':'';
+   if(pct!==null){
+    deltaLines.push(`${arrow} ${sign}${absText} (${Math.abs(pct)}%, 작년 같은 달 대비)`);
+   } else {
+    deltaLines.push(`${arrow} ${sign}${absText} (신규, 작년 같은 달 대비)`);
+   }
+  }
+
+  // 미니 추세 (최근 6개월)
+  const miniTrend=_growthMiniTrend(months, currIdx, k.key);
+
+  return renderSignalCard({
+   color:k.color,
+   label:k.label,
+   value:k.value,
+   subvalue:k.subvalue,
+   delta:deltaLines.join('<br>'),
+   deltaType:deltaType,
+   miniTrend:miniTrend,
+   expandable:true,
+   onClick:`_growthExpandKpi('${k.key}')`
+  });
+ });
+
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+   <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 ${curr.ym} 핵심 지표 (옵션 1)</div>
+   <div style="font-size:11px;color:var(--text3);">${months.length}개월 데이터</div>
+  </div>
+  ${renderSignalCardGrid(cards, 3)}
+ `;
+}
+
+/**
+ * 작년 같은 달 YM 계산
+ * @param {string} ym - YYYY-MM 또는 "YYYY MM"
+ * @returns {string|null}
+ */
+function _calcYoyYm(ym){
+ const m=ym.match(/^(\d{4})[-\s_]?(\d{1,2})/);
+ if(!m) return null;
+ const year=parseInt(m[1])-1;
+ const month=m[2].padStart(2,'0');
+ return `${year}-${month}`;
+}
+
+/**
+ * KPI 카드 클릭 시 12개월 막대 차트 펼침 (v11.85)
+ */
+let _expandedKpi=null;
+
+function _growthExpandKpi(key){
+ const target=document.getElementById('kpiExpandArea');
+ if(!target) return;
+
+ // 같은 카드 다시 클릭 → 닫기
+ if(_expandedKpi===key){
+  _expandedKpi=null;
+  target.style.display='none';
+  target.innerHTML='';
+  return;
+ }
+
+ _expandedKpi=key;
+
+ const months=getGrowthData();
+ if(months.length===0){
+  target.style.display='block';
+  target.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);">데이터 없음</div>';
+  return;
+ }
+
+ // 최근 12개월
+ const recent=months.slice(-12);
+ const values=recent.map(m=>m[key]||0);
+ const max=Math.max(...values, 1);
+ const currIdx=recent.length-1;
+
+ // KPI 정보 (라벨, 색상, 포맷)
+ const kpiInfo={
+  revenue:{label:'💰 총 매출', color:'#1A7A50',
+   fmt:v=>_krMoney(v),
+   shortFmt:v=>{if(v>=100000000)return(v/100000000).toFixed(1)+'억';if(v>=10000)return Math.round(v/10000)+'만';return v.toLocaleString();}},
+  teachers:{label:'👥 활동 강사', color:'#1F6B9E',
+   fmt:v=>v.toLocaleString()+'명', shortFmt:v=>v+'명'},
+  centers:{label:'🏢 활동 센터', color:'#BA7517',
+   fmt:v=>v.toLocaleString()+'곳', shortFmt:v=>v+'곳'},
+  lessonHours:{label:'⏰ 총 수업 시간', color:'#5A3FB8',
+   fmt:v=>v.toLocaleString()+'시간', shortFmt:v=>v.toLocaleString()+'시'},
+  revPerTeacher:{label:'👤 강사 1인당 평균', color:'#1A7A50',
+   fmt:v=>_krMoney(v),
+   shortFmt:v=>{if(v>=10000)return Math.round(v/10000)+'만';return v.toLocaleString();}},
+  revPerCenter:{label:'🏪 센터 1곳당 평균', color:'#1A7A50',
+   fmt:v=>_krMoney(v),
+   shortFmt:v=>{if(v>=10000)return Math.round(v/10000)+'만';return v.toLocaleString();}}
+ };
+ const info=kpiInfo[key];
+ if(!info){
+  target.style.display='block';
+  target.innerHTML=`<div style="padding:20px;color:var(--text3);">알 수 없는 KPI: ${key}</div>`;
+  return;
+ }
+
+ // 막대 HTML 생성
+ const bars=recent.map((m,i)=>{
+  const v=m[key]||0;
+  const h=(v/max)*100;
+  const isLast=i===currIdx;
+  // 지난달 대비 %
+  const prev=i>0?recent[i-1][key]:null;
+  let pct=null, pctColor='';
+  if(prev!==null&&prev!==0){
+   pct=Math.round((v-prev)/prev*1000)/10;
+   pctColor=pct>=0?'#1A7A50':'#C53030';
+  }
+  const monthLabel=m.ym.match(/(\d{1,2})$/)?.[1]||m.ym.slice(-2);
+
+  return `
+   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
+    ${pct!==null?`<div style="font-size:9px;color:${pctColor};margin-bottom:3px;font-weight:500;">${pct>=0?'+':''}${pct}%</div>`:'<div style="height:14px;"></div>'}
+    <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:${isLast?'700':'500'};${isLast?`color:${info.color};`:''}">${info.shortFmt(v)}</div>
+    <div style="width:70%;background:${info.color};height:${Math.max(3,h)}%;border-radius:3px 3px 0 0;opacity:${isLast?'1':'0.55'};${isLast?`box-shadow:0 0 0 2px ${info.color}44;`:''}"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;${isLast?`color:${info.color};font-weight:600;`:''}">${monthLabel}월</div>
+   </div>
+  `;
+ }).join('');
+
+ // 현재 값과 비교 정보
+ const curr=recent[currIdx];
+ const prev=currIdx>0?recent[currIdx-1]:null;
+ const diff=prev?curr[key]-prev[key]:0;
+ const pct=prev&&prev[key]!==0?Math.round((diff/prev[key])*1000)/10:null;
+ const arrow=diff>0?'▲':diff<0?'▼':'=';
+ const deltaColor=diff>0?'#1A7A50':diff<0?'#C53030':'var(--text3)';
+
+ target.style.display='block';
+ target.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">${info.label}</div>
+     <div style="font-size:11px;color:var(--text3);">최근 ${recent.length}개월</div>
+    </div>
+    <button onclick="_growthExpandKpi('${key}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   </div>
+   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+    <div style="font-size:24px;font-weight:700;color:${info.color};">${info.fmt(curr[key])}</div>
+    ${pct!==null?`<div style="font-size:12px;color:${deltaColor};font-weight:500;">${arrow} ${pct>=0?'+':''}${pct}% (지난달 대비)</div>`:''}
+   </div>
+   <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
+    ${bars}
+   </div>
+   <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
+    💡 막대 위 작은 % = 그 달의 지난달 대비 변화 · 진한 색 = ${curr.ym} (현재 달)
+   </div>
+  </div>
+ `;
+
+ // 스크롤 (펼침 영역으로)
+ setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
 
 // ── 차트 타입 토글 (막대/선)
 let _growthChartType = 'bar';
