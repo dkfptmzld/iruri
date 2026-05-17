@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.10">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.13">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.10">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.13">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.10</title>
+<title>수업기록표 정산 시스템 v12.13</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1344,10 +1344,10 @@ body.edit-mode-active .ledger-wrap textarea {
  <div class="nav-tabs">
  <button class="nav-tab" id="nav0" onclick="switchView('settle')">📊 정산</button>
  <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
- <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
+ <button class="nav-tab active" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
- <button class="nav-tab active" id="nav4" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">2</span></button>
+ <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
+<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">9+</span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -1365,15 +1365,13 @@ body.edit-mode-active .ledger-wrap textarea {
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
-<button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
- <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
-</button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
+<button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg> 동기화 중...</button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
 <button onclick="syncSnapshotsToGAS()" title="모든 월별 수업기록표를 GAS Drive에 업로드" class="btn" id="syncSnapBtn" style="font-size:12px;background:#2E7D32;color:white;border-color:#2E7D32;font-weight:600;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path></svg>📋 기록표 업로드</button>
 <!-- v11.30: 점검 모드 버튼 -->
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/17 오후 09:21 · 강사 33명 · 센터 333개</span>
+<span id="syncStatusChip" style="display: none; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: var(--green-bg); color: var(--green); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✓ 동기화 완료</span>
 <!-- 다크모드 토글 -->
 <button id="darkModeBtn" onclick="toggleDarkMode()" title="다크/라이트 모드 전환" class="btn" style="font-size:16px;padding:0 8px;min-width:34px;">🌙</button>
 <!-- 글자 크기 조절 -->
@@ -1433,19 +1431,49 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 
  <!-- 인상 예정 알림 -->
- <div id="raiseAlert" style="display:none;"></div>
+ <div id="raiseAlert" style="display: block;"><div style="background:var(--amber-bg);border:1px solid #E8CC80;border-radius:var(--radius-lg);padding:14px 18px;">
+ <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+  <div style="font-size:13px;font-weight:600;color:var(--amber);">
+   
+    🔔 30일 내 인상 예정 3명
+  </div>
+  
+ </div>
+ <div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 방진수</span>
+     <span class="badge teal" style="flex-shrink:0;">인천</span>
+     <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap;">2일 후</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">인상예정일 <b>2026-05-19</b> &nbsp;·&nbsp; 40,000원 → <b>42,000원으로 인상 예정</b></div>
+   </div><div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 장성기</span>
+     <span class="badge blue" style="flex-shrink:0;">서울</span>
+     <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap;">2일 후</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">인상예정일 <b>2026-05-19</b> &nbsp;·&nbsp; 40,000원 → <b>42,000원으로 인상 예정</b></div>
+   </div><div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 신기윤</span>
+     <span class="badge blue" style="flex-shrink:0;">서울</span>
+     <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap;">2일 후</span>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">인상예정일 <b>2026-05-19</b> &nbsp;·&nbsp; 40,000원 → <b>42,000원으로 인상 예정</b></div>
+   </div>
+ </div></div>
 
  <!-- 지역별 통계 카드 -->
  <div class="region-stats">
- <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">—</div><div class="region-sub">명</div></div>
- <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="ts-seoul">—</div><div class="region-sub" id="ts-seoul-s">—</div></div>
- <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">—</div><div class="region-sub" id="ts-incheon-s">—</div></div>
- <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="ts-suwon">—</div><div class="region-sub" id="ts-suwon-s">—</div></div>
+ <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">33</div><div class="region-sub">명</div></div>
+ <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="ts-seoul">16</div><div class="region-sub" id="ts-seoul-s">비율 4 · 고정 12</div></div>
+ <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">12</div><div class="region-sub" id="ts-incheon-s">비율 5 · 고정 7</div></div>
+ <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="ts-suwon">5</div><div class="region-sub" id="ts-suwon-s">비율 2 · 고정 3</div></div>
  </div>
 
  <div class="mgr-section">
  <div class="mgr-sec-head">
- <span>강사 목록</span><span class="badge green" id="tCount">0명</span>
+ <span>강사 목록</span><span class="badge green" id="tCount">32명 (전체 32명)</span>
  </div>
  <!-- 지역 탭 + 검색 -->
  <div class="search-bar" style="gap:6px;flex-wrap:wrap;">
@@ -1460,7 +1488,359 @@ body.edit-mode-active .ledger-wrap textarea {
  <div class="mgr-head-row mgr-row t-mgr-row">
  <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">입사일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell"></div>
  </div>
- <div id="tRows"></div>
+ <div id="tRows"><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',0)">
+ <div class="mgr-cell" style="font-weight:500;">김은영</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-03-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-08-19<br><span style="color:var(--text3);">D-94</span></span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',0)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',28)">
+ <div class="mgr-cell" style="font-weight:500;">신기윤</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 2026-05-19<br>D-2</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',28)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',3)">
+ <div class="mgr-cell" style="font-weight:500;">오건</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-03-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-08-19<br><span style="color:var(--text3);">D-94</span></span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',3)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',21)">
+ <div class="mgr-cell" style="font-weight:500;">장성기</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 2026-05-19<br>D-2</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',21)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',25)">
+ <div class="mgr-cell" style="font-weight:500;">박준형</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',25)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',23)">
+ <div class="mgr-cell" style="font-weight:500;">변동</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',23)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',15)">
+ <div class="mgr-cell" style="font-weight:500;">양성모</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',15)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',27)">
+ <div class="mgr-cell" style="font-weight:500;">양재원</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',27)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',20)">
+ <div class="mgr-cell" style="font-weight:500;">윤혜미</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',20)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',16)">
+ <div class="mgr-cell" style="font-weight:500;">이인경</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',16)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',18)">
+ <div class="mgr-cell" style="font-weight:500;">조영미</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',18)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',31)">
+ <div class="mgr-cell" style="font-weight:500;">이재열</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">하나은행</span><span style="font-family:'DM Mono',monospace;display:block;">620</span><span style="display:block;">242500 823 이재열</span></div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">50,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',31)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',6)">
+ <div class="mgr-cell" style="font-weight:500;">구명훈</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',6)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',9)">
+ <div class="mgr-cell" style="font-weight:500;">송준기</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',9)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',12)">
+ <div class="mgr-cell" style="font-weight:500;">정상준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',12)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',29)">
+ <div class="mgr-cell" style="font-weight:500;">이재하<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge blue">서울</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">100%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2016-09-01</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',29)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',30)">
+ <div class="mgr-cell" style="font-weight:500;">김보창<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-05-01</div>
+ <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-10-20<br><span style="color:var(--text3);">D-156</span></span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',30)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',17)">
+ <div class="mgr-cell" style="font-weight:500;">방진수<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 2026-05-19<br>D-2</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',17)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',26)">
+ <div class="mgr-cell" style="font-weight:500;">이재윤<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-02-09</div>
+ <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-07-19<br><span style="color:var(--text3);">D-63</span></span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',26)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',19)">
+ <div class="mgr-cell" style="font-weight:500;">김수민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',19)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',24)">
+ <div class="mgr-cell" style="font-weight:500;">박종일<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',24)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',22)">
+ <div class="mgr-cell" style="font-weight:500;">홍예은<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',22)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',4)">
+ <div class="mgr-cell" style="font-weight:500;">김유천<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구인지</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',4)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',1)">
+ <div class="mgr-cell" style="font-weight:500;">장호준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',1)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',10)">
+ <div class="mgr-cell" style="font-weight:500;">박기남<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">597302-04-146046</span><span style="display:block;">박기남</span></div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2024-01-21</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',10)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',7)">
+ <div class="mgr-cell" style="font-weight:500;">한수희<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',7)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',13)">
+ <div class="mgr-cell" style="font-weight:500;">김효민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge teal">인천</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">95%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',13)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',14)">
+ <div class="mgr-cell" style="font-weight:500;">김수도</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge purple">수원</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',14)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',8)">
+ <div class="mgr-cell" style="font-weight:500;">오수정</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge purple">수원</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-11-09</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',8)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',11)">
+ <div class="mgr-cell" style="font-weight:500;">원보영</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge purple">수원</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
+ <div class="mgr-cell"><span class="badge green">회당고정</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',11)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',5)">
+ <div class="mgr-cell" style="font-weight:500;">안지훈<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge purple">수원</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',5)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',2)">
+ <div class="mgr-cell" style="font-weight:500;">최정안</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell"><span class="badge purple">수원</span></div>
+ <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
+ <div class="mgr-cell"><span class="badge blue">비율</span></div>
+ <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
+ <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
+ <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm danger" onclick="delItem('teacher',2)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+ </div>
+ </div></div>
  </div>
  <div class="panel" style="padding:16px 20px;">
  <div style="font-size:13px;font-weight:600;margin-bottom:10px;">강사료 유형 안내</div>
@@ -1485,10 +1865,10 @@ body.edit-mode-active .ledger-wrap textarea {
 
   <!-- 지역별 통계 -->
   <div class="region-stats">
-   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">—</div><div class="region-sub">개 센터</div></div>
-   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">—</div><div class="region-sub" id="rs-seoul-t">—</div></div>
-   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">—</div><div class="region-sub" id="rs-incheon-t">—</div></div>
-   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">—</div><div class="region-sub" id="rs-suwon-t">—</div></div>
+   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">333</div><div class="region-sub">개 센터</div></div>
+   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">166</div><div class="region-sub" id="rs-seoul-t">강사 16명 담당</div></div>
+   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">110</div><div class="region-sub" id="rs-incheon-t">강사 12명 담당</div></div>
+   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">57</div><div class="region-sub" id="rs-suwon-t">강사 5명 담당</div></div>
   </div>
 
   <!-- 지역별 검색창 -->
@@ -1510,7 +1890,162 @@ body.edit-mode-active .ledger-wrap textarea {
    <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:400px;">
     <!-- 좌측: 탐색 패널 -->
     <div style="background:var(--surface2);border-right:1px solid var(--border);overflow-y:auto;">
-     <div id="cTreeNav"></div>
+     <div id="cTreeNav"><div>
+   <div id="cnav-서울-btn" onclick="toggleNavRegion('서울')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+    <span class="badge blue" style="font-size:11px;padding:2px 8px;">서울</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">166개</span>
+    <span id="cnav-서울-arrow" style="font-size:12px;color:var(--text3);">▾</span>
+   </div>
+   <div id="cnav-서울-list" style="display:block;">
+    
+     <div id="cnav-서울-구명훈" onclick="selectTreeTeacher('서울','구명훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">구</div>
+      <span style="flex:1;">구명훈</span>
+     </div>
+     <div id="cnav-서울-김은영" onclick="selectTreeTeacher('서울','김은영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김은영</span>
+     </div>
+     <div id="cnav-서울-박준형" onclick="selectTreeTeacher('서울','박준형',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
+      <span style="flex:1;">박준형</span>
+     </div>
+     <div id="cnav-서울-변동" onclick="selectTreeTeacher('서울','변동',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">변</div>
+      <span style="flex:1;">변동</span>
+     </div>
+     <div id="cnav-서울-송준기" onclick="selectTreeTeacher('서울','송준기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">송</div>
+      <span style="flex:1;">송준기</span>
+     </div>
+     <div id="cnav-서울-신기윤" onclick="selectTreeTeacher('서울','신기윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">신</div>
+      <span style="flex:1;">신기윤</span>
+     </div>
+     <div id="cnav-서울-양성모" onclick="selectTreeTeacher('서울','양성모',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
+      <span style="flex:1;">양성모</span>
+     </div>
+     <div id="cnav-서울-양재원" onclick="selectTreeTeacher('서울','양재원',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
+      <span style="flex:1;">양재원</span>
+     </div>
+     <div id="cnav-서울-오건" onclick="selectTreeTeacher('서울','오건',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
+      <span style="flex:1;">오건</span>
+     </div>
+     <div id="cnav-서울-윤혜미" onclick="selectTreeTeacher('서울','윤혜미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">윤</div>
+      <span style="flex:1;">윤혜미</span>
+     </div>
+     <div id="cnav-서울-이인경" onclick="selectTreeTeacher('서울','이인경',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이인경</span>
+     </div>
+     <div id="cnav-서울-이재열" onclick="selectTreeTeacher('서울','이재열',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이재열</span>
+     </div>
+     <div id="cnav-서울-이재하" onclick="selectTreeTeacher('서울','이재하',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이재하</span>
+     </div>
+     <div id="cnav-서울-장성기" onclick="selectTreeTeacher('서울','장성기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
+      <span style="flex:1;">장성기</span>
+     </div>
+     <div id="cnav-서울-정상준" onclick="selectTreeTeacher('서울','정상준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">정</div>
+      <span style="flex:1;">정상준</span>
+     </div>
+     <div id="cnav-서울-조영미" onclick="selectTreeTeacher('서울','조영미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
+      <span style="flex:1;">조영미</span>
+     </div>
+   </div>
+  </div><div>
+   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">110개</span>
+    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);">▾</span>
+   </div>
+   <div id="cnav-인천-list" style="display:block;">
+    
+     <div id="cnav-인천-김보창" onclick="selectTreeTeacher('인천','김보창',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김보창</span>
+     </div>
+     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김수민</span>
+     </div>
+     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김유천</span>
+     </div>
+     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김효민</span>
+     </div>
+     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
+      <span style="flex:1;">박기남</span>
+     </div>
+     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
+      <span style="flex:1;">박종일</span>
+     </div>
+     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">방</div>
+      <span style="flex:1;">방진수</span>
+     </div>
+     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
+      <span style="flex:1;">이재윤</span>
+     </div>
+     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
+      <span style="flex:1;">장호준</span>
+     </div>
+     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">한</div>
+      <span style="flex:1;">한수희</span>
+     </div>
+     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">홍</div>
+      <span style="flex:1;">홍예은</span>
+     </div>
+   </div>
+  </div><div>
+   <div id="cnav-수원-btn" onclick="toggleNavRegion('수원')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+    <span class="badge purple" style="font-size:11px;padding:2px 8px;">수원</span>
+    <span style="flex:1;font-size:12px;color:var(--text2);">57개</span>
+    <span id="cnav-수원-arrow" style="font-size:12px;color:var(--text3);">▾</span>
+   </div>
+   <div id="cnav-수원-list" style="display:block;">
+    
+     <div id="cnav-수원-김수도" onclick="selectTreeTeacher('수원','김수도',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
+      <span style="flex:1;">김수도</span>
+     </div>
+     <div id="cnav-수원-안지훈" onclick="selectTreeTeacher('수원','안지훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">안</div>
+      <span style="flex:1;">안지훈</span>
+     </div>
+     <div id="cnav-수원-오수정" onclick="selectTreeTeacher('수원','오수정',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
+      <span style="flex:1;">오수정</span>
+     </div>
+     <div id="cnav-수원-원보영" onclick="selectTreeTeacher('수원','원보영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">원</div>
+      <span style="flex:1;">원보영</span>
+     </div>
+     <div id="cnav-수원-최정안" onclick="selectTreeTeacher('수원','최정안',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
+      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">최</div>
+      <span style="flex:1;">최정안</span>
+     </div>
+   </div>
+  </div></div>
     </div>
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
@@ -1527,7 +2062,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 성장추이 뷰 -->
-<div class="mgr-view" id="historyView" style="display: none;">
+<div class="mgr-view" id="historyView" style="display:none;">
 <div id="growthRoot" style="min-height:calc(100vh-52px);background:var(--bg);padding:0;">
 
  <!-- ① Hero 헤더 : 가장 최근 달 기준 전체 현황 -->
@@ -1788,7 +2323,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 
  <!-- v11.89: 옵션 5 카드 클릭 시 신규/이탈 이름 펼침 영역 -->
- <div id="churnExpandArea" style="padding: 0px 32px; display: none;"></div>
+ <div id="churnExpandArea" style="padding:0 32px;display:none;"></div>
 
  <!-- v12.08: 옵션 7 — 비용 추이 (모의수업/주차료/물품/기타) -->
  <div style="padding:24px 32px 0;">
@@ -1871,7 +2406,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
   </div>
   <div class="panel" style="padding:16px 12px;overflow:hidden;">
-   <canvas id="growthChart" style="width: 2471px; max-height: 220px; display: block; height: 220px;" width="3706" height="330"></canvas>
+   <canvas id="growthChart" style="width: 100%; max-height: 220px; display: block; height: 220px;" width="300" height="330"></canvas>
   </div>
  </div>
 
@@ -2032,7 +2567,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:33:17</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:54:46</div>
  </div>
 </div>
 
@@ -2059,33 +2594,82 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div>
 </div>
-<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+<div class="modal-overlay" id="modalOverlay" style="display: none;" onclick="if(event.target===this)closeModal()">
  <div class="modal">
- <h3 id="modalTitle"></h3><p id="modalDesc"></p>
- <div id="modalBody"></div>
+ <h3 id="modalTitle">강사 정보 수정</h3><p id="modalDesc">강사료 기준은 엑셀 파일의 값보다 우선 적용됩니다.</p>
+ <div id="modalBody">
+ <div class="form-row-2">
+ <div><label class="form-label">이름</label><input class="form-input" id="fi_name" value="원보영" placeholder="홍길동"></div>
+ <div><label class="form-label">지역</label>
+ <select class="form-select" id="fi_region">
+ <option value="">선택</option><option>서울</option><option>인천</option><option selected="">수원</option>
+ </select></div>
+ </div>
+ <div class="form-row">
+ <label class="form-label">과목 <span style="font-size:11px;color:var(--text3);font-weight:400;">(이루리 3개 과목 중 선택)</span></label>
+ <select class="form-select" id="fi_subject">
+ <option value="">선택 안 함</option>
+ <option>실버스포츠</option>
+ <option>도구 레크레이션</option>
+ <option>도구인지</option>
+ </select>
+ </div>
+ <div class="form-row">
+ <label class="form-label">강사료 유형</label>
+ <select class="form-select" id="fi_feeType" onchange="updateFeeHint()">
+ <option value="pct">비율 (%)</option>
+ <option value="fixed" selected="">회당 고정 (원/회)</option>
+ </select>
+ </div>
+ <div class="form-row">
+ <label class="form-label" id="fi_feeLabel">회당 금액 (원)</label>
+ <input class="form-input" id="fi_feeVal" value="42000" placeholder="85 또는 42000">
+ <div class="form-hint" id="fi_feeHint">예) 42000 → 수업 1회당 42,000원</div>
+ </div>
+ <div class="form-row-2">
+ <div>
+ <label class="form-label">입사일</label>
+ <input class="form-input" id="fi_hireDate" type="date" value="">
+ <div class="form-hint">입력 시 인상예정일 자동 계산</div>
+ </div>
+ <div>
+ <label class="form-label">인상예정일 (입사 6개월 후)</label>
+ <input class="form-input" id="fi_raiseDate" type="date" value="">
+ <div class="form-hint">입사일 기준 자동 입력 (수동 수정 가능)</div>
+ </div>
+ </div>
+ <div class="form-row">
+ <label class="form-label">계좌번호</label>
+ <div style="display:flex;flex-direction:column;gap:6px;">
+   <input class="form-input" id="fi_bank" value="" placeholder="은행명 (예: 국민은행)">
+   <input class="form-input" id="fi_accnum" value="" placeholder="계좌번호 (예: 597302-04-146046)">
+   <input class="form-input" id="fi_accname" value="" placeholder="예금주 (예: 박기남)">
+ </div>
+ <div class="form-hint">강사 모드에서 이름 선택 시 자동으로 채워집니다</div>
+ </div></div>
  <div class="modal-btns"><button class="btn" onclick="closeModal()">취소</button><button class="btn primary" id="modalOk" onclick="saveModal()">저장</button></div>
  </div>
 </div>
 
 <!-- 커스텀 confirm 모달 -->
-<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
- <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
+<div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🗑</div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">삭제</h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"><b>「길범준」</b>를 삭제할까요?</p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
    <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: rgb(224, 82, 82); color: white; border-color: rgb(192, 48, 48); font-weight: 700;">삭제</button>
   </div>
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ 📂 2026년 5월 자동 로드 중...</div>
+<div class="save-toast" id="saveToast">✓ ✅ 동기화 완료 — 강사 32명, 센터 333개 Sheets 저장 확인</div>
 
 <!-- 전역 로딩 오버레이 -->
-<div id="globalLoader">
+<div id="globalLoader" class="">
   <div class="loader-spinner"></div>
-  <div class="loader-text" id="loaderText">불러오는 중...</div>
+  <div class="loader-text" id="loaderText">강사 데이터 동기화 중...</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -3082,7 +3666,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.10';
+const SYSTEM_VERSION='v12.13';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -4811,6 +5395,9 @@ function updateExtraCost(ti, field, val){
  // v11.33 fix: 수업기록표 즉시 저장 (비용 변경도 정산 데이터)
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.13: 비용 변경 즉시 반영 (박기남님 요청)
+ try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
+ try{ if(typeof renderGrowthView==='function') renderGrowthView(); }catch{}
 }
 
 /**
@@ -4829,6 +5416,9 @@ function updateCenter(ti,li,val){
  lsSave();
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.13: 센터명 변경 즉시 반영 (박기남님 요청)
+ try{ recalcTeacher(ti); }catch{}
+ try{ if(typeof renderTab==='function') renderTab('ledger',ti); }catch{}
 }
 
 function updateFee(ti,li,val){
@@ -4888,6 +5478,8 @@ function toggleSettleStatus(ti){
     saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
     const li = document.getElementById(`ti-${ti}`);
     if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 완료로 변경">미정산</span>`; }
+    // v12.13: 정산 화면 즉시 갱신 (박기남님 요청)
+    try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
     showToast(`${t.name} — 미정산으로 변경됨`);
    }
   });
@@ -4904,6 +5496,8 @@ function toggleSettleStatus(ti){
     saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
     const li = document.getElementById(`ti-${ti}`);
     if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 미완료로 변경">✓ 완료</span>`; }
+    // v12.13: 정산 화면 즉시 갱신 (박기남님 요청)
+    try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
     showToast(`${t.name} — 정산 완료 처리됨`);
    }
   });
@@ -5220,6 +5814,8 @@ function saveAdminNote(ti, value){
  t.note = newNote;
  const ym = t.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.13: 특이사항 변경 즉시 반영 (박기남님 요청)
+ try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
  showToast('✅ 특이사항 저장됨');
 }
 
@@ -5536,7 +6132,7 @@ function renderTeacherMgr(){
  else raiseBadge=`<span style="font-size:11px;color:var(--text2);">${fmtDate(t.raiseDate)}<br><span style="color:var(--text3);">D-${diff}</span></span>`;
  }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
- <div class="mgr-cell" style="font-weight:500;">${t.name}</div>
+ <div class="mgr-cell" style="font-weight:500;">${t.name}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${t.subject}</div>`:''}</div>
  <div class="mgr-cell" style="font-size:12px;line-height:1.6;">${formatAccountHtml(t.account)}</div>
  <div class="mgr-cell"><span class="badge ${regionColor}">${t.region||'-'}</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">${t.feeType==='pct'?t.feeVal+'%':Number(t.feeVal).toLocaleString()+'원/회'}</span></div>
@@ -6122,6 +6718,15 @@ function openModal(type,idx=null,prefillName='',prefillTeacher=''){
  </select></div>
  </div>
  <div class="form-row">
+ <label class="form-label">과목 <span style="font-size:11px;color:var(--text3);font-weight:400;">(이루리 3개 과목 중 선택)</span></label>
+ <select class="form-select" id="fi_subject">
+ <option value="">선택 안 함</option>
+ <option ${item?.subject==='실버스포츠'?'selected':''}>실버스포츠</option>
+ <option ${item?.subject==='도구 레크레이션'?'selected':''}>도구 레크레이션</option>
+ <option ${item?.subject==='도구인지'?'selected':''}>도구인지</option>
+ </select>
+ </div>
+ <div class="form-row">
  <label class="form-label">강사료 유형</label>
  <select class="form-select" id="fi_feeType" onchange="updateFeeHint()">
  <option value="pct" ${item?.feeType==='pct'?'selected':''}>비율 (%)</option>
@@ -6374,7 +6979,9 @@ function saveModal(){
  const accnum=document.getElementById('fi_accnum')?.value.trim()||'';
  const accname=document.getElementById('fi_accname')?.value.trim()||'';
  const account=[bank,accnum,accname].filter(Boolean).join(' ');
- const obj={name,region,feeType,feeVal,hireDate,raiseDate,account};
+ // v12.11: 과목 추가
+ const subject=document.getElementById('fi_subject')?.value||'';
+ const obj={name,region,feeType,feeVal,hireDate,raiseDate,account,subject};
  if(STATE.editIdx!==null){
   const prev=JSON.parse(JSON.stringify(DB.teachers));
   const old=DB.teachers[STATE.editIdx];
@@ -6385,6 +6992,11 @@ function saveModal(){
  gasPost({action:'saveTeacher', teacher:obj}).catch(()=>{});
  localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
  renderTeacherMgr();
+ // v12.12: 강사 정보 변경 시 모든 관련 화면 즉시 갱신 (박기남님 요청)
+ try{ if(typeof renderRegionStats==='function') renderRegionStats(); }catch{}
+ try{ if(typeof renderCenterTreeView==='function') renderCenterTreeView(); }catch{}
+ try{ if(typeof renderSettle==='function' && STATE.data) renderSettle(); }catch{}
+ try{ if(typeof renderGrowthView==='function') renderGrowthView(); }catch{}
  } else {
  const region=document.getElementById('fi_region')?.value||'';
  if(!region){showConfirm({icon:'⚠️',title:'입력 오류',desc:'지역을 선택하세요.<br><small>(동명 센터 구분을 위해 필수)</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null});document.getElementById('confirmCancelBtn').style.display='none'; return;}
