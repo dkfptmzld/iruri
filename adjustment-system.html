@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.06">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.10">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.06">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.10">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.06</title>
+<title>수업기록표 정산 시스템 v12.10</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1342,12 +1342,12 @@ body.edit-mode-active .ledger-wrap textarea {
  수업기록표 정산 시스템
  </div>
  <div class="nav-tabs">
- <button class="nav-tab active" id="nav0" onclick="switchView('settle')">📊 정산</button>
+ <button class="nav-tab" id="nav0" onclick="switchView('settle')">📊 정산</button>
  <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
- <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">1</span></button>
+ <button class="nav-tab active" id="nav4" onclick="switchView('history')">📈 성장추이</button>
+<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">2</span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -1355,10 +1355,10 @@ body.edit-mode-active .ledger-wrap textarea {
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight">
- <span class="chip green">2026년 5월</span>
+ <span class="chip green"></span>
  <div style="display:flex;gap:4px;align-items:center;">
  <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
- <button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button>
+ 
  </div>
  <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>CSV</button>
  <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
@@ -1373,7 +1373,7 @@ body.edit-mode-active .ledger-wrap textarea {
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/17 오후 08:05 · 강사 33명 · 센터 333개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/17 오후 09:21 · 강사 33명 · 센터 333개</span>
 <!-- 다크모드 토글 -->
 <button id="darkModeBtn" onclick="toggleDarkMode()" title="다크/라이트 모드 전환" class="btn" style="font-size:16px;padding:0 8px;min-width:34px;">🌙</button>
 <!-- 글자 크기 조절 -->
@@ -1405,410 +1405,23 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 5월
+ <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 5월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
+ <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 5월 · 1명</div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
- <div class="t-avatar">박</div>
- <div class="t-info">
-  <div class="t-name">박기남<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">-</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
- </div></div>
+ <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta"> · 0명</div></div>
+ <div class="teacher-scroll" id="teacherList"></div>
  </div>
  <div class="content" id="mainContent">
- <div class="profile-row">
- <div class="profile-avatar">박</div>
- <div><div class="profile-name">박기남 강사</div><div class="profile-sub">2026년 5월 · 강사료 85%</div></div>
- <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
-   <span style="color:var(--text3);font-size:11px;">국민은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">597302-04-146046</span><br><span>박기남</span>
- </div>
- </div>
- <div class="metrics">
- <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">0<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
- <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- </div>
- <div>
- <div class="tabs-bar">
- <div class="tab active" data-tab="ledger" onclick="setTab('ledger')">📋 수업기록표</div>
- <div class="tab" data-tab="settle" onclick="setTab('settle')">정산 상세</div>
- <div class="tab" data-tab="all" onclick="setTab('all')">전체 강사 비교</div>
- <div class="tab" data-tab="receipts_teacher" onclick="setTab('receipts_teacher')">🧾 영수증</div>
- </div>
- <div id="tabBody"><div class="ledger-wrap">
- <div class="ledger-title-row" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;">
-  <div class="ledger-title" style="margin:0;">2026년 5월 수업 기록표 ( 박기남 ) 강사</div>
-  <div class="edit-controls" style="display:flex;gap:6px;"><button onclick="startEditMode()" class="edit-mode-start-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #FFD700;background:#FFF3CD;color:#856404;font-weight:600;cursor:pointer;font-size:13px;">✏️ 편집 시작</button></div>
- </div>
-  <div style="overflow-x:auto;">
- <table class="ledger-table">
- <colgroup>
- <col style="width:24px"><col style="width:130px">
- <col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px">
- <col style="width:38px"><col style="width:28px">
- <col style="width:62px"><col style="width:70px"></colgroup>
- <thead>
- <tr style="background:#E8E6DC;">
- <th style="width:24px;">요일</th>
- <th style="text-align:left;padding-left:6px;">센터명</th>
- <th>1주</th><th>2주</th><th>3주</th><th>4주</th><th>5주</th>
- <th>수업<br>횟수</th><th></th>
- <th>수업료</th><th>금액</th>
- </tr>
- </thead>
- <tbody><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">월</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">4일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">11일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">18일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">25일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="효명" onclick="openCenterPicker(0,0,this)">
- <span class="">효명</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,0)" title="효명 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,4)" title="25일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="행정업무1" onclick="openCenterPicker(0,1,this)">
- <span class="">행정업무1</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,1)" title="행정업무1 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,4)" title="25일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="행정업무2" onclick="openCenterPicker(0,2,this)">
- <span class="">행정업무2</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,2)" title="행정업무2 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,4)" title="25일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr style="background:#F8F7F2;">
- <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'월')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-   <span style="font-size:14px;">＋</span> 수업 추가
-  </button>
- </td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">5일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">12일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">19일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">26일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="더사랑" onclick="openCenterPicker(0,3,this)">
- <span class="">더사랑</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,3)" title="더사랑 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,4)" title="26일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="정다운" onclick="openCenterPicker(0,4,this)">
- <span class="">정다운</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,4)" title="정다운 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,4)" title="26일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="소새울" onclick="openCenterPicker(0,5,this)">
- <span class="">소새울</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,5)" title="소새울 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,4)" title="26일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr style="background:#F8F7F2;">
- <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-   <span style="font-size:14px;">＋</span> 수업 추가
-  </button>
- </td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">수</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">6일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">13일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">20일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">27일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="늘푸른" onclick="openCenterPicker(0,6,this)">
- <span class="">늘푸른</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,6)" title="늘푸른 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,4)" title="27일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(0,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="미추홀" onclick="openCenterPicker(0,7,this)">
- <span class="">미추홀</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,7)" title="미추홀 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,4)" title="27일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="소래" onclick="openCenterPicker(0,8,this)">
- <span class="">소래</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,8)" title="소래 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,4)" title="27일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr style="background:#F8F7F2;">
- <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'수')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-   <span style="font-size:14px;">＋</span> 수업 추가
-  </button>
- </td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">목</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">7일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">14일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">21일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">28일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="금천노인" onclick="openCenterPicker(0,9,this)">
- <span class="">금천노인</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,9)" title="금천노인 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,4)" title="28일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="프라임" onclick="openCenterPicker(0,10,this)">
- <span class="">프라임</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,10)" title="프라임 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,4)" title="28일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="무지개" onclick="openCenterPicker(0,11,this)">
- <span class="">무지개</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,11)" title="무지개 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,4)" title="28일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr style="background:#F8F7F2;">
- <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'목')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-   <span style="font-size:14px;">＋</span> 수업 추가
-  </button>
- </td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- </tr><tr>
- <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">1일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">8일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">15일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">22일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">29일</td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
- </tr><tr>
- <td class="center-cell" title="주은" onclick="openCenterPicker(0,12,this)">
- <span class="">주은</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,12)" title="주은 삭제">✕</button>
- </td>
- <td class="attend-cell att-empty" onclick="toggleAttend(0,12,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,4)" title="29일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="가가호호봉천" onclick="openCenterPicker(0,13,this)">
- <span class="">가가호호봉천</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,13)" title="가가호호봉천 삭제">✕</button>
- </td>
- <td class="attend-cell att-empty" onclick="toggleAttend(0,13,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,4)" title="29일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,13,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="두드림" onclick="openCenterPicker(0,14,this)">
- <span class="">두드림</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,14)" title="두드림 삭제">✕</button>
- </td>
- <td class="attend-cell att-empty" onclick="toggleAttend(0,14,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,4)" title="29일"></td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,14,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr style="background:#F8F7F2;">
- <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'금')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-   <span style="font-size:14px;">＋</span> 수업 추가
-  </button>
- </td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
- </tr><tr style="background:#F8F7F2;">
-   <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-    <button onclick="openAddDayModal(0)" style="width:100%;height:26px;border:1px dashed #C8A020;border-radius:6px;background:transparent;color:#856404;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
-     <span style="font-size:14px;">📅</span> 요일 추가
-    </button>
-   </td>
-   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
-   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
-   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
-   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
-   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
-  </tr></tbody>
- <tfoot>
- <tr class="ledger-foot">
- <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">국민은행 597302-04-146046 박기남</td>
- <td style="font-size:11px;font-weight:600;">수업료%</td>
- <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
- <td style="font-size:11px;font-weight:600;">세전</td>
- </tr>
- <tr class="ledger-foot">
- <td colspan="7"></td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">85%</td>
- <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">0</td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">0</td>
- </tr>
- </tfoot>
- </table>
- </div>
- <!-- 가로 정산 요약 + 비용 입력 -->
- <div class="settle-summary-row">
- <table class="settle-summary-table">
- <thead>
- <tr>
- <th>수업료%</th>
- <th>수업료 합계</th>
- <th>세전</th>
- <th>영업이익</th>
- <th>확정 월급</th>
- <th class="cost-col">모의수업<div class="cost-hint">△ 자동</div></th>
- <th class="cost-col">주차료</th>
- <th class="cost-col">물품</th>
- <th class="cost-col">기타</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td style="font-weight:700;color:#1A5FA0;">85%</td>
- <td style="font-weight:700;">₩0</td>
- <td style="font-weight:700;color:#1A5FA0;">₩0</td>
- <td style="font-weight:700;color:#1A7A50;">+0</td>
- <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩0</td>
- <td class="cost-col">
- <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △0회 = 0원</div>
- <input type="number" class="cost-input" placeholder="0" value="20000" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
- </td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="3000" onchange="updateExtraCost(0,'parkingCost',this.value)" min="0"></td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="40000" onchange="updateExtraCost(0,'supplyCost',this.value)" min="0"></td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="50000" onchange="updateExtraCost(0,'etcCost',this.value)" min="0"></td>
- </tr>
- <tr class="cost-display-row">
- <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
- <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">₩20,000</td>
- <td class="cost-col" id="extraParking-0" style="font-weight:700;font-size:13px;color:#5A3AB0;">₩3,000</td>
- <td class="cost-col" id="extraSupply-0" style="font-weight:700;font-size:13px;color:#0F766E;">₩40,000</td>
- <td class="cost-col" id="extraEtc-0" style="font-weight:700;font-size:13px;color:#0369A1;">₩50,000</td>
- </tr>
- </tbody>
- </table>
- </div>
- <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
- <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
-  특이사항
-  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
- </div>
- <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">주차료: 주차장 이용
-물품: 활동 도구 구매
-기타: 자격증 비용</textarea>
- </div>
- <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
- <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
- O/X 클릭으로 출석 토글 · 센터명·수업료 클릭으로 직접 수정
- </div>
- </div></div>
- </div></div>
+  <div class="upload-wrap">
+   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
+    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
+    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
+   </div>
+  </div></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1914,25 +1527,162 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 성장추이 뷰 -->
-<div class="mgr-view" id="historyView" style="display:none;">
+<div class="mgr-view" id="historyView" style="display: none;">
 <div id="growthRoot" style="min-height:calc(100vh-52px);background:var(--bg);padding:0;">
 
  <!-- ① Hero 헤더 : 가장 최근 달 기준 전체 현황 -->
  <div id="growthHero" style="background:var(--green);color:white;padding:28px 32px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;">
   <div style="flex:1;min-width:200px;">
    <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7;margin-bottom:6px;">이루리 실버 아카데미</div>
-   <div id="heroTitle" style="font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1;">데이터 로딩 중</div>
-   <div id="heroSub" style="font-size:13px;opacity:.75;margin-top:6px;"></div>
+   <div id="heroTitle" style="font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1;">2026년 4월 현황</div>
+   <div id="heroSub" style="font-size:13px;opacity:.75;margin-top:6px;">총 2개월 데이터 기록됨</div>
   </div>
-  <div id="heroKpis" style="display:flex;gap:24px;flex-wrap:wrap;"></div>
+  <div id="heroKpis" style="display:flex;gap:24px;flex-wrap:wrap;">
+   <div style="text-align:right;">
+    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">총 수업료</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">7785만</div>
+    <div style="font-size:11px;opacity:.65;margin-top:3px;">지난달 대비 +672만</div>
+   </div>
+   <div style="text-align:right;">
+    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">활성 센터</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">315개</div>
+    <div style="font-size:11px;opacity:.65;margin-top:3px;">지난달 대비 +46개</div>
+   </div>
+   <div style="text-align:right;">
+    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">강사</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">32명</div>
+    <div style="font-size:11px;opacity:.65;margin-top:3px;">활성 강사 수</div>
+   </div>
+   <div style="text-align:right;">
+    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">강사당</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">9.8개</div>
+    <div style="font-size:11px;opacity:.65;margin-top:3px;">평균 담당 센터</div>
+   </div></div>
  </div>
 
  <!-- ② 성장 스토리 바 (처음 대비) -->
- <div id="growthStoryBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;"></div>
+ <div id="growthStoryBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+   <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;">
+    2026년 3월 → 2026년 4월 성장
+   </div>
+   <div style="display:flex;gap:24px;flex-wrap:wrap;">
+    <div><span style="font-size:13px;color:var(--text2);">수업료 </span><span style="font-size:16px;font-weight:800;color:var(--green);">+9%</span></div>
+    <div><span style="font-size:13px;color:var(--text2);">센터 수 </span><span style="font-size:16px;font-weight:800;color:var(--green);">+17%</span></div>
+    <div><span style="font-size:13px;color:var(--text2);">강사 수 </span><span style="font-size:16px;font-weight:800;color:var(--purple);">32명</span></div>
+   </div></div>
+
+ <!-- v12.10: 정산 사이클 안내 박스 (박기남님 인사이트 — 매월 10일 정산 마감) -->
+ <div id="settlementCycleNotice" style="padding:14px 32px 0;">
+  <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:8px;font-size:12px;color:#04342C;">
+   <div style="font-size:16px;line-height:1;">📅</div>
+   <div style="flex:1;line-height:1.6;">
+    <b>정산 사이클 기준 표시</b> · 매월 10일 마감 · 현재 표시 = <b>2026년 4월</b><br>
+    <span style="color:#0F6E56;font-size:11px;">다음 갱신: 2026년 6월 10일 마감 후</span>
+   </div>
+  </div>
+ </div>
 
  <!-- v11.83: 옵션 1 — KPI 6개 신호등 카드 (실데이터) -->
  <div style="padding:24px 32px 0;">
-  <div id="signalCardDemo"></div>
+  <div id="signalCardDemo">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 2026년 4월 핵심 지표 (옵션 1)</div>
+    <div style="font-size:11px;color:var(--text3);">2개월 데이터</div>
+   </div>
+   
+  <div style="display:inline-flex;background:var(--surface2);border-radius:8px;padding:4px;gap:2px;border:0.5px solid var(--border);">
+   <button onclick="_switchKpiTab('month')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;background:var(--green-bg);cursor:pointer;border-radius:6px;color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,0.08);">📅 월별</button>
+   <button onclick="_switchKpiTab('year')" style="padding:7px 16px;font-size:12px;font-weight:500;border:none;background:transparent;cursor:pointer;border-radius:6px;color:var(--text2);">🗓️ 연별</button>
+  </div>
+ 
+  </div>
+  <div class="signal-card-grid cols-3">
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revenue')">
+   <div class="signal-card-label">💰 총 매출</div>
+   <div class="signal-card-value">7,785만원</div>
+   <div class="signal-card-subvalue">77,850,000원</div>
+   <div class="signal-card-delta up">▲ +672만원 (9.4%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:91%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card blue clickable" onclick="_growthExpandKpi('teachers')">
+   <div class="signal-card-label">👥 활동 강사</div>
+   <div class="signal-card-value">32명</div>
+   <div class="signal-card-subvalue">활동 중</div>
+   <div class="signal-card-delta up">▲ +2명 (6.7%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1F6B9E;height:94%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card amber clickable" onclick="_growthExpandKpi('centers')">
+   <div class="signal-card-label">🏢 활동 센터</div>
+   <div class="signal-card-value">315곳</div>
+   <div class="signal-card-subvalue">활동 중</div>
+   <div class="signal-card-delta up">▲ +46곳 (17.1%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#BA7517;height:85%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card purple clickable" onclick="_growthExpandKpi('lessonHours')">
+   <div class="signal-card-label">⏰ 총 수업 시간</div>
+   <div class="signal-card-value">1,414시간</div>
+   <div class="signal-card-subvalue">O 출석 합계</div>
+   <div class="signal-card-delta up">▲ +116시간 (8.9%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#5A3FB8;height:92%;"></div><div class="signal-card-mini-bar" style="background:#5A3FB8;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerTeacher')">
+   <div class="signal-card-label">👤 강사 1인당 평균</div>
+   <div class="signal-card-value">243만원</div>
+   <div class="signal-card-subvalue">매출/강사 수</div>
+   <div class="signal-card-delta up">▲ +6만원 (2.6%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:97%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerCenter')">
+   <div class="signal-card-label">🏪 센터 1곳당 평균</div>
+   <div class="signal-card-value">25만원</div>
+   <div class="signal-card-subvalue">매출/센터 수</div>
+   <div class="signal-card-delta down">▼ -2만원 (6.5%, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:93%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
  </div>
 
  <!-- v11.85: KPI 카드 클릭 시 12개월 막대 펼침 영역 -->
@@ -1940,7 +1690,57 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- v11.87: 옵션 6 — 출석 분류 (정상/휴강/모의) -->
  <div style="padding:24px 32px 0;">
-  <div id="option6Area"></div>
+  <div id="option6Area">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📋 2026년 4월 출석 분류 (옵션 6)</div>
+    <div style="font-size:11px;color:var(--text3);">총 1,894회</div>
+   </div>
+  </div>
+  <div class="signal-card-grid cols-3">
+  <div class="signal-card green clickable" onclick="_growthExpandAttendance('normalPct')">
+   <div class="signal-card-label">✅ 정상 (보강 포함)</div>
+   <div class="signal-card-value">74.7%</div>
+   <div class="signal-card-subvalue">1,414회 / 전체 1,894회</div>
+   <div class="signal-card-delta down">▼ -13.2%p (+116회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:85%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card red clickable" onclick="_growthExpandAttendance('cancelPct')">
+   <div class="signal-card-label">⚠️ 휴강</div>
+   <div class="signal-card-value">24.5%</div>
+   <div class="signal-card-subvalue">464회 / 전체 1,894회</div>
+   <div class="signal-card-delta down">▲ +12.4%p (+286회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#C53030;height:49%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:100%;"></div>
+    </div>
+   
+   <div class="signal-card-warn">⚠️ ▲ 12.4%p 증가 (지난달 대비)</div>
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card amber clickable" onclick="_growthExpandAttendance('mockPct')">
+   <div class="signal-card-label">🆕 모의 수업</div>
+   <div class="signal-card-value">0.8%</div>
+   <div class="signal-card-subvalue">16회 / 전체 1,894회</div>
+   <div class="signal-card-delta up">▲ +0.8%p (+16회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#BA7517;height:2%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:80%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
  </div>
 
  <!-- v11.88: 출석 분류 카드 클릭 시 12개월 막대 펼침 영역 -->
@@ -1948,14 +1748,122 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- v11.89: 옵션 5 — 신규/이탈 (강사 + 센터) -->
  <div style="padding:24px 32px 0;">
-  <div id="option5Area"></div>
+  <div id="option5Area">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">🔄 2026년 4월 신규/이탈 (옵션 5)</div>
+    <div style="font-size:11px;color:var(--text3);">지난달 대비 자동 계산</div>
+   </div>
+  </div>
+  <div class="signal-card-grid cols-2">
+  <div class="signal-card green clickable" onclick="_growthExpandChurn('teacher')">
+   <div class="signal-card-label">👥 강사 변동</div>
+   <div class="signal-card-value">+2명</div>
+   <div class="signal-card-subvalue">신규 2명 · 이탈 0명 · 현재 32명</div>
+   <div class="signal-card-delta up">지난달 대비 순증감 +2명</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card green clickable" onclick="_growthExpandChurn('center')">
+   <div class="signal-card-label">🏢 센터 변동</div>
+   <div class="signal-card-value">+46곳</div>
+   <div class="signal-card-subvalue">신규 57곳 · 이탈 11곳 · 현재 315곳</div>
+   <div class="signal-card-delta up">지난달 대비 순증감 +46곳</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
  </div>
 
  <!-- v11.89: 옵션 5 카드 클릭 시 신규/이탈 이름 펼침 영역 -->
- <div id="churnExpandArea" style="padding:0 32px;display:none;"></div>
+ <div id="churnExpandArea" style="padding: 0px 32px; display: none;"></div>
+
+ <!-- v12.08: 옵션 7 — 비용 추이 (모의수업/주차료/물품/기타) -->
+ <div style="padding:24px 32px 0;">
+  <div id="option7CostArea">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">💰 2026년 4월 비용 추이 (옵션 7)</div>
+    <div style="font-size:11px;color:var(--text3);">총 1,334,892원</div>
+   </div>
+  </div>
+  <div class="signal-card-grid cols-4">
+  <div class="signal-card amber clickable" onclick="_growthExpandCost('mockSum')">
+   <div class="signal-card-label">🟡 모의수업</div>
+   <div class="signal-card-value">340,000원</div>
+   
+   <div class="signal-card-delta down">▲ +340,000원 (지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#BA7517;height:2%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card purple clickable" onclick="_growthExpandCost('parkingSum')">
+   <div class="signal-card-label">🟣 주차료</div>
+   <div class="signal-card-value">0원</div>
+   
+   <div class="signal-card-delta flat">변화 없음</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#5A3FB8;height:2%;"></div><div class="signal-card-mini-bar" style="background:#5A3FB8;height:2%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card teal clickable" onclick="_growthExpandCost('supplySum')">
+   <div class="signal-card-label">🟦 물품</div>
+   <div class="signal-card-value">0원</div>
+   
+   <div class="signal-card-delta flat">변화 없음</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card gray clickable" onclick="_growthExpandCost('etcSum')">
+   <div class="signal-card-label">⚫ 기타</div>
+   <div class="signal-card-value">994,892원</div>
+   
+   <div class="signal-card-delta down">▲ +994,892원 (지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#888888;height:2%;"></div><div class="signal-card-mini-bar" style="background:#888888;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- v12.08: 비용 추이 카드 클릭 시 12개월 막대 펼침 영역 -->
+ <div id="costExpandArea" style="padding:0 32px;display:none;"></div>
 
  <!-- ③ 월별 수익 비교 차트 -->
- <div id="growthChartWrap" style="display:none;padding:24px 32px 0;">
+ <div id="growthChartWrap" style="display: block; padding: 24px 32px 0px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
    <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;">📊 월별 수익 비교</div>
    <div style="display:flex;gap:6px;">
@@ -1963,7 +1871,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
   </div>
   <div class="panel" style="padding:16px 12px;overflow:hidden;">
-   <canvas id="growthChart" style="width:100%;max-height:220px;display:block;"></canvas>
+   <canvas id="growthChart" style="width: 2471px; max-height: 220px; display: block; height: 220px;" width="3706" height="330"></canvas>
   </div>
  </div>
 
@@ -1975,7 +1883,72 @@ body.edit-mode-active .ledger-wrap textarea {
     <button class="btn sm" onclick="renderGrowthView()" title="새로고침">↺</button>
    </div>
   </div>
-  <div id="growthTimeline" class="panel" style="overflow:hidden;"></div>
+  <div id="growthTimeline" class="panel" style="overflow:hidden;">
+  <div style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;background:var(--surface2);border-bottom:2px solid var(--border);">
+   <div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">월</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">총 수업료</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">센터</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">강사</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">강사당</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">지역별</div>
+  </div>
+   <div class="g-row" data-idx="0" onclick="toggleGrowthDetail(0)" style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;
+    align-items:center;border-bottom:1px solid var(--border);cursor:pointer;
+    transition:background .1s;" onmouseover="if(!this.classList.contains('g-open'))this.style.background='var(--surface2)'" onmouseout="if(!this.classList.contains('g-open'))this.style.background=''">
+    <div style="padding:12px 14px;font-size:13px;font-weight:500;">
+     2026<br>년 3월
+     
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">7114만원</div>
+     <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <div style="flex:1;height:3px;background:var(--border);border-radius:2px;"><div style="height:3px;background:var(--green);border-radius:2px;width:91%;"></div></div>
+      <div style="font-size:10px;color:var(--text3);">기준</div>
+     </div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">269개</div>
+     <div style="font-size:10px;color:var(--text3);">기준</div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">30명</div>
+     <div style="font-size:10px;color:var(--text3);">기준</div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">9.0개</div>
+     <div style="font-size:10px;color:var(--text3);">기준</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+     <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--blue)1a;color:var(--blue);font-weight:600;border:1px solid var(--blue)44;">서울 137</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--green)1a;color:var(--green);font-weight:600;border:1px solid var(--green)44;">인천 136</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--purple)1a;color:var(--purple);font-weight:600;border:1px solid var(--purple)44;">수원 58</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--amber)1a;color:var(--amber);font-weight:600;border:1px solid var(--amber)44;">기타 23</span>
+     <span style="margin-left:auto;font-size:16px;color:var(--text3);" class="g-arrow">›</span>
+    </div>
+   </div>
+   <div class="g-row" data-idx="1" onclick="toggleGrowthDetail(1)" style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;
+    align-items:center;border-bottom:1px solid var(--border);cursor:pointer;
+    transition:background .1s;background:var(--green-bg);font-weight:600;" onmouseover="if(!this.classList.contains('g-open'))this.style.background='var(--surface2)'" onmouseout="if(!this.classList.contains('g-open'))this.style.background='var(--green-bg)'">
+    <div style="padding:12px 14px;font-size:13px;font-weight:700;">
+     2026<br>년 4월
+     <span style="font-size:9px;padding:1px 5px;background:var(--green);color:white;border-radius:4px;margin-left:3px;vertical-align:middle;">최근</span>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">7785만원</div>
+     <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <div style="flex:1;height:3px;background:var(--border);border-radius:2px;"><div style="height:3px;background:var(--green);border-radius:2px;width:100%;"></div></div>
+      <div style="font-size:10px;font-weight:700;color:var(--green);">+672만</div>
+     </div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">315개</div>
+     <div style="font-size:10px;font-weight:700;color:var(--green);">+46개</div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">32명</div>
+     <div style="font-size:10px;font-weight:700;color:var(--green);">+2명</div>
+    </div>
+    <div style="padding:12px 14px;">
+     <div style="font-size:14px;font-weight:600;">9.8개</div>
+     <div style="font-size:10px;font-weight:700;color:var(--green);">+0.9</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+     <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--blue)1a;color:var(--blue);font-weight:600;border:1px solid var(--blue)44;">서울 195</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--green)1a;color:var(--green);font-weight:600;border:1px solid var(--green)44;">인천 134</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--purple)1a;color:var(--purple);font-weight:600;border:1px solid var(--purple)44;">수원 69</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--amber)1a;color:var(--amber);font-weight:600;border:1px solid var(--amber)44;">기타 4</span>
+     <span style="margin-left:auto;font-size:16px;color:var(--text3);" class="g-arrow">›</span>
+    </div>
+   </div></div>
  </div>
 
  <!-- ⑤ 상세 드릴다운 (클릭 시 펼침) -->
@@ -2059,7 +2032,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:52:00</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:33:17</div>
  </div>
 </div>
 
@@ -2107,7 +2080,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ ✅ 2026년 5월 수업기록표 로드 완료</div>
+<div class="save-toast" id="saveToast">✓ 📂 2026년 5월 자동 로드 중...</div>
 
 <!-- 전역 로딩 오버레이 -->
 <div id="globalLoader">
@@ -3109,7 +3082,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.06';
+const SYSTEM_VERSION='v12.10';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -12360,6 +12333,11 @@ function getGrowthData(){
    let normalCount=0;  // 정상 (O + 보강)
    let cancelCount=0;  // 휴강 (보강 아닌 X)
    let mockCount=0;    // 모의 (△)
+   // v12.07: 비용 카테고리별 집계
+   let mockSum=0;      // 모의수업 비용
+   let parkingSum=0;   // 주차료
+   let supplySum=0;    // 물품
+   let etcSum=0;       // 기타 (+ 과거 통합 호환)
    const cSet=new Set(), tSet=new Set();
    const rMap={}, tRevMap={};
    snap.teachers.forEach(t=>{
@@ -12386,8 +12364,15 @@ function getGrowthData(){
      rMap[reg]=(rMap[reg]||0)+1;
     });
     tRevMap[t.name]=tRev;
+    // v12.07: 비용 카테고리별 합산
+    mockSum += (t.mockLesson!==undefined) ? Number(t.mockLesson)||0 : ((t.mockLessonAuto||0)*20000);
+    parkingSum += Number(t.parkingCost||0);
+    supplySum += Number(t.supplyCost||0);
+    // 박기남님 옵션 1: 과거 통합 비용(costExtra+otherCost) → 기타로 분류
+    etcSum += Number(t.etcCost||0) + Number(t.costExtra||0) + Number(t.otherCost||0);
    });
    const totalAttendance=normalCount+cancelCount+mockCount;
+   const costTotal = mockSum + parkingSum + supplySum + etcSum; // v12.07
    months.push({ym,revenue,lessonHours,centers:cSet.size,cSet,teachers:tSet.size,tSet,
     perTeacher:tSet.size>0?(cSet.size/tSet.size):0,rMap,tRevMap,
     revPerTeacher:tSet.size>0?(revenue/tSet.size):0,
@@ -12396,7 +12381,9 @@ function getGrowthData(){
     normalCount, cancelCount, mockCount, totalAttendance,
     normalPct:totalAttendance>0?Math.round(normalCount/totalAttendance*1000)/10:0,
     cancelPct:totalAttendance>0?Math.round(cancelCount/totalAttendance*1000)/10:0,
-    mockPct:totalAttendance>0?Math.round(mockCount/totalAttendance*1000)/10:0});
+    mockPct:totalAttendance>0?Math.round(mockCount/totalAttendance*1000)/10:0,
+    // v12.07: 비용 카테고리별
+    mockSum, parkingSum, supplySum, etcSum, costTotal});
   }catch(e){}
  }
  months.sort((a,b)=>a.ym.localeCompare(b.ym));
@@ -12417,7 +12404,53 @@ function getGrowthData(){
   m.centerChange=m.newCenters.length-m.outCenters.length;
  });
 
- return months;
+ // v12.10: 정산 사이클 기준 필터링 (박기남님 인사이트)
+ // 매달 10일 마감 — 11일~다음달 10일 기간은 "이전 달" 데이터로 표시
+ // 예: 5/17 → 4월까지만 표시 (5월은 6/10 마감)
+ //     6/15 → 5월까지 표시 (5월 마감 6/10 완료)
+ const cycleYm = _getSettlementCycleYm();
+ const filtered = months.filter(m => m.ym.localeCompare(cycleYm) <= 0);
+
+ return filtered;
+}
+
+/**
+ * v12.10: 정산 사이클 기준 "표시할 가장 최근 월" 계산
+ * 매달 10일 정산 마감
+ * - 오늘이 그 달의 10일 이전 → 한 달 전이 기준
+ * - 오늘이 그 달의 11일 이후 → 한 달 전(전 달)이 기준 (그 달은 진행 중)
+ *
+ * 예시 (오늘=5/17):
+ *   - 5월은 진행 중 (6/10 마감 예정) → 기준 = 4월
+ * 예시 (오늘=6/15):
+ *   - 5월은 마감 완료 (6/10) → 기준 = 5월
+ * 예시 (오늘=6/8):
+ *   - 5월은 아직 마감 전 (6/10 미도래) → 기준 = 4월
+ */
+function _getSettlementCycleYm(){
+ const SETTLEMENT_DAY = 10; // 매달 10일 마감
+ const now = new Date();
+ const today = now.getDate();
+ let year = now.getFullYear();
+ let month = now.getMonth() + 1; // 1-12
+
+ // 오늘이 정산일 이전이면 → 한 달 더 빼기 (전월도 아직 마감 전)
+ // 오늘이 정산일 이후/당일이면 → 전월까지 마감 완료
+ if(today <= SETTLEMENT_DAY){
+  // 예: 6/8 → 5월 마감 6/10 아직 안 옴 → 4월 기준
+  month -= 2;
+ } else {
+  // 예: 6/15 → 5월 마감 6/10 완료 → 5월 기준
+  month -= 1;
+ }
+
+ // 음수 처리 (년도 이월)
+ while(month <= 0){
+  month += 12;
+  year -= 1;
+ }
+
+ return `${year}년 ${month}월`;
 }
 
 let _gOpenIdx=null;
@@ -12572,10 +12605,52 @@ function renderGrowthView(){
 // v11.83: 데모 → 옵션 1 실데이터 (KPI 6개 신호등 카드)
 // v11.87: 옵션 6 (출석 분류) 추가
 // v11.89: 옵션 5 (신규/이탈) 추가
+// v12.08: 옵션 7 (비용 추이) 추가
+// v12.10: 정산 사이클 안내 박스 추가
 function _renderSignalCardDemo(){
+ _renderSettlementCycleNotice();
  _renderOption1Kpis();
  _renderOption6Attendance();
  _renderOption5Churn();
+ _renderOption7Cost();
+}
+
+/**
+ * v12.10: 정산 사이클 안내 박스 (박기남님 인사이트)
+ * 매달 10일 마감 → 11일~익월 10일 기간은 이전 달 데이터 표시
+ */
+function _renderSettlementCycleNotice(){
+ const target=document.getElementById('settlementCycleNotice');
+ if(!target) return;
+
+ const cycleYm=_getSettlementCycleYm();
+ const now=new Date();
+ const today=now.getDate();
+ const month=now.getMonth()+1;
+ const year=now.getFullYear();
+
+ // 다음 마감일 계산
+ let nextDueMonth, nextDueYear=year;
+ if(today<=10){
+  // 이번 달 10일이 다음 마감
+  nextDueMonth=month;
+ } else {
+  // 다음 달 10일이 다음 마감
+  nextDueMonth=month+1;
+  if(nextDueMonth>12){ nextDueMonth=1; nextDueYear+=1; }
+ }
+ // 마감 대상 월 (방금 마감했거나 곧 마감할 월)
+ const dueTargetMonth=cycleYm; // 마감 후 표시되는 월
+
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:8px;font-size:12px;color:#04342C;">
+   <div style="font-size:16px;line-height:1;">📅</div>
+   <div style="flex:1;line-height:1.6;">
+    <b>정산 사이클 기준 표시</b> · 매월 10일 마감 · 현재 표시 = <b>${dueTargetMonth}</b><br>
+    <span style="color:#0F6E56;font-size:11px;">다음 갱신: ${nextDueYear}년 ${nextDueMonth}월 10일 마감 후</span>
+   </div>
+  </div>
+ `;
 }
 
 /* ══════════════════════════════════
@@ -12602,6 +12677,8 @@ function _aggregateYearly(months){
    // v11.87: 출석 분류 합계
    normalCount:0, cancelCount:0, mockCount:0, totalAttendance:0,
    normalPct:0, cancelPct:0, mockPct:0,
+   // v12.07: 비용 카테고리 합계
+   mockSum:0, parkingSum:0, supplySum:0, etcSum:0, costTotal:0,
    _months:[]};
   byYear[year].revenue+=m.revenue;
   byYear[year].lessonHours+=m.lessonHours||0;
@@ -12609,6 +12686,12 @@ function _aggregateYearly(months){
   byYear[year].normalCount+=m.normalCount||0;
   byYear[year].cancelCount+=m.cancelCount||0;
   byYear[year].mockCount+=m.mockCount||0;
+  // v12.07: 비용 합계
+  byYear[year].mockSum+=m.mockSum||0;
+  byYear[year].parkingSum+=m.parkingSum||0;
+  byYear[year].supplySum+=m.supplySum||0;
+  byYear[year].etcSum+=m.etcSum||0;
+  byYear[year].costTotal+=m.costTotal||0;
   byYear[year]._months.push(m);
  });
  // 연말 시점 처리 + 비율 재계산
@@ -12846,9 +12929,16 @@ function _switchKpiTab(mode){
   const churnArea=document.getElementById('churnExpandArea');
   if(churnArea){ churnArea.style.display='none'; churnArea.innerHTML=''; }
  }
+ // v12.08: 비용 추이 펼침 영역도 닫기
+ if(typeof _expandedCost !== 'undefined' && _expandedCost){
+  _expandedCost=null;
+  const costArea=document.getElementById('costExpandArea');
+  if(costArea){ costArea.style.display='none'; costArea.innerHTML=''; }
+ }
  _renderOption1Kpis();
  _renderOption6Attendance();
  _renderOption5Churn();
+ _renderOption7Cost();
 }
 
 /* ══════════════════════════════════
@@ -13076,6 +13166,216 @@ function _growthExpandAttendance(key){
    <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
     💡 막대 위 작은 %p = 지난 ${isYearMode?'년':'달'} 대비 변화 · 진한 색 = 현재 ${isYearMode?curr.ym+'년':curr.ym}
    </div>
+  </div>
+ `;
+
+ setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
+/* ══════════════════════════════════
+   v12.08: 옵션 7 — 비용 추이 (모의수업/주차료/물품/기타)
+   박기남님 옵션 1 결정: 과거 통합 비용(costExtra/otherCost)은 "기타"에 합산됨
+   ══════════════════════════════════ */
+
+function _renderOption7Cost(){
+ const target=document.getElementById('option7CostArea');
+ if(!target) return;
+
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
+  target.innerHTML='';
+  return;
+ }
+
+ // v11.86 탭 모드 반영
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ if(months.length===0){ target.innerHTML=''; return; }
+
+ const currIdx=months.length-1;
+ const curr=months[currIdx];
+ const prev=currIdx>0?months[currIdx-1]:null;
+
+ // 4개 비용 카테고리 정의 (모의수업/주차료/물품/기타)
+ // v12.09: 색상 변경 — 옵션 1 KPI와 시각적 구분 + 의미 충돌 회피
+ const items=[
+  {key:'mockSum',    label:'🟡 모의수업',  color:'amber'},
+  {key:'parkingSum', label:'🟣 주차료',    color:'purple'},
+  {key:'supplySum',  label:'🟦 물품',     color:'teal'},
+  {key:'etcSum',     label:'⚫ 기타',     color:'gray'}
+ ];
+
+ const cards=items.map(it=>{
+  let deltaLines=[];
+  let deltaType='flat';
+
+  if(prev){
+   const diff=(curr[it.key]||0)-(prev[it.key]||0);
+   const arrow=diff>0?'▲':diff<0?'▼':'=';
+   // 비용은 증가가 부정적
+   deltaType=diff>0?'down':diff<0?'up':'flat';
+   const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
+   const sign=diff>0?'+':diff<0?'-':'';
+   if(diff!==0){
+    deltaLines.push(`${arrow} ${sign}${Math.abs(diff).toLocaleString()}원 (${cmpLabel})`);
+   } else {
+    deltaLines.push(`변화 없음`);
+   }
+  }
+
+  const miniTrend=_growthMiniTrend(months, currIdx, it.key);
+
+  return renderSignalCard({
+   color:it.color,
+   label:it.label,
+   value:(curr[it.key]||0).toLocaleString()+'원',
+   subvalue:'',
+   delta:deltaLines.join('<br>'),
+   deltaType:deltaType,
+   miniTrend:miniTrend,
+   warn:'',
+   expandable:true,
+   onClick:`_growthExpandCost('${it.key}')`
+  });
+ });
+
+ const periodLabel=isYearMode?`${curr.ym}년`:curr.ym;
+
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">💰 ${periodLabel} 비용 추이 (옵션 7)</div>
+    <div style="font-size:11px;color:var(--text3);">총 ${(curr.costTotal||0).toLocaleString()}원</div>
+   </div>
+  </div>
+  ${renderSignalCardGrid(cards, 4)}
+ `;
+}
+
+/**
+ * 옵션 7 카드 클릭 시 12개월 단일 막대 펼침
+ */
+let _expandedCost=null;
+
+function _growthExpandCost(key){
+ const target=document.getElementById('costExpandArea');
+ if(!target) return;
+
+ // 같은 카드 다시 클릭 → 닫기
+ if(_expandedCost===key){
+  _expandedCost=null;
+  target.style.display='none';
+  target.innerHTML='';
+  return;
+ }
+
+ _expandedCost=key;
+
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
+  target.style.display='block';
+  target.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);">데이터 없음</div>';
+  return;
+ }
+
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ const recent=isYearMode?months:months.slice(-12);
+ const values=recent.map(m=>m[key]||0);
+ const max=Math.max(...values, 1);
+ const currIdx=recent.length-1;
+
+ // 카테고리 정보 — v12.09: amber/purple/teal/gray
+ const costInfo={
+  mockSum:    {label:'🟡 모의수업', color:'#BA7517'},
+  parkingSum: {label:'🟣 주차료',   color:'#5A3AB0'},
+  supplySum:  {label:'🟦 물품',     color:'#0F766E'},
+  etcSum:     {label:'⚫ 기타',     color:'#5F5E5A'}
+ };
+ const info=costInfo[key];
+ if(!info){
+  target.style.display='block';
+  target.innerHTML=`<div style="padding:20px;color:var(--text3);">알 수 없는 키: ${key}</div>`;
+  return;
+ }
+
+ // 막대 HTML 생성
+ const bars=recent.map((m,i)=>{
+  const v=m[key]||0;
+  const h=(v/max)*100;
+  const isLast=i===currIdx;
+  // 지난달 대비 절대값
+  const prev=i>0?recent[i-1]:null;
+  let diffText='', diffColor='';
+  if(prev){
+   const diff=v-(prev[key]||0);
+   if(diff!==0){
+    // 비용은 증가가 부정적
+    diffColor=diff>0?'#C53030':'#1A7A50';
+    diffText=(diff>0?'+':'')+Math.abs(diff).toLocaleString();
+   }
+  }
+  const monthLabel=isYearMode?m.ym:(m.ym.match(/(\d{1,2})$/)?.[1]||m.ym.slice(-2));
+  const monthSuffix=isYearMode?'년':'월';
+
+  return `
+   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:200px;position:relative;">
+    ${diffText?`<div style="font-size:9px;color:${diffColor};margin-bottom:2px;font-weight:500;">${diffText}</div>`:'<div style="height:13px;"></div>'}
+    <div style="font-size:10px;color:var(--text1);margin-bottom:3px;font-weight:${isLast?'700':'600'};${isLast?`color:${info.color};`:''}">${v.toLocaleString()}</div>
+    <div style="width:70%;background:${info.color};height:${Math.max(3,h)}%;border-radius:3px 3px 0 0;opacity:${isLast?'1':'0.55'};${isLast?`box-shadow:0 0 0 2px ${info.color}44;`:''}"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;${isLast?`color:${info.color};font-weight:600;`:''}">${monthLabel}${monthSuffix}</div>
+   </div>
+  `;
+ }).join('');
+
+ // 현재 값 + 비교
+ const curr=recent[currIdx];
+ const prev=currIdx>0?recent[currIdx-1]:null;
+ let deltaText='';
+ if(prev){
+  const diff=(curr[key]||0)-(prev[key]||0);
+  const arrow=diff>0?'▲':diff<0?'▼':'=';
+  let deltaColor='var(--text3)';
+  if(diff!==0){
+   deltaColor=diff>0?'#C53030':'#1A7A50';
+  }
+  const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
+  const sign=diff>0?'+':diff<0?'-':'';
+  deltaText=`<span style="color:${deltaColor};font-weight:500;">${arrow} ${sign}${Math.abs(diff).toLocaleString()}원 (${cmpLabel})</span>`;
+ }
+
+ const titleSuffix=isYearMode?`${recent.length}개 연도`:`최근 ${recent.length}개월`;
+
+ // 기타 카테고리는 과거 통합 비용 안내 추가
+ const etcNote=key==='etcSum'
+  ?`<div style="margin-top:8px;padding:8px 12px;background:#FFFBEC;border:1px solid #FCD34D;border-radius:6px;font-size:11px;color:#8A6010;">
+     ⚠️ 과거 통합 비용(비용처리/기타비용)은 모두 "기타"에 포함됩니다. 미래 데이터부터 정확하게 분리됩니다.
+    </div>`
+  :'';
+
+ target.style.display='block';
+ target.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">${info.label}</div>
+     <div style="font-size:11px;color:var(--text3);">${titleSuffix}</div>
+    </div>
+    <button onclick="_growthExpandCost('${key}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   </div>
+   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+    <div style="font-size:24px;font-weight:700;color:${info.color};">${(curr[key]||0).toLocaleString()}원</div>
+    ${deltaText?`<div style="font-size:12px;">${deltaText}</div>`:''}
+   </div>
+   <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
+    ${bars}
+   </div>
+   <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
+    💡 막대 위 작은 숫자 = 지난 ${isYearMode?'년':'달'} 대비 변화(원) · 진한 색 = 현재 ${isYearMode?curr.ym+'년':curr.ym}
+   </div>
+   ${etcNote}
   </div>
  `;
 
