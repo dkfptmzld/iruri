@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.04">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.06">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.04">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.06">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.04</title>
+<title>수업기록표 정산 시스템 v12.06</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1354,7 +1354,15 @@ body.edit-mode-active .ledger-wrap textarea {
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
- <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
+ <div class="topbar-right" id="topbarRight">
+ <span class="chip green">2026년 5월</span>
+ <div style="display:flex;gap:4px;align-items:center;">
+ <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
+ <button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button>
+ </div>
+ <button class="btn" onclick="dlCSV()"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"></path></svg>CSV</button>
+ <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
+ <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
@@ -1397,23 +1405,410 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
  <div style="display:flex;flex-direction:column;gap:3px;">
  
- <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 5월
+ <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 5월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
+ <button onclick="loadMonthlySnapshot('2026년 3월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
  </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">—</div></div>
- <div class="teacher-scroll" id="teacherList"></div>
+ <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 5월 · 1명</div></div>
+ <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
+ <div class="t-avatar">박</div>
+ <div class="t-info">
+  <div class="t-name">박기남<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 완료로 변경">미정산</span></div>
+  <div class="t-pay">-</div>
+ </div>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
+ </div></div>
  </div>
  <div class="content" id="mainContent">
-  <div class="upload-wrap">
-   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
-    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
-    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
-   </div>
-  </div></div>
+ <div class="profile-row">
+ <div class="profile-avatar">박</div>
+ <div><div class="profile-name">박기남 강사</div><div class="profile-sub">2026년 5월 · 강사료 85%</div></div>
+ <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
+   <span style="color:var(--text3);font-size:11px;">국민은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">597302-04-146046</span><br><span>박기남</span>
+ </div>
+ </div>
+ <div class="metrics">
+ <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">0<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
+ <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">0<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ </div>
+ <div>
+ <div class="tabs-bar">
+ <div class="tab active" data-tab="ledger" onclick="setTab('ledger')">📋 수업기록표</div>
+ <div class="tab" data-tab="settle" onclick="setTab('settle')">정산 상세</div>
+ <div class="tab" data-tab="all" onclick="setTab('all')">전체 강사 비교</div>
+ <div class="tab" data-tab="receipts_teacher" onclick="setTab('receipts_teacher')">🧾 영수증</div>
+ </div>
+ <div id="tabBody"><div class="ledger-wrap">
+ <div class="ledger-title-row" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;">
+  <div class="ledger-title" style="margin:0;">2026년 5월 수업 기록표 ( 박기남 ) 강사</div>
+  <div class="edit-controls" style="display:flex;gap:6px;"><button onclick="startEditMode()" class="edit-mode-start-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #FFD700;background:#FFF3CD;color:#856404;font-weight:600;cursor:pointer;font-size:13px;">✏️ 편집 시작</button></div>
+ </div>
+  <div style="overflow-x:auto;">
+ <table class="ledger-table">
+ <colgroup>
+ <col style="width:24px"><col style="width:130px">
+ <col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px"><col style="width:34px">
+ <col style="width:38px"><col style="width:28px">
+ <col style="width:62px"><col style="width:70px"></colgroup>
+ <thead>
+ <tr style="background:#E8E6DC;">
+ <th style="width:24px;">요일</th>
+ <th style="text-align:left;padding-left:6px;">센터명</th>
+ <th>1주</th><th>2주</th><th>3주</th><th>4주</th><th>5주</th>
+ <th>수업<br>횟수</th><th></th>
+ <th>수업료</th><th>금액</th>
+ </tr>
+ </thead>
+ <tbody><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">월</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">4일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">11일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">18일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">25일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="효명" onclick="openCenterPicker(0,0,this)">
+ <span class="">효명</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,0)" title="효명 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,0,4)" title="25일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="행정업무1" onclick="openCenterPicker(0,1,this)">
+ <span class="">행정업무1</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,1)" title="행정업무1 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,1,4)" title="25일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="행정업무2" onclick="openCenterPicker(0,2,this)">
+ <span class="">행정업무2</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,2)" title="행정업무2 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,1)" title="4일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,2)" title="11일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,3)" title="18일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,2,4)" title="25일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'월')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">5일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">12일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">19일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">26일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="더사랑" onclick="openCenterPicker(0,3,this)">
+ <span class="">더사랑</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,3)" title="더사랑 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,3,4)" title="26일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="정다운" onclick="openCenterPicker(0,4,this)">
+ <span class="">정다운</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,4)" title="정다운 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,4,4)" title="26일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="소새울" onclick="openCenterPicker(0,5,this)">
+ <span class="">소새울</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,5)" title="소새울 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,1)" title="5일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,2)" title="12일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,5,4)" title="26일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">수</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">6일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">13일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">20일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">27일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="늘푸른" onclick="openCenterPicker(0,6,this)">
+ <span class="">늘푸른</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,6)" title="늘푸른 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,6,4)" title="27일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(0,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="미추홀" onclick="openCenterPicker(0,7,this)">
+ <span class="">미추홀</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,7)" title="미추홀 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,7,4)" title="27일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="소래" onclick="openCenterPicker(0,8,this)">
+ <span class="">소래</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,8)" title="소래 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,1)" title="6일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,2)" title="13일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,3)" title="20일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,8,4)" title="27일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'수')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">목</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">7일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">14일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">21일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">28일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="금천노인" onclick="openCenterPicker(0,9,this)">
+ <span class="">금천노인</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,9)" title="금천노인 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,9,4)" title="28일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="프라임" onclick="openCenterPicker(0,10,this)">
+ <span class="">프라임</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,10)" title="프라임 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,10,4)" title="28일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="무지개" onclick="openCenterPicker(0,11,this)">
+ <span class="">무지개</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,11)" title="무지개 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,1)" title="7일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,2)" title="14일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,3)" title="21일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,11,4)" title="28일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'목')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">1일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">8일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">15일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">22일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">29일</td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
+ </tr><tr>
+ <td class="center-cell" title="주은" onclick="openCenterPicker(0,12,this)">
+ <span class="">주은</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,12)" title="주은 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,12,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,12,4)" title="29일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="가가호호봉천" onclick="openCenterPicker(0,13,this)">
+ <span class="">가가호호봉천</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,13)" title="가가호호봉천 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,13,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,13,4)" title="29일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,13,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr>
+ <td class="center-cell" title="두드림" onclick="openCenterPicker(0,14,this)">
+ <span class="">두드림</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,14)" title="두드림 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-empty" onclick="toggleAttend(0,14,0)" title="1일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,1)" title="8일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,2)" title="15일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,3)" title="22일"></td><td class="attend-cell att-empty" onclick="toggleAttend(0,14,4)" title="29일"></td>
+ <td class="count-cell">0</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,14,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell"></td>
+ </tr><tr style="background:#F8F7F2;">
+ <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+  <button onclick="openAddLessonModal(0,'금')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+   <span style="font-size:14px;">＋</span> 수업 추가
+  </button>
+ </td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+ </tr><tr style="background:#F8F7F2;">
+   <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
+    <button onclick="openAddDayModal(0)" style="width:100%;height:26px;border:1px dashed #C8A020;border-radius:6px;background:transparent;color:#856404;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+     <span style="font-size:14px;">📅</span> 요일 추가
+    </button>
+   </td>
+   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td><td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+   <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
+  </tr></tbody>
+ <tfoot>
+ <tr class="ledger-foot">
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">국민은행 597302-04-146046 박기남</td>
+ <td style="font-size:11px;font-weight:600;">수업료%</td>
+ <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
+ <td style="font-size:11px;font-weight:600;">세전</td>
+ </tr>
+ <tr class="ledger-foot">
+ <td colspan="7"></td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">85%</td>
+ <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">0</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">0</td>
+ </tr>
+ </tfoot>
+ </table>
+ </div>
+ <!-- 가로 정산 요약 + 비용 입력 -->
+ <div class="settle-summary-row">
+ <table class="settle-summary-table">
+ <thead>
+ <tr>
+ <th>수업료%</th>
+ <th>수업료 합계</th>
+ <th>세전</th>
+ <th>영업이익</th>
+ <th>확정 월급</th>
+ <th class="cost-col">모의수업<div class="cost-hint">△ 자동</div></th>
+ <th class="cost-col">주차료</th>
+ <th class="cost-col">물품</th>
+ <th class="cost-col">기타</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr>
+ <td style="font-weight:700;color:#1A5FA0;">85%</td>
+ <td style="font-weight:700;">₩0</td>
+ <td style="font-weight:700;color:#1A5FA0;">₩0</td>
+ <td style="font-weight:700;color:#1A7A50;">+0</td>
+ <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩0</td>
+ <td class="cost-col">
+ <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △0회 = 0원</div>
+ <input type="number" class="cost-input" placeholder="0" value="20000" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
+ </td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="3000" onchange="updateExtraCost(0,'parkingCost',this.value)" min="0"></td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="40000" onchange="updateExtraCost(0,'supplyCost',this.value)" min="0"></td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="50000" onchange="updateExtraCost(0,'etcCost',this.value)" min="0"></td>
+ </tr>
+ <tr class="cost-display-row">
+ <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
+ <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">₩20,000</td>
+ <td class="cost-col" id="extraParking-0" style="font-weight:700;font-size:13px;color:#5A3AB0;">₩3,000</td>
+ <td class="cost-col" id="extraSupply-0" style="font-weight:700;font-size:13px;color:#0F766E;">₩40,000</td>
+ <td class="cost-col" id="extraEtc-0" style="font-weight:700;font-size:13px;color:#0369A1;">₩50,000</td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
+ <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
+  특이사항
+  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
+ </div>
+ <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">주차료: 주차장 이용
+물품: 활동 도구 구매
+기타: 자격증 비용</textarea>
+ </div>
+ <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+ <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+ O/X 클릭으로 출석 토글 · 센터명·수업료 클릭으로 직접 수정
+ </div>
+ </div></div>
+ </div></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1645,8 +2040,26 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
+   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
+   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
+   <span style="font-size:11px;color:#2e7d32;">방금</span>
+  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
+  </div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:52:00</div>
  </div>
 </div>
 
@@ -1694,7 +2107,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ 2026년 4월 불러오는 중...</div>
+<div class="save-toast" id="saveToast">✓ ✅ 2026년 5월 수업기록표 로드 완료</div>
 
 <!-- 전역 로딩 오버레이 -->
 <div id="globalLoader">
@@ -2696,7 +3109,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.04';
+const SYSTEM_VERSION='v12.06';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -3426,6 +3839,32 @@ function loadMonthlySnapshot(ym){
     if(!localSnap?.data?.teachers) showToast('GAS에도 데이터가 없어요');
     else showToast(`✅ ${ym} 로컬 데이터 표시 중`);
     return;
+   }
+   // v12.06: 박기남님 인사이트 — GAS가 잘못된 월 데이터 반환 시 자동 정리
+   // 받은 데이터의 yearMonth가 요청한 ym과 다르면 잘못된 데이터로 판정
+   const receivedTeachers = r.data?.teachers || [];
+   const mismatched = receivedTeachers.filter(t => t.yearMonth && t.yearMonth !== ym);
+   if(receivedTeachers.length > 0 && mismatched.length === receivedTeachers.length){
+    // 받은 강사 전체가 다른 월 → GAS 오염 (4월 데이터가 5월에 저장된 상태)
+    const wrongYm = mismatched[0].yearMonth;
+    console.warn(`⚠️ GAS 오염 감지: 요청=${ym}, 받음=${wrongYm} (${receivedTeachers.length}명 모두)`);
+    showToast(`⚠️ ${ym} GAS 데이터 오류 — 로컬로 자동 정리 중...`);
+    // 로컬에 올바른 데이터가 있으면 GAS에 강제 덮어쓰기 (정리)
+    if(localSnap?.data?.teachers?.length > 0){
+     gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:localSnap.data})
+      .then(()=>{
+       console.log(`✅ 로컬 ${ym} (${localSnap.data.teachers.length}명) 를 GAS에 덮어쓰기 완료`);
+       showToast(`✅ ${ym} GAS 정리 완료`);
+      })
+      .catch(()=>{ console.warn(`GAS 정리 실패`); });
+    } else {
+     // 로컬도 없음 → 빈 데이터로 GAS 초기화 (잘못된 데이터 제거)
+     const emptyData = { teachers: [], fileName: '강사 제출 데이터' };
+     gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:emptyData})
+      .then(()=>{ console.log(`✅ ${ym} GAS 빈 데이터로 초기화 완료`); })
+      .catch(()=>{});
+    }
+    return; // GAS 오염 데이터는 STATE에 절대 반영하지 않음
    }
    const gasSavedAt = r.savedAt ? new Date(r.savedAt).getTime() : 0;
    const gasTeacherCount = r.data?.teachers?.length || 0;
@@ -7325,6 +7764,8 @@ function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle=
  }
 
  document.getElementById('confirmCancelBtn').textContent = cancelText;
+ // v12.05: cancelText가 빈 문자열이면 취소 버튼 숨김 (확인 모달처럼 사용)
+ document.getElementById('confirmCancelBtn').style.display = cancelText ? '' : 'none';
  _confirmCallback = onOk;
 
  const overlay = document.getElementById('confirmOverlay');
@@ -9986,30 +10427,45 @@ function submitTiData(){
  const account=document.getElementById('ti-account').value;
 
  // v12.03: 특이사항 카드 내용 필수 입력 검증
- const emptyNotes = tiNotes.filter(n => !(n.text||'').trim());
- if(emptyNotes.length > 0){
-  // 빈 카드 카테고리 목록
-  const emptyCats = emptyNotes.map(n => n.cat);
-  const uniqueCats = [...new Set(emptyCats)];
+ // v12.05: 날짜도 필수 입력 검증
+ const emptyContent = tiNotes.filter(n => !(n.text||'').trim());
+ const emptyDate = tiNotes.filter(n => !(n.date||'').trim());
+ if(emptyContent.length > 0 || emptyDate.length > 0){
+  const issues = [];
+  if(emptyDate.length > 0) issues.push(`<b>날짜 미입력:</b> ${emptyDate.length}개`);
+  if(emptyContent.length > 0) issues.push(`<b>내용 미입력:</b> ${emptyContent.length}개`);
+  const allEmpty = [...new Set([...emptyContent, ...emptyDate])];
+  const uniqueCats = [...new Set(allEmpty.map(n => n.cat))];
   showConfirm({
    icon:'⚠️',
-   title:'특이사항 내용 미입력',
-   desc:`${emptyNotes.length}개 카드의 내용이 비어있습니다.<br><br>` +
+   title:'특이사항 미입력',
+   desc:`${issues.join('<br>')}<br><br>` +
         `<b>카테고리:</b> ${uniqueCats.join(', ')}<br><br>` +
-        `내용을 모두 입력해 주세요.<br>` +
-        `<span style="color:#888;font-size:11px;">자동 생성된 모의수업/보강 카드도 내용이 비어있다면 입력이 필요합니다.</span>`,
+        `날짜와 내용을 모두 입력해 주세요.`,
    okText:'확인', cancelText:'', okStyle:'default', onOk:()=>{
-    // 첫 번째 빈 카드로 스크롤
+    // 첫 번째 빈 필드로 스크롤
     const list = document.getElementById('ti-note-list');
     if(list){
-     const rows = list.querySelectorAll('input.tn-content');
-     for(const r of rows){
+     // 날짜 빈 것 먼저 찾기
+     const dateInputs = list.querySelectorAll('input.tn-date:not([readonly])');
+     for(const r of dateInputs){
       if(!(r.value||'').trim()){
        r.scrollIntoView({behavior:'smooth', block:'center'});
        r.focus();
        r.style.borderColor = '#DC2626';
        setTimeout(()=>{ r.style.borderColor = '#E2E0D8'; }, 3000);
-       break;
+       return;
+      }
+     }
+     // 내용 빈 것 찾기
+     const contentInputs = list.querySelectorAll('input.tn-content');
+     for(const r of contentInputs){
+      if(!(r.value||'').trim()){
+       r.scrollIntoView({behavior:'smooth', block:'center'});
+       r.focus();
+       r.style.borderColor = '#DC2626';
+       setTimeout(()=>{ r.style.borderColor = '#E2E0D8'; }, 3000);
+       return;
       }
      }
     }
