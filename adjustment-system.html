@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.13">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.17">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.13">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.17">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.13</title>
+<title>수업기록표 정산 시스템 v12.17</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1365,13 +1365,15 @@ body.edit-mode-active .ledger-wrap textarea {
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
-<button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg> 동기화 중...</button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
+<button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
+ <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
+</button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
 <button onclick="syncSnapshotsToGAS()" title="모든 월별 수업기록표를 GAS Drive에 업로드" class="btn" id="syncSnapBtn" style="font-size:12px;background:#2E7D32;color:white;border-color:#2E7D32;font-weight:600;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path></svg>📋 기록표 업로드</button>
 <!-- v11.30: 점검 모드 버튼 -->
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: none; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: var(--green-bg); color: var(--green); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✓ 동기화 완료</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/17 오후 09:53 · 강사 32명 · 센터 333개</span>
 <!-- 다크모드 토글 -->
 <button id="darkModeBtn" onclick="toggleDarkMode()" title="다크/라이트 모드 전환" class="btn" style="font-size:16px;padding:0 8px;min-width:34px;">🌙</button>
 <!-- 글자 크기 조절 -->
@@ -1465,9 +1467,9 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- 지역별 통계 카드 -->
  <div class="region-stats">
- <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">33</div><div class="region-sub">명</div></div>
+ <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">32</div><div class="region-sub">명</div></div>
  <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="ts-seoul">16</div><div class="region-sub" id="ts-seoul-s">비율 4 · 고정 12</div></div>
- <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">12</div><div class="region-sub" id="ts-incheon-s">비율 5 · 고정 7</div></div>
+ <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">11</div><div class="region-sub" id="ts-incheon-s">비율 5 · 고정 6</div></div>
  <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="ts-suwon">5</div><div class="region-sub" id="ts-suwon-s">비율 2 · 고정 3</div></div>
  </div>
 
@@ -1490,7 +1492,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div id="tRows"><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',0)">
  <div class="mgr-cell" style="font-weight:500;">김은영</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">352-1704-2930-23</span><span style="display:block;">김은영</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1501,7 +1503,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',28)">
  <div class="mgr-cell" style="font-weight:500;">신기윤</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">302-0525-3101-11</span><span style="display:block;">신기윤</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1512,7 +1514,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',3)">
  <div class="mgr-cell" style="font-weight:500;">오건</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333111275417</span><span style="display:block;">오건</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1523,7 +1525,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',21)">
  <div class="mgr-cell" style="font-weight:500;">장성기</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110-322-112402</span><span style="display:block;">장성기</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1534,7 +1536,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',25)">
  <div class="mgr-cell" style="font-weight:500;">박준형</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">814301-04-024952</span><span style="display:block;">박준형</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1545,7 +1547,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',23)">
  <div class="mgr-cell" style="font-weight:500;">변동</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110532315670</span><span style="display:block;">변동</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1556,7 +1558,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',15)">
  <div class="mgr-cell" style="font-weight:500;">양성모</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신협</span><span style="font-family:'DM Mono',monospace;display:block;">132085004607</span><span style="display:block;">양성모</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1567,7 +1569,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',27)">
  <div class="mgr-cell" style="font-weight:500;">양재원</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">497802-01-645215</span><span style="display:block;">양재원</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1578,7 +1580,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',20)">
  <div class="mgr-cell" style="font-weight:500;">윤혜미</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">055210790429</span><span style="display:block;">윤혜미</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1589,7 +1591,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',16)">
  <div class="mgr-cell" style="font-weight:500;">이인경</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">수협</span><span style="font-family:'DM Mono',monospace;display:block;">1010-1165-5453</span><span style="display:block;">이인경</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1600,7 +1602,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',18)">
  <div class="mgr-cell" style="font-weight:500;">조영미</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">부산은행</span><span style="font-family:'DM Mono',monospace;display:block;">098-12-029209-7</span><span style="display:block;">조영미</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1622,7 +1624,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',6)">
  <div class="mgr-cell" style="font-weight:500;">구명훈</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">233-21-0417-550</span><span style="display:block;">구명훈</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1633,7 +1635,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',9)">
  <div class="mgr-cell" style="font-weight:500;">송준기</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">694702-01-433455</span><span style="display:block;">송준기</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1644,7 +1646,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',12)">
  <div class="mgr-cell" style="font-weight:500;">정상준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">351-0826-7304-73</span><span style="display:block;">정상준</span></div>
  <div class="mgr-cell"><span class="badge blue">서울</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1677,7 +1679,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',17)">
  <div class="mgr-cell" style="font-weight:500;">방진수<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">기업은행</span><span style="font-family:'DM Mono',monospace;display:block;">124-091094-01-015</span><span style="display:block;">방진수</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1688,7 +1690,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',26)">
  <div class="mgr-cell" style="font-weight:500;">이재윤<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">302-1446-8065-81</span><span style="display:block;">이재윤</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1699,7 +1701,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',19)">
  <div class="mgr-cell" style="font-weight:500;">김수민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333122404956</span><span style="display:block;">김수민</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1710,7 +1712,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',24)">
  <div class="mgr-cell" style="font-weight:500;">박종일<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">351-0685-6911-73</span><span style="display:block;">박종일</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1721,7 +1723,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',22)">
  <div class="mgr-cell" style="font-weight:500;">홍예은<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">302-0482-2740-21</span><span style="display:block;">홍예은</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1732,7 +1734,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',4)">
  <div class="mgr-cell" style="font-weight:500;">김유천<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구인지</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">156-02-226505</span><span style="display:block;">김유천</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1743,7 +1745,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',1)">
  <div class="mgr-cell" style="font-weight:500;">장호준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">16450104356440</span><span style="display:block;">장호준</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1765,7 +1767,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',7)">
  <div class="mgr-cell" style="font-weight:500;">한수희<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">302-1298-3302-01</span><span style="display:block;">한수희</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1776,7 +1778,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',13)">
  <div class="mgr-cell" style="font-weight:500;">김효민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333-02-495-8181</span><span style="display:block;">김효민</span></div>
  <div class="mgr-cell"><span class="badge teal">인천</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">95%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1787,7 +1789,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',14)">
  <div class="mgr-cell" style="font-weight:500;">김수도</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">새마을금고</span><span style="font-family:'DM Mono',monospace;display:block;">9003-2394-3083-6</span><span style="display:block;">김수도</span></div>
  <div class="mgr-cell"><span class="badge purple">수원</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1798,7 +1800,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',8)">
  <div class="mgr-cell" style="font-weight:500;">오수정</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">352-1138-0638-83</span><span style="display:block;">오수정</span></div>
  <div class="mgr-cell"><span class="badge purple">수원</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1809,7 +1811,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',11)">
  <div class="mgr-cell" style="font-weight:500;">원보영</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">422402-01-267662</span><span style="display:block;">원보영</span></div>
  <div class="mgr-cell"><span class="badge purple">수원</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
  <div class="mgr-cell"><span class="badge green">회당고정</span></div>
@@ -1820,7 +1822,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',5)">
  <div class="mgr-cell" style="font-weight:500;">안지훈<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110-230-562050</span><span style="display:block;">안지훈</span></div>
  <div class="mgr-cell"><span class="badge purple">수원</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1831,7 +1833,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',2)">
  <div class="mgr-cell" style="font-weight:500;">최정안</div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
+ <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">하나은행</span><span style="font-family:'DM Mono',monospace;display:block;">336-910040-19707</span><span style="display:block;">최정안</span></div>
  <div class="mgr-cell"><span class="badge purple">수원</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
  <div class="mgr-cell"><span class="badge blue">비율</span></div>
@@ -1865,10 +1867,10 @@ body.edit-mode-active .ledger-wrap textarea {
 
   <!-- 지역별 통계 -->
   <div class="region-stats">
-   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">333</div><div class="region-sub">개 센터</div></div>
-   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">166</div><div class="region-sub" id="rs-seoul-t">강사 16명 담당</div></div>
-   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">110</div><div class="region-sub" id="rs-incheon-t">강사 12명 담당</div></div>
-   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">57</div><div class="region-sub" id="rs-suwon-t">강사 5명 담당</div></div>
+   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">—</div><div class="region-sub">개 센터</div></div>
+   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">—</div><div class="region-sub" id="rs-seoul-t">—</div></div>
+   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">—</div><div class="region-sub" id="rs-incheon-t">—</div></div>
+   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">—</div><div class="region-sub" id="rs-suwon-t">—</div></div>
   </div>
 
   <!-- 지역별 검색창 -->
@@ -1890,162 +1892,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:400px;">
     <!-- 좌측: 탐색 패널 -->
     <div style="background:var(--surface2);border-right:1px solid var(--border);overflow-y:auto;">
-     <div id="cTreeNav"><div>
-   <div id="cnav-서울-btn" onclick="toggleNavRegion('서울')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge blue" style="font-size:11px;padding:2px 8px;">서울</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">166개</span>
-    <span id="cnav-서울-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-서울-list" style="display:block;">
-    
-     <div id="cnav-서울-구명훈" onclick="selectTreeTeacher('서울','구명훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">구</div>
-      <span style="flex:1;">구명훈</span>
-     </div>
-     <div id="cnav-서울-김은영" onclick="selectTreeTeacher('서울','김은영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김은영</span>
-     </div>
-     <div id="cnav-서울-박준형" onclick="selectTreeTeacher('서울','박준형',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박준형</span>
-     </div>
-     <div id="cnav-서울-변동" onclick="selectTreeTeacher('서울','변동',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">변</div>
-      <span style="flex:1;">변동</span>
-     </div>
-     <div id="cnav-서울-송준기" onclick="selectTreeTeacher('서울','송준기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">송</div>
-      <span style="flex:1;">송준기</span>
-     </div>
-     <div id="cnav-서울-신기윤" onclick="selectTreeTeacher('서울','신기윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">신</div>
-      <span style="flex:1;">신기윤</span>
-     </div>
-     <div id="cnav-서울-양성모" onclick="selectTreeTeacher('서울','양성모',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양성모</span>
-     </div>
-     <div id="cnav-서울-양재원" onclick="selectTreeTeacher('서울','양재원',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양재원</span>
-     </div>
-     <div id="cnav-서울-오건" onclick="selectTreeTeacher('서울','오건',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오건</span>
-     </div>
-     <div id="cnav-서울-윤혜미" onclick="selectTreeTeacher('서울','윤혜미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">윤</div>
-      <span style="flex:1;">윤혜미</span>
-     </div>
-     <div id="cnav-서울-이인경" onclick="selectTreeTeacher('서울','이인경',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이인경</span>
-     </div>
-     <div id="cnav-서울-이재열" onclick="selectTreeTeacher('서울','이재열',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재열</span>
-     </div>
-     <div id="cnav-서울-이재하" onclick="selectTreeTeacher('서울','이재하',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재하</span>
-     </div>
-     <div id="cnav-서울-장성기" onclick="selectTreeTeacher('서울','장성기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장성기</span>
-     </div>
-     <div id="cnav-서울-정상준" onclick="selectTreeTeacher('서울','정상준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">정</div>
-      <span style="flex:1;">정상준</span>
-     </div>
-     <div id="cnav-서울-조영미" onclick="selectTreeTeacher('서울','조영미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
-      <span style="flex:1;">조영미</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">110개</span>
-    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-인천-list" style="display:block;">
-    
-     <div id="cnav-인천-김보창" onclick="selectTreeTeacher('인천','김보창',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김보창</span>
-     </div>
-     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수민</span>
-     </div>
-     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김유천</span>
-     </div>
-     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김효민</span>
-     </div>
-     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박기남</span>
-     </div>
-     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박종일</span>
-     </div>
-     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">방</div>
-      <span style="flex:1;">방진수</span>
-     </div>
-     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재윤</span>
-     </div>
-     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장호준</span>
-     </div>
-     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">한</div>
-      <span style="flex:1;">한수희</span>
-     </div>
-     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">홍</div>
-      <span style="flex:1;">홍예은</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-수원-btn" onclick="toggleNavRegion('수원')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge purple" style="font-size:11px;padding:2px 8px;">수원</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">57개</span>
-    <span id="cnav-수원-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-수원-list" style="display:block;">
-    
-     <div id="cnav-수원-김수도" onclick="selectTreeTeacher('수원','김수도',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수도</span>
-     </div>
-     <div id="cnav-수원-안지훈" onclick="selectTreeTeacher('수원','안지훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">안</div>
-      <span style="flex:1;">안지훈</span>
-     </div>
-     <div id="cnav-수원-오수정" onclick="selectTreeTeacher('수원','오수정',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오수정</span>
-     </div>
-     <div id="cnav-수원-원보영" onclick="selectTreeTeacher('수원','원보영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">원</div>
-      <span style="flex:1;">원보영</span>
-     </div>
-     <div id="cnav-수원-최정안" onclick="selectTreeTeacher('수원','최정안',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">최</div>
-      <span style="flex:1;">최정안</span>
-     </div>
-   </div>
-  </div></div>
+     <div id="cTreeNav"></div>
     </div>
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
@@ -2069,155 +1916,21 @@ body.edit-mode-active .ledger-wrap textarea {
  <div id="growthHero" style="background:var(--green);color:white;padding:28px 32px 24px;display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;">
   <div style="flex:1;min-width:200px;">
    <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.7;margin-bottom:6px;">이루리 실버 아카데미</div>
-   <div id="heroTitle" style="font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1;">2026년 4월 현황</div>
-   <div id="heroSub" style="font-size:13px;opacity:.75;margin-top:6px;">총 2개월 데이터 기록됨</div>
+   <div id="heroTitle" style="font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.1;">데이터 로딩 중</div>
+   <div id="heroSub" style="font-size:13px;opacity:.75;margin-top:6px;"></div>
   </div>
-  <div id="heroKpis" style="display:flex;gap:24px;flex-wrap:wrap;">
-   <div style="text-align:right;">
-    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">총 수업료</div>
-    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">7785만</div>
-    <div style="font-size:11px;opacity:.65;margin-top:3px;">지난달 대비 +672만</div>
-   </div>
-   <div style="text-align:right;">
-    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">활성 센터</div>
-    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">315개</div>
-    <div style="font-size:11px;opacity:.65;margin-top:3px;">지난달 대비 +46개</div>
-   </div>
-   <div style="text-align:right;">
-    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">강사</div>
-    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">32명</div>
-    <div style="font-size:11px;opacity:.65;margin-top:3px;">활성 강사 수</div>
-   </div>
-   <div style="text-align:right;">
-    <div style="font-size:11px;opacity:.65;font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px;">강사당</div>
-    <div style="font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;">9.8개</div>
-    <div style="font-size:11px;opacity:.65;margin-top:3px;">평균 담당 센터</div>
-   </div></div>
+  <div id="heroKpis" style="display:flex;gap:24px;flex-wrap:wrap;"></div>
  </div>
 
  <!-- ② 성장 스토리 바 (처음 대비) -->
- <div id="growthStoryBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
-   <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;">
-    2026년 3월 → 2026년 4월 성장
-   </div>
-   <div style="display:flex;gap:24px;flex-wrap:wrap;">
-    <div><span style="font-size:13px;color:var(--text2);">수업료 </span><span style="font-size:16px;font-weight:800;color:var(--green);">+9%</span></div>
-    <div><span style="font-size:13px;color:var(--text2);">센터 수 </span><span style="font-size:16px;font-weight:800;color:var(--green);">+17%</span></div>
-    <div><span style="font-size:13px;color:var(--text2);">강사 수 </span><span style="font-size:16px;font-weight:800;color:var(--purple);">32명</span></div>
-   </div></div>
+ <div id="growthStoryBar" style="display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 32px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;"></div>
 
  <!-- v12.10: 정산 사이클 안내 박스 (박기남님 인사이트 — 매월 10일 정산 마감) -->
- <div id="settlementCycleNotice" style="padding:14px 32px 0;">
-  <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#E1F5EE;border:1px solid #9FE1CB;border-radius:8px;font-size:12px;color:#04342C;">
-   <div style="font-size:16px;line-height:1;">📅</div>
-   <div style="flex:1;line-height:1.6;">
-    <b>정산 사이클 기준 표시</b> · 매월 10일 마감 · 현재 표시 = <b>2026년 4월</b><br>
-    <span style="color:#0F6E56;font-size:11px;">다음 갱신: 2026년 6월 10일 마감 후</span>
-   </div>
-  </div>
- </div>
+ <div id="settlementCycleNotice" style="padding:14px 32px 0;"></div>
 
  <!-- v11.83: 옵션 1 — KPI 6개 신호등 카드 (실데이터) -->
  <div style="padding:24px 32px 0;">
-  <div id="signalCardDemo">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-   <div style="display:flex;align-items:baseline;gap:10px;">
-    <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 2026년 4월 핵심 지표 (옵션 1)</div>
-    <div style="font-size:11px;color:var(--text3);">2개월 데이터</div>
-   </div>
-   
-  <div style="display:inline-flex;background:var(--surface2);border-radius:8px;padding:4px;gap:2px;border:0.5px solid var(--border);">
-   <button onclick="_switchKpiTab('month')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;background:var(--green-bg);cursor:pointer;border-radius:6px;color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,0.08);">📅 월별</button>
-   <button onclick="_switchKpiTab('year')" style="padding:7px 16px;font-size:12px;font-weight:500;border:none;background:transparent;cursor:pointer;border-radius:6px;color:var(--text2);">🗓️ 연별</button>
-  </div>
- 
-  </div>
-  <div class="signal-card-grid cols-3">
-  <div class="signal-card green clickable" onclick="_growthExpandKpi('revenue')">
-   <div class="signal-card-label">💰 총 매출</div>
-   <div class="signal-card-value">7,785만원</div>
-   <div class="signal-card-subvalue">77,850,000원</div>
-   <div class="signal-card-delta up">▲ +672만원 (9.4%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:91%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card blue clickable" onclick="_growthExpandKpi('teachers')">
-   <div class="signal-card-label">👥 활동 강사</div>
-   <div class="signal-card-value">32명</div>
-   <div class="signal-card-subvalue">활동 중</div>
-   <div class="signal-card-delta up">▲ +2명 (6.7%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1F6B9E;height:94%;"></div><div class="signal-card-mini-bar" style="background:#1F6B9E;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card amber clickable" onclick="_growthExpandKpi('centers')">
-   <div class="signal-card-label">🏢 활동 센터</div>
-   <div class="signal-card-value">315곳</div>
-   <div class="signal-card-subvalue">활동 중</div>
-   <div class="signal-card-delta up">▲ +46곳 (17.1%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#BA7517;height:85%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card purple clickable" onclick="_growthExpandKpi('lessonHours')">
-   <div class="signal-card-label">⏰ 총 수업 시간</div>
-   <div class="signal-card-value">1,414시간</div>
-   <div class="signal-card-subvalue">O 출석 합계</div>
-   <div class="signal-card-delta up">▲ +116시간 (8.9%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#5A3FB8;height:92%;"></div><div class="signal-card-mini-bar" style="background:#5A3FB8;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerTeacher')">
-   <div class="signal-card-label">👤 강사 1인당 평균</div>
-   <div class="signal-card-value">243만원</div>
-   <div class="signal-card-subvalue">매출/강사 수</div>
-   <div class="signal-card-delta up">▲ +6만원 (2.6%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:97%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card green clickable" onclick="_growthExpandKpi('revPerCenter')">
-   <div class="signal-card-label">🏪 센터 1곳당 평균</div>
-   <div class="signal-card-value">25만원</div>
-   <div class="signal-card-subvalue">매출/센터 수</div>
-   <div class="signal-card-delta down">▼ -2만원 (6.5%, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:93%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- </div>
- </div>
+  <div id="signalCardDemo"></div>
  </div>
 
  <!-- v11.85: KPI 카드 클릭 시 12개월 막대 펼침 영역 -->
@@ -2225,57 +1938,7 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- v11.87: 옵션 6 — 출석 분류 (정상/휴강/모의) -->
  <div style="padding:24px 32px 0;">
-  <div id="option6Area">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-   <div style="display:flex;align-items:baseline;gap:10px;">
-    <div style="font-size:14px;font-weight:600;color:var(--text1);">📋 2026년 4월 출석 분류 (옵션 6)</div>
-    <div style="font-size:11px;color:var(--text3);">총 1,894회</div>
-   </div>
-  </div>
-  <div class="signal-card-grid cols-3">
-  <div class="signal-card green clickable" onclick="_growthExpandAttendance('normalPct')">
-   <div class="signal-card-label">✅ 정상 (보강 포함)</div>
-   <div class="signal-card-value">74.7%</div>
-   <div class="signal-card-subvalue">1,414회 / 전체 1,894회</div>
-   <div class="signal-card-delta down">▼ -13.2%p (+116회, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:85%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card red clickable" onclick="_growthExpandAttendance('cancelPct')">
-   <div class="signal-card-label">⚠️ 휴강</div>
-   <div class="signal-card-value">24.5%</div>
-   <div class="signal-card-subvalue">464회 / 전체 1,894회</div>
-   <div class="signal-card-delta down">▲ +12.4%p (+286회, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#C53030;height:49%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:100%;"></div>
-    </div>
-   
-   <div class="signal-card-warn">⚠️ ▲ 12.4%p 증가 (지난달 대비)</div>
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card amber clickable" onclick="_growthExpandAttendance('mockPct')">
-   <div class="signal-card-label">🆕 모의 수업</div>
-   <div class="signal-card-value">0.8%</div>
-   <div class="signal-card-subvalue">16회 / 전체 1,894회</div>
-   <div class="signal-card-delta up">▲ +0.8%p (+16회, 지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#BA7517;height:2%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:80%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- </div>
- </div>
+  <div id="option6Area"></div>
  </div>
 
  <!-- v11.88: 출석 분류 카드 클릭 시 12개월 막대 펼침 영역 -->
@@ -2283,43 +1946,7 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- v11.89: 옵션 5 — 신규/이탈 (강사 + 센터) -->
  <div style="padding:24px 32px 0;">
-  <div id="option5Area">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-   <div style="display:flex;align-items:baseline;gap:10px;">
-    <div style="font-size:14px;font-weight:600;color:var(--text1);">🔄 2026년 4월 신규/이탈 (옵션 5)</div>
-    <div style="font-size:11px;color:var(--text3);">지난달 대비 자동 계산</div>
-   </div>
-  </div>
-  <div class="signal-card-grid cols-2">
-  <div class="signal-card green clickable" onclick="_growthExpandChurn('teacher')">
-   <div class="signal-card-label">👥 강사 변동</div>
-   <div class="signal-card-value">+2명</div>
-   <div class="signal-card-subvalue">신규 2명 · 이탈 0명 · 현재 32명</div>
-   <div class="signal-card-delta up">지난달 대비 순증감 +2명</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card green clickable" onclick="_growthExpandChurn('center')">
-   <div class="signal-card-label">🏢 센터 변동</div>
-   <div class="signal-card-value">+46곳</div>
-   <div class="signal-card-subvalue">신규 57곳 · 이탈 11곳 · 현재 315곳</div>
-   <div class="signal-card-delta up">지난달 대비 순증감 +46곳</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- </div>
- </div>
+  <div id="option5Area"></div>
  </div>
 
  <!-- v11.89: 옵션 5 카드 클릭 시 신규/이탈 이름 펼침 영역 -->
@@ -2327,78 +1954,14 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- v12.08: 옵션 7 — 비용 추이 (모의수업/주차료/물품/기타) -->
  <div style="padding:24px 32px 0;">
-  <div id="option7CostArea">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
-   <div style="display:flex;align-items:baseline;gap:10px;">
-    <div style="font-size:14px;font-weight:600;color:var(--text1);">💰 2026년 4월 비용 추이 (옵션 7)</div>
-    <div style="font-size:11px;color:var(--text3);">총 1,334,892원</div>
-   </div>
-  </div>
-  <div class="signal-card-grid cols-4">
-  <div class="signal-card amber clickable" onclick="_growthExpandCost('mockSum')">
-   <div class="signal-card-label">🟡 모의수업</div>
-   <div class="signal-card-value">340,000원</div>
-   
-   <div class="signal-card-delta down">▲ +340,000원 (지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#BA7517;height:2%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card purple clickable" onclick="_growthExpandCost('parkingSum')">
-   <div class="signal-card-label">🟣 주차료</div>
-   <div class="signal-card-value">0원</div>
-   
-   <div class="signal-card-delta flat">변화 없음</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#5A3FB8;height:2%;"></div><div class="signal-card-mini-bar" style="background:#5A3FB8;height:2%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card teal clickable" onclick="_growthExpandCost('supplySum')">
-   <div class="signal-card-label">🟦 물품</div>
-   <div class="signal-card-value">0원</div>
-   
-   <div class="signal-card-delta flat">변화 없음</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- 
-  <div class="signal-card gray clickable" onclick="_growthExpandCost('etcSum')">
-   <div class="signal-card-label">⚫ 기타</div>
-   <div class="signal-card-value">994,892원</div>
-   
-   <div class="signal-card-delta down">▲ +994,892원 (지난달 대비)</div>
-   
-    <div class="signal-card-mini-trend">
-     <div class="signal-card-mini-bar" style="background:#888888;height:2%;"></div><div class="signal-card-mini-bar" style="background:#888888;height:100%;"></div>
-    </div>
-   
-   
-   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
-  </div>
- </div>
- </div>
+  <div id="option7CostArea"></div>
  </div>
 
  <!-- v12.08: 비용 추이 카드 클릭 시 12개월 막대 펼침 영역 -->
  <div id="costExpandArea" style="padding:0 32px;display:none;"></div>
 
  <!-- ③ 월별 수익 비교 차트 -->
- <div id="growthChartWrap" style="display: block; padding: 24px 32px 0px;">
+ <div id="growthChartWrap" style="display:none;padding:24px 32px 0;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
    <div style="font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;">📊 월별 수익 비교</div>
    <div style="display:flex;gap:6px;">
@@ -2406,7 +1969,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
   </div>
   <div class="panel" style="padding:16px 12px;overflow:hidden;">
-   <canvas id="growthChart" style="width: 100%; max-height: 220px; display: block; height: 220px;" width="300" height="330"></canvas>
+   <canvas id="growthChart" style="width:100%;max-height:220px;display:block;"></canvas>
   </div>
  </div>
 
@@ -2418,72 +1981,7 @@ body.edit-mode-active .ledger-wrap textarea {
     <button class="btn sm" onclick="renderGrowthView()" title="새로고침">↺</button>
    </div>
   </div>
-  <div id="growthTimeline" class="panel" style="overflow:hidden;">
-  <div style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;background:var(--surface2);border-bottom:2px solid var(--border);">
-   <div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">월</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">총 수업료</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">센터</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">강사</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">강사당</div><div style="padding:10px 14px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;">지역별</div>
-  </div>
-   <div class="g-row" data-idx="0" onclick="toggleGrowthDetail(0)" style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;
-    align-items:center;border-bottom:1px solid var(--border);cursor:pointer;
-    transition:background .1s;" onmouseover="if(!this.classList.contains('g-open'))this.style.background='var(--surface2)'" onmouseout="if(!this.classList.contains('g-open'))this.style.background=''">
-    <div style="padding:12px 14px;font-size:13px;font-weight:500;">
-     2026<br>년 3월
-     
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">7114만원</div>
-     <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-      <div style="flex:1;height:3px;background:var(--border);border-radius:2px;"><div style="height:3px;background:var(--green);border-radius:2px;width:91%;"></div></div>
-      <div style="font-size:10px;color:var(--text3);">기준</div>
-     </div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">269개</div>
-     <div style="font-size:10px;color:var(--text3);">기준</div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">30명</div>
-     <div style="font-size:10px;color:var(--text3);">기준</div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">9.0개</div>
-     <div style="font-size:10px;color:var(--text3);">기준</div>
-    </div>
-    <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-     <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--blue)1a;color:var(--blue);font-weight:600;border:1px solid var(--blue)44;">서울 137</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--green)1a;color:var(--green);font-weight:600;border:1px solid var(--green)44;">인천 136</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--purple)1a;color:var(--purple);font-weight:600;border:1px solid var(--purple)44;">수원 58</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--amber)1a;color:var(--amber);font-weight:600;border:1px solid var(--amber)44;">기타 23</span>
-     <span style="margin-left:auto;font-size:16px;color:var(--text3);" class="g-arrow">›</span>
-    </div>
-   </div>
-   <div class="g-row" data-idx="1" onclick="toggleGrowthDetail(1)" style="display:grid;grid-template-columns:120px 140px 90px 70px 80px 1fr;
-    align-items:center;border-bottom:1px solid var(--border);cursor:pointer;
-    transition:background .1s;background:var(--green-bg);font-weight:600;" onmouseover="if(!this.classList.contains('g-open'))this.style.background='var(--surface2)'" onmouseout="if(!this.classList.contains('g-open'))this.style.background='var(--green-bg)'">
-    <div style="padding:12px 14px;font-size:13px;font-weight:700;">
-     2026<br>년 4월
-     <span style="font-size:9px;padding:1px 5px;background:var(--green);color:white;border-radius:4px;margin-left:3px;vertical-align:middle;">최근</span>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green);">7785만원</div>
-     <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-      <div style="flex:1;height:3px;background:var(--border);border-radius:2px;"><div style="height:3px;background:var(--green);border-radius:2px;width:100%;"></div></div>
-      <div style="font-size:10px;font-weight:700;color:var(--green);">+672만</div>
-     </div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">315개</div>
-     <div style="font-size:10px;font-weight:700;color:var(--green);">+46개</div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">32명</div>
-     <div style="font-size:10px;font-weight:700;color:var(--green);">+2명</div>
-    </div>
-    <div style="padding:12px 14px;">
-     <div style="font-size:14px;font-weight:600;">9.8개</div>
-     <div style="font-size:10px;font-weight:700;color:var(--green);">+0.9</div>
-    </div>
-    <div style="padding:12px 14px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-     <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--blue)1a;color:var(--blue);font-weight:600;border:1px solid var(--blue)44;">서울 195</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--green)1a;color:var(--green);font-weight:600;border:1px solid var(--green)44;">인천 134</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--purple)1a;color:var(--purple);font-weight:600;border:1px solid var(--purple)44;">수원 69</span> <span style="font-size:10px;padding:2px 6px;border-radius:8px;background:var(--amber)1a;color:var(--amber);font-weight:600;border:1px solid var(--amber)44;">기타 4</span>
-     <span style="margin-left:auto;font-size:16px;color:var(--text3);" class="g-arrow">›</span>
-    </div>
-   </div></div>
+  <div id="growthTimeline" class="panel" style="overflow:hidden;"></div>
  </div>
 
  <!-- ⑤ 상세 드릴다운 (클릭 시 펼침) -->
@@ -2563,11 +2061,11 @@ body.edit-mode-active .ledger-wrap textarea {
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">31</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:54:46</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 10:04:19</div>
  </div>
 </div>
 
@@ -2594,82 +2092,33 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div>
 </div>
-<div class="modal-overlay" id="modalOverlay" style="display: none;" onclick="if(event.target===this)closeModal()">
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
  <div class="modal">
- <h3 id="modalTitle">강사 정보 수정</h3><p id="modalDesc">강사료 기준은 엑셀 파일의 값보다 우선 적용됩니다.</p>
- <div id="modalBody">
- <div class="form-row-2">
- <div><label class="form-label">이름</label><input class="form-input" id="fi_name" value="원보영" placeholder="홍길동"></div>
- <div><label class="form-label">지역</label>
- <select class="form-select" id="fi_region">
- <option value="">선택</option><option>서울</option><option>인천</option><option selected="">수원</option>
- </select></div>
- </div>
- <div class="form-row">
- <label class="form-label">과목 <span style="font-size:11px;color:var(--text3);font-weight:400;">(이루리 3개 과목 중 선택)</span></label>
- <select class="form-select" id="fi_subject">
- <option value="">선택 안 함</option>
- <option>실버스포츠</option>
- <option>도구 레크레이션</option>
- <option>도구인지</option>
- </select>
- </div>
- <div class="form-row">
- <label class="form-label">강사료 유형</label>
- <select class="form-select" id="fi_feeType" onchange="updateFeeHint()">
- <option value="pct">비율 (%)</option>
- <option value="fixed" selected="">회당 고정 (원/회)</option>
- </select>
- </div>
- <div class="form-row">
- <label class="form-label" id="fi_feeLabel">회당 금액 (원)</label>
- <input class="form-input" id="fi_feeVal" value="42000" placeholder="85 또는 42000">
- <div class="form-hint" id="fi_feeHint">예) 42000 → 수업 1회당 42,000원</div>
- </div>
- <div class="form-row-2">
- <div>
- <label class="form-label">입사일</label>
- <input class="form-input" id="fi_hireDate" type="date" value="">
- <div class="form-hint">입력 시 인상예정일 자동 계산</div>
- </div>
- <div>
- <label class="form-label">인상예정일 (입사 6개월 후)</label>
- <input class="form-input" id="fi_raiseDate" type="date" value="">
- <div class="form-hint">입사일 기준 자동 입력 (수동 수정 가능)</div>
- </div>
- </div>
- <div class="form-row">
- <label class="form-label">계좌번호</label>
- <div style="display:flex;flex-direction:column;gap:6px;">
-   <input class="form-input" id="fi_bank" value="" placeholder="은행명 (예: 국민은행)">
-   <input class="form-input" id="fi_accnum" value="" placeholder="계좌번호 (예: 597302-04-146046)">
-   <input class="form-input" id="fi_accname" value="" placeholder="예금주 (예: 박기남)">
- </div>
- <div class="form-hint">강사 모드에서 이름 선택 시 자동으로 채워집니다</div>
- </div></div>
+ <h3 id="modalTitle"></h3><p id="modalDesc"></p>
+ <div id="modalBody"></div>
  <div class="modal-btns"><button class="btn" onclick="closeModal()">취소</button><button class="btn primary" id="modalOk" onclick="saveModal()">저장</button></div>
  </div>
 </div>
 
 <!-- 커스텀 confirm 모달 -->
-<div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
- <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🗑</div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">삭제</h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"><b>「길범준」</b>를 삭제할까요?</p>
+<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
    <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: rgb(224, 82, 82); color: white; border-color: rgb(192, 48, 48); font-weight: 700;">삭제</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
   </div>
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ ✅ 동기화 완료 — 강사 32명, 센터 333개 Sheets 저장 확인</div>
+<div class="save-toast" id="saveToast">✓ 📂 2026년 5월 자동 로드 중...</div>
 
 <!-- 전역 로딩 오버레이 -->
-<div id="globalLoader" class="">
+<div id="globalLoader">
   <div class="loader-spinner"></div>
-  <div class="loader-text" id="loaderText">강사 데이터 동기화 중...</div>
+  <div class="loader-text" id="loaderText">불러오는 중...</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -3666,8 +3115,189 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.13';
+const SYSTEM_VERSION='v12.17';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
+/**
+ * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
+ * F12 콘솔에서 migrateAccountsFromRecords() 실행
+ *
+ * 동작:
+ * 1. 모든 월(iruri_monthly_*) localStorage 검색
+ * 2. 각 강사의 가장 최근 비어있지 않은 계좌 추출
+ * 3. DB.teachers와 매칭
+ * 4. 빈 계좌만 업데이트 (기존 계좌 있는 강사는 충돌 보고)
+ * 5. LS_T_SHEETS 저장 + GAS 동기화 + 강사관리 화면 갱신
+ */
+window.migrateAccountsFromRecords = function(force=false){
+ console.log('═══ 계좌 마이그레이션 시작 ═══');
+
+ // 1. 모든 월 데이터에서 강사별 최신 계좌 수집
+ const monthKeys = [];
+ for(let i = 0; i < localStorage.length; i++){
+  const key = localStorage.key(i);
+  if(key && key.startsWith('iruri_monthly_')) monthKeys.push(key);
+ }
+ console.log(`📁 발견된 월 데이터: ${monthKeys.length}개`);
+
+ const accountByTeacher = {};
+ monthKeys.sort().forEach(key => {
+  try{
+   const data = JSON.parse(localStorage.getItem(key));
+   if(data?.teachers){
+    data.teachers.forEach(t => {
+     if(t.name && t.account && t.account.trim()){
+      accountByTeacher[t.name] = t.account.trim();
+     }
+    });
+   }
+  }catch(e){ console.warn('파싱 실패:', key); }
+ });
+ console.log(`👥 수업기록표에서 계좌 찾은 강사: ${Object.keys(accountByTeacher).length}명`);
+
+ // 2. DB.teachers 업데이트
+ const updated = [];
+ const conflicts = [];
+ const skipped = [];
+
+ DB.teachers.forEach(t => {
+  const recorded = accountByTeacher[t.name];
+  if(!recorded){
+   skipped.push(`${t.name} — 수업기록표에 계좌 없음`);
+   return;
+  }
+  const current = (t.account||'').trim();
+  if(!current){
+   // 빈 계좌 → 자동 업데이트
+   t.account = recorded;
+   updated.push(`${t.name} → ${recorded}`);
+  } else if(current === recorded){
+   skipped.push(`${t.name} — 이미 동일`);
+  } else {
+   // 다른 계좌 → 충돌
+   if(force){
+    t.account = recorded;
+    updated.push(`${t.name} → ${recorded} (덮어쓰기)`);
+   } else {
+    conflicts.push(`${t.name} — 기존: ${current} / 기록: ${recorded}`);
+   }
+  }
+ });
+
+ // 3. 저장
+ localStorage.setItem('settle_t_sheets', JSON.stringify(DB.teachers));
+
+ // 4. GAS 백그라운드 동기화 (업데이트된 강사만)
+ if(typeof gasPost === 'function'){
+  DB.teachers.forEach(t => {
+   if(t.account && updated.find(u => u.startsWith(t.name + ' →'))){
+    gasPost({action:'saveTeacher', teacher:t}).catch(()=>{});
+   }
+  });
+ }
+
+ // 5. 강사 관리 화면 갱신
+ try{ if(typeof renderTeacherMgr === 'function') renderTeacherMgr(); }catch{}
+
+ // 6. 결과 출력
+ console.log('');
+ console.log(`✅ 업데이트: ${updated.length}명`);
+ updated.forEach(u => console.log('  ' + u));
+ if(conflicts.length){
+  console.log('');
+  console.log(`⚠️ 충돌 (자동 업데이트 안 됨): ${conflicts.length}명`);
+  conflicts.forEach(c => console.log('  ' + c));
+  console.log('💡 충돌 강사도 덮어쓰려면: migrateAccountsFromRecords(true)');
+ }
+ console.log('');
+ console.log(`⏭️ 건너뜀: ${skipped.length}명`);
+ console.log('═══ 완료 ═══');
+
+ return { updated: updated.length, conflicts: conflicts.length, skipped: skipped.length };
+};
+
+/**
+ * v12.17: DEFAULT_TEACHERS에서 계좌 복원 (박기남님 요청)
+ * F12 콘솔에서 restoreAccountsFromDefault() 실행
+ *
+ * 동작:
+ * 1. DEFAULT_TEACHERS 상수에서 계좌 추출 (32명 분 코드에 있음)
+ * 2. DB.teachers의 빈 계좌만 복원
+ * 3. localStorage + GAS 저장 + 강사 관리 화면 갱신
+ */
+window.restoreAccountsFromDefault = function(force=false){
+ console.log('═══ DEFAULT 계좌 복원 시작 ═══');
+
+ if(typeof DEFAULT_TEACHERS === 'undefined'){
+  console.error('DEFAULT_TEACHERS 상수를 찾을 수 없습니다');
+  return;
+ }
+ console.log(`📋 DEFAULT_TEACHERS 강사 수: ${DEFAULT_TEACHERS.length}명`);
+
+ const updated = [];
+ const conflicts = [];
+ const skipped = [];
+ const notFound = [];
+
+ DEFAULT_TEACHERS.forEach(def => {
+  if(!def.account) return;
+  const t = DB.teachers.find(d => d.name === def.name);
+  if(!t){
+   notFound.push(`${def.name} — DB에 없음`);
+   return;
+  }
+  const current = (t.account||'').trim();
+  const defAccount = def.account.trim();
+  if(!current){
+   t.account = defAccount;
+   updated.push(`${def.name} → ${defAccount}`);
+  } else if(current === defAccount){
+   skipped.push(`${def.name} — 이미 동일`);
+  } else {
+   if(force){
+    t.account = defAccount;
+    updated.push(`${def.name} → ${defAccount} (덮어쓰기)`);
+   } else {
+    conflicts.push(`${def.name} — 기존: ${current} / DEFAULT: ${defAccount}`);
+   }
+  }
+ });
+
+ // 저장
+ localStorage.setItem('settle_t_sheets', JSON.stringify(DB.teachers));
+
+ // GAS 백그라운드 동기화
+ if(typeof gasPost === 'function'){
+  DB.teachers.forEach(t => {
+   if(t.account && updated.find(u => u.startsWith(t.name + ' →'))){
+    gasPost({action:'saveTeacher', teacher:t}).catch(()=>{});
+   }
+  });
+ }
+
+ // 화면 갱신
+ try{ if(typeof renderTeacherMgr === 'function') renderTeacherMgr(); }catch{}
+
+ console.log('');
+ console.log(`✅ 복원: ${updated.length}명`);
+ updated.forEach(u => console.log('  ' + u));
+ if(conflicts.length){
+  console.log('');
+  console.log(`⚠️ 충돌: ${conflicts.length}명`);
+  conflicts.forEach(c => console.log('  ' + c));
+  console.log('💡 덮어쓰려면: restoreAccountsFromDefault(true)');
+ }
+ if(notFound.length){
+  console.log('');
+  console.log(`❓ DB에 없음: ${notFound.length}명`);
+  notFound.forEach(n => console.log('  ' + n));
+ }
+ console.log('');
+ console.log(`⏭️ 건너뜀: ${skipped.length}명`);
+ console.log('═══ 완료 ═══');
+
+ return { updated: updated.length, conflicts: conflicts.length, skipped: skipped.length, notFound: notFound.length };
+};
+
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
 const SKIP=new Set(['강사료','영업비']);
@@ -3944,19 +3574,20 @@ function switchView(v){
  if(v==='changelog') renderChangelog();
 }
 
-/* v11.30: 탭 전환 시 GAS DB 자동 동기화 */
+/* v11.30: 탭 전환 시 GAS DB 자동 동기화
+ * v12.14: 백그라운드 동기화로 변경 (박기남님 요청)
+ * - 로딩 화면 표시 제거 → UI 차단 없이 백그라운드 실행
+ * - 변경 있을 때만 토스트로 완료 알림
+ */
 async function _syncDBOnTabSwitch(tab, renderFn){
  // 즉시 현재 로컬 데이터로 먼저 렌더 (빠른 응답)
  renderFn();
 
- // 백그라운드로 GAS 최신 데이터 가져오기 (스켈레톤 표시)
- const tabLabel = tab === 'teachers' ? '강사' : '센터';
- showLoader(`${tabLabel} 데이터 동기화 중...`);
+ // 백그라운드로 GAS 최신 데이터 가져오기 (로딩 표시 없음)
  try{
   if(tab === 'teachers'){
    // v11.31: 강사 관리 탭은 관리자 전용 → isAdmin:'true' 고정
    const r = await gasGet({action:'getTeachers', teacher:'', isAdmin:'true'});
-   hideLoader();
    if(!r.ok || !r.data?.length) return;
    // 변경 있을 때만 업데이트
    if(JSON.stringify(r.data) !== JSON.stringify(DB.teachers)){
@@ -3967,7 +3598,6 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    }
   } else if(tab === 'centers'){
    const r = await gasGet({action:'getCenters'});
-   hideLoader();
    if(!r.ok || !r.data?.length) return;
    // v11.30 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
    // 스케줄 없는 GAS 데이터로 DB 덮어쓰기 방지
@@ -3985,7 +3615,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     showToast('✅ 센터 목록이 최신 데이터로 업데이트됐어요');
    }
   }
- } catch(e){ hideLoader(); console.warn('탭 동기화 실패:', e); }
+ } catch(e){ console.warn('탭 동기화 실패:', e); }
 }
 
 /* ═══ FILE LOAD & PARSE (DecompressionStream + Central Directory) ═══ */
@@ -5351,6 +4981,33 @@ function updateAccount(ti, val){
  // v11.33 fix: 수업기록표 즉시 저장 (계좌가 정산 데이터 일부)
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.15: DB.teachers 계좌 동기화 (강사 → admin 강사관리 자동 반영)
+ _syncAccountToDB(ti);
+}
+
+/**
+ * v12.15: 강사 모드 계좌 입력 시 DB.teachers의 강사 계좌도 자동 업데이트
+ * 변경된 경우에만 LS_T_SHEETS + GAS 저장 + 강사 관리 화면 갱신
+ */
+function _syncAccountToDB(ti){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.name) return;
+ const dbTeacher = DB.teachers.find(d => d.name === t.name);
+ if(!dbTeacher) return;
+ const newAccount = (t.account||'').trim();
+ const oldAccount = (dbTeacher.account||'').trim();
+ if(newAccount === oldAccount) return; // 변경 없으면 종료
+ // 변경됨 → DB 업데이트 + 저장
+ dbTeacher.account = newAccount;
+ localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
+ gasPost({action:'saveTeacher', teacher:dbTeacher}).catch(()=>{});
+ // 강사 관리 화면 갱신 (열려있는 경우)
+ try{ if(typeof renderTeacherMgr==='function') renderTeacherMgr(); }catch{}
+ // 알림 (강사가 명확히 인식하도록)
+ try{
+  if(typeof showTiToast==='function') showTiToast('✅ 계좌가 강사 정보에도 반영됐어요');
+  else if(typeof showToast==='function') showToast('✅ 계좌가 강사 정보에도 반영됐어요');
+ }catch{}
 }
 
 function syncFromSettle(ti, val){
@@ -5363,6 +5020,8 @@ function syncFromSettle(ti, val){
  // v11.33 fix: 수업기록표 즉시 저장
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.15: DB.teachers 계좌 동기화
+ _syncAccountToDB(ti);
 }
 
 function syncAccountInput(ti, val){
@@ -5375,6 +5034,8 @@ function syncAccountInput(ti, val){
  // v11.33 fix: 수업기록표 즉시 저장
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
+ // v12.15: DB.teachers 계좌 동기화
+ _syncAccountToDB(ti);
 }
 
 function updateExtraCost(ti, field, val){
