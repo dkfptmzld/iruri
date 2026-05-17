@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v11.85">
+<meta property="og:title" content="수업기록표 정산 시스템 v11.90">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v11.85">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v11.90">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v11.85</title>
+<title>수업기록표 정산 시스템 v11.90</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2035,9 +2035,17 @@ body.edit-mode-active .ledger-wrap textarea {
  <!-- v11.83: 옵션 1 — KPI 6개 신호등 카드 (실데이터) -->
  <div style="padding:24px 32px 0;">
   <div id="signalCardDemo">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-   <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 2026년 4월 핵심 지표 (옵션 1)</div>
-   <div style="font-size:11px;color:var(--text3);">2개월 데이터</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 2026년 4월 핵심 지표 (옵션 1)</div>
+    <div style="font-size:11px;color:var(--text3);">2개월 데이터</div>
+   </div>
+   
+  <div style="display:inline-flex;background:var(--surface2);border-radius:8px;padding:4px;gap:2px;border:0.5px solid var(--border);">
+   <button onclick="_switchKpiTab('month')" style="padding:7px 16px;font-size:12px;font-weight:600;border:none;background:var(--green-bg);cursor:pointer;border-radius:6px;color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,0.08);">📅 월별</button>
+   <button onclick="_switchKpiTab('year')" style="padding:7px 16px;font-size:12px;font-weight:500;border:none;background:transparent;cursor:pointer;border-radius:6px;color:var(--text2);">🗓️ 연별</button>
+  </div>
+ 
   </div>
   <div class="signal-card-grid cols-3">
   <div class="signal-card green clickable" onclick="_growthExpandKpi('revenue')">
@@ -2128,38 +2136,131 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 
  <!-- v11.85: KPI 카드 클릭 시 12개월 막대 펼침 영역 -->
- <div id="kpiExpandArea" style="padding: 0px 32px; display: block;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
-   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-    <div style="display:flex;align-items:baseline;gap:10px;">
-     <div style="font-size:15px;font-weight:600;color:var(--text1);">👤 강사 1인당 평균</div>
-     <div style="font-size:11px;color:var(--text3);">최근 2개월</div>
+ <div id="kpiExpandArea" style="padding:0 32px;display:none;"></div>
+
+ <!-- v11.87: 옵션 6 — 출석 분류 (정상/휴강/모의) -->
+ <div style="padding:24px 32px 0;">
+  <div id="option6Area">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📋 2026년 4월 출석 분류 (옵션 6)</div>
+    <div style="font-size:11px;color:var(--text3);">총 1,894회</div>
+   </div>
+  </div>
+  <div class="signal-card-grid cols-3">
+  <div class="signal-card green clickable" onclick="_growthExpandAttendance('normalPct')">
+   <div class="signal-card-label">✅ 정상 (보강 포함)</div>
+   <div class="signal-card-value">74.7%</div>
+   <div class="signal-card-subvalue">1,414회 / 전체 1,894회</div>
+   <div class="signal-card-delta down">▼ -13.2%p (+116회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:85%;"></div>
     </div>
-    <button onclick="_growthExpandKpi('revPerTeacher')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card red clickable" onclick="_growthExpandAttendance('cancelPct')">
+   <div class="signal-card-label">⚠️ 휴강</div>
+   <div class="signal-card-value">24.5%</div>
+   <div class="signal-card-subvalue">464회 / 전체 1,894회</div>
+   <div class="signal-card-delta down">▲ +12.4%p (+286회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#C53030;height:49%;"></div><div class="signal-card-mini-bar" style="background:#C53030;height:100%;"></div>
+    </div>
+   
+   <div class="signal-card-warn">⚠️ ▲ 12.4%p 증가 (지난달 대비)</div>
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card amber clickable" onclick="_growthExpandAttendance('mockPct')">
+   <div class="signal-card-label">🆕 모의 수업</div>
+   <div class="signal-card-value">0.8%</div>
+   <div class="signal-card-subvalue">16회 / 전체 1,894회</div>
+   <div class="signal-card-delta up">▲ +0.8%p (+16회, 지난달 대비)</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#BA7517;height:2%;"></div><div class="signal-card-mini-bar" style="background:#BA7517;height:80%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- v11.88: 출석 분류 카드 클릭 시 12개월 막대 펼침 영역 -->
+ <div id="attendanceExpandArea" style="padding:0 32px;display:none;"></div>
+
+ <!-- v11.89: 옵션 5 — 신규/이탈 (강사 + 센터) -->
+ <div style="padding:24px 32px 0;">
+  <div id="option5Area">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">🔄 2026년 4월 신규/이탈 (옵션 5)</div>
+    <div style="font-size:11px;color:var(--text3);">지난달 대비 자동 계산</div>
    </div>
-   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
-    <div style="font-size:24px;font-weight:700;color:#1A7A50;">243만원</div>
-    <div style="font-size:12px;color:#1A7A50;font-weight:500;">▲ +2.6% (지난달 대비)</div>
+  </div>
+  <div class="signal-card-grid cols-2">
+  <div class="signal-card green clickable" onclick="_growthExpandChurn('teacher')">
+   <div class="signal-card-label">👥 강사 변동</div>
+   <div class="signal-card-value">+2명</div>
+   <div class="signal-card-subvalue">신규 2명 · 이탈 0명 · 현재 32명</div>
+   <div class="signal-card-delta up">지난달 대비 순증감 +2명</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ 
+  <div class="signal-card green clickable" onclick="_growthExpandChurn('center')">
+   <div class="signal-card-label">🏢 센터 변동</div>
+   <div class="signal-card-value">+46곳</div>
+   <div class="signal-card-subvalue">신규 57곳 · 이탈 11곳 · 현재 315곳</div>
+   <div class="signal-card-delta up">지난달 대비 순증감 +46곳</div>
+   
+    <div class="signal-card-mini-trend">
+     <div class="signal-card-mini-bar" style="background:#1A7A50;height:2%;"></div><div class="signal-card-mini-bar" style="background:#1A7A50;height:100%;"></div>
+    </div>
+   
+   
+   <div class="signal-card-expand-arrow">▾ 클릭하면 상세</div>
+  </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- v11.89: 옵션 5 카드 클릭 시 신규/이탈 이름 펼침 영역 -->
+ <div id="churnExpandArea" style="padding: 0px 32px; display: block;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">🏢 센터 신규/이탈 상세</div>
+     <div style="font-size:11px;color:var(--text3);">2026년 4월 · 지난달 대비</div>
+    </div>
+    <button onclick="_growthExpandChurn('center')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
    </div>
-   <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
-    
-   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
-    <div style="height:14px;"></div>
-    <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:500;">237만</div>
-    <div style="width:70%;background:#1A7A50;height:97.46606722329265%;border-radius:3px 3px 0 0;opacity:0.55;"></div>
-    <div style="font-size:10px;color:var(--text3);margin-top:5px;">3월월</div>
+
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div>
+     <div style="font-size:12px;font-weight:600;color:#0F6E56;margin-bottom:8px;">🆕 신규 곳 (57)</div>
+     <div style="line-height:1.8;"><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 양주정원산책</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 덕양</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 선두교회</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ MG</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ A+동행</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 마음과마음2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 오남정가원</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 더해피</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 케어다송추</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 효정원</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 좋은날3</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 백세만세2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 봄봄2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 대상행사</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 양주케어닥</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 행복나눔</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 늘푸른2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 벨포레스트2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 벨포레스트3</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 벨포레스트5</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ A+동행[인천]</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 시흥더사랑</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 강서구립든든</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 그라시아</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 효자손</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 스마일중랑</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 온케어송파</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 서울성심</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 동행2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 벨포레스트4</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 벨포레스트6</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 효자노치원</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 다케어</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 시니어학교삼성</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 더힘찬</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 백세시대</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 서울굿데이</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 두꺼비2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 세심정2</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 시니엘</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 재영</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 우면</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 남양주보건소</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 우면1</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 남양주장애인</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 성남대교</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 신당</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 학수정1</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 문정1</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 논현</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 논현1</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 효사랑</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 호평사랑</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 상일</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 기억튼튼</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 성동금호</div><div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ 성수</div></div>
+    </div>
+    <div>
+     <div style="font-size:12px;font-weight:600;color:#A32D2D;margin-bottom:8px;">❌ 이탈 곳 (11)</div>
+     <div style="line-height:1.8;"><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 김포다사랑</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 나날</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 해드림주간</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 해드림요양</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 보노요양원</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 벨포레스트</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 하남경복궁</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− A+우리</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 마석굿데이</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 양주실버타운</div><div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− 동탄</div></div>
+    </div>
    </div>
-  
-   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
-    <div style="font-size:9px;color:#1A7A50;margin-bottom:3px;font-weight:500;">+2.6%</div>
-    <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:700;color:#1A7A50;">243만</div>
-    <div style="width:70%;background:#1A7A50;height:100%;border-radius:3px 3px 0 0;opacity:1;box-shadow:0 0 0 2px #1A7A5044;"></div>
-    <div style="font-size:10px;color:var(--text3);margin-top:5px;color:#1A7A50;font-weight:600;">4월월</div>
-   </div>
-  
-   </div>
+
    <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
-    💡 막대 위 작은 % = 그 달의 지난달 대비 변화 · 진한 색 = 2026년 4월 (현재 달)
+    💡 정산 데이터 기반 자동 계산 — 이전 달에 있던 곳이 사라지면 이탈, 없던 곳이 새로 보이면 신규
    </div>
   </div>
  </div>
@@ -2334,7 +2435,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 02:59:25</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 03:28:58</div>
  </div>
 </div>
 
@@ -3384,7 +3485,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v11.85';
+const SYSTEM_VERSION='v11.90';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 const LS_T_SHEETS='settle_t_sheets'; // Sheets에서 받은 강사 DB 캐시
 const LS_C_SHEETS='settle_c_sheets'; // Sheets에서 받은 센터 DB 캐시
@@ -12296,6 +12397,10 @@ function getGrowthData(){
    if(!snap?.teachers) continue;
    let revenue=0;
    let lessonHours=0; // v11.83: 총 수업 시간 = O 출석 횟수
+   // v11.87: 옵션 6 — 출석 분류
+   let normalCount=0;  // 정상 (O + 보강)
+   let cancelCount=0;  // 휴강 (보강 아닌 X)
+   let mockCount=0;    // 모의 (△)
    const cSet=new Set(), tSet=new Set();
    const rMap={}, tRevMap={};
    snap.teachers.forEach(t=>{
@@ -12303,24 +12408,56 @@ function getGrowthData(){
     let tRev=0;
     (t.lessons||[]).forEach(l=>{
      const fee=Number(l.feePer||l.fee||0);
-     const cnt=(l.attend||[]).filter(a=>a==='O').length;
+     const attend=l.attend||[];
+     const makeup=l.makeupChecked||[];
+     const cnt=attend.filter(a=>a==='O').length;
      tRev+=fee*cnt; revenue+=fee*cnt;
-     lessonHours+=cnt; // v11.83: O 출석 횟수 누적
+     lessonHours+=cnt;
+     // v11.87: 출석 셀 분류
+     attend.forEach((a, idx)=>{
+      if(a==='O') normalCount++;
+      else if(a==='X'){
+       if(makeup[idx]) normalCount++; // 보강 = 정상
+       else cancelCount++;
+      }
+      else if(a==='△') mockCount++;
+     });
      if(l.center) cSet.add(l.center);
-     // l.region이 제출 데이터에 있으면 그대로 사용, 없으면 DB에서 동명 중 첫 매칭 (fallback)
      const reg=l.region||DB.centers.find(c=>c.name===l.center)?.region||'기타';
      rMap[reg]=(rMap[reg]||0)+1;
     });
     tRevMap[t.name]=tRev;
    });
+   const totalAttendance=normalCount+cancelCount+mockCount;
    months.push({ym,revenue,lessonHours,centers:cSet.size,cSet,teachers:tSet.size,tSet,
     perTeacher:tSet.size>0?(cSet.size/tSet.size):0,rMap,tRevMap,
-    // v11.83: 옵션 1 KPI용 평균값
     revPerTeacher:tSet.size>0?(revenue/tSet.size):0,
-    revPerCenter:cSet.size>0?(revenue/cSet.size):0});
+    revPerCenter:cSet.size>0?(revenue/cSet.size):0,
+    // v11.87: 출석 분류 (비율 % 계산용)
+    normalCount, cancelCount, mockCount, totalAttendance,
+    normalPct:totalAttendance>0?Math.round(normalCount/totalAttendance*1000)/10:0,
+    cancelPct:totalAttendance>0?Math.round(cancelCount/totalAttendance*1000)/10:0,
+    mockPct:totalAttendance>0?Math.round(mockCount/totalAttendance*1000)/10:0});
   }catch(e){}
  }
  months.sort((a,b)=>a.ym.localeCompare(b.ym));
+
+ // v11.89: 옵션 5 — 신규/이탈 자동 계산 (이전 달과 비교)
+ months.forEach((m,i)=>{
+  const prev=i>0?months[i-1]:null;
+  if(prev){
+   m.newTeachers=[...m.tSet].filter(t=>!prev.tSet.has(t));
+   m.outTeachers=[...prev.tSet].filter(t=>!m.tSet.has(t));
+   m.newCenters=[...m.cSet].filter(c=>!prev.cSet.has(c));
+   m.outCenters=[...prev.cSet].filter(c=>!m.cSet.has(c));
+  } else {
+   m.newTeachers=[]; m.outTeachers=[];
+   m.newCenters=[]; m.outCenters=[];
+  }
+  m.teacherChange=m.newTeachers.length-m.outTeachers.length;
+  m.centerChange=m.newCenters.length-m.outCenters.length;
+ });
+
  return months;
 }
 
@@ -12474,14 +12611,63 @@ function renderGrowthView(){
 
 // v11.82: 신호등 카드 컴포넌트 데모 렌더링 (검증용)
 // v11.83: 데모 → 옵션 1 실데이터 (KPI 6개 신호등 카드)
+// v11.87: 옵션 6 (출석 분류) 추가
+// v11.89: 옵션 5 (신규/이탈) 추가
 function _renderSignalCardDemo(){
- // v11.83: 실데이터로 교체. 데모는 폐기.
  _renderOption1Kpis();
+ _renderOption6Attendance();
+ _renderOption5Churn();
 }
 
 /* ══════════════════════════════════
    v11.83: 옵션 1 — KPI 6개 신호등 카드
+   v11.86: 월별/연별 탭 전환 추가
    ══════════════════════════════════ */
+
+// v11.86: 탭 모드 (월별 'month' / 연별 'year')
+let _kpiTabMode='month';
+
+/**
+ * v11.86: 월별 데이터를 연별로 집계
+ * - 매출, 수업 시간: 연 12개월 합계
+ * - 강사 수, 센터 수: 12월 시점 (또는 가장 최근 달)
+ * - 1인당/1곳당: 연 합계 / 연말 시점
+ */
+function _aggregateYearly(months){
+ const byYear={};
+ months.forEach(m=>{
+  const year=m.ym.match(/^(\d{4})/)?.[1];
+  if(!year) return;
+  if(!byYear[year]) byYear[year]={ym:year, revenue:0, lessonHours:0,
+   teachers:0, centers:0, revPerTeacher:0, revPerCenter:0,
+   // v11.87: 출석 분류 합계
+   normalCount:0, cancelCount:0, mockCount:0, totalAttendance:0,
+   normalPct:0, cancelPct:0, mockPct:0,
+   _months:[]};
+  byYear[year].revenue+=m.revenue;
+  byYear[year].lessonHours+=m.lessonHours||0;
+  // v11.87: 출석 합계
+  byYear[year].normalCount+=m.normalCount||0;
+  byYear[year].cancelCount+=m.cancelCount||0;
+  byYear[year].mockCount+=m.mockCount||0;
+  byYear[year]._months.push(m);
+ });
+ // 연말 시점 처리 + 비율 재계산
+ Object.values(byYear).forEach(y=>{
+  y._months.sort((a,b)=>a.ym.localeCompare(b.ym));
+  const lastMonth=y._months[y._months.length-1];
+  y.teachers=lastMonth?.teachers||0;
+  y.centers=lastMonth?.centers||0;
+  y.revPerTeacher=y.teachers>0?y.revenue/y.teachers:0;
+  y.revPerCenter=y.centers>0?y.revenue/y.centers:0;
+  // v11.87: 비율 재계산
+  y.totalAttendance=y.normalCount+y.cancelCount+y.mockCount;
+  y.normalPct=y.totalAttendance>0?Math.round(y.normalCount/y.totalAttendance*1000)/10:0;
+  y.cancelPct=y.totalAttendance>0?Math.round(y.cancelCount/y.totalAttendance*1000)/10:0;
+  y.mockPct=y.totalAttendance>0?Math.round(y.mockCount/y.totalAttendance*1000)/10:0;
+ });
+ return Object.values(byYear).sort((a,b)=>a.ym.localeCompare(b.ym));
+}
 
 /**
  * 변화율 계산
@@ -12532,29 +12718,43 @@ function _krMoney(v){
 }
 
 /**
- * 옵션 1 KPI 6개 신호등 카드 렌더링 (월별 탭 — 12개월 기준)
- * v11.84: 변화량을 절대값 + % 같이 표시 (예: "▲ +1,245만원 (12.3%)")
+ * 옵션 1 KPI 6개 신호등 카드 렌더링
+ * v11.84: 절대값 + % 같이 표시
+ * v11.86: 월별/연별 탭 전환 추가
  */
 function _renderOption1Kpis(){
  const target=document.getElementById('signalCardDemo');
  if(!target) return;
 
- const months=getGrowthData();
- if(months.length===0){
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
   target.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">아직 정산 데이터가 없습니다.</div>';
+  return;
+ }
+
+ // v11.86: 모드에 따라 데이터 처리
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ if(months.length===0){
+  target.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">'+(isYearMode?'연도 데이터 부족':'데이터 없음')+'</div>';
   return;
  }
 
  const currIdx=months.length-1;
  const curr=months[currIdx];
+ // 월별: 지난달 / 연별: 작년
  const prev=currIdx>0?months[currIdx-1]:null;
 
- // 작년 같은 달 찾기 (ym이 YYYY-MM 형식)
- const yoyYm=_calcYoyYm(curr.ym);
- const yoy=yoyYm?months.find(m=>m.ym===yoyYm):null;
+ // 작년 같은 달 (월별 모드만)
+ let yoy=null;
+ if(!isYearMode){
+  const yoyYm=_calcYoyYm(curr.ym);
+  yoy=yoyYm?months.find(m=>m.ym===yoyYm):null;
+ }
 
  // KPI 6개 정의 (단위별 포맷 함수 포함)
- const fmtMoney=v=>{ // 금액 (만/억 자동, 절대 차이 표시용)
+ const fmtMoney=v=>{
   if(v===0) return '0원';
   const abs=Math.abs(v);
   const sign=v<0?'-':'';
@@ -12564,26 +12764,30 @@ function _renderOption1Kpis(){
  };
  const fmtCount=unit=>v=>v.toLocaleString()+unit;
 
+ // v11.86: 연별 모드에서 일부 라벨/부가설명 변경
+ const subSuffix=isYearMode?' (연말 시점)':' 활동 중';
+ const sumSuffix=isYearMode?' (연 합계)':'';
+
  const kpis=[
-  {key:'revenue', label:'💰 총 매출', color:'green',
+  {key:'revenue', label:'💰 총 매출'+sumSuffix, color:'green',
    value:_krMoney(curr.revenue), subvalue:curr.revenue.toLocaleString()+'원', fmt:fmtMoney},
   {key:'teachers', label:'👥 활동 강사', color:'blue',
-   value:curr.teachers+'명', subvalue:'활동 중', fmt:fmtCount('명')},
+   value:curr.teachers+'명', subvalue:isYearMode?'연말 시점':'활동 중', fmt:fmtCount('명')},
   {key:'centers', label:'🏢 활동 센터', color:'amber',
-   value:curr.centers+'곳', subvalue:'활동 중', fmt:fmtCount('곳')},
-  {key:'lessonHours', label:'⏰ 총 수업 시간', color:'purple',
+   value:curr.centers+'곳', subvalue:isYearMode?'연말 시점':'활동 중', fmt:fmtCount('곳')},
+  {key:'lessonHours', label:'⏰ 총 수업 시간'+sumSuffix, color:'purple',
    value:curr.lessonHours.toLocaleString()+'시간', subvalue:'O 출석 합계', fmt:fmtCount('시간')},
   {key:'revPerTeacher', label:'👤 강사 1인당 평균', color:'green',
-   value:_krMoney(curr.revPerTeacher), subvalue:'매출/강사 수', fmt:fmtMoney},
+   value:_krMoney(curr.revPerTeacher), subvalue:isYearMode?'연 매출/연말 강사':'매출/강사 수', fmt:fmtMoney},
   {key:'revPerCenter', label:'🏪 센터 1곳당 평균', color:'green',
-   value:_krMoney(curr.revPerCenter), subvalue:'매출/센터 수', fmt:fmtMoney}
+   value:_krMoney(curr.revPerCenter), subvalue:isYearMode?'연 매출/연말 센터':'매출/센터 수', fmt:fmtMoney}
  ];
 
  const cards=kpis.map(k=>{
-  // 변화량 계산 (절대값 + %)
   let deltaLines=[];
   let deltaType='flat';
 
+  // 이전 기간 대비 (월별=지난달, 연별=작년)
   if(prev){
    const diff=curr[k.key]-prev[k.key];
    const pct=prev[k.key]!==0?Math.round((diff/prev[k.key])*1000)/10:null;
@@ -12592,13 +12796,15 @@ function _renderOption1Kpis(){
    else if(diff<0) deltaType='down';
    const absText=k.fmt(Math.abs(diff));
    const sign=diff>0?'+':diff<0?'-':'';
+   const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
    if(pct!==null){
-    deltaLines.push(`${arrow} ${sign}${absText} (${Math.abs(pct)}%, 지난달 대비)`);
+    deltaLines.push(`${arrow} ${sign}${absText} (${Math.abs(pct)}%, ${cmpLabel})`);
    } else {
-    deltaLines.push(`${arrow} ${sign}${absText} (신규, 지난달 대비)`);
+    deltaLines.push(`${arrow} ${sign}${absText} (신규, ${cmpLabel})`);
    }
   }
 
+  // 작년 같은 달 (월별 모드만)
   if(yoy){
    const diff=curr[k.key]-yoy[k.key];
    const pct=yoy[k.key]!==0?Math.round((diff/yoy[k.key])*1000)/10:null;
@@ -12612,7 +12818,7 @@ function _renderOption1Kpis(){
    }
   }
 
-  // 미니 추세 (최근 6개월)
+  // 미니 추세 (월별=최근 6개월, 연별=전체 연도)
   const miniTrend=_growthMiniTrend(months, currIdx, k.key);
 
   return renderSignalCard({
@@ -12628,13 +12834,488 @@ function _renderOption1Kpis(){
   });
  });
 
+ // v11.86: 탭 UI + 그리드 (흰색 글씨 사용 X)
+ const tabBarHtml=`
+  <div style="display:inline-flex;background:var(--surface2);border-radius:8px;padding:4px;gap:2px;border:0.5px solid var(--border);">
+   <button onclick="_switchKpiTab('month')" style="padding:7px 16px;font-size:12px;font-weight:${isYearMode?'500':'600'};border:none;background:${isYearMode?'transparent':'var(--green-bg)'};cursor:pointer;border-radius:6px;color:${isYearMode?'var(--text2)':'var(--green)'};${!isYearMode?'box-shadow:0 1px 3px rgba(0,0,0,0.08);':''}">📅 월별</button>
+   <button onclick="_switchKpiTab('year')" style="padding:7px 16px;font-size:12px;font-weight:${isYearMode?'600':'500'};border:none;background:${isYearMode?'var(--green-bg)':'transparent'};cursor:pointer;border-radius:6px;color:${isYearMode?'var(--green)':'var(--text2)'};${isYearMode?'box-shadow:0 1px 3px rgba(0,0,0,0.08);':''}">🗓️ 연별</button>
+  </div>
+ `;
+
+ const periodLabel=isYearMode?`${curr.ym}년`:curr.ym;
+ const dataLabel=isYearMode?`${months.length}개 연도 데이터`:`${months.length}개월 데이터`;
+
  target.innerHTML=`
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-   <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 ${curr.ym} 핵심 지표 (옵션 1)</div>
-   <div style="font-size:11px;color:var(--text3);">${months.length}개월 데이터</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📊 ${periodLabel} 핵심 지표 (옵션 1)</div>
+    <div style="font-size:11px;color:var(--text3);">${dataLabel}</div>
+   </div>
+   ${tabBarHtml}
   </div>
   ${renderSignalCardGrid(cards, 3)}
  `;
+
+ // v11.86: 모드 전환 시 펼침 영역 닫기
+ if(_expandedKpi){
+  _expandedKpi=null;
+  const expandArea=document.getElementById('kpiExpandArea');
+  if(expandArea){ expandArea.style.display='none'; expandArea.innerHTML=''; }
+ }
+}
+
+/**
+ * v11.86: 월별/연별 탭 전환
+ */
+function _switchKpiTab(mode){
+ if(_kpiTabMode===mode) return;
+ _kpiTabMode=mode;
+ // v11.88: 탭 전환 시 펼침 모두 닫기
+ if(_expandedKpi){
+  _expandedKpi=null;
+  const kpiArea=document.getElementById('kpiExpandArea');
+  if(kpiArea){ kpiArea.style.display='none'; kpiArea.innerHTML=''; }
+ }
+ if(_expandedAttendance){
+  _expandedAttendance=null;
+  const attArea=document.getElementById('attendanceExpandArea');
+  if(attArea){ attArea.style.display='none'; attArea.innerHTML=''; }
+ }
+ // v11.89: 옵션 5 펼침도 닫기
+ if(_expandedChurn){
+  _expandedChurn=null;
+  const churnArea=document.getElementById('churnExpandArea');
+  if(churnArea){ churnArea.style.display='none'; churnArea.innerHTML=''; }
+ }
+ _renderOption1Kpis();
+ _renderOption6Attendance();
+ _renderOption5Churn();
+}
+
+/* ══════════════════════════════════
+   v11.87: 옵션 6 — 출석 분류 (정상/휴강/모의)
+   ══════════════════════════════════ */
+/**
+ * 옵션 6 출석 분류 카드 3개 렌더링
+ * - 정상 (O + 보강) / 휴강 (보강 아닌 X) / 모의 (△)
+ * - 비율 (%) 표시 + 휴강 급증 시 경고 박스
+ */
+function _renderOption6Attendance(){
+ const target=document.getElementById('option6Area');
+ if(!target) return;
+
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
+  target.innerHTML='';
+  return;
+ }
+
+ // v11.86 탭 모드 반영
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ if(months.length===0){ target.innerHTML=''; return; }
+
+ const currIdx=months.length-1;
+ const curr=months[currIdx];
+ const prev=currIdx>0?months[currIdx-1]:null;
+
+ // 휴강 경고 조건: 지난달 대비 ▲ 2%p 이상 OR 절대값 7% 이상
+ const cancelDelta=prev?(curr.cancelPct-prev.cancelPct):0;
+ const cancelWarn=cancelDelta>=2 || curr.cancelPct>=7;
+ const cancelWarnMsg=cancelDelta>=2
+  ?`▲ ${cancelDelta.toFixed(1)}%p 증가 (지난달 대비)`
+  :curr.cancelPct>=7?`현재 ${curr.cancelPct}% — 7% 임계값 초과`:'';
+
+ // 데이터 정의
+ const items=[
+  {key:'normalPct', countKey:'normalCount', label:'✅ 정상 (보강 포함)', color:'green'},
+  {key:'cancelPct', countKey:'cancelCount', label:'⚠️ 휴강', color:cancelWarn?'red':'gray'},
+  {key:'mockPct', countKey:'mockCount', label:'🆕 모의 수업', color:'amber'}
+ ];
+
+ const cards=items.map(it=>{
+  // 비율 차이 (절대값)
+  let deltaLines=[];
+  let deltaType='flat';
+
+  if(prev){
+   const pctDiff=curr[it.key]-prev[it.key];
+   const cntDiff=curr[it.countKey]-prev[it.countKey];
+   const arrow=pctDiff>0?'▲':pctDiff<0?'▼':'=';
+
+   // 휴강은 증가가 나쁨, 정상은 증가가 좋음
+   if(it.key==='cancelPct'){
+    deltaType=pctDiff>0?'down':pctDiff<0?'up':'flat';
+   } else {
+    deltaType=pctDiff>0?'up':pctDiff<0?'down':'flat';
+   }
+
+   const pctText=Math.abs(pctDiff).toFixed(1);
+   const sign=pctDiff>0?'+':pctDiff<0?'-':'';
+   const cntSign=cntDiff>0?'+':cntDiff<0?'-':'';
+   const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
+   deltaLines.push(`${arrow} ${sign}${pctText}%p (${cntSign}${Math.abs(cntDiff)}회, ${cmpLabel})`);
+  }
+
+  // 미니 추세 (최근 6개월/연)
+  const miniTrend=_growthMiniTrend(months, currIdx, it.key);
+
+  return renderSignalCard({
+   color:it.color,
+   label:it.label,
+   value:curr[it.key].toFixed(1)+'%',
+   subvalue:curr[it.countKey].toLocaleString()+'회 / 전체 '+curr.totalAttendance.toLocaleString()+'회',
+   delta:deltaLines.join('<br>'),
+   deltaType:deltaType,
+   miniTrend:miniTrend,
+   warn:it.key==='cancelPct'&&cancelWarn?cancelWarnMsg:'',
+   expandable:true,
+   onClick:`_growthExpandAttendance('${it.key}')`
+  });
+ });
+
+ const periodLabel=isYearMode?`${curr.ym}년`:curr.ym;
+
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">📋 ${periodLabel} 출석 분류 (옵션 6)</div>
+    <div style="font-size:11px;color:var(--text3);">총 ${curr.totalAttendance.toLocaleString()}회</div>
+   </div>
+  </div>
+  ${renderSignalCardGrid(cards, 3)}
+ `;
+}
+
+/**
+ * 옵션 6 카드 클릭 시 12개월 단일 막대 펼침 (v11.88)
+ * - 각 카테고리(정상/휴강/모의)별로 % + 절대값(회) 같이 표시
+ */
+let _expandedAttendance=null;
+
+function _growthExpandAttendance(key){
+ const target=document.getElementById('attendanceExpandArea');
+ if(!target) return;
+
+ // 같은 카드 다시 클릭 → 닫기
+ if(_expandedAttendance===key){
+  _expandedAttendance=null;
+  target.style.display='none';
+  target.innerHTML='';
+  return;
+ }
+
+ _expandedAttendance=key;
+
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
+  target.style.display='block';
+  target.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);">데이터 없음</div>';
+  return;
+ }
+
+ // v11.86 탭 모드 반영
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ const recent=isYearMode?months:months.slice(-12);
+ const values=recent.map(m=>m[key]||0);
+ const max=Math.max(...values, 1);
+ const currIdx=recent.length-1;
+
+ // 카테고리 정보 (라벨, 색상, 절대값 키)
+ const attInfo={
+  normalPct:{label:'✅ 정상 (보강 포함)', color:'#1D9E75', countKey:'normalCount', countLabel:'회'},
+  cancelPct:{label:'⚠️ 휴강', color:'#C53030', countKey:'cancelCount', countLabel:'회'},
+  mockPct:{label:'🆕 모의 수업', color:'#EF9F27', countKey:'mockCount', countLabel:'회'}
+ };
+ const info=attInfo[key];
+ if(!info){
+  target.style.display='block';
+  target.innerHTML=`<div style="padding:20px;color:var(--text3);">알 수 없는 키: ${key}</div>`;
+  return;
+ }
+
+ // 막대 HTML 생성
+ const bars=recent.map((m,i)=>{
+  const v=m[key]||0;
+  const cnt=m[info.countKey]||0;
+  const h=(v/max)*100;
+  const isLast=i===currIdx;
+  // 지난달 대비 절대값 + %
+  const prev=i>0?recent[i-1]:null;
+  let pctText='', pctColor='';
+  if(prev){
+   const pctDiff=v-prev[key];
+   if(pctDiff!==0){
+    // 휴강은 증가가 나쁨, 정상은 증가가 좋음
+    if(key==='cancelPct'){
+     pctColor=pctDiff>0?'#C53030':'#1A7A50';
+    } else {
+     pctColor=pctDiff>0?'#1A7A50':'#C53030';
+    }
+    pctText=(pctDiff>0?'+':'')+pctDiff.toFixed(1)+'%p';
+   }
+  }
+  const monthLabel=isYearMode?m.ym:(m.ym.match(/(\d{1,2})$/)?.[1]||m.ym.slice(-2));
+  const monthSuffix=isYearMode?'년':'월';
+
+  return `
+   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:200px;position:relative;">
+    ${pctText?`<div style="font-size:9px;color:${pctColor};margin-bottom:2px;font-weight:500;">${pctText}</div>`:'<div style="height:13px;"></div>'}
+    <div style="font-size:11px;color:var(--text1);margin-bottom:2px;font-weight:${isLast?'700':'600'};${isLast?`color:${info.color};`:''}">${v.toFixed(1)}%</div>
+    <div style="font-size:9px;color:var(--text3);margin-bottom:3px;">${cnt}${info.countLabel}</div>
+    <div style="width:70%;background:${info.color};height:${Math.max(3,h)}%;border-radius:3px 3px 0 0;opacity:${isLast?'1':'0.55'};${isLast?`box-shadow:0 0 0 2px ${info.color}44;`:''}"></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;${isLast?`color:${info.color};font-weight:600;`:''}">${monthLabel}${monthSuffix}</div>
+   </div>
+  `;
+ }).join('');
+
+ // 현재 값 + 비교
+ const curr=recent[currIdx];
+ const prev=currIdx>0?recent[currIdx-1]:null;
+ let deltaText='';
+ if(prev){
+  const pctDiff=curr[key]-prev[key];
+  const cntDiff=curr[info.countKey]-prev[info.countKey];
+  const arrow=pctDiff>0?'▲':pctDiff<0?'▼':'=';
+  let deltaColor='var(--text3)';
+  if(pctDiff!==0){
+   if(key==='cancelPct'){
+    deltaColor=pctDiff>0?'#C53030':'#1A7A50';
+   } else {
+    deltaColor=pctDiff>0?'#1A7A50':'#C53030';
+   }
+  }
+  const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
+  const pctSign=pctDiff>0?'+':pctDiff<0?'-':'';
+  const cntSign=cntDiff>0?'+':cntDiff<0?'-':'';
+  deltaText=`<span style="color:${deltaColor};font-weight:500;">${arrow} ${pctSign}${Math.abs(pctDiff).toFixed(1)}%p (${cntSign}${Math.abs(cntDiff)}회, ${cmpLabel})</span>`;
+ }
+
+ const titleSuffix=isYearMode?`${recent.length}개 연도`:`최근 ${recent.length}개월`;
+
+ target.style.display='block';
+ target.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">${info.label}</div>
+     <div style="font-size:11px;color:var(--text3);">${titleSuffix}</div>
+    </div>
+    <button onclick="_growthExpandAttendance('${key}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   </div>
+   <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
+    <div style="font-size:24px;font-weight:700;color:${info.color};">${curr[key].toFixed(1)}%</div>
+    <div style="font-size:13px;color:var(--text2);">(${curr[info.countKey]}${info.countLabel} / 전체 ${curr.totalAttendance}${info.countLabel})</div>
+    ${deltaText?`<div style="font-size:12px;">${deltaText}</div>`:''}
+   </div>
+   <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
+    ${bars}
+   </div>
+   <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
+    💡 막대 위 작은 %p = 지난 ${isYearMode?'년':'달'} 대비 변화 · 진한 색 = 현재 ${isYearMode?curr.ym+'년':curr.ym}
+   </div>
+  </div>
+ `;
+
+ setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
+}
+
+/* ══════════════════════════════════
+   v11.89: 옵션 5 — 신규/이탈 (강사 + 센터)
+   ══════════════════════════════════ */
+
+let _expandedChurn=null;
+
+/**
+ * 옵션 5 신호등 카드 2개 렌더링 (강사 변동 / 센터 변동)
+ */
+function _renderOption5Churn(){
+ const target=document.getElementById('option5Area');
+ if(!target) return;
+
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){ target.innerHTML=''; return; }
+
+ const isYearMode=_kpiTabMode==='year';
+
+ // 연별 모드에서는 신규/이탈을 연 단위로 다시 계산
+ let months;
+ if(isYearMode){
+  months=_aggregateYearly(monthsRaw);
+  // 연별 신규/이탈 재계산 (이전 연 대비)
+  months.forEach((y,i)=>{
+   const prev=i>0?months[i-1]:null;
+   if(prev){
+    const currTset=y._months[y._months.length-1]?.tSet||new Set();
+    const prevTset=prev._months[prev._months.length-1]?.tSet||new Set();
+    const currCset=y._months[y._months.length-1]?.cSet||new Set();
+    const prevCset=prev._months[prev._months.length-1]?.cSet||new Set();
+    y.newTeachers=[...currTset].filter(t=>!prevTset.has(t));
+    y.outTeachers=[...prevTset].filter(t=>!currTset.has(t));
+    y.newCenters=[...currCset].filter(c=>!prevCset.has(c));
+    y.outCenters=[...prevCset].filter(c=>!currCset.has(c));
+   } else {
+    y.newTeachers=[]; y.outTeachers=[];
+    y.newCenters=[]; y.outCenters=[];
+   }
+   y.teacherChange=y.newTeachers.length-y.outTeachers.length;
+   y.centerChange=y.newCenters.length-y.outCenters.length;
+  });
+ } else {
+  months=monthsRaw;
+ }
+
+ if(months.length<2){
+  target.innerHTML=`<div style="padding:14px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text3);">신규/이탈은 ${isYearMode?'2개 연도':'2달'} 이상 데이터 필요</div>`;
+  return;
+ }
+
+ const currIdx=months.length-1;
+ const curr=months[currIdx];
+
+ // 카드 2개 정의
+ const items=[
+  {key:'teacher', label:'👥 강사 변동',
+   newList:curr.newTeachers, outList:curr.outTeachers,
+   change:curr.teacherChange, total:curr.teachers},
+  {key:'center', label:'🏢 센터 변동',
+   newList:curr.newCenters, outList:curr.outCenters,
+   change:curr.centerChange, total:curr.centers}
+ ];
+
+ const cards=items.map(it=>{
+  const newCnt=it.newList.length;
+  const outCnt=it.outList.length;
+  const change=it.change;
+
+  // 색상: 순증 (초록) / 순감 (빨강) / 변화 없음 (회색)
+  const color=change>0?'green':change<0?'red':'gray';
+  const deltaType=change>0?'up':change<0?'down':'flat';
+
+  // 미니 추세 (월별 순증감)
+  const trendValues=months.slice(-6).map(m=>(it.key==='teacher'?m.teacherChange:m.centerChange));
+  const maxAbs=Math.max(...trendValues.map(v=>Math.abs(v)), 1);
+  const miniTrend=trendValues.map(v=>Math.round((Math.abs(v)/maxAbs)*100));
+
+  // 값 표시
+  const valueText=change>0?`+${change}`:change.toString();
+  const cmpLbl=isYearMode?'작년 대비':'지난달 대비';
+
+  return renderSignalCard({
+   color:color,
+   label:it.label,
+   value:`${valueText}${it.key==='teacher'?'명':'곳'}`,
+   subvalue:`신규 ${newCnt}${it.key==='teacher'?'명':'곳'} · 이탈 ${outCnt}${it.key==='teacher'?'명':'곳'} · 현재 ${it.total}${it.key==='teacher'?'명':'곳'}`,
+   delta:`${cmpLbl} 순증감 ${valueText}${it.key==='teacher'?'명':'곳'}`,
+   deltaType:deltaType,
+   miniTrend:miniTrend,
+   expandable:newCnt>0||outCnt>0,
+   onClick:`_growthExpandChurn('${it.key}')`
+  });
+ });
+
+ const periodLabel=isYearMode?`${curr.ym}년`:curr.ym;
+ const cmpLbl2=isYearMode?'작년 대비':'지난달 대비';
+
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+   <div style="display:flex;align-items:baseline;gap:10px;">
+    <div style="font-size:14px;font-weight:600;color:var(--text1);">🔄 ${periodLabel} 신규/이탈 (옵션 5)</div>
+    <div style="font-size:11px;color:var(--text3);">${cmpLbl2} 자동 계산</div>
+   </div>
+  </div>
+  ${renderSignalCardGrid(cards, 2)}
+ `;
+}
+
+/**
+ * 옵션 5 카드 클릭 시 신규/이탈 이름 펼침 (v11.89)
+ */
+function _growthExpandChurn(key){
+ const target=document.getElementById('churnExpandArea');
+ if(!target) return;
+
+ if(_expandedChurn===key){
+  _expandedChurn=null;
+  target.style.display='none';
+  target.innerHTML='';
+  return;
+ }
+
+ _expandedChurn=key;
+
+ const monthsRaw=getGrowthData();
+ const isYearMode=_kpiTabMode==='year';
+ let months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ // 연별 모드에서 다시 계산
+ if(isYearMode){
+  months.forEach((y,i)=>{
+   const prev=i>0?months[i-1]:null;
+   if(prev){
+    const currTset=y._months[y._months.length-1]?.tSet||new Set();
+    const prevTset=prev._months[prev._months.length-1]?.tSet||new Set();
+    const currCset=y._months[y._months.length-1]?.cSet||new Set();
+    const prevCset=prev._months[prev._months.length-1]?.cSet||new Set();
+    y.newTeachers=[...currTset].filter(t=>!prevTset.has(t));
+    y.outTeachers=[...prevTset].filter(t=>!currTset.has(t));
+    y.newCenters=[...currCset].filter(c=>!prevCset.has(c));
+    y.outCenters=[...prevCset].filter(c=>!currCset.has(c));
+   } else {
+    y.newTeachers=[]; y.outTeachers=[];
+    y.newCenters=[]; y.outCenters=[];
+   }
+  });
+ }
+
+ const curr=months[months.length-1];
+ const newList=key==='teacher'?curr.newTeachers:curr.newCenters;
+ const outList=key==='teacher'?curr.outTeachers:curr.outCenters;
+ const unit=key==='teacher'?'명':'곳';
+ const label=key==='teacher'?'👥 강사':'🏢 센터';
+
+ const newHtml=newList.length>0
+  ?newList.map(n=>`<div style="display:inline-block;background:#E1F5EE;color:#0F6E56;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">+ ${n}</div>`).join('')
+  :`<div style="color:var(--text3);font-size:12px;font-style:italic;">신규 ${unit} 없음</div>`;
+
+ const outHtml=outList.length>0
+  ?outList.map(n=>`<div style="display:inline-block;background:#FCEBEB;color:#A32D2D;padding:5px 12px;border-radius:14px;margin:3px;font-size:12px;font-weight:500;">− ${n}</div>`).join('')
+  :`<div style="color:var(--text3);font-size:12px;font-style:italic;">이탈 ${unit} 없음</div>`;
+
+ const cmpL=isYearMode?'작년 대비':'지난달 대비';
+
+ target.style.display='block';
+ target.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <div style="display:flex;align-items:baseline;gap:10px;">
+     <div style="font-size:15px;font-weight:600;color:var(--text1);">${label} 신규/이탈 상세</div>
+     <div style="font-size:11px;color:var(--text3);">${curr.ym} · ${cmpL}</div>
+    </div>
+    <button onclick="_growthExpandChurn('${key}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
+   </div>
+
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div>
+     <div style="font-size:12px;font-weight:600;color:#0F6E56;margin-bottom:8px;">🆕 신규 ${unit} (${newList.length})</div>
+     <div style="line-height:1.8;">${newHtml}</div>
+    </div>
+    <div>
+     <div style="font-size:12px;font-weight:600;color:#A32D2D;margin-bottom:8px;">❌ 이탈 ${unit} (${outList.length})</div>
+     <div style="line-height:1.8;">${outHtml}</div>
+    </div>
+   </div>
+
+   <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
+    💡 정산 데이터 기반 자동 계산 — 이전 ${isYearMode?'연':'달'}에 있던 ${unit}이 사라지면 이탈, 없던 ${unit}이 새로 보이면 신규
+   </div>
+  </div>
+ `;
+
+ setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'nearest'}), 100);
 }
 
 /**
@@ -12669,15 +13350,19 @@ function _growthExpandKpi(key){
 
  _expandedKpi=key;
 
- const months=getGrowthData();
- if(months.length===0){
+ const monthsRaw=getGrowthData();
+ if(monthsRaw.length===0){
   target.style.display='block';
   target.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);">데이터 없음</div>';
   return;
  }
 
- // 최근 12개월
- const recent=months.slice(-12);
+ // v11.86: 모드에 따라 데이터 처리
+ const isYearMode=_kpiTabMode==='year';
+ const months=isYearMode?_aggregateYearly(monthsRaw):monthsRaw;
+
+ // 표시 범위 (월별=최근 12개월, 연별=전체 연도)
+ const recent=isYearMode?months:months.slice(-12);
  const values=recent.map(m=>m[key]||0);
  const max=Math.max(...values, 1);
  const currIdx=recent.length-1;
@@ -12719,14 +13404,15 @@ function _growthExpandKpi(key){
    pct=Math.round((v-prev)/prev*1000)/10;
    pctColor=pct>=0?'#1A7A50':'#C53030';
   }
-  const monthLabel=m.ym.match(/(\d{1,2})$/)?.[1]||m.ym.slice(-2);
+  const monthLabel=isYearMode?m.ym:(m.ym.match(/(\d{1,2})$/)?.[1]||m.ym.slice(-2));
+  const monthSuffix=isYearMode?'년':'월';
 
   return `
    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:180px;position:relative;">
     ${pct!==null?`<div style="font-size:9px;color:${pctColor};margin-bottom:3px;font-weight:500;">${pct>=0?'+':''}${pct}%</div>`:'<div style="height:14px;"></div>'}
     <div style="font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:${isLast?'700':'500'};${isLast?`color:${info.color};`:''}">${info.shortFmt(v)}</div>
     <div style="width:70%;background:${info.color};height:${Math.max(3,h)}%;border-radius:3px 3px 0 0;opacity:${isLast?'1':'0.55'};${isLast?`box-shadow:0 0 0 2px ${info.color}44;`:''}"></div>
-    <div style="font-size:10px;color:var(--text3);margin-top:5px;${isLast?`color:${info.color};font-weight:600;`:''}">${monthLabel}월</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px;${isLast?`color:${info.color};font-weight:600;`:''}">${monthLabel}${monthSuffix}</div>
    </div>
   `;
  }).join('');
@@ -12738,6 +13424,8 @@ function _growthExpandKpi(key){
  const pct=prev&&prev[key]!==0?Math.round((diff/prev[key])*1000)/10:null;
  const arrow=diff>0?'▲':diff<0?'▼':'=';
  const deltaColor=diff>0?'#1A7A50':diff<0?'#C53030':'var(--text3)';
+ const cmpLabel=isYearMode?'작년 대비':'지난달 대비';
+ const titleSuffix=isYearMode?`${recent.length}개 연도 비교`:`최근 ${recent.length}개월`;
 
  target.style.display='block';
  target.innerHTML=`
@@ -12745,19 +13433,19 @@ function _growthExpandKpi(key){
    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
     <div style="display:flex;align-items:baseline;gap:10px;">
      <div style="font-size:15px;font-weight:600;color:var(--text1);">${info.label}</div>
-     <div style="font-size:11px;color:var(--text3);">최근 ${recent.length}개월</div>
+     <div style="font-size:11px;color:var(--text3);">${titleSuffix}</div>
     </div>
     <button onclick="_growthExpandKpi('${key}')" style="background:transparent;border:1px solid var(--border);border-radius:6px;cursor:pointer;color:var(--text2);font-size:13px;width:28px;height:28px;line-height:1;">✕</button>
    </div>
    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px;">
     <div style="font-size:24px;font-weight:700;color:${info.color};">${info.fmt(curr[key])}</div>
-    ${pct!==null?`<div style="font-size:12px;color:${deltaColor};font-weight:500;">${arrow} ${pct>=0?'+':''}${pct}% (지난달 대비)</div>`:''}
+    ${pct!==null?`<div style="font-size:12px;color:${deltaColor};font-weight:500;">${arrow} ${pct>=0?'+':''}${pct}% (${cmpLabel})</div>`:''}
    </div>
    <div style="display:flex;align-items:flex-end;gap:6px;padding:0 4px;">
     ${bars}
    </div>
    <div style="margin-top:10px;padding:8px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text3);">
-    💡 막대 위 작은 % = 그 달의 지난달 대비 변화 · 진한 색 = ${curr.ym} (현재 달)
+    💡 막대 위 작은 % = ${cmpLabel} 변화 · 진한 색 = ${curr.ym}${monthSuffix} (현재)
    </div>
   </div>
  `;
