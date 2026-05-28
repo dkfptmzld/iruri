@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.47">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.49">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.47">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.49">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.47</title>
+<title>수업기록표 정산 시스템 v12.49</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1343,7 +1343,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div class="nav-tabs">
  <button class="nav-tab active" id="nav0" onclick="switchView('settle')">📊 정산</button>
- <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;">0</span></button>
+ <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
@@ -1352,7 +1352,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
   <span id="adminTimerText">30:00</span>
-  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
+  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight">
  <span class="chip green">2026년 5월</span>
@@ -1373,7 +1373,7 @@ body.edit-mode-active .ledger-wrap textarea {
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size: 12px; background: rgb(183, 28, 28); color: white; border-color: rgb(230, 81, 0); font-weight: 600; display: flex; align-items: center; gap: 4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/28 오후 08:55 · 강사 32명 · 센터 324개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/28 오후 09:28 · 강사 32명 · 센터 324개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
@@ -1407,14 +1407,14 @@ body.edit-mode-active .ledger-wrap textarea {
  </button>
  </div></div>
  <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 5월 · 2명</div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
+ <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item" id="ti-0" onclick="selT(0)" style="position:relative;">
  <div class="t-avatar">김</div>
  <div class="t-info">
   <div class="t-name">김유천<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
   <div class="t-pay">1,129,456 원</div>
  </div>
  <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
+ </div><div class="t-item active" id="ti-1" onclick="selT(1)" style="position:relative;">
  <div class="t-avatar">한</div>
  <div class="t-info">
   <div class="t-name">한수희<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
@@ -1425,17 +1425,17 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div class="content" id="mainContent">
  <div class="profile-row">
- <div class="profile-avatar">김</div>
- <div><div class="profile-name">김유천 강사</div><div class="profile-sub">2026년 5월 · 강사료 80%</div></div>
+ <div class="profile-avatar">한</div>
+ <div><div class="profile-name">한수희 강사</div><div class="profile-sub">2026년 5월 · 강사료 85%</div></div>
  <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
-   <span style="color:var(--text3);font-size:11px;">농협은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">156-02-226505</span><br><span>김유천</span>
+   <span style="color:var(--text3);font-size:11px;">농협은행</span><br><span style="font-family:&quot;DM Mono&quot;,monospace;font-size:13px;color:var(--text);">302-1298-3302-01</span><br><span>한수희</span>
  </div>
  </div>
  <div class="metrics">
- <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">27<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
- <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">1,460,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">292,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">1,129,456<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">55<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
+ <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">3,045,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">456,750<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">2,502,838<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
  </div>
  <div>
  <div class="tabs-bar">
@@ -1446,7 +1446,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div id="tabBody"><div class="ledger-wrap">
  <div class="ledger-title-row" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;">
-  <div class="ledger-title" style="margin:0;">2026년 5월 수업 기록표 ( 김유천 ) 강사</div>
+  <div class="ledger-title" style="margin:0;">2026년 5월 수업 기록표 ( 한수희 ) 강사</div>
   <div class="edit-controls" style="display:flex;gap:6px;"><button onclick="startEditMode()" class="edit-mode-start-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #FFD700;background:#FFF3CD;color:#856404;font-weight:600;cursor:pointer;font-size:13px;">✏️ 편집 시작</button></div>
  </div>
   <div style="overflow-x:auto;">
@@ -1466,7 +1466,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </tr>
  </thead>
  <tbody><tr>
- <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">월</td>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">월</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">4일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">11일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">18일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">25일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1474,30 +1474,41 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  </tr><tr>
- <td class="center-cell" title="강서구립든든" onclick="openCenterPicker(0,0,this)">
- <span class="">강서구립든든</span>
+ <td class="center-cell" title="간석3층" onclick="openCenterPicker(1,0,this)">
+ <span class="">간석3층</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,0)" title="강서구립든든 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,0)" title="간석3층 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,1)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,2)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,3)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,0,4)" title="25일">O</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,0,1)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,0,2)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,0,3)" title="18일">O</td><td class="attend-cell att-x" onclick="toggleAttend(1,0,4)" title="25일">X</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">165,000</td>
+ </tr><tr>
+ <td class="center-cell" title="봄봄" onclick="openCenterPicker(1,1,this)">
+ <span class="">봄봄</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,1)" title="봄봄 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,1,1)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,1,2)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,1,3)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,1,4)" title="25일">O</td>
  <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,0,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">220,000</td>
  </tr><tr>
- <td class="center-cell" title="부천남부" onclick="openCenterPicker(0,1,this)">
- <span class="">부천남부</span>
+ <td class="center-cell" title="예다인" onclick="openCenterPicker(1,2,this)">
+ <span class="">예다인</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,1)" title="부천남부 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,2)" title="예다인 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,1)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,2)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,3)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,1,4)" title="25일">O</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,2,1)" title="4일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,2,2)" title="11일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,2,3)" title="18일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,2,4)" title="25일">O</td>
  <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,1,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">220,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'월')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+  <button onclick="openAddLessonModal(1,'월')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
    <span style="font-size:14px;">＋</span> 수업 추가
   </button>
  </td>
@@ -1507,7 +1518,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr>
- <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">화</td>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">5일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">12일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">19일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">26일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1515,30 +1526,41 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  </tr><tr>
- <td class="center-cell" title="그라시아" onclick="openCenterPicker(0,2,this)">
- <span class="">그라시아</span>
+ <td class="center-cell" title="다시봄" onclick="openCenterPicker(1,3,this)">
+ <span class="">다시봄</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,2)" title="그라시아 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,3)" title="다시봄 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,2,1)" title="5일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,2)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,3)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,2,4)" title="26일">O</td>
- <td class="count-cell">3</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,3,1)" title="5일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,3,2)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,3,3)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,3,4)" title="26일">O</td>
+ <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,2,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">165,000</td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
  </tr><tr>
- <td class="center-cell" title="검암(김유천)" onclick="openCenterPicker(0,3,this)">
- <span class="">검암(김유천)</span>
+ <td class="center-cell" title="늘푸른" onclick="openCenterPicker(1,4,this)">
+ <span class="">늘푸른</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,3)" title="검암(김유천) 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,4)" title="늘푸른 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,3,1)" title="5일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,2)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,3)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,3,4)" title="26일">O</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,4,1)" title="5일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,4,2)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,4,3)" title="19일">O</td><td class="attend-cell att-x" onclick="toggleAttend(1,4,4)" title="26일">X</td>
  <td class="count-cell">3</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,3,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(1,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">180,000</td>
+ </tr><tr>
+ <td class="center-cell" title="MG" onclick="openCenterPicker(1,5,this)">
+ <span class="">MG</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,5)" title="MG 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,5,1)" title="5일">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,5,2)" title="12일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,5,3)" title="19일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,5,4)" title="26일">O</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">165,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+  <button onclick="openAddLessonModal(1,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
    <span style="font-size:14px;">＋</span> 수업 추가
   </button>
  </td>
@@ -1548,7 +1570,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr>
- <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">수</td>
+ <td class="day-cell" rowspan="5" style="border-right:2px solid #AAA8A0;">수</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">6일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">13일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">20일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">27일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1556,30 +1578,52 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  </tr><tr>
- <td class="center-cell" title="88등촌" onclick="openCenterPicker(0,4,this)">
- <span class="">88등촌</span>
+ <td class="center-cell" title="가나안" onclick="openCenterPicker(1,6,this)">
+ <span class="">가나안</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,4)" title="88등촌 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,6)" title="가나안 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,1)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,2)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,3)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,4,4)" title="27일">O</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,6,1)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,6,2)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,6,3)" title="20일">O</td><td class="attend-cell att-x" onclick="toggleAttend(1,6,4)" title="27일">X</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">165,000</td>
+ </tr><tr>
+ <td class="center-cell" title="경인" onclick="openCenterPicker(1,7,this)">
+ <span class="">경인</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,7)" title="경인 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,7,1)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,7,2)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,7,3)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,7,4)" title="27일">O</td>
  <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,4,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="옥련뜰" onclick="openCenterPicker(1,8,this)">
+ <span class="">옥련뜰</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,8)" title="옥련뜰 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,8,1)" title="6일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,8,2)" title="13일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,8,3)" title="20일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,8,4)" title="27일">O</td>
+ <td class="count-cell">4</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(1,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">200,000</td>
  </tr><tr>
- <td class="center-cell" title="검암(김유천)" onclick="openCenterPicker(0,5,this)">
- <span class="">검암(김유천)</span>
+ <td class="center-cell" title="대상협업 논현주간보호" onclick="openCenterPicker(1,9,this)">
+ <span class="">대상협업 논현주간보호</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,5)" title="검암(김유천) 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,9)" title="대상협업 논현주간보호 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,5,1)" title="6일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,5,2)" title="13일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,5,3)" title="20일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,5,4)" title="27일">X</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,9,1)" title="6일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,9,2)" title="13일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,9,3)" title="20일">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,9,4)" title="27일">O</td>
  <td class="count-cell">1</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">55,000</td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(1,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">60,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'수')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+  <button onclick="openAddLessonModal(1,'수')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
    <span style="font-size:14px;">＋</span> 수업 추가
   </button>
  </td>
@@ -1589,7 +1633,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr>
- <td class="day-cell" rowspan="3" style="border-right:2px solid #AAA8A0;">목</td>
+ <td class="day-cell" rowspan="5" style="border-right:2px solid #AAA8A0;">목</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">7일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">14일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">21일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">28일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1597,30 +1641,52 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  </tr><tr>
- <td class="center-cell" title="늘푸른" onclick="openCenterPicker(0,6,this)">
- <span class="">늘푸른</span>
+ <td class="center-cell" title="김포스마일" onclick="openCenterPicker(1,10,this)">
+ <span class="">김포스마일</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,6)" title="늘푸른 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,10)" title="김포스마일 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,1)" title="7일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,6,4)" title="28일">O</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,10,1)" title="7일">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,10,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,10,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,10,4)" title="28일">O</td>
+ <td class="count-cell">3</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(1,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">180,000</td>
+ </tr><tr>
+ <td class="center-cell" title="아름" onclick="openCenterPicker(1,11,this)">
+ <span class="">아름</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,11)" title="아름 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,11,1)" title="7일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,11,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,11,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,11,4)" title="28일">O</td>
  <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,6,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">220,000</td>
  </tr><tr>
- <td class="center-cell" title="제물포구" onclick="openCenterPicker(0,7,this)">
- <span class="">제물포구</span>
+ <td class="center-cell" title="황송" onclick="openCenterPicker(1,12,this)">
+ <span class="">황송</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,7)" title="제물포구 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,12)" title="황송 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-tri" onclick="toggleAttend(0,7,1)" title="7일">△</td><td class="attend-cell att-x" onclick="toggleAttend(0,7,2)" title="14일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,7,3)" title="21일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,7,4)" title="28일">X</td>
- <td class="count-cell">0</td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,12,1)" title="7일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,12,2)" title="14일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,12,3)" title="21일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,12,4)" title="28일">O</td>
+ <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,7,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
+ </tr><tr>
+ <td class="center-cell" title="대상협업 부천마주봄" onclick="openCenterPicker(1,13,this)">
+ <span class="">대상협업 부천마주봄</span>
+ 
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,13)" title="대상협업 부천마주봄 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,13,1)" title="7일">O</td><td class="attend-cell att-x" onclick="toggleAttend(1,13,2)" title="14일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,13,3)" title="21일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,13,4)" title="28일">X</td>
+ <td class="count-cell">1</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(1,13,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">60,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'목')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+  <button onclick="openAddLessonModal(1,'목')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
    <span style="font-size:14px;">＋</span> 수업 추가
   </button>
  </td>
@@ -1630,7 +1696,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr>
- <td class="day-cell" rowspan="6" style="border-right:2px solid #AAA8A0;">금</td>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">금</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">1일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">8일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">15일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">22일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">29일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1638,63 +1704,41 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  </tr><tr>
- <td class="center-cell" title="보담(김유천)" onclick="openCenterPicker(0,8,this)">
- <span class="">보담(김유천)</span>
+ <td class="center-cell" title="백세" onclick="openCenterPicker(1,14,this)">
+ <span class="">백세</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,8)" title="보담(김유천) 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,14)" title="백세 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,8,0)" title="1일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,8,1)" title="8일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,8,2)" title="15일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,3)" title="22일">O</td><td class="attend-cell att-o" onclick="toggleAttend(0,8,4)" title="29일">O</td>
- <td class="count-cell">2</td>
+ <td class="attend-cell att-o" onclick="toggleAttend(1,14,0)" title="1일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,14,1)" title="8일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,14,2)" title="15일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,14,3)" title="22일">O</td><td class="attend-cell att-x" onclick="toggleAttend(1,14,4)" title="29일">X</td>
+ <td class="count-cell">4</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,8,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">110,000</td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,14,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">220,000</td>
  </tr><tr>
- <td class="center-cell" title="그라시아" onclick="openCenterPicker(0,9,this)">
- <span class="">그라시아</span>
+ <td class="center-cell" title="간석4층" onclick="openCenterPicker(1,15,this)">
+ <span class="">간석4층</span>
  
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,9)" title="그라시아 삭제">✕</button>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,15)" title="간석4층 삭제">✕</button>
  </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,9,0)" title="1일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,9,1)" title="8일">O</td><td class="attend-cell att-x" onclick="toggleAttend(0,9,2)" title="15일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,9,3)" title="22일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,9,4)" title="29일">X</td>
+ <td class="attend-cell att-o" onclick="toggleAttend(1,15,0)" title="1일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,15,1)" title="8일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,15,2)" title="15일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,15,3)" title="22일">O</td><td class="attend-cell att-o" onclick="toggleAttend(1,15,4)" title="29일">O</td>
+ <td class="count-cell">5</td>
+ <td style="width:28px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,15,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="amt-cell">275,000</td>
+ </tr><tr>
+ <td class="center-cell" title="MG" onclick="openCenterPicker(1,16,this)">
+ <span class="">MG</span>
+ <span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강</span>
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(1,16)" title="MG 삭제">✕</button>
+ </td>
+ <td class="attend-cell att-x" onclick="toggleAttend(1,16,0)" title="1일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,16,1)" title="8일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,16,2)" title="15일">X</td><td class="attend-cell att-x" onclick="toggleAttend(1,16,3)" title="22일">X</td><td class="attend-cell att-o" onclick="toggleAttend(1,16,4)" title="29일">O</td>
  <td class="count-cell">1</td>
  <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,9,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
+ <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(1,16,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">55,000</td>
- </tr><tr>
- <td class="center-cell" title="부천남부" onclick="openCenterPicker(0,10,this)">
- <span class="">부천남부</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,10)" title="부천남부 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,10,0)" title="1일">X</td><td class="attend-cell att-tri" onclick="toggleAttend(0,10,1)" title="8일">△</td><td class="attend-cell att-x" onclick="toggleAttend(0,10,2)" title="15일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,10,3)" title="22일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,10,4)" title="29일">X</td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,10,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="소새울" onclick="openCenterPicker(0,11,this)">
- <span class="">소새울</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,11)" title="소새울 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,11,0)" title="1일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,11,1)" title="8일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,11,2)" title="15일">X</td><td class="attend-cell att-tri" onclick="toggleAttend(0,11,3)" title="22일">△</td><td class="attend-cell att-x" onclick="toggleAttend(0,11,4)" title="29일">X</td>
- <td class="count-cell">0</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(0,11,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell"></td>
- </tr><tr>
- <td class="center-cell" title="둥지요양원" onclick="openCenterPicker(0,12,this)">
- <span class="">둥지요양원</span>
- <span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강 (이재윤)</span>
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(0,12)" title="둥지요양원 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" onclick="toggleAttend(0,12,0)" title="1일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,12,1)" title="8일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,12,2)" title="15일">X</td><td class="attend-cell att-x" onclick="toggleAttend(0,12,3)" title="22일">X</td><td class="attend-cell att-o" onclick="toggleAttend(0,12,4)" title="29일">O</td>
- <td class="count-cell">1</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="50000" onchange="updateFee(0,12,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">50,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-  <button onclick="openAddLessonModal(0,'금')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+  <button onclick="openAddLessonModal(1,'금')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
    <span style="font-size:14px;">＋</span> 수업 추가
   </button>
  </td>
@@ -1705,7 +1749,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr style="background:#F8F7F2;">
    <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
-    <button onclick="openAddDayModal(0)" style="width:100%;height:26px;border:1px dashed #C8A020;border-radius:6px;background:transparent;color:#856404;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
+    <button onclick="openAddDayModal(1)" style="width:100%;height:26px;border:1px dashed #C8A020;border-radius:6px;background:transparent;color:#856404;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
      <span style="font-size:14px;">📅</span> 요일 추가
     </button>
    </td>
@@ -1717,16 +1761,16 @@ body.edit-mode-active .ledger-wrap textarea {
   </tr></tbody>
  <tfoot>
  <tr class="ledger-foot">
- <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협은행 156-02-226505 김유천</td>
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협은행 302-1298-3302-01 한수희</td>
  <td style="font-size:11px;font-weight:600;">수업료%</td>
  <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
  <td style="font-size:11px;font-weight:600;">세전</td>
  </tr>
  <tr class="ledger-foot">
  <td colspan="7"></td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">80%</td>
- <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">1,460,000</td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">1,168,000</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">85%</td>
+ <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">3,045,000</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">2,588,250</td>
  </tr>
  </tfoot>
  </table>
@@ -1749,25 +1793,25 @@ body.edit-mode-active .ledger-wrap textarea {
  </thead>
  <tbody>
  <tr>
- <td style="font-weight:700;color:#1A5FA0;">80%</td>
- <td style="font-weight:700;">₩1,460,000</td>
- <td style="font-weight:700;color:#1A5FA0;">₩1,168,000</td>
- <td style="font-weight:700;color:#1A7A50;">+292,000</td>
- <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩1,129,456</td>
+ <td style="font-weight:700;color:#1A5FA0;">85%</td>
+ <td style="font-weight:700;">₩3,045,000</td>
+ <td style="font-weight:700;color:#1A5FA0;">₩2,588,250</td>
+ <td style="font-weight:700;color:#1A7A50;">+456,750</td>
+ <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩2,502,838</td>
  <td class="cost-col">
- <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △3회 = 60,000원</div>
- <input type="number" class="cost-input" placeholder="0" value="60000" onchange="updateExtraCost(0,'mockLesson',this.value)" min="0">
+ <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △0회 = 0원</div>
+ <input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(1,'mockLesson',this.value)" min="0">
  </td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'parkingCost',this.value)" min="0"></td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'supplyCost',this.value)" min="0"></td>
- <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(0,'etcCost',this.value)" min="0"></td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="7630" onchange="updateExtraCost(1,'parkingCost',this.value)" min="0"></td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(1,'supplyCost',this.value)" min="0"></td>
+ <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="36400" onchange="updateExtraCost(1,'etcCost',this.value)" min="0"></td>
  </tr>
  <tr class="cost-display-row">
- <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
- <td class="cost-col" id="extraMock-0" style="font-weight:700;font-size:13px;color:#1A5FA0;">₩60,000</td>
- <td class="cost-col" id="extraParking-0" style="font-weight:700;font-size:13px;color:#5A3AB0;">-</td>
- <td class="cost-col" id="extraSupply-0" style="font-weight:700;font-size:13px;color:#0F766E;">-</td>
- <td class="cost-col" id="extraEtc-0" style="font-weight:700;font-size:13px;color:#0369A1;">-</td>
+ <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액 <span style="color:#BA7517;font-size:10px;">⚠️ 과거 통합 비용 있음 (₩44,030)</span></td>
+ <td class="cost-col" id="extraMock-1" style="font-weight:700;font-size:13px;color:#1A5FA0;">-</td>
+ <td class="cost-col" id="extraParking-1" style="font-weight:700;font-size:13px;color:#5A3AB0;">₩7,630</td>
+ <td class="cost-col" id="extraSupply-1" style="font-weight:700;font-size:13px;color:#0F766E;">-</td>
+ <td class="cost-col" id="extraEtc-1" style="font-weight:700;font-size:13px;color:#0369A1;">₩36,400</td>
  </tr>
  </tbody>
  </table>
@@ -1778,12 +1822,17 @@ body.edit-mode-active .ledger-wrap textarea {
   특이사항
   <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
  </div>
- <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">휴강: 공휴일로 인한 휴강 → 5/6일 보강 진행
-휴강: 공휴일로 인한 휴강 → 5/8일 보강 진행
-보강: 일회성 수업 진행
-신규(모의) 수업: 중부3(현 제물포) 모의수업
-신규(모의) 수업: 부천남부 모의수업
-신규(모의) 수업: 부천 소새울 모의수업</textarea>
+ <textarea id="noteEditor-1" onblur="saveAdminNote(1,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">휴강: 어린이날으로 휴강
+휴강: 대상협업 부천마주봄
+휴강: 자체소풍
+휴강: 대상협업 논현주간보호
+휴강: 5주차로 인한 휴강
+보강: MG 5월 5일 - 보강
+주차료: 공영주차장
+주차료: 공영노상주차장
+주차료: 공영노상주차장
+주차료: 공영노상주차장
+기타: 우편영업발송 70통</textarea>
  </div>
  <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
  <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
@@ -1858,10 +1907,10 @@ body.edit-mode-active .ledger-wrap textarea {
 
   <!-- 지역별 통계 -->
   <div class="region-stats">
-   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">324</div><div class="region-sub">개 센터</div></div>
-   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">163</div><div class="region-sub" id="rs-seoul-t">강사 16명 담당</div></div>
-   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">106</div><div class="region-sub" id="rs-incheon-t">강사 11명 담당</div></div>
-   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">55</div><div class="region-sub" id="rs-suwon-t">강사 5명 담당</div></div>
+   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">—</div><div class="region-sub">개 센터</div></div>
+   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">—</div><div class="region-sub" id="rs-seoul-t">—</div></div>
+   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">—</div><div class="region-sub" id="rs-incheon-t">—</div></div>
+   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">—</div><div class="region-sub" id="rs-suwon-t">—</div></div>
   </div>
 
   <!-- 지역별 검색창 -->
@@ -1871,7 +1920,7 @@ body.edit-mode-active .ledger-wrap textarea {
     <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width:100%;height:36px;padding:0 12px 0 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
    </div>
    <!-- v12.40: 정리 필요 필터 버튼 (미배정 + 정확히 같은 이름 중복) -->
-   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">11</span></button>
+   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">0</span></button>
    <select id="cTreeRegionFilter" onchange="filterCenterTree()" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
     <option value="">전체 지역</option>
     <option value="서울">서울</option>
@@ -1881,302 +1930,14 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
 
   <!-- v12.40: 정리 필요 센터 영역 (기본 숨김) -->
-  <div id="cCleanupView" style="display: block; margin-bottom: 14px;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-   <!-- 미배정 섹션 -->
-   <div style="background:#FFFBEB;padding:9px 14px;font-size:12px;font-weight:600;color:#92670B;border-bottom:1px solid #FDE68A;">
-    📭 미배정 센터 (담당강사 없음) · 0개
-   </div>
-   <div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">미배정 센터가 없습니다 ✅</div>
-
-   <!-- v12.45: 요일 미지정 섹션 -->
-   <div style="background:#FEF6EC;padding:9px 14px;font-size:12px;font-weight:600;color:#B45309;border-bottom:1px solid #FCD9A5;border-top:1px solid var(--border);">
-    📅 요일 미지정 센터 (담당강사는 있으나 요일 없음) · 11개
-   </div>
-   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">강서힐링</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김유천</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',20)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',20)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">그라시아요양</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김유천</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',34)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',34)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">나날</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 이재윤</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',45)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',45)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">목동데이</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김유천</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',86)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',86)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">제물포구</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김유천</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',199)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',199)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">해드림요양</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 한수희</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',221)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',221)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">효드림</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 신기윤</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',231)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',231)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">해드림주간</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 한수희</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',259)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',259)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">대상행사</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 정상준</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',284)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',284)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">양주케어닥</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 정상준</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',286)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',286)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">지우</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김보창</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',322)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',322)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div>
-
-   <!-- 중복 섹션 -->
-   <div style="background:#FEF2F2;padding:9px 14px;font-size:12px;font-weight:600;color:#DC2626;border-bottom:1px solid #FCA5A5;border-top:1px solid var(--border);">
-    🔁 이름 중복 센터 · 0종류
-   </div>
-   <div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">이름·지역이 모두 같은 중복 센터가 없습니다 ✅</div>
-  </div>
-  <div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text3);line-height:1.5;">
-   💡 미배정 = 담당강사 0명 · 요일 미지정 = 담당은 있으나 요일 없음 · 중복 = 이름과 지역이 모두 같은 센터.
-  </div>
- </div>
+  <div id="cCleanupView" style="display:none;margin-bottom:14px;"></div>
 
   <!-- 지역·강사별 트리 뷰 (2컬럼) -->
-  <div id="cview-tree" style="display: none;">
+  <div id="cview-tree">
    <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:400px;">
     <!-- 좌측: 탐색 패널 -->
     <div style="background:var(--surface2);border-right:1px solid var(--border);overflow-y:auto;">
-     <div id="cTreeNav"><div>
-   <div id="cnav-서울-btn" onclick="toggleNavRegion('서울')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge blue" style="font-size:11px;padding:2px 8px;">서울</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">163개</span>
-    <span id="cnav-서울-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-서울-list" style="display:block;">
-    
-     <div id="cnav-서울-구명훈" onclick="selectTreeTeacher('서울','구명훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">구</div>
-      <span style="flex:1;">구명훈</span>
-     </div>
-     <div id="cnav-서울-김은영" onclick="selectTreeTeacher('서울','김은영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김은영</span>
-     </div>
-     <div id="cnav-서울-박준형" onclick="selectTreeTeacher('서울','박준형',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박준형</span>
-     </div>
-     <div id="cnav-서울-변동" onclick="selectTreeTeacher('서울','변동',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">변</div>
-      <span style="flex:1;">변동</span>
-     </div>
-     <div id="cnav-서울-송준기" onclick="selectTreeTeacher('서울','송준기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">송</div>
-      <span style="flex:1;">송준기</span>
-     </div>
-     <div id="cnav-서울-신기윤" onclick="selectTreeTeacher('서울','신기윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">신</div>
-      <span style="flex:1;">신기윤</span>
-     </div>
-     <div id="cnav-서울-양성모" onclick="selectTreeTeacher('서울','양성모',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양성모</span>
-     </div>
-     <div id="cnav-서울-양재원" onclick="selectTreeTeacher('서울','양재원',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양재원</span>
-     </div>
-     <div id="cnav-서울-오건" onclick="selectTreeTeacher('서울','오건',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오건</span>
-     </div>
-     <div id="cnav-서울-윤혜미" onclick="selectTreeTeacher('서울','윤혜미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">윤</div>
-      <span style="flex:1;">윤혜미</span>
-     </div>
-     <div id="cnav-서울-이인경" onclick="selectTreeTeacher('서울','이인경',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이인경</span>
-     </div>
-     <div id="cnav-서울-이재열" onclick="selectTreeTeacher('서울','이재열',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재열</span>
-     </div>
-     <div id="cnav-서울-이재하" onclick="selectTreeTeacher('서울','이재하',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재하</span>
-     </div>
-     <div id="cnav-서울-장성기" onclick="selectTreeTeacher('서울','장성기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장성기</span>
-     </div>
-     <div id="cnav-서울-정상준" onclick="selectTreeTeacher('서울','정상준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">정</div>
-      <span style="flex:1;">정상준</span>
-     </div>
-     <div id="cnav-서울-조영미" onclick="selectTreeTeacher('서울','조영미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
-      <span style="flex:1;">조영미</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">106개</span>
-    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-인천-list" style="display:block;">
-    
-     <div id="cnav-인천-김보창" onclick="selectTreeTeacher('인천','김보창',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김보창</span>
-     </div>
-     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수민</span>
-     </div>
-     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김유천</span>
-     </div>
-     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김효민</span>
-     </div>
-     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박기남</span>
-     </div>
-     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박종일</span>
-     </div>
-     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">방</div>
-      <span style="flex:1;">방진수</span>
-     </div>
-     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재윤</span>
-     </div>
-     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장호준</span>
-     </div>
-     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">한</div>
-      <span style="flex:1;">한수희</span>
-     </div>
-     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">홍</div>
-      <span style="flex:1;">홍예은</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-수원-btn" onclick="toggleNavRegion('수원')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge purple" style="font-size:11px;padding:2px 8px;">수원</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">55개</span>
-    <span id="cnav-수원-arrow" style="font-size:12px;color:var(--text3);">▾</span>
-   </div>
-   <div id="cnav-수원-list" style="display:block;">
-    
-     <div id="cnav-수원-김수도" onclick="selectTreeTeacher('수원','김수도',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수도</span>
-     </div>
-     <div id="cnav-수원-안지훈" onclick="selectTreeTeacher('수원','안지훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">안</div>
-      <span style="flex:1;">안지훈</span>
-     </div>
-     <div id="cnav-수원-오수정" onclick="selectTreeTeacher('수원','오수정',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오수정</span>
-     </div>
-     <div id="cnav-수원-원보영" onclick="selectTreeTeacher('수원','원보영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">원</div>
-      <span style="flex:1;">원보영</span>
-     </div>
-     <div id="cnav-수원-최정안" onclick="selectTreeTeacher('수원','최정안',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">최</div>
-      <span style="flex:1;">최정안</span>
-     </div>
-   </div>
-  </div></div>
+     <div id="cTreeNav"></div>
     </div>
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
@@ -2253,7 +2014,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 변경 이력 뷰 -->
-<div class="mgr-view" id="submissionsView" style="display: none;">
+<div class="mgr-view" id="submissionsView" style="display:none;">
  <div class="mgr-wrap">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
    <div>
@@ -2275,352 +2036,8 @@ body.edit-mode-active .ledger-wrap textarea {
     반영완료
    </button>
   </div>
-  <div id="subPendingList"><div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">📭 대기 중인 수업기록표가 없어요</div></div>
-  <div id="subDoneList" style="display:none;">
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 4월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div>
-  <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
-   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <span style="font-size:14px;font-weight:600;color:var(--text);">undefined</span>
-    <span style="font-size:13px;color:var(--text2);">2026년 5월</span>
-    <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
-   </div>
-   <div style="font-size:11px;color:var(--text3);">제출 Invalid Date</div>
-  </div></div>
+  <div id="subPendingList"></div>
+  <div id="subDoneList" style="display:none;"></div>
  </div>
 </div>
 
@@ -2642,7 +2059,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <!-- 토글 버튼 -->
  <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width: 52px; height: 52px; border-radius: 50%; background: var(--green); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.18) 0px 4px 16px; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.15s; transform: scale(1);" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
   <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
-  <span id="presenceOnlineBadge" style="display: none; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
+  <span id="presenceOnlineBadge" style="display: block; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
  </button>
  <!-- 팝업 패널 -->
  <div id="presencePanel" style="display:none;position:absolute;bottom:62px;right:0;width:240px;background:white;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;">
@@ -2654,18 +2071,22 @@ body.edit-mode-active .ledger-wrap textarea {
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">0</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
+   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
+   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
+   <span style="font-size:11px;color:#2e7d32;">방금</span>
+  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">31</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:27:57</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:51:54</div>
  </div>
 </div>
 
@@ -3715,7 +3136,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.47';
+const SYSTEM_VERSION='v12.49';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -5123,8 +4544,13 @@ function renderTeacherReceiptsTab(ti){
  b.innerHTML = `<div style="padding:16px;">
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
  <div style="font-size:13px;color:var(--text2);">${teacher} 강사 · ${ym} 영수증</div>
+ <div style="display:flex;gap:6px;align-items:center;">
+ <button onclick="document.getElementById('admin-receipt-file-${ti}').click()" class="btn sm" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;gap:4px;">＋ 영수증 추가</button>
  <button onclick="renderTeacherReceiptsTab(${ti})" class="btn sm">🔄 새로고침</button>
+ <input id="admin-receipt-file-${ti}" type="file" accept="image/*,application/pdf" multiple style="display:none;" onchange="adminUploadReceipts(this.files, '${teacher.replace(/'/g,"\\'")}', '${ym.replace(/'/g,"\\'")}', ${ti})">
  </div>
+ </div>
+ <div id="admin-receipt-upload-status" style="display:none;font-size:12px;color:#1A7A50;padding:8px 12px;background:#F0FAF4;border-radius:8px;margin-bottom:10px;"></div>
  <div id="teacher-receipts-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
  <div style="color:var(--text3);font-size:13px;padding:16px;">불러오는 중...</div>
  </div>
@@ -5165,6 +4591,51 @@ function renderTeacherReceiptsTab(ti){
  .catch(()=>{
  const grid = document.getElementById('teacher-receipts-grid');
  if(grid) grid.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:16px;">서버 연결 실패</div>`;
+ });
+}
+
+/**
+ * v12.49: 관리자가 강사별 영수증 탭에서 영수증 사진 직접 추가
+ * - 기존 uploadReceiptFile 함수 재사용 (이미지 압축 포함)
+ * - 강사·연월은 현재 보고 있는 강사 기준으로 자동 지정
+ */
+function adminUploadReceipts(files, teacher, yearMonth, ti){
+ if(!files || !files.length) return;
+ if(!teacher || !yearMonth){
+  showConfirm({icon:'⚠️',title:'업로드 불가',desc:'강사 또는 연월 정보가 없어 업로드할 수 없습니다.',okText:'확인',cancelText:'',okStyle:'default',onOk:null});
+  return;
+ }
+ const fileArr = Array.from(files);
+ const status = document.getElementById('admin-receipt-upload-status');
+ if(status){
+  status.style.display = 'block';
+  status.textContent = `📤 ${fileArr.length}개 파일 업로드 중...`;
+ }
+ // 기존 uploadReceiptFile 재사용 (압축+GAS 업로드)
+ const uploads = fileArr.map(f => uploadReceiptFile(f, teacher, yearMonth));
+ Promise.all(uploads).then(results=>{
+  const okCount = results.filter(r => r && r.ok !== false).length;
+  const failCount = fileArr.length - okCount;
+  if(status){
+   if(failCount === 0){
+    status.style.background = '#F0FAF4'; status.style.color = '#1A7A50';
+    status.textContent = `✅ ${okCount}개 영수증 업로드 완료`;
+   } else {
+    status.style.background = '#FEF2F2'; status.style.color = '#DC2626';
+    status.textContent = `⚠️ ${okCount}개 성공 · ${failCount}개 실패`;
+   }
+   setTimeout(()=>{ if(status) status.style.display = 'none'; }, 4000);
+  }
+  // 파일 input 초기화 + 그리드 새로고침
+  const fileInput = document.getElementById('admin-receipt-file-'+ti);
+  if(fileInput) fileInput.value = '';
+  renderTeacherReceiptsTab(ti);
+ }).catch(()=>{
+  if(status){
+   status.style.background = '#FEF2F2'; status.style.color = '#DC2626';
+   status.textContent = '⚠️ 업로드 중 오류가 발생했습니다.';
+   setTimeout(()=>{ if(status) status.style.display = 'none'; }, 4000);
+  }
  });
 }
 
@@ -11708,8 +11179,36 @@ function submitTiData(){
   return;
  }
 
- const noteLines = tiNotes.filter(n=>n.text.trim()).map(n=>`${n.cat}: ${n.text.trim()}`);
- const noteStr = noteLines.join('\n');
+ // v12.48: 금액 필수 검증 — 금액칸 있는 카테고리(모의/주차/물품/기타)는 금액 0/미입력 시 제출 차단
+ const AMT_CATS = ['신규(모의) 수업', '주차료', '물품', '기타'];
+ const emptyAmount = tiNotes.filter(n => AMT_CATS.includes(n.cat) && !(Number(n.amount) > 0));
+ if(emptyAmount.length > 0){
+  const uniqueCats = [...new Set(emptyAmount.map(n => n.cat))];
+  showConfirm({
+   icon:'⚠️',
+   title:'금액 미입력',
+   desc:`<b>금액 미입력:</b> ${emptyAmount.length}개<br><br>` +
+        `<b>카테고리:</b> ${uniqueCats.join(', ')}<br><br>` +
+        `주차료·물품 등은 금액이 정산에 반영되므로<br>금액을 반드시 입력해 주세요.`,
+   okText:'확인', cancelText:'', okStyle:'default', onOk:()=>{
+    // 첫 번째 금액 빈 카드의 금액 input으로 스크롤
+    const list = document.getElementById('ti-note-list');
+    if(list){
+     const amtInputs = list.querySelectorAll('input[type="number"]');
+     for(const r of amtInputs){
+      if(!(Number(r.value) > 0)){
+       r.scrollIntoView({behavior:'smooth', block:'center'});
+       r.focus();
+       const wrap = r.closest('div');
+       if(wrap){ wrap.style.borderColor = '#DC2626'; setTimeout(()=>{ wrap.style.borderColor = ''; }, 3000); }
+       return;
+      }
+     }
+    }
+   }
+  });
+  return;
+ }
 
  if(!teacher){ showConfirm({icon:'⚠️',title:'입력 오류',desc:'강사 이름을 선택해주세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
  const validGroups=tiDayGroups.filter(g=>g.day!=='미등록' && g.centers.some(c=>c.name&&c.name!=='__custom__'));
