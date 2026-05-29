@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v12.50">
+<meta property="og:title" content="수업기록표 정산 시스템 v12.61">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v12.50">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v12.61">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v12.50</title>
+<title>수업기록표 정산 시스템 v12.61</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -850,7 +850,7 @@ body.edit-mode-active .ledger-wrap textarea {
 }
 </style>
 </head>
-<body class="">
+<body>
 
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
@@ -1074,15 +1074,15 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- v11.30: 점검 화면 -->
-<div id="maintenanceScreen" style="display: none; position: fixed; inset: 0px; background: linear-gradient(160deg, rgb(247, 250, 244), rgb(232, 245, 226), rgb(212, 237, 218)); z-index: 9998; align-items: center; justify-content: center; padding: 20px;">
+<div id="maintenanceScreen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#f7faf4,#e8f5e2,#d4edda);z-index:9998;align-items:center;justify-content:center;padding:20px;">
  <div style="text-align:center;max-width:400px;width:100%;">
   <div style="font-size:72px;margin-bottom:20px;">🔧</div>
   <div style="font-size:24px;font-weight:700;color:#1a2e1a;margin-bottom:12px;" id="maintenanceTitle">시스템 점검 중</div>
-  <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:24px;" id="maintenanceText">시스템 점검 중입니다. 잠시 후 다시 이용해주세요.</div>
+  <div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:24px;" id="maintenanceText">더 나은 서비스를 위해 점검 중입니다.<br>잠시 후 다시 이용해주세요.</div>
   <!-- 점검 시간 표시 -->
-  <div id="maintenanceTimeBox" style="display: block; background: white; border-radius: 14px; padding: 14px 20px; margin-bottom: 28px; border: 1px solid rgb(226, 224, 216);">
+  <div id="maintenanceTimeBox" style="display:none;background:white;border-radius:14px;padding:14px 20px;margin-bottom:28px;border:1px solid #e2e0d8;">
    <div style="font-size:12px;color:#888;margin-bottom:4px;">점검 예정 시간</div>
-   <div style="font-size:14px;font-weight:600;color:#1a1a1a;" id="maintenanceTimeText">4. 28. 오후 05:30 ~ 4. 29. 오전 12:00</div>
+   <div style="font-size:14px;font-weight:600;color:#1a1a1a;" id="maintenanceTimeText"></div>
   </div>
   <!-- 관리자 버튼 (작게) -->
   <button onclick="openAdminFromMaintenance()" style="background:none;border:1px solid #ccc;border-radius:20px;padding:8px 20px;font-size:12px;color:#888;cursor:pointer;font-family:inherit;margin-top:8px;">관리자</button>
@@ -1155,20 +1155,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div>
  <label style="font-size:11px;font-weight:600;color:#9B9888;display:block;margin-bottom:6px;">년도</label>
- <select id="ti-year" style="width:100%;height:38px;border:1.5px solid #E2E0D8;border-radius:8px;padding:0 10px;font-size:13px;background:white;outline:none;">
- <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option></select>
- <script>
- (function(){
-  const sel=document.getElementById('ti-year');
-  const cy=new Date().getFullYear();
-  [cy-1,cy,cy+1].forEach(y=>{
-   const o=document.createElement('option');
-   o.value=y; o.textContent=y;
-   if(y===cy) o.selected=true;
-   sel.appendChild(o);
-  });
- })();
- </script>
+ <select id="ti-year" style="width:100%;height:38px;border:1.5px solid #E2E0D8;border-radius:8px;padding:0 10px;font-size:13px;background:white;outline:none;"></select>
  </div>
  <div>
  <label style="font-size:11px;font-weight:600;color:#9B9888;display:block;margin-bottom:6px;">월</label>
@@ -1202,9 +1189,7 @@ body.edit-mode-active .ledger-wrap textarea {
   </span>
  </div>
  </div>
- <div style="display:flex;gap:6px;">
- <button onclick="tiAddDayGroup()" style="height:30px;padding:0 12px;border-radius:8px;border:1px solid #1A7A50;background:#E8F5EE;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">+ 요일 추가</button>
- </div>
+ <div style="display:flex;gap:6px;"></div>
  </div>
  <div style="overflow-x:auto;" id="ti-ledger-table-wrap">
  <table id="ti-ledger-table" style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;">
@@ -1321,16 +1306,12 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <!-- 제출 버튼 -->
  <div id="ti-btn-wrap" style="display:flex;flex-direction:column;gap:10px;">
- <button onclick="saveTiDraft()" style="width:100%;height:42px;background:white;color:#1A7A50;border:2px solid #1A7A50;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="#1A7A50"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"></path></svg>
- 임시저장
- </button>
  <button onclick="submitTiData()" style="width:100%;height:52px;background:#1A7A50;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;">
  <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
  관리자에게 제출
  </button>
  </div><!-- /ti-btn-wrap -->
- <div id="ti-draft-status" style="text-align:center;font-size:12px;color:#9B9888;padding-bottom:32px;margin-top:6px;">제출하면 관리자 모드에서 바로 확인할 수 있어요</div>
+ <div id="ti-draft-status" style="text-align:center;font-size:12px;color:#9B9888;padding-bottom:32px;margin-top:6px;">🔄 30초마다 자동 저장 중</div>
  </div>
 
 
@@ -1370,10 +1351,10 @@ body.edit-mode-active .ledger-wrap textarea {
 </button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
 <button onclick="syncSnapshotsToGAS()" title="모든 월별 수업기록표를 GAS Drive에 업로드" class="btn" id="syncSnapBtn" style="font-size:12px;background:#2E7D32;color:white;border-color:#2E7D32;font-weight:600;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path></svg>📋 기록표 업로드</button>
 <!-- v11.30: 점검 모드 버튼 -->
-<button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size: 12px; background: rgb(183, 28, 28); color: white; border-color: rgb(230, 81, 0); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+<button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: var(--green-bg); color: var(--green); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✓ 동기화 완료</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/28 오후 09:56 · 강사 32명 · 센터 324개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
@@ -1381,7 +1362,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- v11.41: 편집 모드 안내 배너 (편집 모드일 때만 표시) -->
-<div id="editModeBanner" style="display: none; position: sticky; top: 52px; z-index: 199; background: rgb(255, 243, 205); border-bottom: 2px solid rgb(255, 215, 0); padding: 8px 20px; font-size: 13px; color: rgb(133, 100, 4); font-weight: 600; align-items: center; gap: 12px;">
+<div id="editModeBanner" style="display:none;position:sticky;top:52px;z-index:199;background:#FFF3CD;border-bottom:2px solid #FFD700;padding:8px 20px;font-size:13px;color:#856404;font-weight:600;align-items:center;gap:12px;">
  <span style="font-size:14px;">✏️ 편집 모드</span>
  <span style="font-weight:400;">변경사항 <span id="editChangeCount" style="font-weight:700;color:#D32F2F;">0</span>개 — 저장 또는 취소 버튼을 눌러 종료하세요</span>
 </div>
@@ -1401,7 +1382,7 @@ body.edit-mode-active .ledger-wrap textarea {
  
  <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 5월
  </button>
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width: 100%; padding: 6px 10px; border-radius: 8px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; background: transparent; color: var(--text2); font-size: 12px; font-weight: 400; cursor: pointer; text-align: left; transition: 0.12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
+ <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
  </button>
  <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
  </button>
@@ -1410,14 +1391,14 @@ body.edit-mode-active .ledger-wrap textarea {
  <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
  <div class="t-avatar">김</div>
  <div class="t-info">
-  <div class="t-name">김유천<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
-  <div class="t-pay">1,129,456</div>
+  <div class="t-name">김유천<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 완료로 변경">미정산</span></div>
+  <div class="t-pay">1,129,456 원</div>
  </div>
  <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
  </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
  <div class="t-avatar">한</div>
  <div class="t-info">
-  <div class="t-name">한수희<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 미완료로 변경">✓ 완료</span></div>
+  <div class="t-name">한수희<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 완료로 변경">미정산</span></div>
   <div class="t-pay">2,502,838 원</div>
  </div>
  <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
@@ -2010,7 +1991,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <!-- 토글 버튼 -->
  <button id="presenceToggleBtn" onclick="_togglePresenceWidget()" style="width: 52px; height: 52px; border-radius: 50%; background: var(--green); border-width: medium; border-style: none; border-color: currentcolor; border-image: initial; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.18) 0px 4px 16px; display: flex; align-items: center; justify-content: center; position: relative; transition: transform 0.15s; transform: scale(1);" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
   <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white;"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></svg>
-  <span id="presenceOnlineBadge" style="display: none; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
+  <span id="presenceOnlineBadge" style="display: block; position: absolute; top: 2px; right: 2px; background: rgb(76, 175, 80); border: 2px solid white; border-radius: 50%; width: 14px; height: 14px;"></span>
  </button>
  <!-- 팝업 패널 -->
  <div id="presencePanel" style="display:none;position:absolute;bottom:62px;right:0;width:240px;background:white;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);overflow:hidden;">
@@ -2018,22 +1999,8 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">0</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="padding:6px 10px;font-size:12px;color:var(--text3);">접속 중인 강사 없음</div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
-  </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:56:44</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오전 09:51:39</div>
  </div>
 </div>
 
@@ -2081,7 +2048,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ ✅ 동기화 완료 — 강사 32명, 센터 324개 Sheets 저장 확인</div>
+<div class="save-toast show" id="saveToast">✓ 2026년 5월 불러오는 중...</div>
 
 <!-- 전역 로딩 오버레이 -->
 <div id="globalLoader">
@@ -3083,7 +3050,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v12.50';
+const SYSTEM_VERSION='v12.61';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -4401,12 +4368,8 @@ function buildTeacherListHtml(teachers, curIdx){
  if(filter&&r!==filter) return; // 지역 필터 적용
  html+=`<div class="region-group-label">${r}</div>`;
  g.forEach(({t,i})=>{
-  // 정산 상태: settleStatus 수동 설정 우선, 없으면 자동 판단
-  const hasPay = t.finalPay > 0;
-  const hasAllAttend = t.lessons?.length > 0 && t.lessons.every(l =>
-   (l.attend||[]).some(a => a==='O' || a==='X' || a==='△')
-  );
-  const autoStatus = (hasPay && hasAllAttend) ? 'done' : (t.lessons?.length > 0 ? 'pending' : 'none');
+  // 정산 상태: settleStatus 수동 설정 우선, 없으면 항상 미정산(v12.52: 자동완료 제거)
+  const autoStatus = t.lessons?.length > 0 ? 'pending' : 'none';
   const status = t.settleStatus || autoStatus;
   const badgeHtml = status === 'done'
    ? `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${i})" title="클릭하면 미완료로 변경">✓ 완료</span>`
@@ -5226,9 +5189,8 @@ function recalcAndRefresh(ti){
 function toggleSettleStatus(ti){
  const t = STATE.data?.teachers?.[ti];
  if(!t) return;
- const hasPay = t.finalPay > 0;
- const hasAllAttend = t.lessons?.length > 0 && t.lessons.every(l=>(l.attend||[]).some(a=>a==='O'||a==='X'||a==='△'));
- const autoStatus = (hasPay && hasAllAttend) ? 'done' : (t.lessons?.length > 0 ? 'pending' : 'none');
+ // v12.52: 자동완료 제거 — settleStatus 수동 설정 우선, 없으면 항상 미정산(pending)으로 시작
+ const autoStatus = t.lessons?.length > 0 ? 'pending' : 'none';
  const current = t.settleStatus || autoStatus;
  if(current === 'done'){
   showConfirm({
@@ -5243,8 +5205,6 @@ function toggleSettleStatus(ti){
     saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
     const li = document.getElementById(`ti-${ti}`);
     if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 완료로 변경">미정산</span>`; }
-    // v12.13: 정산 화면 즉시 갱신 (박기남님 요청)
-    try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
     showToast(`${t.name} — 미정산으로 변경됨`);
    }
   });
@@ -5261,8 +5221,6 @@ function toggleSettleStatus(ti){
     saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
     const li = document.getElementById(`ti-${ti}`);
     if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 미완료로 변경">✓ 완료</span>`; }
-    // v12.13: 정산 화면 즉시 갱신 (박기남님 요청)
-    try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
     showToast(`${t.name} — 정산 완료 처리됨`);
    }
   });
@@ -8191,6 +8149,7 @@ function showToast(msg){const el=document.getElementById('saveToast');el.textCon
 
 /* ═══ 커스텀 Confirm 모달 ═══ */
 let _confirmCallback = null;
+let _confirmCancelCallback = null;
 
 /* ═══ confirm 교체용 helper 함수들 ═══ */
 function _doDeleteMonthlySnapshot(ym, fromHome){
@@ -8375,7 +8334,7 @@ function _doResetSchedule(teacher, year, month){
  showTiToast('스케줄로 초기화됐어요');
 }
 
-function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle='danger', cancelText='취소', onOk=null }={}){
+function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle='danger', cancelText='취소', onOk=null, onCancel=null }={}){
  document.getElementById('confirmIcon').textContent = icon;
  document.getElementById('confirmTitle').textContent = title;
  document.getElementById('confirmDesc').innerHTML = desc;
@@ -8396,6 +8355,7 @@ function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle=
  // v12.05: cancelText가 빈 문자열이면 취소 버튼 숨김 (확인 모달처럼 사용)
  document.getElementById('confirmCancelBtn').style.display = cancelText ? '' : 'none';
  _confirmCallback = onOk;
+ _confirmCancelCallback = onCancel;
 
  const overlay = document.getElementById('confirmOverlay');
  overlay.style.display = 'flex';
@@ -8415,7 +8375,10 @@ function _confirmOk(){
 
 function _confirmCancel(){
  document.getElementById('confirmOverlay').style.display = 'none';
+ const cb = _confirmCancelCallback;
  _confirmCallback = null;
+ _confirmCancelCallback = null;
+ if(typeof cb === 'function') cb();
 }
 
 /* ═══ 로딩 오버레이 ═══ */
@@ -9683,31 +9646,31 @@ function enterTeacherMode(){
  // 이번 달 제출 이력 있으면 완료 화면 먼저 표시
  const teacher = window._loggedInTeacher || '';
  if(teacher){
- const now = new Date();
- const curYM = `${now.getFullYear()}년 ${now.getMonth()+1}월`;
- // sessionStorage 캐시 먼저 확인 (빠름)
- if(sessionStorage.getItem('ti_submitted_'+teacher) === curYM){
- showTiSubmitSuccess(teacher, now.getMonth()+1);
- return;
- }
- // Sheets에서 확인
- gasGet({ action:'getHistory', teacher })
- .then(r=>{
- if(r.ok && r.data && r.data.some(h=>h.yearMonth===curYM)){
- sessionStorage.setItem('ti_submitted_'+teacher, curYM);
- showTiSubmitSuccess(teacher, now.getMonth()+1);
- }
- })
- .catch(()=>{
- // 오프라인: localStorage fallback
- const historyKey = 'ti_submit_history_' + teacher;
- try{
- const history = JSON.parse(localStorage.getItem(historyKey)||'[]');
- if(history.some(h=>h.yearMonth===curYM)){
- showTiSubmitSuccess(teacher, now.getMonth()+1);
- }
- }catch(e){}
- });
+  const now = new Date();
+  const curYM = `${now.getFullYear()}년 ${now.getMonth()+1}월`;
+  // sessionStorage 캐시 먼저 확인 (빠름)
+  if(sessionStorage.getItem('ti_submitted_'+teacher) === curYM){
+   showTiSubmitSuccess(teacher, now.getMonth()+1);
+   return;
+  }
+  // Sheets에서 확인
+  gasGet({ action:'getHistory', teacher })
+  .then(r=>{
+   if(r.ok && r.data && r.data.some(h=>h.yearMonth===curYM)){
+    sessionStorage.setItem('ti_submitted_'+teacher, curYM);
+    showTiSubmitSuccess(teacher, now.getMonth()+1);
+   }
+  })
+  .catch(()=>{
+   // 오프라인: localStorage fallback
+   const historyKey = 'ti_submit_history_' + teacher;
+   try{
+    const history = JSON.parse(localStorage.getItem(historyKey)||'[]');
+    if(history.some(h=>h.yearMonth===curYM)){
+     showTiSubmitSuccess(teacher, now.getMonth()+1);
+    }
+   }catch(e){}
+  });
  }
  // v11.62: 강사 모드 진입 시 첫 1회 튜토리얼 자동 시작
  try {
@@ -10029,6 +9992,7 @@ const DAYS_ORDER = ['월','화','수','목','금','토','일'];
 let tiDayGroups = [];
 let tiNotes = [];
 let tiImages = [];
+let _tiOverlayCancelled = false; // 새로 작성 시 오버레이 재표시 차단용
 
 /* 현재 연월 기준 요일별 날짜 자동 계산 */
 function calcDatesForMonth(year, month){
@@ -10067,12 +10031,22 @@ function initTeacherInput(){
  if(hiddenInput) hiddenInput.value = teacher;
  if(display) display.textContent = teacher || '—';
 
- // 연월 현재 날짜로 초기화
+ // 연월 현재 날짜로 초기화 (v12.53: 연도 자동갱신 + 10일 이전엔 전월 기본 선택)
  const now = new Date();
+ const cy = now.getFullYear();
  const yearSel = document.getElementById('ti-year');
  const monthSel = document.getElementById('ti-month');
- yearSel.innerHTML = [2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===now.getFullYear()?'selected':''}>${y}</option>`).join('');
- monthSel.innerHTML = Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===now.getMonth()+1?'selected':''}>${i+1}월</option>`).join('');
+ yearSel.innerHTML = [cy,cy+1].map(y=>`<option value="${y}" ${y===cy?'selected':''}>${y}</option>`).join('');
+ // 10일 이전이면 전월, 11일 이후면 당월 기본 선택
+ const isEarlyMonth = now.getDate() <= 10;
+ let defaultYear = cy;
+ let defaultMonth = now.getMonth() + 1; // 1~12
+ if(isEarlyMonth){
+  defaultMonth -= 1;
+  if(defaultMonth === 0){ defaultMonth = 12; defaultYear = cy - 1; }
+ }
+ yearSel.value = defaultYear;
+ monthSel.innerHTML = Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===defaultMonth?'selected':''}>${i+1}월</option>`).join('');
 
  // 특이사항 초기화
  tiNotes = [];
@@ -10111,16 +10085,24 @@ function initTeacherInput(){
  tiUpdateSettleSummary(teacher);
  }
 
- // 임시저장 데이터 확인
+ // 임시저장 데이터 확인 (v12.59: 배너 대신 다이얼로그)
  const draftRaw = localStorage.getItem(getDraftKey());
  if(draftRaw){
- try{
- const draft = JSON.parse(draftRaw);
- if(draft && draft.teacher === teacher){
- // 배너로 복원 여부 물어보기
- showDraftBanner(draft.savedAt);
- }
- } catch(e){}
+  try{
+   const draft = JSON.parse(draftRaw);
+   if(draft && draft.teacher === teacher){
+    showConfirm({
+     icon: '📂',
+     title: '이어서 작성하시겠습니까?',
+     desc: `${draft.savedAt}에 자동 저장된 내용이 있어요.<br>이어서 작성하시겠습니까?`,
+     okText: '이어서 작성',
+     okStyle: 'primary',
+     cancelText: '새로 작성',
+     onOk: ()=>{ restoreDraft(); },
+     onCancel: ()=>{ discardDraft(); }
+    });
+   }
+  } catch(e){}
  }
 }
 
@@ -10508,6 +10490,25 @@ function renderTiLedger(){
  addBtn.onclick=()=>{ g.centers.push({name:'',attend:['','','','']}); renderTiLedger(); };
  addTd.appendChild(addBtn); addTr.appendChild(addTd);
  tbody.appendChild(addTr);
+
+ // v12.53: 금요일(또는 마지막 평일) 아래에 "+ 요일 추가" 버튼 삽입
+ const WEEKDAYS = new Set(['월','화','수','목','금']);
+ const isLastWeekday = WEEKDAYS.has(g.day) &&
+  tiDayGroups.slice(gi+1).every(ng => !WEEKDAYS.has(ng.day));
+ if(isLastWeekday){
+  const addDayTr = document.createElement('tr');
+  addDayTr.style.background = '#FFFBEC';
+  const addDayTd = document.createElement('td');
+  addDayTd.colSpan = 7;
+  addDayTd.style.cssText = 'border:1px solid #E8CC80;padding:4px 8px;';
+  const addDayBtn = document.createElement('button');
+  addDayBtn.textContent = '+ 요일 추가';
+  addDayBtn.style.cssText = 'border:none;background:none;color:#856404;font-size:12px;cursor:pointer;font-weight:600;padding:0;';
+  addDayBtn.onclick = () => tiAddDayGroup();
+  addDayTd.appendChild(addDayBtn);
+  addDayTr.appendChild(addDayTd);
+  tbody.appendChild(addDayTr);
+ }
  });
  // v11.30: 모바일 카드뷰 동기화
  renderMobileLedger();
@@ -10535,15 +10536,17 @@ function saveTiDraft(){
  };
  localStorage.setItem(getDraftKey(), JSON.stringify(draft));
 
- // 상태 텍스트 업데이트
+ // 상태 텍스트 업데이트 (v12.56: 자동저장 안내)
  const status = document.getElementById('ti-draft-status');
  if(status){
- status.textContent = `✅ ${draft.savedAt} 임시저장 완료`;
- status.style.color = '#1A7A50';
- setTimeout(()=>{
- status.textContent = '제출하면 관리자 모드에서 바로 확인할 수 있어요';
- status.style.color = '#9B9888';
- }, 3000);
+  const t = new Date();
+  const hhmm = t.getHours().toString().padStart(2,'0') + ':' + t.getMinutes().toString().padStart(2,'0');
+  status.textContent = `✅ ${hhmm} 자동 저장됨`;
+  status.style.color = '#1A7A50';
+  setTimeout(()=>{
+   status.textContent = '🔄 30초마다 자동 저장 중';
+   status.style.color = '#9B9888';
+  }, 3000);
  }
 }
 
@@ -10556,10 +10559,7 @@ function startAutoSave(){
  _autoSaveTimer = setInterval(()=>{
   const teacher = document.getElementById('ti-teacher')?.value;
   if(!teacher) return; // 강사 미선택 상태엔 저장 안 함
-  const status = document.getElementById('ti-draft-status');
-  if(status){ status.textContent = '저장 중...'; status.style.color = '#B45309'; }
   saveTiDraft();
-  // saveTiDraft 내부에서 상태 텍스트 업데이트함
  }, AUTO_SAVE_INTERVAL);
 }
 
@@ -10658,7 +10658,7 @@ function discardDraft(){
  clearTiDraft();
  document.getElementById('ti-draft-banner')?.remove();
  const status = document.getElementById('ti-draft-status');
- if(status){ status.textContent='제출하면 관리자 모드에서 바로 확인할 수 있어요'; status.style.color='#9B9888'; }
+ if(status){ status.textContent='🔄 30초마다 자동 저장 중'; status.style.color='#9B9888'; }
 }
 
 function tiNoteAddLine(cat){
@@ -11440,6 +11440,7 @@ function _submitToLocalStorage(submitData, teacher, dayGroups, notes){
 }
 
 function showTiSubmitSuccess(teacher, month){
+ if(_tiOverlayCancelled){ _tiOverlayCancelled = false; return; } // 새로 작성 후 차단
  let overlay = document.getElementById('ti-success-overlay');
  if(!overlay){
  overlay = document.createElement('div');
@@ -11459,9 +11460,8 @@ function showTiSubmitSuccess(teacher, month){
  </div>
  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
  <button onclick="showHistoryModal('${teacher}')" style="height:42px;padding:0 24px;border-radius:10px;border:1px solid #C8A020;background:#FFFBEC;color:#856404;font-size:14px;font-weight:600;cursor:pointer;">📋 내 제출 내역 보기</button>
- <button onclick="exitTeacherMode()" style="height:42px;padding:0 24px;border-radius:10px;border:1px solid #ddd;background:white;font-size:14px;cursor:pointer;">처음으로</button>
+ <button onclick="exitTeacherMode()" title="처음으로" style="height:42px;width:42px;padding:0;border-radius:10px;border:1px solid #ddd;background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#666" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
  <button onclick="backToForm()" style="height:42px;padding:0 24px;border-radius:10px;border:1.5px solid #1A7A50;background:white;color:#1A7A50;font-size:14px;font-weight:600;cursor:pointer;">작성 화면으로</button>
- <button onclick="rewriteTeacherInput()" style="height:42px;padding:0 24px;border-radius:10px;border:none;background:#1A7A50;color:white;font-size:14px;font-weight:600;cursor:pointer;">새로 작성</button>
  </div>`;
 }
 
@@ -12434,9 +12434,29 @@ function renderMobileLedger(){
 }
 
 function backToForm(){
+ // 오버레이 닫고 폼으로 먼저 돌아옴
  const overlay = document.getElementById('ti-success-overlay');
  if(overlay) overlay.style.display = 'none';
  window.scrollTo(0,0);
+ // 폼 위에 선택 다이얼로그 표시
+ showConfirm({
+  icon: '📝',
+  title: '이어서 작성하시겠습니까?',
+  desc: `이어서 작성하면 이전에 제출한 내용을 수정할 수 있어요.<br>새로 작성하면 처음부터 다시 시작합니다.`,
+  okText: '이어서 작성',
+  okStyle: 'primary',
+  cancelText: '새로 작성',
+  onOk: ()=>{ /* 폼 그대로 유지 */ },
+  onCancel: ()=>{
+   // 성공 오버레이 완전 제거 + GAS 응답 늦게 와도 재표시 차단
+   _tiOverlayCancelled = true;
+   document.getElementById('ti-success-overlay')?.remove();
+   clearTiDraft();
+   document.getElementById('ti-draft-banner')?.remove();
+   initTeacherInput();
+   window.scrollTo(0,0);
+  }
+ });
 }
 
 function rewriteTeacherInput(){
@@ -15193,7 +15213,7 @@ function _pushToGAS(){
 </script>
 
 <!-- 센터 피커 모달 -->
-<div id="centerPickerModal" class="">
+<div id="centerPickerModal">
  <div class="cpicker-box">
  <div class="cpicker-header">
  <h3>센터 선택</h3>
@@ -15204,8 +15224,10 @@ function _pushToGAS(){
    <input type="checkbox" id="cpicker_isSub" style="width:14px;height:14px;cursor:pointer;accent-color:#1A7A50;" onchange="_cpickerToggleSub()">
    보강 수업이에요
   </label>
-  <div id="cpicker_subfor_wrap" style="display: block; margin-top: 6px;">
-   <select id="cpicker_subfor" style="width:100%;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none;background:var(--surface);color:var(--text);"><option value="">누구 수업?</option><optgroup label="인천" style="background: rgb(225, 245, 238); color: rgb(15, 110, 86); font-weight: 600;"><option value="김보창" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김보창</option><option value="김수민" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김수민</option><option value="김유천" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김유천 (나)</option><option value="김효민" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김효민</option><option value="박기남" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">박기남</option><option value="박종일" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">박종일</option><option value="방진수" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">방진수</option><option value="이재윤" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">이재윤</option><option value="장호준" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">장호준</option><option value="한수희" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">한수희</option><option value="홍예은" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">홍예은</option></optgroup><optgroup label="서울" style="background: rgb(239, 246, 255); color: rgb(30, 64, 175); font-weight: 600;"><option value="구명훈" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">구명훈</option><option value="김은영" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김은영</option><option value="박준형" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">박준형</option><option value="변동" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">변동</option><option value="송준기" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">송준기</option><option value="신기윤" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">신기윤</option><option value="양성모" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">양성모</option><option value="양재원" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">양재원</option><option value="오건" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">오건</option><option value="윤혜미" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">윤혜미</option><option value="이인경" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">이인경</option><option value="이재열" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">이재열</option><option value="이재하" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">이재하</option><option value="장성기" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">장성기</option><option value="정상준" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">정상준</option><option value="조영미" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">조영미</option></optgroup><optgroup label="수원" style="background: rgb(240, 234, 250); color: rgb(90, 58, 176); font-weight: 600;"><option value="김수도" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">김수도</option><option value="안지훈" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">안지훈</option><option value="오수정" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">오수정</option><option value="원보영" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">원보영</option><option value="최정안" style="background: white; color: rgb(51, 51, 51); font-weight: 400;">최정안</option></optgroup></select>
+  <div id="cpicker_subfor_wrap" style="display:none;margin-top:6px;">
+   <select id="cpicker_subfor" style="width:100%;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none;background:var(--surface);color:var(--text);">
+    <option value="">원래 강사 선택</option>
+   </select>
   </div>
  </div>
  <div class="cpicker-search">
@@ -15219,69 +15241,7 @@ function _pushToGAS(){
  </select>
  </div>
  </div>
- <div class="cpicker-list" id="cpickerList"><div class="cpicker-section">📌 담당센터 <span class="cpicker-count">10개</span></div><div class="cpicker-item" onclick="selectCenter('강서구립든든',55000)">
- <span>강서구립든든</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('부천남부',55000)">
- <span>부천남부</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('그라시아',55000)">
- <span>그라시아</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('검암(김유천)',0)">
- <span>검암(김유천)</span><span class="fee-tag">-</span></div><div class="cpicker-item" onclick="selectCenter('88등촌',50000)">
- <span>88등촌</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('늘푸른',55000)">
- <span>늘푸른</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('제물포구',50000)">
- <span>제물포구</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('보담(김유천)',0)">
- <span>보담(김유천)</span><span class="fee-tag">-</span></div><div class="cpicker-item" onclick="selectCenter('소새울',55000)">
- <span>소새울</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item selected" onclick="selectCenter('둥지요양원',50000)">
- <span>둥지요양원</span><span class="fee-tag">50,000원</span></div><div class="cpicker-section">📋 DB 연결 센터 <span class="cpicker-count">2개</span></div><div class="cpicker-item" onclick="selectCenter('검암',55000)">
- <span>검암</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('보담',55000)">
- <span>보담</span><span class="fee-tag">55,000원</span></div><div class="cpicker-section">🏢 전체 센터 <span class="cpicker-count">314개</span></div><div class="cpicker-item" onclick="selectCenter('153',55000)">
- <span>153</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('A+하남행복',55000)">
- <span>A+하남행복</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가가호호봉천',50000)">
- <span>가가호호봉천</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('가가호호시흥',55000)">
- <span>가가호호시흥</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가람',55000)">
- <span>가람</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가로등',55000)">
- <span>가로등</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가온1',45000)">
- <span>가온1</span><span class="fee-tag">45,000원</span></div><div class="cpicker-item" onclick="selectCenter('가온2',45000)">
- <span>가온2</span><span class="fee-tag">45,000원</span></div><div class="cpicker-item" onclick="selectCenter('가은',55000)">
- <span>가은</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가족데이케어',55000)">
- <span>가족데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가족사랑',55000)">
- <span>가족사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('가평A+',60000)">
- <span>가평A+</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('가평길누리',60000)">
- <span>가평길누리</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('가현산요양',55000)">
- <span>가현산요양</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('간석3층',55000)">
- <span>간석3층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('간석4층',55000)">
- <span>간석4층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('갈산',55000)">
- <span>갈산</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강동데이케어',55000)">
- <span>강동데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강북희망',55000)">
- <span>강북희망</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('강서힐링',50000)">
- <span>강서힐링</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('강일데이케어',55000)">
- <span>강일데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('경인',55000)">
- <span>경인</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('고양1호점',55000)">
- <span>고양1호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('고양2호점',55000)">
- <span>고양2호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어',55000)">
- <span>골든케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어1',55000)">
- <span>골든케어1</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('골든케어2',55000)">
- <span>골든케어2</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('광교빌리지3층',55000)">
- <span>광교빌리지3층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('광교빌리지4층',55000)">
- <span>광교빌리지4층</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구리온케어발달',55000)">
- <span>구리온케어발달</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구리온케어주간',55000)">
- <span>구리온케어주간</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('구립우면',55000)">
- <span>구립우면</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('그라시아요양',55000)">
- <span>그라시아요양</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('금오사랑',55000)">
- <span>금오사랑</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('금천노인',50000)">
- <span>금천노인</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('금호',55000)">
- <span>금호</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('기쁜우리',55000)">
- <span>기쁜우리</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김간호사1호점',55000)">
- <span>김간호사1호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김간호사2호점',55000)">
- <span>김간호사2호점</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김진성데이케어',55000)">
- <span>김진성데이케어</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포스마일',60000)">
- <span>김포스마일</span><span class="fee-tag">60,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포엘림',55000)">
- <span>김포엘림</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('김포한강',55000)">
- <span>김포한강</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('나날',55000)">
- <span>나날</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('나눔요양',55000)">
- <span>나눔요양</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('나눔주간',55000)">
- <span>나눔주간</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('남구',55000)">
- <span>남구</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('남동',55000)">
- <span>남동</span><span class="fee-tag">55,000원</span></div><div class="cpicker-item" onclick="selectCenter('노아',50000)">
- <span>노아</span><span class="fee-tag">50,000원</span></div><div class="cpicker-item" onclick="selectCenter('누네',55000)">
- <span>누네</span><span class="fee-tag">55,000원</span></div></div>
+ <div class="cpicker-list" id="cpickerList"></div>
  <div class="cpicker-footer">
  <button class="btn sm" onclick="addNewCenterFromPicker()">+ 신규 센터 추가</button>
  <button class="btn sm danger" onclick="closeCenterPicker()">취소</button>
