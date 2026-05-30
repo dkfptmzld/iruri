@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v13.04">
+<meta property="og:title" content="수업기록표 정산 시스템 v13.06">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v13.04">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v13.06">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.04</title>
+<title>수업기록표 정산 시스템 v13.06</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3072,7 +3072,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.04';
+const SYSTEM_VERSION='v13.06';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -5202,7 +5202,8 @@ function updateExtraCost(ti, field, val){
  * 모의수업(mockLesson)은 별도로 처리되므로 여기 포함 안 함
  */
 function _sumExtraCosts(t){
- return (t.parkingCost||0)+(t.supplyCost||0)+(t.etcCost||0)+(t.costExtra||0)+(t.otherCost||0);
+ // v13.05: costExtra/otherCost 구버전 필드 합산 제거 (과거 통합비용 중복 노출 방지)
+ return (t.parkingCost||0)+(t.supplyCost||0)+(t.etcCost||0);
 }
 
 function updateCenter(ti,li,val){
@@ -5605,8 +5606,8 @@ function saveAdminNote(ti, value){
  t.note = newNote;
  const ym = t.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
- // v12.13: 특이사항 변경 즉시 반영 (박기남님 요청)
- try{ if(typeof renderSettle==='function') renderSettle(); }catch{}
+ // v13.05: renderSettle 대신 현재 강사 패널만 갱신 (전체 재렌더 시 클릭 이벤트 충돌 방지)
+ try{ if(typeof renderTeacher==='function') renderTeacher(ti); }catch{}
  showToast('✅ 특이사항 저장됨');
 }
 
