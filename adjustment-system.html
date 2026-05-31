@@ -853,9 +853,19 @@ body.edit-mode-active .ledger-wrap textarea {
  .signal-card-grid.cols-4,
  .signal-card-grid.cols-6 { grid-template-columns: 1fr; }
 }
+
+@media (max-width:600px){
+ .me-row{ display:flex!important; flex-wrap:wrap!important; gap:5px!important; }
+ .me-row>.me-date{ flex:0 0 75px!important; }
+ .me-row>.me-center{ flex:1!important; min-width:80px!important; }
+ .me-row>.me-text{ flex:1 0 100%!important; order:3!important; }
+ .me-row>.me-amt{ flex:0 0 90px!important; order:4!important; }
+ .me-row>.me-del{ flex:0 0 28px!important; margin-left:auto!important; order:2!important; }
+ #presenceWidget{ display:none!important; }
+}
 </style>
 <style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
-<body class="">
+<body>
 
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
@@ -1335,7 +1345,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
 <button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">9+</span></button>
  </div>
- <div id="adminTimerChip" style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--green-bg); border-color: var(--green); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; cursor: default;" title="남은 세션 시간 (활동 시 자동 갱신)">
+ <div id="adminTimerChip" style="display: flex; background: var(--green-bg); border-color: var(--green); color: var(--green);" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
@@ -1361,7 +1371,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- v11.41: 편집 모드 안내 배너 (편집 모드일 때만 표시) -->
-<div id="editModeBanner" style="display: none; position: sticky; top: 52px; z-index: 199; background: rgb(255, 243, 205); border-bottom: 2px solid rgb(255, 215, 0); padding: 8px 20px; font-size: 13px; color: rgb(133, 100, 4); font-weight: 600; align-items: center; gap: 12px;">
+<div id="editModeBanner" style="display:none;position:sticky;top:52px;z-index:199;background:#FFF3CD;border-bottom:2px solid #FFD700;padding:8px 20px;font-size:13px;color:#856404;font-weight:600;align-items:center;gap:12px;">
  <span style="font-size:14px;">✏️ 편집 모드</span>
  <span style="font-weight:400;">변경사항 <span id="editChangeCount" style="font-weight:700;color:#D32F2F;">0</span>개 — 저장 또는 취소 버튼을 눌러 종료하세요</span>
 </div>
@@ -1375,20 +1385,21 @@ body.edit-mode-active .ledger-wrap textarea {
 <!-- 정산 뷰 -->
 <div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
- <div id="month-selector" style="display: block; padding: 10px 12px; border-bottom: 1px solid var(--border);">
-  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
-  <div style="display:flex;gap:4px;margin-bottom:8px;">
-   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;"><option value="2024">2024년</option><option value="2025">2025년</option><option value="2026" selected="">2026년</option></select>
-   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5" selected="">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+ <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
+  <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
+  <div style="display:flex;gap:5px;margin-bottom:12px;">
+   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="2024">2024년</option><option value="2025">2025년</option><option value="2026" selected="">2026년</option></select>
+   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5" selected="">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
   </div>
-  <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;">
-   <span style="color:var(--green);font-weight:600;">✅ 16명 제출</span>
-   <span style="color:var(--text3);">16 / 32</span>
-  </div>
-  <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
-   <div style="width:50%;height:100%;background:var(--green);border-radius:2px;transition:width .3s;"></div>
+  <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;">
+   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+    <span style="font-size:12px;font-weight:600;color:var(--green);">16명 제출</span>
+    <span style="font-size:10px;color:var(--text3);">16 / 32명</span>
+   </div>
+   <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
+    <div style="width:50%;height:100%;background:var(--green);border-radius:3px;transition:width .3s;"></div>
+   </div>
   </div></div>
-
  <div class="teacher-scroll" id="teacherList"><div class="region-group-label" style="border-left:3px solid #185FA5;padding-left:7px;">서울 <span style="font-size:10px;font-weight:400;opacity:.6;">6/16</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
      <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">김</div>
      <div class="t-info"><div class="t-name">김은영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
@@ -2130,26 +2141,8 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
-   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
-   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
-   <span style="font-size:11px;color:#2e7d32;">방금</span>
-  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">31</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
-  </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:48:31</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
  </div>
 </div>
 
@@ -2185,19 +2178,19 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 커스텀 confirm 모달 -->
-<div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
- <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">↩️</div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">편집 취소</h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"><b>1개 변경 사항</b>을 버리고 편집 모드를 종료할까요?</p>
+<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
-   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">계속 편집</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: rgb(224, 82, 82); color: white; border-color: rgb(192, 48, 48); font-weight: 700;">버리고 종료</button>
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
   </div>
  </div>
 </div>
 
-<div class="save-toast" id="saveToast">✓ ↩️ 편집 취소됨</div>
+<div class="save-toast show" id="saveToast">✓ 📂 2026년 5월 자동 로드 중...</div>
 
 <!-- 전역 로딩 오버레이 -->
 <div id="globalLoader" class="show">
@@ -3202,7 +3195,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.32';
+const SYSTEM_VERSION='v13.40';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -4426,12 +4419,19 @@ function dlPDF(){
   }).join('');
  } else if(t.note){
   const CAT_KEYS=Object.keys(catColor);
-  noteHtml = t.note.split('\n').filter(l=>l.trim()).map(line=>{
-   const cat=CAT_KEYS.find(k=>line.startsWith(k));
-   if(!cat) return `<div style="font-size:8.5px;color:#555;padding:2px 0;">${line.replace(/</g,'&lt;')}</div>`;
-   const [bg,col]=catColor[cat].split('|');
-   const rest=line.slice(cat.length).trim().replace(/^\[([^\]]*)\]\s*/,'$1: ').replace(/</g,'&lt;');
-   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;"><span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span><span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${rest}</span></div>`;
+  // 카테고리별로 그룹화
+  const groups={};
+  const order=[];
+  t.note.split('\n').filter(l=>l.trim()).forEach(line=>{
+   const cat=CAT_KEYS.find(k=>line.startsWith(k))||'기타';
+   const rest=line.startsWith(cat)?line.slice(cat.length).trim().replace(/^\[([^\]]*)\]\s*/,'$1 ').replace(/^[:\s]+/,''):line;
+   if(!groups[cat]){groups[cat]=[];order.push(cat);}
+   if(rest) groups[cat].push(rest);
+  });
+  noteHtml=order.map(cat=>{
+   const [bg,col]=catColor[cat]?catColor[cat].split('|'):['#F8F7F2','#555'];
+   const entries=groups[cat].join(' / ')||'-';
+   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;"><span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span><span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries.replace(/</g,'&lt;')}</span></div>`;
   }).join('');
  }
  if(!noteHtml) noteHtml='<span style="font-size:8.5px;color:#aaa;">특이사항 없음</span>';
@@ -5834,10 +5834,26 @@ async function saveAndNotify(ti){
 function _toggleNoteAddMenu(ti){
  const menu = document.getElementById(`note-add-menu-${ti}`);
  if(!menu) return;
+ const isMobile = window.innerWidth <= 600;
  const isOpen = menu.style.display !== 'none';
- // 다른 메뉴 모두 닫기
  document.querySelectorAll('[id^="note-add-menu-"]').forEach(m=>m.style.display='none');
- if(!isOpen) menu.style.display='block';
+ if(!isOpen){
+  menu.style.display='block';
+  if(isMobile){
+   menu.style.position='static';
+   menu.style.boxShadow='none';
+   menu.style.border='0.5px solid #E2E0D8';
+   menu.style.marginTop='6px';
+   menu.style.width='100%';
+   menu.style.borderRadius='8px';
+  } else {
+   menu.style.position='absolute';
+   menu.style.boxShadow='0 4px 12px rgba(0,0,0,.12)';
+   menu.style.border='1px solid #E2E0D8';
+   menu.style.marginTop='';
+   menu.style.width='';
+  }
+ }
 }
 /** 관리자 특이사항 항목 추가 */
 function _addAdminNote(ti, cat){
@@ -5937,12 +5953,12 @@ function _startNoteEdit(ti, ni){
    const cOpts = tCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
    const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
    const amtCell = hasAmt ? `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries)nd.entries[${ei}].amount=Number(this.value)||0;const t=nd.entries?nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0):0;nd.amount=t;const el=document.getElementById('ne-total-${ti}');if(el)el.textContent=t.toLocaleString()+'원';}).call(this)">` : '';
-   return `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
-    <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
-    <select style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){const cv=prompt('센터명 입력');if(cv&&nd.entries)nd.entries[${ei}].center=cv.trim();else this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
-    <input type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
-    ${amtCell}
-    ${isMulti?`<button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
+   return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
+    <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
+    <select class="me-center" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){const cv=prompt('센터명 입력');if(cv&&nd.entries)nd.entries[${ei}].center=cv.trim();else this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
+    <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
+    <div class="me-amt">${amtCell}</div>
+    ${isMulti?`<button class="me-del" onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
    </div>`;
   }).join('');
  }
@@ -6027,24 +6043,7 @@ function _cancelNoteEdit(ti){
  if(editorDiv) editorDiv.innerHTML = '';
 }
 
-function saveAdminNote(ti, value){
- if (_checkEditMode()) return;
- const t = STATE.data?.teachers?.[ti];
- if(!t) return;
- const newNote = value.trim();
- if(t.note === newNote) return;
- t.note = newNote;
- const ym = t.yearMonth;
- if(ym) saveMonthlySnapshot(ym, STATE.data);
- // v13.05: renderSettle 대신 현재 강사 패널만 갱신 (전체 재렌더 시 클릭 이벤트 충돌 방지)
- try{ if(typeof renderTeacher==='function') renderTeacher(ti); }catch{}
- showToast('✅ 특이사항 저장됨');
-}
 
-// ═══ v11.47: 요일 추가 시스템 ═══
-// 강사 dayGroups에 새 요일을 추가 (관리자가 수업기록표에 새 요일 행 추가)
-
-// dayGroups에 새 요일 추가
 function addDayGroup(ti, day){
  if (_checkEditMode()) return;
  const t = STATE.data?.teachers?.[ti];
@@ -7788,18 +7787,22 @@ function _renderSidebarYM(ym){
  const submitted=(STATE.data?.teachers||[]).length;
  const pct=total?Math.round(submitted/total*100):0;
  container.style.display='block';
+ container.style.padding='14px 14px 12px';
+ container.style.borderBottom='1px solid var(--border)';
  container.innerHTML=`
-  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
-  <div style="display:flex;gap:4px;margin-bottom:8px;">
-   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;">${yOpts}</select>
-   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;">${mOpts}</select>
+  <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
+  <div style="display:flex;gap:5px;margin-bottom:12px;">
+   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${yOpts}</select>
+   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${mOpts}</select>
   </div>
-  <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;">
-   <span style="color:var(--green);font-weight:600;">✅ ${submitted}명 제출</span>
-   <span style="color:var(--text3);">${submitted} / ${total}</span>
-  </div>
-  <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
-   <div style="width:${pct}%;height:100%;background:var(--green);border-radius:2px;transition:width .3s;"></div>
+  <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;">
+   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+    <span style="font-size:12px;font-weight:600;color:var(--green);">${submitted}명 제출</span>
+    <span style="font-size:10px;color:var(--text3);">${submitted} / ${total}명</span>
+   </div>
+   <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
+    <div style="width:${pct}%;height:100%;background:var(--green);border-radius:3px;transition:width .3s;"></div>
+   </div>
   </div>`;
 }
 
@@ -11541,6 +11544,7 @@ function discardDraft(){
  if(status){ status.textContent='🔄 30초마다 자동 저장 중'; status.style.color='#9B9888'; }
 }
 
+const _MULTI_ENTRY_CATS = ['휴강','보강','신규(모의) 수업','주차료'];
 function tiNoteAddLine(cat){
  const item = {cat, text:'', date:'', center:''};
  if(cat==='신규(모의) 수업') item.amount = 20000;
@@ -11690,7 +11694,6 @@ function _getPlaceholders(cat){
 
 /** 특이사항 카드 멀티 센터 추가 */
 /** 주차료 항목 추가 */
-const _MULTI_ENTRY_CATS = ['휴강','보강','신규(모의) 수업','주차료'];
 /** 멀티엔트리 항목 추가 */
 function _addEntry(i){
  if(!tiNotes[i]) return;
@@ -11718,11 +11721,6 @@ function _updateEntry(i, ei, field, val){
   if(el) el.textContent = total.toLocaleString()+'원';
  }
 }
-/** 기존 _addParkingEntry/_removeParkingEntry/_updateParkingEntry → _addEntry/_removeEntry/_updateEntry로 위임 */
-function _addParkingEntry(i){ _addEntry(i); }
-function _removeParkingEntry(i,ei){ _removeEntry(i,ei); }
-function _updateParkingEntry(i,ei,field,val){ _updateEntry(i,ei,field,val); }
-
 function _addNoteCenter(i, name){
  if(!name) return;
  if(!Array.isArray(tiNotes[i].centers)) tiNotes[i].centers = [];
@@ -11731,12 +11729,6 @@ function _addNoteCenter(i, name){
  renderTiNotes();
 }
 /** 특이사항 카드 멀티 센터 제거 */
-function _removeNoteCenter(i, ci){
- if(!Array.isArray(tiNotes[i].centers)) return;
- tiNotes[i].centers.splice(ci, 1);
- tiNotes[i].center = tiNotes[i].centers[0] || '';
- renderTiNotes();
-}
 
 function renderTiNotes(){
  _sortTiNotes(); // v11.99: 자동 정렬
@@ -11752,10 +11744,7 @@ function renderTiNotes(){
  '기타': {bg:'#F0F9FF', color:'#0369A1', border:'#BAE6FD'},
  };
  const hasAmtCats = ['신규(모의) 수업', '주차료', '물품', '기타'];
- // v11.93: 센터 드롭다운이 필요한 카테고리
- // v11.94: 주차료 추가 (박기남님 결정)
- const hasCenterCats = ['휴강', '보강', '주차료', '신규(모의) 수업'];
- const multiCenterCats = ['휴강', '보강', '신규(모의) 수업']; // 여러 센터 선택 가능
+ const hasCenterCats = [];
  const multiEntryCats = ['휴강', '보강', '신규(모의) 수업', '주차료'];
  const amtConfig = {
   '신규(모의) 수업': {label:'금액', color:'#1A7A50', border:'#B8E0CC'},
@@ -11783,19 +11772,12 @@ function renderTiNotes(){
 
  // v11.95: 자동 카드는 모의수업도 센터 표시 (출석표에서 자동 입력됨)
  const showCenter = hasCenter || (isAuto && note.cat === '신규(모의) 수업');
- const isMultiCenter = multiCenterCats.includes(note.cat) && !isAuto;
 
  // v11.93: 센터 필드 HTML
  let centerFieldHtml = '';
  if(showCenter){
   if(isAuto){
    centerFieldHtml = `<input type="text" value="${(note.center||'').replace(/"/g,'&quot;')}" readonly style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;background:#FAFAF8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;color:#8A8676;cursor:not-allowed;">`;
-  } else if(isMultiCenter){
-   // 멀티 센터 태그 UI
-   const tags = (note.centers||[]).map((c,ci)=>`<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:#F0EDE8;color:#444;border:0.5px solid #D8D5CE;white-space:nowrap;">${c}<span onclick="_removeNoteCenter(${i},${ci})" style="cursor:pointer;color:#888;font-size:14px;line-height:1;margin-left:2px;">×</span></span>`).join('');
-   const currentInList = (note.centers||[]);
-   const centerOptions = monthCenters.filter(c=>!currentInList.includes(c)).map(c=>`<option value="${c}">${c}</option>`).join('');
-   centerFieldHtml = `<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex:1;min-height:32px;">${tags}<select style="height:28px;border:1px dashed #9B9888;border-radius:20px;padding:0 8px;font-size:11px;outline:none;cursor:pointer;background:white;color:#9B9888;max-width:130px;" onchange="if(this.value==='__custom__'){const v=prompt('신규 센터명');if(v)_addNoteCenter(${i},v.trim());}else if(this.value)_addNoteCenter(${i},this.value);this.selectedIndex=0;"><option value="">+ 센터 추가</option>${centerOptions}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option></select></div>`;
   } else {
    // 단일 센터 드롭다운 (주차료)
    const currentInList = monthCenters.includes(note.center);
@@ -11841,12 +11823,12 @@ function renderTiNotes(){
    const cOpts = monthCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
    const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
    const amtCell = hasAmt2 ? `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8';document.getElementById('me-total-${i}')&&(document.getElementById('me-total-${i}').textContent=tiNotes[${i}].entries.reduce((s,e)=>s+(Number(e.amount)||0),0).toLocaleString()+'원')" oninput="_updateEntry(${i},${ei},'amount',this.value)">` : '';
-   return `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
-    <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'date',this.value)">
-    <select style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){const v=prompt('센터명 입력');if(v)_updateEntry(${i},${ei},'center',v.trim());else this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>
-    <input type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[note.cat]||'내용'}" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'text',this.value)">
-    ${amtCell}
-    <button onclick="_removeEntry(${i},${ei})" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
+   return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
+    <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'date',this.value)">
+    <select class="me-center" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){const v=prompt('센터명 입력');if(v)_updateEntry(${i},${ei},'center',v.trim());else this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>
+    <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[note.cat]||'내용'}" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'text',this.value)">
+    <div class="me-amt">${amtCell}</div>
+    <button class="me-del" onclick="_removeEntry(${i},${ei})" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
    </div>`;
   }).join('');
   const headerCols = hasAmt2 ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span style="font-size:10px;color:#B0A080;text-align:right;">금액</span><span></span>` : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span></span>`;
@@ -12126,51 +12108,43 @@ function submitTiData(){
  const month=document.getElementById('ti-month').value;
  const account=document.getElementById('ti-account').value;
 
- // v12.03: 특이사항 카드 내용 필수 입력 검증
- // v12.05: 날짜도 필수 입력 검증
- const emptyContent = tiNotes.filter(n => !((n.text||n.content||'').trim()));
- const emptyDate = tiNotes.filter(n => !(n.date||'').trim());
+ // v13.35: 특이사항 카드 내용 필수 입력 검증 - 팝업 대신 인라인 하이라이트
+ const _MCAT = ['휴강','보강','신규(모의) 수업','주차료'];
+ const emptyContent = tiNotes.filter(n => {
+  if(_MCAT.includes(n.cat) && Array.isArray(n.entries)){
+   return n.entries.some(e => !(e.text||'').trim());
+  }
+  return !((n.text||n.content||'').trim());
+ });
+ const emptyDate = tiNotes.filter(n => {
+  if(_MCAT.includes(n.cat) && Array.isArray(n.entries)){
+   return n.entries.some(e => !(e.date||'').trim());
+  }
+  return !(n.date||'').trim();
+ });
  if(emptyContent.length > 0 || emptyDate.length > 0){
-  const issues = [];
-  if(emptyDate.length > 0) issues.push(`<b>날짜 미입력:</b> ${emptyDate.length}개`);
-  if(emptyContent.length > 0) issues.push(`<b>내용 미입력:</b> ${emptyContent.length}개`);
-  const allEmpty = [...new Set([...emptyContent, ...emptyDate])];
-  const uniqueCats = [...new Set(allEmpty.map(n => n.cat))];
-  showConfirm({
-   icon:'⚠️',
-   title:'특이사항 미입력',
-   desc:`${issues.join('<br>')}<br><br>` +
-        `<b>카테고리:</b> ${uniqueCats.join(', ')}<br><br>` +
-        `날짜와 내용을 모두 입력해 주세요.`,
-   okText:'확인', cancelText:'', okStyle:'default', onOk:()=>{
-    // 첫 번째 빈 필드로 스크롤
-    const list = document.getElementById('ti-note-list');
-    if(list){
-     // 날짜 빈 것 먼저 찾기
-     const dateInputs = list.querySelectorAll('input.tn-date:not([readonly])');
-     for(const r of dateInputs){
-      if(!(r.value||'').trim()){
-       r.scrollIntoView({behavior:'smooth', block:'center'});
-       r.focus();
-       r.style.borderColor = '#DC2626';
-       setTimeout(()=>{ r.style.borderColor = '#E2E0D8'; }, 3000);
-       return;
-      }
-     }
-     // 내용 빈 것 찾기
-     const contentInputs = list.querySelectorAll('input.tn-content');
-     for(const r of contentInputs){
-      if(!(r.value||'').trim()){
-       r.scrollIntoView({behavior:'smooth', block:'center'});
-       r.focus();
-       r.style.borderColor = '#DC2626';
-       setTimeout(()=>{ r.style.borderColor = '#E2E0D8'; }, 3000);
-       return;
-      }
-     }
+  const list = document.getElementById('ti-note-list');
+  let firstEl = null;
+  if(list){
+   list.querySelectorAll('input.tn-date:not([readonly]), input[placeholder="날짜"]').forEach(el=>{
+    if(!(el.value||'').trim()){
+     el.style.borderColor='#DC2626';
+     el.style.background='#FEF2F2';
+     if(!firstEl) firstEl=el;
+     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
     }
-   }
-  });
+   });
+   list.querySelectorAll('input.tn-content, input[placeholder^="예)"], input[placeholder="내용"]').forEach(el=>{
+    if(!(el.value||'').trim()){
+     el.style.borderColor='#DC2626';
+     el.style.background='#FEF2F2';
+     if(!firstEl) firstEl=el;
+     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
+    }
+   });
+  }
+  if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); firstEl.focus(); }
+  showToast('⚠️ 날짜와 내용을 모두 입력해 주세요');
   return;
  }
 
@@ -12274,7 +12248,8 @@ function submitTiData(){
   const amtStr = (_AMT_CATS.includes(n.cat) && n.amount) ? ` · ${Number(n.amount).toLocaleString()}원` : '';
   return `${n.cat}${dateStr}${centerStr}: ${txt}${amtStr}`;
  }).join('\n');
- const notesData = tiNotes.filter(n=>(n.text||n.content||'').trim()||(n.cat==='주차료'&&n.entries?.length)).map(n=>({
+ const _MULTI2=['휴강','보강','신규(모의) 수업','주차료'];
+ const notesData = tiNotes.filter(n=>(n.text||n.content||'').trim()||(_MULTI2.includes(n.cat)&&n.entries?.length)).map(n=>({
   cat: n.cat,
   date: n.date||'',
   centers: Array.isArray(n.centers) && n.centers.length ? n.centers : (n.center ? [n.center] : []),
