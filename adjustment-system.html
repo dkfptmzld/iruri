@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v13.06">
+<meta property="og:title" content="수업기록표 정산 시스템 v13.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v13.06">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v13.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.06</title>
+<title>수업기록표 정산 시스템 v13.26</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -397,8 +397,12 @@ body.edit-mode-active .ledger-wrap textarea {
 @media(max-width:600px){.save-toast{bottom:auto;top:64px;right:12px;left:12px;text-align:center;}}
 
 /* GLOBAL LOADING OVERLAY */
-#globalLoader{position:fixed;inset:0;background:rgba(245,244,240,.85);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .25s;}
+#globalLoader{position:fixed;inset:0;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
 #globalLoader.show{opacity:1;pointer-events:all;}
+#globalLoader .loader-card{background:white;border-radius:14px;padding:28px 36px;display:flex;flex-direction:column;align-items:center;gap:14px;min-width:160px;}
+.loader-spinner{width:36px;height:36px;border:3px solid #E8F5EE;border-top:3px solid #1A7A50;border-radius:50%;animation:spin .7s linear infinite;}
+.loader-text{font-size:13px;font-weight:500;color:#1A1A1A;letter-spacing:-.2px;}
+.loader-sub{font-size:11px;color:#9B9888;margin-top:-8px;}
 .loader-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loader-text{font-size:13px;font-weight:500;color:var(--text2);letter-spacing:-.2px;}
@@ -851,7 +855,7 @@ body.edit-mode-active .ledger-wrap textarea {
 }
 </style>
 <style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
-<body>
+<body class="">
 
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
@@ -1337,12 +1341,6 @@ body.edit-mode-active .ledger-wrap textarea {
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
  <div class="topbar-right" id="topbarRight">
- <span class="chip green">2026년 5월</span>
- <div style="display:flex;gap:4px;align-items:center;">
- <button class="btn region-tab active" onclick="setRegionFilter(null)">전체</button>
- <button class="btn region-tab " onclick="setRegionFilter('인천')">인천</button>
- </div>
- <!-- v12.47: CSV 다운로드 버튼 제거 (박기남님 요청) -->
  <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
@@ -1350,12 +1348,12 @@ body.edit-mode-active .ledger-wrap textarea {
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
 </button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
-<button onclick="syncSnapshotsToGAS()" title="모든 월별 수업기록표를 GAS Drive에 업로드" class="btn" id="syncSnapBtn" style="font-size:12px;background:#2E7D32;color:white;border-color:#2E7D32;font-weight:600;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path></svg>📋 기록표 업로드</button>
+
 <!-- v11.30: 점검 모드 버튼 -->
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/29 오후 10:52 · 강사 32명 · 센터 295개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/31 오후 07:43 · 강사 32명 · 센터 294개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
@@ -1363,7 +1361,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- v11.41: 편집 모드 안내 배너 (편집 모드일 때만 표시) -->
-<div id="editModeBanner" style="display:none;position:sticky;top:52px;z-index:199;background:#FFF3CD;border-bottom:2px solid #FFD700;padding:8px 20px;font-size:13px;color:#856404;font-weight:600;align-items:center;gap:12px;">
+<div id="editModeBanner" style="display: none; position: sticky; top: 52px; z-index: 199; background: rgb(255, 243, 205); border-bottom: 2px solid rgb(255, 215, 0); padding: 8px 20px; font-size: 13px; color: rgb(133, 100, 4); font-weight: 600; align-items: center; gap: 12px;">
  <span style="font-size:14px;">✏️ 편집 모드</span>
  <span style="font-weight:400;">변경사항 <span id="editChangeCount" style="font-weight:700;color:#D32F2F;">0</span>개 — 저장 또는 취소 버튼을 눌러 종료하세요</span>
 </div>
@@ -1378,53 +1376,132 @@ body.edit-mode-active .ledger-wrap textarea {
 <div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
  <div id="month-selector" style="display: block; padding: 10px 12px; border-bottom: 1px solid var(--border);">
- <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
- <div style="display:flex;flex-direction:column;gap:3px;">
- 
- <button onclick="loadMonthlySnapshot('2026년 5월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='var(--green)';this.style.color='white'">2026년 5월
- </button>
- <button onclick="loadMonthlySnapshot('2026년 4월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 4월
- </button>
- <button onclick="loadMonthlySnapshot('2026년 3월')" style="width:100%;padding:6px 10px;border-radius:8px;border:none;background:transparent;color:var(--text2);font-size:12px;font-weight:400;cursor:pointer;text-align:left;transition:all .12s;" onmouseover="this.style.background='var(--green-bg)';this.style.color='var(--green)'" onmouseout="this.style.background='transparent';this.style.color='var(--text2)'">2026년 3월
- </button>
- </div></div>
- <div class="sidebar-head"><h3>강사 목록</h3><div class="sidebar-meta" id="sidebarMeta">2026년 5월 · 5명</div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label">인천</div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;">
- <div class="t-avatar">김</div>
- <div class="t-info">
-  <div class="t-name">김유천<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">1,129,456 원</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;">
- <div class="t-avatar">한</div>
- <div class="t-info">
-  <div class="t-name">한수희<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">2,502,838 원</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-2" onclick="selT(2)" style="position:relative;">
- <div class="t-avatar">박</div>
- <div class="t-info">
-  <div class="t-name">박기남<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(2)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">2,186,387 원</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(2)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-3" onclick="selT(3)" style="position:relative;">
- <div class="t-avatar">홍</div>
- <div class="t-info">
-  <div class="t-name">홍예은<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(3)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">1,787,016 원</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(3)" class="t-del-btn" title="홍예은 기록 삭제">✕</span>
- </div><div class="t-item " id="ti-4" onclick="selT(4)" style="position:relative;">
- <div class="t-avatar">장</div>
- <div class="t-info">
-  <div class="t-name">장호준<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(4)" title="클릭하면 완료로 변경">미정산</span></div>
-  <div class="t-pay">1,999,756 원</div>
- </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(4)" class="t-del-btn" title="장호준 기록 삭제">✕</span>
- </div></div>
+  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
+  <div style="display:flex;gap:4px;margin-bottom:8px;">
+   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;"><option value="2024">2024년</option><option value="2025">2025년</option><option value="2026" selected="">2026년</option></select>
+   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5" selected="">5월</option><option value="6">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;">
+   <span style="color:var(--green);font-weight:600;">✅ 16명 제출</span>
+   <span style="color:var(--text3);">16 / 32</span>
+  </div>
+  <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+   <div style="width:50%;height:100%;background:var(--green);border-radius:2px;transition:width .3s;"></div>
+  </div></div>
+
+ <div class="teacher-scroll" id="teacherList"><div class="region-group-label" style="border-left:3px solid #185FA5;padding-left:7px;">서울 <span style="font-size:10px;font-weight:400;opacity:.6;">6/16</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">김</div>
+     <div class="t-info"><div class="t-name">김은영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">오</div>
+     <div class="t-info"><div class="t-name">오건</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-13" onclick="selT(13)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">구</div>
+     <div class="t-info"><div class="t-name">구명훈<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(13)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">2,529,672 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(13)" class="t-del-btn" title="구명훈 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-14" onclick="selT(14)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">송</div>
+     <div class="t-info"><div class="t-name">송준기<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(14)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">804,544 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(14)" class="t-del-btn" title="송준기 기록 삭제">✕</span>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">정</div>
+     <div class="t-info"><div class="t-name">정상준</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
+     <div class="t-info"><div class="t-name">양성모</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-9" onclick="selT(9)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">이</div>
+     <div class="t-info"><div class="t-name">이인경<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(9)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">2,030,700 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(9)" class="t-del-btn" title="이인경 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-6" onclick="selT(6)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">조</div>
+     <div class="t-info"><div class="t-name">조영미<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(6)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,299,648 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(6)" class="t-del-btn" title="조영미 기록 삭제">✕</span>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">윤</div>
+     <div class="t-info"><div class="t-name">윤혜미</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-12" onclick="selT(12)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">장</div>
+     <div class="t-info"><div class="t-name">장성기<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(12)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,949,472 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(12)" class="t-del-btn" title="장성기 기록 삭제">✕</span>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">변</div>
+     <div class="t-info"><div class="t-name">변동</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">박</div>
+     <div class="t-info"><div class="t-name">박준형</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
+     <div class="t-info"><div class="t-name">양재원</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-11" onclick="selT(11)" style="position:relative;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">신</div>
+     <div class="t-info"><div class="t-name">신기윤<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(11)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,218,420 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(11)" class="t-del-btn" title="신기윤 기록 삭제">✕</span>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
+     <div class="t-info"><div class="t-name">이재하</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
+     <div class="t-info"><div class="t-name">이재열</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="region-group-label" style="border-left:3px solid #0F6E56;padding-left:7px;">인천 <span style="font-size:10px;font-weight:400;opacity:.6;">9/11</span></div><div class="t-item " id="ti-4" onclick="selT(4)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">장</div>
+     <div class="t-info"><div class="t-name">장호준<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(4)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,999,756 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(4)" class="t-del-btn" title="장호준 기록 삭제">✕</span>
+    </div><div class="t-item active" id="ti-0" onclick="selT(0)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:#0F6E56;color:white;">김</div>
+     <div class="t-info"><div class="t-name">김유천<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(0)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,129,456 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(0)" class="t-del-btn" title="김유천 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-1" onclick="selT(1)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">한</div>
+     <div class="t-info"><div class="t-name">한수희<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(1)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">2,502,838 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(1)" class="t-del-btn" title="한수희 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-2" onclick="selT(2)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">박</div>
+     <div class="t-info"><div class="t-name">박기남<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(2)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">2,186,387 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(2)" class="t-del-btn" title="박기남 기록 삭제">✕</span>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
+     <div class="t-info"><div class="t-name">김효민</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">방</div>
+     <div class="t-info"><div class="t-name">방진수</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-5" onclick="selT(5)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">김</div>
+     <div class="t-info"><div class="t-name">김수민<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(5)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">2,030,700 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(5)" class="t-del-btn" title="김수민 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-3" onclick="selT(3)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">홍</div>
+     <div class="t-info"><div class="t-name">홍예은<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(3)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,787,016 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(3)" class="t-del-btn" title="홍예은 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-10" onclick="selT(10)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">박</div>
+     <div class="t-info"><div class="t-name">박종일<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(10)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,868,244 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(10)" class="t-del-btn" title="박종일 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-7" onclick="selT(7)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">이</div>
+     <div class="t-info"><div class="t-name">이재윤<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(7)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,469,840 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(7)" class="t-del-btn" title="이재윤 기록 삭제">✕</span>
+    </div><div class="t-item " id="ti-8" onclick="selT(8)" style="position:relative;border-left:3px solid #0F6E56;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 18%,white);color:#0F6E56;">김</div>
+     <div class="t-info"><div class="t-name">김보창<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(8)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,199,080 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(8)" class="t-del-btn" title="김보창 기록 삭제">✕</span>
+    </div><div class="region-group-label" style="border-left:3px solid #534AB7;padding-left:7px;">수원 <span style="font-size:10px;font-weight:400;opacity:.6;">1/5</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">최</div>
+     <div class="t-info"><div class="t-name">최정안</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">안</div>
+     <div class="t-info"><div class="t-name">안지훈</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">오</div>
+     <div class="t-info"><div class="t-name">오수정</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">원</div>
+     <div class="t-info"><div class="t-name">원보영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div><div class="t-item " id="ti-15" onclick="selT(15)" style="position:relative;border-left:3px solid #534AB7;">
+     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 18%,white);color:#534AB7;">김</div>
+     <div class="t-info"><div class="t-name">김수도<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(15)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,787,016 원</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(15)" class="t-del-btn" title="김수도 기록 삭제">✕</span>
+    </div></div>
  </div>
  <div class="content" id="mainContent">
  <div class="profile-row">
@@ -1776,17 +1853,49 @@ body.edit-mode-active .ledger-wrap textarea {
  </table>
  </div>
  <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
- <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+ <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
   특이사항
-  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
+  <span style="font-size:10px;font-weight:400;color:#B0A080;">(항목 클릭 시 수정)</span>
+  <div style="margin-left:auto;position:relative;">
+   <button onclick="_toggleNoteAddMenu(0)" style="width:22px;height:22px;border-radius:50%;border:1.5px solid #C8A020;background:white;color:#C8A020;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-weight:700;">+</button>
+   <div id="note-add-menu-0" style="display:none;position:absolute;right:0;top:26px;background:white;border:1px solid #E2E0D8;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;padding:4px;min-width:130px;">
+    <div onclick="_addAdminNote(0,'휴강')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#FCEBEB;color:#A32D2D;">휴강</span></div><div onclick="_addAdminNote(0,'보강')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#FAEEDA;color:#633806;">보강</span></div><div onclick="_addAdminNote(0,'신규(모의) 수업')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#E8F5EE;color:#0F6E56;">신규(모의) 수업</span></div><div onclick="_addAdminNote(0,'주차료')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#EEE8FA;color:#5A3AB0;">주차료</span></div><div onclick="_addAdminNote(0,'물품')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#CCFBF1;color:#0F766E;">물품</span></div><div onclick="_addAdminNote(0,'기타')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#F0F9FF;color:#0369A1;">기타</span></div>
+   </div>
+  </div>
  </div>
- <textarea id="noteEditor-0" onblur="saveAdminNote(0,this.value)" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;" onfocus="this.style.borderColor='#C8A020'" placeholder="특이사항을 입력하세요...">휴강: 공휴일로 인한 휴강 → 5/6일 보강 진행
-휴강: 공휴일로 인한 휴강 → 5/8일 보강 진행
-보강: 일회성 수업 진행
-신규(모의) 수업: 중부3(현 제물포) 모의수업
-신규(모의) 수업: 부천남부 모의수업
-신규(모의) 수업: 부천 소새울 모의수업</textarea>
+ <div style="margin-bottom:10px;padding-bottom:4px;"><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FCEBEB;color:#A32D2D;white-space:nowrap;flex-shrink:0;">휴강</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">공휴일로 인한 휴강 → 5/6일 보강 진행</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FCEBEB;color:#A32D2D;white-space:nowrap;flex-shrink:0;">휴강</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">공휴일로 인한 휴강 → 5/8일 보강 진행</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FAEEDA;color:#633806;white-space:nowrap;flex-shrink:0;">보강</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">일회성 수업 진행</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F5EE;color:#0F6E56;white-space:nowrap;flex-shrink:0;">신규(모의) 수업</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">중부3(현 제물포) 모의수업</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F5EE;color:#0F6E56;white-space:nowrap;flex-shrink:0;">신규(모의) 수업</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">부천남부 모의수업</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div><div onclick="_editOldNote(0)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F5EE;color:#0F6E56;white-space:nowrap;flex-shrink:0;">신규(모의) 수업</span>
+     
+     <span style="font-size:12px;color:#333;flex:1;">부천 소새울 모의수업</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div></div>
+ <div id="noteInlineEditor-0"></div>
  </div>
  <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
  <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
@@ -2021,8 +2130,26 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
+  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
+   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
+   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
+   <span style="font-size:11px;color:#2e7d32;">방금</span>
+  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+   <div style="display:flex;align-items:center;gap:6px;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
+    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">31</span>
+   </div>
+   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
+  </div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:48:31</div>
  </div>
 </div>
 
@@ -2058,24 +2185,27 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 커스텀 confirm 모달 -->
-<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
- <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
+<div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">↩️</div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">편집 취소</h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"><b>1개 변경 사항</b>을 버리고 편집 모드를 종료할까요?</p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
-   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">계속 편집</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: rgb(224, 82, 82); color: white; border-color: rgb(192, 48, 48); font-weight: 700;">버리고 종료</button>
   </div>
  </div>
 </div>
 
-<div class="save-toast show" id="saveToast">✓ 📂 2026년 5월 자동 로드 중...</div>
+<div class="save-toast" id="saveToast">✓ ↩️ 편집 취소됨</div>
 
 <!-- 전역 로딩 오버레이 -->
-<div id="globalLoader">
+<div id="globalLoader" class="show">
+ <div class="loader-card">
   <div class="loader-spinner"></div>
-  <div class="loader-text" id="loaderText">불러오는 중...</div>
+  <div class="loader-text" id="loaderText">GitHub에 업로드하는 중...</div>
+  <div class="loader-sub" id="loaderSub">완료까지 잠시 기다려주세요</div>
+ </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -3072,7 +3202,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.06';
+const SYSTEM_VERSION='v13.32';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -3501,7 +3631,7 @@ window.addEventListener('load', ()=>{
         localStorage.setItem(key, JSON.stringify(snap));
         // 사이드바 갱신
         if(typeof renderSidebarMonths === 'function' && STATE.data){
-         renderSidebarMonths(getSavedMonths(), STATE.data?.teachers?.[0]?.yearMonth||'');
+         _renderSidebarYM(); _renderNewTeacherList();
         }
        }
       }).catch(()=>{});
@@ -3584,8 +3714,7 @@ function switchView(v){
 async function _syncDBOnTabSwitch(tab, renderFn){
  // 즉시 현재 로컬 데이터로 먼저 렌더 (빠른 응답)
  renderFn();
-
- // 백그라운드로 GAS 최신 데이터 가져오기 (로딩 표시 없음)
+ showLoader('최신 데이터 확인 중...');
  try{
   if(tab === 'teachers'){
    // v11.31: 강사 관리 탭은 관리자 전용 → isAdmin:'true' 고정
@@ -3618,7 +3747,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     
    }
   }
- } catch(e){ console.warn('탭 동기화 실패:', e); }
+ } catch(e){ console.warn('탭 동기화 실패:', e); } finally{ hideLoader(); }
 }
 
 /* ═══ FILE LOAD & PARSE (DecompressionStream + Central Directory) ═══ */
@@ -3729,7 +3858,7 @@ function feePctStr(fp){if(!fp&&fp!==0)return'-';return fp<10?Math.round(fp*100)+
 function renderSettle(){
  const{teachers,fileName}=STATE.data;
  const ym=teachers[0]?.yearMonth||'';
- document.getElementById('sidebarMeta').textContent=`${ym} · ${teachers.length}명`;
+ 
 
  // v11.30 fix: GAS 자동 저장 제거 (삭제 레이스컨디션 방지)
  // localStorage만 갱신 - GAS 저장은 명시적 변경 시에만
@@ -3739,27 +3868,21 @@ function renderSettle(){
   localStorage.setItem(key, JSON.stringify(snap));
  }
 
- // 저장된 월 목록 → 사이드바 월 선택기
- const savedMonths = getSavedMonths();
- renderSidebarMonths(savedMonths, ym);
+ // 사이드바 개편: 연도/월 드롭다운 + 전체 강사 제출 현황
+ _renderSidebarYM();
+ 
 
  // 지역 탭 생성
  const regions=['서울','인천','수원'];
  const availRegions=regions.filter(r=>teachers.some(t=>{const d=DB.teachers.find(d=>d.name===t.name);return d?.region===r;}));
- const regionTabs=availRegions.map(r=>`<button class="btn region-tab ${STATE.regionFilter===r?'active':''}" onclick="setRegionFilter('${r}')">${r}</button>`).join('');
+ const regionTabs=availRegions.map(r=>``).join('');
  const allActive=STATE.regionFilter===null?'active':'';
  document.getElementById('topbarRight').innerHTML=`
- <span class="chip green">${ym}</span>
- <div style="display:flex;gap:4px;align-items:center;">
- <button class="btn region-tab ${allActive}" onclick="setRegionFilter(null)">전체</button>
- ${regionTabs}
- </div>
- <!-- v12.47: CSV 다운로드 버튼 제거 (박기남님 요청) -->
  <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>PDF</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button>`;
- STATE.cur = 0; // v11.30 fix: cur 초기화 안하면 탭 클릭 시 undefined
- STATE.tab = 'ledger'; // 기본 탭 설정
- document.getElementById('teacherList').innerHTML=buildTeacherListHtml(teachers, 0);
+ STATE.cur = 0;
+ STATE.tab = 'ledger';
+ _renderNewTeacherList();
  renderTeacher(0);
 }
 
@@ -3852,8 +3975,9 @@ function startEditMode(){
 
 function saveEdits(){
  if (!_isEditMode) return;
+ showLoader('저장하는 중...');
  if (_editChangeCount === 0) {
-  // 변경 사항이 없으면 그냥 종료
+  hideLoader();
   _isEditMode = false;
   _editBackup = null;
   renderEditModeUI();
@@ -3878,7 +4002,7 @@ function saveEdits(){
  const cnt = _editChangeCount;
  _editChangeCount = 0;
  renderEditModeUI();
- showToast(`💾 저장 완료 (${cnt}개 변경)`);
+ hideLoader(); showToast(`💾 저장 완료 (${cnt}개 변경)`);
 }
 
 function cancelEdits(){
@@ -4013,6 +4137,14 @@ function loadMonthlySnapshot(ym){
   }
   STATE.data = d; STATE.cur=0; STATE.regionFilter=null;
   renderSettle();
+  // 이미 정산완료된 강사 GAS 히스토리 동기화 (기존 데이터 호환)
+  setTimeout(()=>{
+   (STATE.data?.teachers||[]).forEach(t=>{
+    if(t.settleStatus==='done'){
+     gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:t.yearMonth||ym, note:t.note||'', notesData:t.notesData||null}).catch(()=>{});
+    }
+   });
+  }, 500);
   // 로컬 데이터 있으면 즉시 표시 → 토스트 불필요 (GAS 응답 후 별도 표시)
  } else {
   // 로컬 데이터 없으면 로딩 오버레이 표시
@@ -4033,9 +4165,20 @@ function loadMonthlySnapshot(ym){
  gasGet({action:'getMonthlySnapshot', yearMonth:ym})
   .then(r=>{
    hideLoader();
-   if(!r.ok || !r.data) {
-    if(!localSnap?.data?.teachers) showToast('GAS에도 데이터가 없어요');
-    
+   if(!r.ok || !r.data){
+    if(!localSnap?.data?.teachers){
+     // 로컬도 GAS도 없음 → 빈 화면 표시
+     STATE.data = null; STATE.regionFilter = null;
+     _renderSidebarYM(ym);
+     _renderNewTeacherList();
+     document.getElementById('mainContent').innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:12px;">
+       <div style="font-size:36px;">📭</div>
+       <div style="font-size:15px;font-weight:500;color:var(--text2);">${ym} 제출된 기록이 없어요</div>
+       <div style="font-size:13px;color:var(--text3);">강사가 수업기록표를 제출하면 여기에 표시됩니다</div>
+      </div>`;
+     
+    }
     return;
    }
    // v12.06: 박기남님 인사이트 — GAS가 잘못된 월 데이터 반환 시 자동 정리
@@ -4081,6 +4224,13 @@ function loadMonthlySnapshot(ym){
      showToast(`✅ ${ym} 최신 데이터로 업데이트됐어요`);
     }
     STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
+    // settleStatus 보존: GAS 데이터에 없으면 로컬에서 복원
+    if(localSnap?.data?.teachers){
+     const localMap = new Map(localSnap.data.teachers.map(t=>[t.name.trim(), t.settleStatus]));
+     (STATE.data.teachers||[]).forEach(t=>{
+      if(!t.settleStatus && localMap.get(t.name?.trim())) t.settleStatus = localMap.get(t.name.trim());
+     });
+    }
     renderSettle();
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
@@ -4104,8 +4254,7 @@ function setRegionFilter(region){
  b.classList.toggle('active', region===null?r==='전체':r===region);
  });
  // 강사 목록 다시 그리기
- const teachers=STATE.data.teachers;
- document.getElementById('teacherList').innerHTML=buildTeacherListHtml(teachers, STATE.cur);
+ _renderNewTeacherList();
  // 현재 선택 강사가 필터 밖이면 첫 번째 강사로
  if(region){
  const filtered=getFilteredTeachers();
@@ -4258,7 +4407,34 @@ function dlPDF(){
  if(t.otherCost) summaryRows.push(`<tr><td>기타비용 (과거)</td><td class="plus">+${Number(t.otherCost).toLocaleString()}원</td></tr>`);
  summaryRows.push(`<tr class="final-row"><td>최종 지급액</td><td>${totalPay.toLocaleString()}원</td></tr>`);
 
- const noteHtml=t.note?t.note.replace(/</g,'&lt;'):'특이사항 없음';
+ const catColor={'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1'};
+ let noteHtml='';
+ if(t.notesData && t.notesData.length){
+  noteHtml = t.notesData.map(n=>{
+   const [bg,col]=(catColor[n.cat]||'#F8F7F2|#555').split('|');
+   const badge=`<span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">${n.cat}</span>`;
+   let entries='', total=0;
+   if(n.entries?.length){
+    entries = n.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
+    total = n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   } else {
+    entries = [n.date,n.text||n.content].filter(Boolean).join(' ');
+    total = Number(n.amount)||0;
+   }
+   const totalHtml = total>0 ? `<span style="font-size:8.5px;font-weight:700;color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">합계 ${total.toLocaleString()}원</span>` : '';
+   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;">${badge}<span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span>${totalHtml}</div>`;
+  }).join('');
+ } else if(t.note){
+  const CAT_KEYS=Object.keys(catColor);
+  noteHtml = t.note.split('\n').filter(l=>l.trim()).map(line=>{
+   const cat=CAT_KEYS.find(k=>line.startsWith(k));
+   if(!cat) return `<div style="font-size:8.5px;color:#555;padding:2px 0;">${line.replace(/</g,'&lt;')}</div>`;
+   const [bg,col]=catColor[cat].split('|');
+   const rest=line.slice(cat.length).trim().replace(/^\[([^\]]*)\]\s*/,'$1: ').replace(/</g,'&lt;');
+   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;"><span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span><span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${rest}</span></div>`;
+  }).join('');
+ }
+ if(!noteHtml) noteHtml='<span style="font-size:8.5px;color:#aaa;">특이사항 없음</span>';
  // v11.53: 강사료 라벨 분기 (정액형 vs 비율형)
  //         feePct < 10 → 비율형 (예: 0.85) → "강사료율" + "85%"
  //         feePct >= 10 → 정액형 (예: 40000) → "강사료 단가" + "40,000원/회"
@@ -4361,7 +4537,7 @@ function dlPDF(){
  .bottom-grid{display:grid;grid-template-columns:1fr 220px;gap:6px;}
  .note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:4px 7px;font-size:10px;}
  .note-title{font-weight:600;font-size:9px;color:#8A6010;margin-bottom:3px;letter-spacing:.3px;text-transform:uppercase;}
- .note-content{color:#555;line-height:1.6;white-space:pre-wrap;word-break:break-all;}
+ .note-content{color:#555;line-height:1.6;}
  .settle-table{border-collapse:collapse;font-size:10px;border:1px solid #e2e0d8;border-radius:5px;overflow:hidden;height:fit-content;}
  .settle-table tr td:first-child{background:#f5f4f0;padding:2px 6px;font-weight:600;color:#555;border-bottom:1px solid #e2e0d8;}
  .settle-table tr td:last-child{padding:2px 6px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;border-bottom:1px solid #e2e0d8;}
@@ -4501,6 +4677,7 @@ function renderTeacher(i){
  <div id="tabBody"></div>
  </div>`;
  renderTab('ledger',i);
+ setTimeout(_initNoteEditors, 50);
 }
 function setTab(t){STATE.tab=t;document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));renderTab(t,STATE.cur);}
 function renderTab(tab,i){
@@ -4864,16 +5041,65 @@ function renderLedger(ti){
  </table>
  </div>
  <div style="padding:12px 14px;border-top:1px solid var(--border);background:#fffbeb;">
- <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+ <div style="font-size:11px;font-weight:700;color:#8A6010;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#8A6010;flex-shrink:0;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
   특이사항
-  <span style="font-size:10px;font-weight:400;color:#B0A080;">(관리자 직접 수정 가능)</span>
+  <span style="font-size:10px;font-weight:400;color:#B0A080;">(항목 클릭 시 수정)</span>
+  <div style="margin-left:auto;position:relative;">
+   <button onclick="_toggleNoteAddMenu(${ti})" style="width:22px;height:22px;border-radius:50%;border:1.5px solid #C8A020;background:white;color:#C8A020;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-weight:700;">+</button>
+   <div id="note-add-menu-${ti}" style="display:none;position:absolute;right:0;top:26px;background:white;border:1px solid #E2E0D8;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;padding:4px;min-width:130px;">
+    ${['휴강','보강','신규(모의) 수업','주차료','물품','기타'].map(cat=>{
+     const clr={'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1'}[cat];
+     const [bg,col]=clr.split('|');
+     return `<div onclick="_addAdminNote(${ti},'${cat}')" style="display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;" onmouseover="this.style.background='#F8F6F0'" onmouseout="this.style.background='transparent'"><span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:${bg};color:${col};">${cat}</span></div>`;
+    }).join('')}
+   </div>
+  </div>
  </div>
- <textarea id="noteEditor-${ti}"
-  onblur="saveAdminNote(${ti},this.value)"
-  style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #DDD8B0;border-radius:7px;background:white;font-size:12px;color:#333;line-height:1.6;resize:vertical;font-family:inherit;box-sizing:border-box;outline:none;"
-  onfocus="this.style.borderColor='#C8A020'"
-  placeholder="특이사항을 입력하세요...">${(t.note||'').replace(/</g,'&lt;')}</textarea>
+ ${(()=>{
+  const nd = t.notesData;
+  const catColor = {'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1'};
+  const CAT_KEYS = Object.keys(catColor);
+  // notesData 있으면 구조화 뷰, 없으면 t.note 텍스트 파싱
+  let rows = '';
+  if(nd && nd.length){
+   rows = nd.map((n,ni)=>{
+    const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
+    const tags = (n.centers||[]).map(c=>`<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:white;color:#555;border:0.5px solid #D8D5CE;">${c}</span>`).join('');
+    const entriesHtml = n.entries?.length ? n.entries.filter(e=>e.date||e.center||e.text).map(e=>`<span style="font-size:11px;color:#666;">${[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')}</span>`).join('<span style="color:#ccc;"> / </span>') : '';
+    const amtHtml = '';
+    const total = n.entries?.length ? n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0) : (Number(n.amount)||0);
+    const totalHtml = total > 0 ? `<span style="font-size:11px;font-weight:500;color:${col};white-space:nowrap;">합계 ${total.toLocaleString()}원</span>` : '';
+    return `<div class="note-view-row" onclick="_startNoteEdit(${ti},${ni})" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${n.cat}</span>
+     ${n.date?`<span style="font-size:11px;color:#9B9888;flex-shrink:0;">${n.date}</span>`:''}
+     ${tags?`<div style="display:flex;flex-wrap:wrap;gap:3px;">${tags}</div>`:''}
+     ${entriesHtml?`<div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${entriesHtml}</div>`:`<span style="font-size:12px;color:#333;flex:1;">${n.text}${amtHtml}</span>`}
+     ${totalHtml}
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;flex-shrink:0;">✏️</span>
+    </div>`;
+   }).join('');
+  } else if(t.note){
+   rows = t.note.split('\n').filter(l=>l.trim()).map(line=>{
+    const cat = CAT_KEYS.find(k=>line.startsWith(k));
+    if(!cat) return `<div style="padding:4px 0;font-size:12px;color:#333;">${line}</div>`;
+    const [bg,col] = catColor[cat].split('|');
+    const rest = line.slice(cat.length).trim();
+    const dateM = rest.match(/^\[([^\]]*)\]\s*[:(]?/);
+    const date = dateM ? dateM[1].trim() : '';
+    const text = (dateM ? rest.slice(dateM[0].length) : rest).replace(/^[:\s]+/,'');
+    return `<div onclick="_editOldNote(${ti})" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span>
+     ${date?`<span style="font-size:11px;color:#9B9888;">${date}</span>`:''}
+     <span style="font-size:12px;color:#333;flex:1;">${text}</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
+    </div>`;
+   }).join('');
+  }
+  if(!rows) return '';
+  return `<div style="margin-bottom:10px;padding-bottom:4px;">${rows}</div>`;
+ })()}
+ <div id="noteInlineEditor-${ti}"></div>
  </div>
  <div style="padding:10px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
  <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
@@ -5287,10 +5513,15 @@ function toggleSettleStatus(ti){
    onOk:()=>{
     t.settleStatus = 'done';
     lsSave();
-    saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
+    const ym = STATE.data.teachers[0]?.yearMonth || '';
+    saveMonthlySnapshot(ym, STATE.data);
+    // GAS 히스토리 최종 업데이트
+    showLoader('정산 완료 처리 중...');
+    gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note||'', notesData:t.notesData||null})
+     .then(()=>{ hideLoader(); showToast(`✅ ${t.name} — 정산 완료 처리됨`); })
+     .catch(()=>{ hideLoader(); showToast(`✅ ${t.name} — 정산 완료 처리됨`); });
     const li = document.getElementById(`ti-${ti}`);
     if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 미완료로 변경">✓ 완료</span>`; }
-    showToast(`${t.name} — 정산 완료 처리됨`);
    }
   });
  }
@@ -5595,6 +5826,205 @@ async function saveAndNotify(ti){
  }
 
  if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"/></svg> 수정하기'; btn.disabled=false; btn.style.background='#1A7A50'; }
+}
+
+/** 관리자 특이사항 인라인 편집 시작 */
+/** 구버전 note(텍스트) 직접 수정 — textarea 방식 */
+/** 관리자 특이사항 + 메뉴 토글 */
+function _toggleNoteAddMenu(ti){
+ const menu = document.getElementById(`note-add-menu-${ti}`);
+ if(!menu) return;
+ const isOpen = menu.style.display !== 'none';
+ // 다른 메뉴 모두 닫기
+ document.querySelectorAll('[id^="note-add-menu-"]').forEach(m=>m.style.display='none');
+ if(!isOpen) menu.style.display='block';
+}
+/** 관리자 특이사항 항목 추가 */
+function _addAdminNote(ti, cat){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t) return;
+ document.getElementById(`note-add-menu-${ti}`)?.style && (document.getElementById(`note-add-menu-${ti}`).style.display='none');
+ // 기존 t.note → notesData 변환 (구버전 데이터 호환)
+ if(!Array.isArray(t.notesData)){
+  const CAT_KEYS=['휴강','보강','신규(모의) 수업','주차료','물품','기타'];
+  t.notesData = (t.note||'').split('\n').filter(l=>l.trim()).map(line=>{
+   const c=CAT_KEYS.find(k=>line.startsWith(k));
+   if(!c) return {cat:'기타',date:'',text:line.trim(),entries:[{date:'',center:'',text:line.trim(),amount:0}]};
+   const rest=line.slice(c.length).trim();
+   const dateM=rest.match(/^\[([^\]]*)\]/);
+   const date=dateM?dateM[1].trim():'';
+   const text=(dateM?rest.slice(dateM[0].length):rest).replace(/^[:\s]+/,'').trim();
+   const multiCats=['휴강','보강','신규(모의) 수업','주차료'];
+   return multiCats.includes(c)
+    ? {cat:c,date,text,entries:[{date,center:'',text,amount:0}]}
+    : {cat:c,date,text,amount:0};
+  });
+ }
+ const multiCats=['휴강','보강','신규(모의) 수업','주차료'];
+ const newNote={cat,date:'',text:'',center:'',amount:0};
+ if(multiCats.includes(cat)) newNote.entries=[{date:'',center:'',text:'',amount:0}];
+ t.notesData.push(newNote);
+ const ym=t.yearMonth||STATE.data.teachers[0]?.yearMonth||'';
+ if(ym) saveMonthlySnapshot(ym,STATE.data);
+ renderTeacher(ti);
+ setTimeout(()=>_startNoteEdit(ti,t.notesData.length-1),50);
+ showToast('✅ 특이사항 항목 추가됨');
+}
+
+// 메뉴 외부 클릭 시 닫기
+document.addEventListener('click', e=>{
+ if(!e.target.closest('[id^="note-add-menu-"]') && !e.target.closest('button[onclick*="_toggleNoteAddMenu"]')){
+  document.querySelectorAll('[id^="note-add-menu-"]').forEach(m=>m.style.display='none');
+ }
+});
+
+function _editOldNote(ti){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t) return;
+ const editorDiv = document.getElementById(`noteInlineEditor-${ti}`);
+ if(!editorDiv) return;
+ if(editorDiv.innerHTML) { editorDiv.innerHTML=''; return; } // 토글
+ editorDiv.innerHTML = `
+  <div style="background:#FFFBEB;border:1.5px solid #DDD8B0;border-radius:8px;padding:10px 12px;margin-top:6px;">
+   <textarea id="ne-old-${ti}" style="width:100%;min-height:80px;border:1px solid #DDD8B0;border-radius:5px;padding:8px;font-size:12px;font-family:inherit;resize:none;box-sizing:border-box;outline:none;overflow:hidden;" onfocus="this.style.borderColor='#C8A020'" onblur="this.style.borderColor='#DDD8B0'" oninput="_autoResizeNote(this)">${(t.note||'').replace(/</g,'&lt;')}</textarea>
+   <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:6px;">
+    <button onclick="_cancelNoteEdit(${ti})" style="height:28px;padding:0 12px;border-radius:6px;border:1px solid #D8D5CE;background:white;color:#888;font-size:12px;cursor:pointer;">취소</button>
+    <button onclick="_saveOldNote(${ti})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
+   </div>
+  </div>`;
+ const ta = document.getElementById(`ne-old-${ti}`);
+ if(ta){ _autoResizeNote(ta); ta.focus(); }
+}
+
+/** 구버전 note 저장 */
+function _saveOldNote(ti){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t) return;
+ const val = document.getElementById(`ne-old-${ti}`)?.value || '';
+ t.note = val.trim();
+ const ym = t.yearMonth || STATE.data.teachers[0]?.yearMonth || '';
+ if(ym) saveMonthlySnapshot(ym, STATE.data);
+ if(t.settleStatus === 'done'){
+  gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note, notesData:t.notesData||null}).catch(()=>{});
+ }
+ _cancelNoteEdit(ti);
+ renderTeacher(ti);
+ showToast('✅ 특이사항 저장됨');
+}
+
+function _startNoteEdit(ti, ni){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n) return;
+ const editorDiv = document.getElementById(`noteInlineEditor-${ti}`);
+ if(!editorDiv) return;
+ const catColor = {'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1'};
+ const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
+ const multiCats = ['휴강','보강','신규(모의) 수업','주차료'];
+ const hasAmt = ['신규(모의) 수업','주차료','물품','기타'].includes(n.cat);
+ const isMulti = multiCats.includes(n.cat);
+ // 센터 목록: 해당 강사의 이번 달 수업 센터
+ const tCenters = [...new Set((t.lessons||[]).map(l=>l.center).filter(Boolean))];
+ // entries 초기화
+ if(isMulti && !Array.isArray(n.entries)) n.entries = [{date:n.date||'',center:n.center||'',text:n.text||'',amount:n.amount||0}];
+
+ const gridCols = isMulti ? (hasAmt ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px') : '62px 1fr 1fr';
+ const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄'};
+
+ function buildEntryRows(){
+  return (n.entries||[]).map((e,ei)=>{
+   const cOpts = tCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
+   const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
+   const amtCell = hasAmt ? `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries)nd.entries[${ei}].amount=Number(this.value)||0;const t=nd.entries?nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0):0;nd.amount=t;const el=document.getElementById('ne-total-${ti}');if(el)el.textContent=t.toLocaleString()+'원';}).call(this)">` : '';
+   return `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
+    <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
+    <select style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){const cv=prompt('센터명 입력');if(cv&&nd.entries)nd.entries[${ei}].center=cv.trim();else this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
+    <input type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
+    ${amtCell}
+    ${isMulti?`<button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
+   </div>`;
+  }).join('');
+ }
+
+ const totalRow = (isMulti && hasAmt) ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid #EDE9DC;"><span style="font-size:12px;color:${col};font-weight:600;">합계</span><span id="ne-total-${ti}" style="font-size:13px;font-weight:700;color:${col};">${((n.entries||[]).reduce((s,e)=>s+(Number(e.amount)||0),0)).toLocaleString()}원</span></div>` : '';
+ const addBtn = isMulti ? `<button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(!Array.isArray(nd.entries))nd.entries=[{date:'',center:'',text:'',amount:0}];nd.entries.push({date:'',center:'',text:'',amount:0});document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="margin-top:8px;height:28px;padding:0 12px;border-radius:6px;border:1px dashed #C4C4C4;color:#888;background:transparent;font-size:12px;cursor:pointer;">＋ 항목 추가</button>` : '';
+
+ // 물품/기타 단일 폼
+ const singleForm = !isMulti ? `
+  <div style="display:grid;grid-template-columns:62px 1fr 1fr;gap:5px;margin-bottom:8px;">
+   <input type="text" id="ne-date-${ti}" value="${(n.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+   <select id="ne-center-${ti}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+    <option value="${n.center||''}">${n.center||'센터 선택...'}</option>
+    ${tCenters.filter(c=>c!==n.center).map(c=>`<option value="${c}">${c}</option>`).join('')}
+   </select>
+   <input type="text" id="ne-text-${ti}" value="${(n.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+  </div>
+  ${hasAmt?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="font-size:12px;color:${col};">금액</span><input type="number" id="ne-amt-${ti}" value="${n.amount||''}" placeholder="0" min="0" style="width:100px;height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'"><span style="font-size:12px;color:${col};">원</span></div>`:''}` : '';
+
+ const headerRow = isMulti ? `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;margin-bottom:4px;padding:0 2px;">
+  <span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span>${hasAmt?'<span style="font-size:10px;color:#B0A080;text-align:right;">금액</span>':''}<span></span></div>` : '';
+
+ editorDiv.innerHTML = `
+  <div style="background:#FFFBEB;border:1.5px solid #DDD8B0;border-radius:8px;padding:10px 12px;margin-top:6px;">
+   <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+    <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};">${n.cat}</span>
+    <button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData;nd.splice(${ni},1);const ym=STATE.data.teachers[${ti}].yearMonth||STATE.data.teachers[0]?.yearMonth||'';if(ym)saveMonthlySnapshot(ym,STATE.data);_cancelNoteEdit(${ti});renderTeacher(${ti});showToast('삭제됨');})()" style="margin-left:auto;height:24px;padding:0 10px;border-radius:5px;border:1px solid #FEE2E2;background:#FEE2E2;color:#DC2626;font-size:11px;cursor:pointer;">항목 삭제</button>
+   </div>
+   ${headerRow}
+   <div id="ne-entries-${ti}">${isMulti ? buildEntryRows() : singleForm}</div>
+   ${addBtn}
+   ${totalRow}
+   <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px;">
+    <button onclick="_cancelNoteEdit(${ti})" style="height:28px;padding:0 12px;border-radius:6px;border:1px solid #D8D5CE;background:white;color:#888;font-size:12px;cursor:pointer;">취소</button>
+    <button onclick="_saveNoteEdit(${ti},${ni})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
+   </div>
+  </div>`;
+ editorDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/** 관리자 특이사항 인라인 편집 저장 */
+function _saveNoteEdit(ti, ni){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n) return;
+ // 단일 폼 값 반영 (물품/기타)
+ const dateEl=document.getElementById(`ne-date-${ti}`);
+ const textEl=document.getElementById(`ne-text-${ti}`);
+ const centerEl=document.getElementById(`ne-center-${ti}`);
+ const amtEl=document.getElementById(`ne-amt-${ti}`);
+ if(dateEl) n.date=dateEl.value.trim();
+ if(textEl) n.text=textEl.value.trim();
+ if(centerEl) n.center=centerEl.value;
+ if(amtEl) n.amount=Number(amtEl.value)||0;
+ // entries 합계 반영
+ if(Array.isArray(n.entries)) n.amount=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+ // t.note 재생성
+ const _MULTI=['휴강','보강','신규(모의) 수업','주차료'];
+ const _AMT=['신규(모의) 수업','주차료','물품','기타'];
+ t.note=t.notesData.map(nd=>{
+  if(_MULTI.includes(nd.cat)&&nd.entries?.length){
+   const entryStr=nd.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
+   const total=nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   return `${nd.cat} [${entryStr}]${total?` · 합계 ${total.toLocaleString()}원`:''}`;
+  }
+  const dateStr=nd.date?` [${nd.date}]`:'';
+  const amtStr=(_AMT.includes(nd.cat)&&nd.amount)?` · ${Number(nd.amount).toLocaleString()}원`:'';
+  return `${nd.cat}${dateStr}: ${nd.text||''}${amtStr}`;
+ }).join('\n');
+ const ym=t.yearMonth||STATE.data.teachers[0]?.yearMonth||'';
+ if(ym) saveMonthlySnapshot(ym,STATE.data);
+ if(t.settleStatus==='done') gasPost({action:'finalizeSettlement',teacher:t.name,yearMonth:ym,note:t.note,notesData:t.notesData}).catch(()=>{});
+ _cancelNoteEdit(ti);
+ renderTeacher(ti);
+ showToast('✅ 특이사항 저장됨');
+}
+
+/** 관리자 특이사항 편집 취소 */
+function _cancelNoteEdit(ti){
+ const editorDiv = document.getElementById(`noteInlineEditor-${ti}`);
+ if(editorDiv) editorDiv.innerHTML = '';
 }
 
 function saveAdminNote(ti, value){
@@ -7325,7 +7755,7 @@ function recompute(){
  const pretax=calcPretax(totalSum,feePct,lessons);
  return{...t,lessons,feePct,totalSum,pretax,profit:totalSum-pretax,finalPay:Math.round(pretax*0.967)};
  });
- document.getElementById('teacherList').innerHTML=buildTeacherListHtml(STATE.data.teachers, STATE.cur);
+ _renderNewTeacherList();
  renderTeacher(STATE.cur);
 }
 
@@ -7334,6 +7764,103 @@ function recompute(){
 
 
 /* ═══ 사이드바 월 선택기 렌더링 ═══ */
+// ═══ 사이드바 개편 (연도/월 드롭다운 + 전체 강사 제출 현황) ═══
+const SETTLE_START_YEAR = 2024;
+
+function _parseYm(ym){
+ const m=(ym||'').match(/(\d{4})년 (\d+)월/);
+ return m?[parseInt(m[1]),parseInt(m[2])]:[null,null];
+}
+
+function _renderSidebarYM(ym){
+ const container=document.getElementById('month-selector');
+ if(!container) return;
+ const now=new Date();
+ const curYear=now.getFullYear();
+ const loadedYm=ym||STATE.data?.teachers?.[0]?.yearMonth||'';
+ const [ly,lm]=_parseYm(loadedYm);
+ const selYear=ly||curYear;
+ const selMonth=lm||now.getMonth()+1;
+ let yOpts='',mOpts='';
+ for(let y=SETTLE_START_YEAR;y<=curYear;y++) yOpts+=`<option value="${y}"${y===selYear?' selected':''}>${y}년</option>`;
+ for(let m=1;m<=12;m++) mOpts+=`<option value="${m}"${m===selMonth?' selected':''}>${m}월</option>`;
+ const total=DB.teachers?.length||0;
+ const submitted=(STATE.data?.teachers||[]).length;
+ const pct=total?Math.round(submitted/total*100):0;
+ container.style.display='block';
+ container.innerHTML=`
+  <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.4px;">📁 수업기록표</div>
+  <div style="display:flex;gap:4px;margin-bottom:8px;">
+   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;">${yOpts}</select>
+   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:28px;border-radius:6px;border:1px solid var(--border);background:white;font-size:12px;padding:0 4px;cursor:pointer;">${mOpts}</select>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;">
+   <span style="color:var(--green);font-weight:600;">✅ ${submitted}명 제출</span>
+   <span style="color:var(--text3);">${submitted} / ${total}</span>
+  </div>
+  <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+   <div style="width:${pct}%;height:100%;background:var(--green);border-radius:2px;transition:width .3s;"></div>
+  </div>`;
+}
+
+function _onSbYmChange(){
+ const y=parseInt(document.getElementById('sbYear')?.value)||0;
+ const m=parseInt(document.getElementById('sbMonth')?.value)||0;
+ if(!y||!m) return;
+ loadMonthlySnapshot(`${y}년 ${m}월`);
+}
+
+function _renderNewTeacherList(){
+ const container=document.getElementById('teacherList');
+ if(!container) return;
+ const REGION_ORDER=['서울','인천','수원','기타'];
+ const RC={'서울':{bg:'#185FA5',tx:'white'},'인천':{bg:'#0F6E56',tx:'white'},'수원':{bg:'#534AB7',tx:'white'},'기타':{bg:'#888780',tx:'white'}};
+ // 제출 강사 이름→{t,i} 맵 (trim 정규화로 오탈자 방지)
+ const submitMap=new Map();
+ (STATE.data?.teachers||[]).forEach((t,i)=>{ submitMap.set(t.name.trim(),{t,i}); });
+ // DB.teachers 지역별 그룹
+ const groups={};
+ REGION_ORDER.forEach(r=>groups[r]=[]);
+ (DB.teachers||[]).forEach(t=>{
+  const r=t.region||'기타';
+  if(groups[r]) groups[r].push(t);
+  else groups['기타'].push(t);
+ });
+ const filter=STATE.regionFilter;
+ let html='';
+ REGION_ORDER.forEach(r=>{
+  const g=groups[r];
+  if(!g?.length) return;
+  if(filter&&r!==filter) return;
+  const col=RC[r]||RC['기타'];
+  const rSubmit=g.filter(t=>submitMap.has(t.name.trim())).length;
+  html+=`<div class="region-group-label" style="border-left:3px solid ${col.bg};padding-left:7px;">${r} <span style="font-size:10px;font-weight:400;opacity:.6;">${rSubmit}/${g.length}</span></div>`;
+  g.forEach(dbT=>{
+   const info=submitMap.get(dbT.name.trim());
+   if(info){
+    const {t,i}=info;
+    const status=t.settleStatus||(t.lessons?.length>0?'pending':'none');
+    const badgeHtml=status==='done'
+     ?`<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${i})" title="클릭하면 미완료로 변경">✓ 완료</span>`
+     :(status==='pending'&&t.lessons?.length>0)
+      ?`<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${i})" title="클릭하면 완료로 변경">미정산</span>`
+      :'';
+    html+=`<div class="t-item ${i===STATE.cur?'active':''}" id="ti-${i}" onclick="selT(${i})" style="position:relative;border-left:3px solid ${col.bg};">
+     <div class="t-avatar" style="background:${i===STATE.cur?col.bg:'color-mix(in srgb,'+col.bg+' 18%,white)'};color:${i===STATE.cur?col.tx:col.bg};">${dbT.name[0]}</div>
+     <div class="t-info"><div class="t-name">${dbT.name}${badgeHtml}</div><div class="t-pay">${t.finalPay?Math.round(t.finalPay).toLocaleString()+' 원':'-'}</div></div>
+     <span onclick="event.stopPropagation();deleteTeacherRecord(${i})" class="t-del-btn" title="${dbT.name} 기록 삭제">✕</span>
+    </div>`;
+   } else {
+    html+=`<div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid ${col.bg};">
+     <div class="t-avatar" style="background:color-mix(in srgb,${col.bg} 15%,white);color:${col.bg};">${dbT.name[0]}</div>
+     <div class="t-info"><div class="t-name">${dbT.name}</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
+    </div>`;
+   }
+  });
+ });
+ container.innerHTML=html||'<div style="padding:12px;font-size:12px;color:var(--text3);text-align:center;">제출된 기록이 없어요</div>';
+}
+
 function renderSidebarMonths(savedMonths, curYm){
  const monthSel = document.getElementById('month-selector');
  if(!monthSel) return;
@@ -7357,10 +7884,9 @@ function goHome(clearData=true){
  try{ seed2026March(); }catch(e){}
  if(clearData) STATE.data=null;
  STATE.regionFilter=null;
- document.getElementById('sidebarMeta').textContent=clearData?'—':(STATE.data?.teachers?.length||0)+'명 로드됨';
  if(clearData) document.getElementById('teacherList').innerHTML='';
  document.getElementById('topbarRight').innerHTML=`<span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span>`;
- renderSidebarMonths(getSavedMonths(), '');
+ _renderSidebarYM(); _renderNewTeacherList();
  document.getElementById('mainContent').innerHTML=`
   <div class="upload-wrap">
    <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
@@ -7424,7 +7950,8 @@ function setGTab(n){
 function loadReceiptsView(){
  const grid = document.getElementById('receipts-grid');
  if(!grid) return;
- grid.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:20px;">불러오는 중...</div>';
+ showLoader('영수증 불러오는 중...');
+ grid.innerHTML = '';
 
  // 필터 강사 목록 채우기
  const teacherSel = document.getElementById('receipt-filter-teacher');
@@ -7441,11 +7968,13 @@ function loadReceiptsView(){
 
  gasGet({ action:'getReceipts', teacher, yearMonth })
  .then(r=>{
- if(!r.ok || !r.data){ grid.innerHTML='<div style="color:var(--text3);padding:20px;">영수증이 없어요</div>'; return; }
- renderReceiptsGrid(r.data);
+  hideLoader();
+  if(!r.ok || !r.data){ grid.innerHTML='<div style="color:var(--text3);padding:20px;">영수증이 없어요</div>'; return; }
+  renderReceiptsGrid(r.data);
  })
  .catch(()=>{
- grid.innerHTML='<div style="color:var(--text3);padding:20px;">서버 연결 실패</div>';
+  hideLoader();
+  grid.innerHTML='<div style="color:var(--text3);padding:20px;">서버 연결 실패</div>';
  });
 }
 
@@ -8094,7 +8623,7 @@ function _restoreChangelog_UNUSED(id){
     if(STATE.data?.teachers?.[0]?.yearMonth===snap.ym||!STATE.data){
      STATE.data=snap.data; STATE.cur=0; renderSettle();
     } else {
-     renderSidebarMonths(getSavedMonths(), STATE.data?.teachers?.[0]?.yearMonth||'');
+     _renderSidebarYM(); _renderNewTeacherList();
     }
    }
   }
@@ -8234,7 +8763,7 @@ function importMonthlyData(){
     if(typeof renderSidebarMonths === 'function'){
      const savedMonths = getSavedMonths();
      const curYm = STATE.data?.teachers?.[0]?.yearMonth || '';
-     renderSidebarMonths(savedMonths, curYm);
+     _renderSidebarYM(); _renderNewTeacherList();
     }
     showToast(`✅ ${count}개월 복원 완료${overwrite > 0 ? ` (${overwrite}개월 덮어씀)` : ''}`);
    }catch(err){
@@ -8715,13 +9244,27 @@ function _confirmCancel(){
 
 /* ═══ 로딩 오버레이 ═══ */
 let _loaderTimer = null;
-function showLoader(msg='불러오는 중...'){
+/** 특이사항 textarea 자동 높이 조절 */
+function _autoResizeNote(el){
+ el.style.height = 'auto';
+ el.style.height = el.scrollHeight + 'px';
+}
+/** renderTeacher 후 모든 noteEditor 높이 초기화 */
+function _initNoteEditors(){
+ document.querySelectorAll('textarea[id^="noteEditor"]').forEach(el=>{
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+ });
+}
+
+function showLoader(msg='불러오는 중...', sub=''){
   const el = document.getElementById('globalLoader');
   const txt = document.getElementById('loaderText');
+  const subEl = document.getElementById('loaderSub');
   if(!el) return;
   if(txt) txt.textContent = msg;
+  if(subEl) subEl.textContent = sub;
   el.classList.add('show');
-  // 15초 안전 타임아웃 (무한 로딩 방지)
   if(_loaderTimer) clearTimeout(_loaderTimer);
   _loaderTimer = setTimeout(()=>hideLoader(), 15000);
 }
@@ -8780,6 +9323,7 @@ async function githubUpload(){
   openGithubSettings();
   return;
  }
+ showLoader('GitHub에 업로드하는 중...', '완료까지 잠시 기다려주세요');
  const btn = document.getElementById('githubUploadBtn');
  const origHTML = btn.innerHTML;
  const setBtn = (html, bg='#24292e') => {
@@ -8857,9 +9401,10 @@ async function githubUpload(){
   }, 60000); // 업로드는 60초 여유
   if(!putRes.ok){ const e=await putRes.json(); throw new Error(e.message||'업로드 실패'); }
 
-  reset(true, 'GitHub Pages 반영까지 1~2분 소요됩니다');
+  hideLoader(); reset(true, 'GitHub Pages 반영까지 1~2분 소요됩니다');
 
  }catch(e){
+  hideLoader();
   console.error('GitHub 업로드 오류:', e);
   const msg = e.name==='AbortError' ? '시간 초과 — GitHub 응답이 없어요. 잠시 후 다시 시도해주세요.' : ('오류: '+e.message);
   reset(false, msg);
@@ -8935,9 +9480,11 @@ function doLogin(){
  // ── localStorage에 없으면 GAS 검증 필요 (첫 로그인 또는 새 기기) ──
  const btn = document.querySelector('#login-form button[onclick="doLogin()"]');
  if(btn){ btn.disabled=true; btn.textContent='확인 중...'; }
+ showLoader('로그인 확인 중...', '처음 로그인 시 잠시 기다려주세요');
 
  gasPost({ action:'loginCheck', teacher:name, hashedPw:hashed })
   .then(r=>{
+   hideLoader();
    if(r.ok){
     // GAS 로그인 성공 → localStorage에도 캐시 저장
     accounts[name] = hashed;
@@ -8965,10 +9512,20 @@ function loginSuccess(name){
  document.getElementById('loginScreen').style.display='none';
  window._loggedInTeacher = name;
  sessionStorage.setItem('iruri_session', name);
- // localStorage에도 캐시 (오프라인 대비)
- const accounts = getTeacherAccounts();
- // v11.30: 접속 현황 등록 + heartbeat 시작
  _startPresence(name);
+ // 정산완료 알림 확인
+ gasGet({action:'getSettlementStatus', teacher:name})
+  .then(r=>{
+   if(!r.ok || !r.data?.length) return;
+   const already = JSON.parse(localStorage.getItem('iruri_notified_settle_'+name)||'[]');
+   r.data.forEach(f=>{
+    if(!already.includes(f.yearMonth)){
+     showToast(`✅ ${f.yearMonth} 수업기록표 정산이 완료됐어요`);
+     already.push(f.yearMonth);
+    }
+   });
+   localStorage.setItem('iruri_notified_settle_'+name, JSON.stringify(already));
+  }).catch(()=>{});
  showLanding();
 }
 
@@ -9219,7 +9776,7 @@ async function _syncMonthListFromGAS(){
    const savedMonths = getSavedMonths();
    const curYm = STATE.data?.teachers?.[0]?.yearMonth||'';
    const monthSel = document.getElementById('month-selector');
-   if(monthSel) renderSidebarMonths(savedMonths, curYm);
+   if(monthSel) _renderSidebarYM(); _renderNewTeacherList();
    showToast(`📂 GAS에서 ${added}개월 목록을 가져왔어요`);
   }
   // 자동 선택: 현재 데이터가 없으면 가장 최근 월 자동 로드
@@ -10521,14 +11078,6 @@ function renderTiLedger(){
  renderTiLedger();
  };
  dayTd.appendChild(daySel);
-
- // 삭제버튼 (요일그룹 전체 삭제)
- const delDayBtn = document.createElement('div');
- delDayBtn.textContent='✕';
- delDayBtn.style.cssText='font-size:10px;color:#aaa;cursor:pointer;margin-top:4px;';
- delDayBtn.onclick=()=>{ tiDayGroups.splice(gi,1); renderTiLedger(); };
- dayTd.appendChild(delDayBtn);
-
  dateTr.appendChild(dayTd);
 
  // 날짜 레이블 셀
@@ -10797,7 +11346,7 @@ function renderTiLedger(){
  const delBtn=document.createElement('button');
  delBtn.textContent='✕';
  delBtn.style.cssText='width:24px;height:19px;border:none;background:#FEE2E2;color:#DC2626;border-radius:4px;cursor:pointer;font-size:11px;';
- delBtn.onclick=()=>{ g.centers.splice(ci,1); if(!g.centers.length) g.centers.push({name:'',attend:['','','','','']}); renderTiLedger(); };
+ delBtn.onclick=()=>{ g.centers.splice(ci,1); if(!g.centers.length) tiDayGroups.splice(gi,1); renderTiLedger(); };
  btnWrap.appendChild(upBtn); btnWrap.appendChild(dnBtn); btnWrap.appendChild(delBtn);
  delTd.appendChild(btnWrap);
  tr.appendChild(delTd);
@@ -10994,13 +11543,13 @@ function discardDraft(){
 
 function tiNoteAddLine(cat){
  const item = {cat, text:'', date:'', center:''};
- // v11.91: 모의수업 금액 기본값 20,000원
  if(cat==='신규(모의) 수업') item.amount = 20000;
+ if(_MULTI_ENTRY_CATS.includes(cat)){
+  item.entries=[{date:'',center:'',text:'',amount:cat==='신규(모의) 수업'?20000:0}];
+  item.amount = cat==='신규(모의) 수업'?20000:0;
+ }
  tiNotes.push(item);
  renderTiNotes();
- // 마지막 input에 포커스 (내용 필드)
- const inputs = document.querySelectorAll('#ti-note-list input.tn-content');
- if(inputs.length) inputs[inputs.length-1].focus();
 }
 
 /**
@@ -11139,6 +11688,56 @@ function _getPlaceholders(cat){
  return P[cat] || {date:'4/29', content:'내용 입력...'};
 }
 
+/** 특이사항 카드 멀티 센터 추가 */
+/** 주차료 항목 추가 */
+const _MULTI_ENTRY_CATS = ['휴강','보강','신규(모의) 수업','주차료'];
+/** 멀티엔트리 항목 추가 */
+function _addEntry(i){
+ if(!tiNotes[i]) return;
+ if(!Array.isArray(tiNotes[i].entries)) tiNotes[i].entries=[{date:'',center:'',text:'',amount:0}];
+ tiNotes[i].entries.push({date:'',center:'',text:'',amount:0});
+ renderTiNotes();
+}
+/** 멀티엔트리 항목 제거 */
+function _removeEntry(i, ei){
+ if(!tiNotes[i]?.entries) return;
+ tiNotes[i].entries.splice(ei,1);
+ if(!tiNotes[i].entries.length) tiNotes[i].entries=[{date:'',center:'',text:'',amount:0}];
+ const total = tiNotes[i].entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+ tiNotes[i].amount = total;
+ renderTiNotes();
+}
+/** 멀티엔트리 항목 값 변경 */
+function _updateEntry(i, ei, field, val){
+ if(!tiNotes[i]?.entries?.[ei]) return;
+ tiNotes[i].entries[ei][field] = field==='amount'?Number(val)||0:val;
+ if(field==='amount'){
+  const total = tiNotes[i].entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  tiNotes[i].amount = total;
+  const el = document.getElementById(`me-total-${i}`);
+  if(el) el.textContent = total.toLocaleString()+'원';
+ }
+}
+/** 기존 _addParkingEntry/_removeParkingEntry/_updateParkingEntry → _addEntry/_removeEntry/_updateEntry로 위임 */
+function _addParkingEntry(i){ _addEntry(i); }
+function _removeParkingEntry(i,ei){ _removeEntry(i,ei); }
+function _updateParkingEntry(i,ei,field,val){ _updateEntry(i,ei,field,val); }
+
+function _addNoteCenter(i, name){
+ if(!name) return;
+ if(!Array.isArray(tiNotes[i].centers)) tiNotes[i].centers = [];
+ if(!tiNotes[i].centers.includes(name)) tiNotes[i].centers.push(name);
+ tiNotes[i].center = tiNotes[i].centers[0] || '';
+ renderTiNotes();
+}
+/** 특이사항 카드 멀티 센터 제거 */
+function _removeNoteCenter(i, ci){
+ if(!Array.isArray(tiNotes[i].centers)) return;
+ tiNotes[i].centers.splice(ci, 1);
+ tiNotes[i].center = tiNotes[i].centers[0] || '';
+ renderTiNotes();
+}
+
 function renderTiNotes(){
  _sortTiNotes(); // v11.99: 자동 정렬
  const list = document.getElementById('ti-note-list');
@@ -11155,7 +11754,9 @@ function renderTiNotes(){
  const hasAmtCats = ['신규(모의) 수업', '주차료', '물품', '기타'];
  // v11.93: 센터 드롭다운이 필요한 카테고리
  // v11.94: 주차료 추가 (박기남님 결정)
- const hasCenterCats = ['휴강', '보강', '주차료'];
+ const hasCenterCats = ['휴강', '보강', '주차료', '신규(모의) 수업'];
+ const multiCenterCats = ['휴강', '보강', '신규(모의) 수업']; // 여러 센터 선택 가능
+ const multiEntryCats = ['휴강', '보강', '신규(모의) 수업', '주차료'];
  const amtConfig = {
   '신규(모의) 수업': {label:'금액', color:'#1A7A50', border:'#B8E0CC'},
   '주차료': {label:'합계', color:'#5A3AB0', border:'#C4B5FD'},
@@ -11178,30 +11779,29 @@ function renderTiNotes(){
  // v11.92: 호환성 - 기존 데이터에 date/center 없으면 빈 값
  if(typeof note.date === 'undefined') note.date = '';
  if(typeof note.center === 'undefined') note.center = '';
+ if(!Array.isArray(note.centers)) note.centers = note.center ? [note.center] : [];
 
  // v11.95: 자동 카드는 모의수업도 센터 표시 (출석표에서 자동 입력됨)
  const showCenter = hasCenter || (isAuto && note.cat === '신규(모의) 수업');
+ const isMultiCenter = multiCenterCats.includes(note.cat) && !isAuto;
 
- // v11.93: 센터 옵션 (휴강/보강/주차료 카테고리만, 또는 자동 모의수업)
+ // v11.93: 센터 필드 HTML
  let centerFieldHtml = '';
  if(showCenter){
-  const currentInList = monthCenters.includes(note.center);
-  const centerOptions = monthCenters.map(c => `<option value="${c}" ${c===note.center?'selected':''}>${c}</option>`).join('');
-  const extraOption = note.center && !currentInList ? `<option value="${note.center}" selected>${note.center} (직접 입력)</option>` : '';
-  // 자동 카드면 드롭다운 readonly (회색 잠금 표시)
   if(isAuto){
    centerFieldHtml = `<input type="text" value="${(note.center||'').replace(/"/g,'&quot;')}" readonly style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;background:#FAFAF8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;color:#8A8676;cursor:not-allowed;">`;
+  } else if(isMultiCenter){
+   // 멀티 센터 태그 UI
+   const tags = (note.centers||[]).map((c,ci)=>`<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:#F0EDE8;color:#444;border:0.5px solid #D8D5CE;white-space:nowrap;">${c}<span onclick="_removeNoteCenter(${i},${ci})" style="cursor:pointer;color:#888;font-size:14px;line-height:1;margin-left:2px;">×</span></span>`).join('');
+   const currentInList = (note.centers||[]);
+   const centerOptions = monthCenters.filter(c=>!currentInList.includes(c)).map(c=>`<option value="${c}">${c}</option>`).join('');
+   centerFieldHtml = `<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex:1;min-height:32px;">${tags}<select style="height:28px;border:1px dashed #9B9888;border-radius:20px;padding:0 8px;font-size:11px;outline:none;cursor:pointer;background:white;color:#9B9888;max-width:130px;" onchange="if(this.value==='__custom__'){const v=prompt('신규 센터명');if(v)_addNoteCenter(${i},v.trim());}else if(this.value)_addNoteCenter(${i},this.value);this.selectedIndex=0;"><option value="">+ 센터 추가</option>${centerOptions}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option></select></div>`;
   } else {
-   centerFieldHtml = `
-    <select class="tn-center"
-     style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;cursor:pointer;background:white;"
-     onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'"
-     onchange="if(this.value==='__custom__'){const v=prompt('신규 센터명을 입력하세요');if(v){tiNotes[${i}].center=v.trim();renderTiNotes();}else{this.value=tiNotes[${i}].center||'';}}else{tiNotes[${i}].center=this.value;}">
-     <option value="">센터 선택...</option>
-     ${centerOptions}
-     ${extraOption}
-     <option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 신규 센터 직접 입력</option>
-    </select>`;
+   // 단일 센터 드롭다운 (주차료)
+   const currentInList = monthCenters.includes(note.center);
+   const centerOptions = monthCenters.map(c=>`<option value="${c}" ${c===note.center?'selected':''}>${c}</option>`).join('');
+   const extraOption = note.center && !currentInList ? `<option value="${note.center}" selected>${note.center} (직접 입력)</option>` : '';
+   centerFieldHtml = `<select class="tn-center" style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;cursor:pointer;background:white;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){const v=prompt('신규 센터명을 입력하세요');if(v){tiNotes[${i}].center=v.trim();renderTiNotes();}else{this.value=tiNotes[${i}].center||'';}}else{tiNotes[${i}].center=this.value;}"><option value="">센터 선택...</option>${centerOptions}${extraOption}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 신규 센터 직접 입력</option></select>`;
   }
  }
 
@@ -11226,6 +11826,44 @@ function renderTiNotes(){
  const dateFieldHtml = isAuto
   ? `<input type="text" value="${(note.date||'').replace(/"/g,'&quot;')}" readonly class="tn-date" style="width:70px;height:32px;border:1.5px solid #E2E0D8;background:#FAFAF8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex-shrink:0;color:#8A8676;cursor:not-allowed;">`
   : `<input type="text" value="${(note.date||'').replace(/"/g,'&quot;')}" placeholder="${ph.date}" class="tn-date" style="width:70px;height:32px;border:1.5px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex-shrink:0;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8';renderTiNotes();" oninput="tiNotes[${i}].date=this.value">`;
+
+ // ── 멀티 항목 카드 (휴강/보강/모의수업/주차료) ──
+ if(multiEntryCats.includes(note.cat) && !isAuto){
+  const hasAmt2 = ['신규(모의) 수업','주차료'].includes(note.cat);
+  const showAmtTotal = hasAmt2;
+  if(!Array.isArray(note.entries)) note.entries=[{date:note.date||'',center:note.center||'',text:'',amount:note.amount||0}];
+  // 합계 자동 계산
+  const total = note.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+  if(hasAmt2) tiNotes[i].amount = total;
+  const gridCols = hasAmt2 ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px';
+  const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용'};
+  const entryRows = note.entries.map((e,ei)=>{
+   const cOpts = monthCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
+   const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
+   const amtCell = hasAmt2 ? `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8';document.getElementById('me-total-${i}')&&(document.getElementById('me-total-${i}').textContent=tiNotes[${i}].entries.reduce((s,e)=>s+(Number(e.amount)||0),0).toLocaleString()+'원')" oninput="_updateEntry(${i},${ei},'amount',this.value)">` : '';
+   return `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
+    <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'date',this.value)">
+    <select style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){const v=prompt('센터명 입력');if(v)_updateEntry(${i},${ei},'center',v.trim());else this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>
+    <input type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[note.cat]||'내용'}" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'text',this.value)">
+    ${amtCell}
+    <button onclick="_removeEntry(${i},${ei})" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
+   </div>`;
+  }).join('');
+  const headerCols = hasAmt2 ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span style="font-size:10px;color:#B0A080;text-align:right;">금액</span><span></span>` : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span></span>`;
+  const totalRow = showAmtTotal ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1.5px solid ${s.border};"><span style="font-size:12px;color:${s.color};font-weight:600;">합계</span><span id="me-total-${i}" style="font-size:14px;font-weight:700;color:${s.color};">${total.toLocaleString()}원</span></div>` : '';
+  const deleteBtn2 = isAuto ? `<button style="margin-left:auto;width:28px;height:28px;border:none;background:#FEF3C7;color:#BA7517;border-radius:6px;cursor:help;font-size:13px;">🔒</button>` : `<button onclick="tiNotes.splice(${i},1);renderTiNotes();" style="margin-left:auto;width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:6px;cursor:pointer;font-size:13px;">✕</button>`;
+  row.innerHTML = `
+   <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+    <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${s.bg};color:${s.color};border:1px solid ${s.border};">${note.cat}</span>
+    ${deleteBtn2}
+   </div>
+   <div style="display:grid;grid-template-columns:${gridCols};gap:5px;margin-bottom:4px;padding:0 2px;">${headerCols}</div>
+   <div style="display:flex;flex-direction:column;gap:5px;">${entryRows}</div>
+   <button onclick="_addEntry(${i})" style="margin-top:8px;height:28px;padding:0 12px;border-radius:6px;border:1px dashed ${s.border};color:${s.color};background:transparent;font-size:12px;cursor:pointer;">＋ 항목 추가</button>
+   ${totalRow}`;
+  list.appendChild(row);
+  return;
+ }
 
  row.innerHTML = `
  ${autoBadge}
@@ -11616,19 +12254,40 @@ function submitTiData(){
  const _parkingCost = tiNotes.filter(n=>n.cat==='주차료').reduce((s,n)=>s+(n.amount||0),0);
  const _supplyCost = tiNotes.filter(n=>n.cat==='물품').reduce((s,n)=>s+(n.amount||0),0);
  const _etcCost = tiNotes.filter(n=>n.cat==='기타').reduce((s,n)=>s+(n.amount||0),0);
- // noteStr 빌드 (특이사항 날짜 + 텍스트 + 금액 합산)
  const _AMT_CATS = ['신규(모의) 수업', '주차료', '물품', '기타'];
- const noteStr = tiNotes.filter(n=>(n.text||n.content||'').trim()).map(n=>{
+ const noteStr = tiNotes.filter(n=>(n.text||n.content||'').trim()||(n.cat==='주차료'&&n.entries?.length)).map(n=>{
   const txt = (n.text||n.content||'').trim();
   const dateStr = n.date ? ` [${n.date}]` : '';
-  const amtStr = (_AMT_CATS.includes(n.cat) && n.amount) ? ` (${Number(n.amount).toLocaleString()}원)` : '';
-  return `${n.cat}${dateStr}: ${txt}${amtStr}`;
+  const centersArr = Array.isArray(n.centers) && n.centers.length ? n.centers : (n.center ? [n.center] : []);
+  const centerStr = centersArr.length ? ` (${centersArr.join(', ')})` : '';
+  // 멀티 항목 (휴강/보강/모의수업/주차료)
+  if(['휴강','보강','신규(모의) 수업','주차료'].includes(n.cat) && Array.isArray(n.entries) && n.entries.length){
+   const hasAmt = ['신규(모의) 수업','주차료'].includes(n.cat);
+   const entryStr = n.entries.filter(e=>e.date||e.center||e.text).map(e=>{
+    const parts = [e.date, e.center, e.text, (hasAmt&&e.amount)?Number(e.amount).toLocaleString()+'원':''].filter(Boolean);
+    return parts.join(' ');
+   }).join(' / ');
+   const total = n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   const totalStr = (hasAmt && total) ? ` · 합계 ${total.toLocaleString()}원` : '';
+   return `${n.cat} [${entryStr}]${totalStr}`;
+  }
+  const amtStr = (_AMT_CATS.includes(n.cat) && n.amount) ? ` · ${Number(n.amount).toLocaleString()}원` : '';
+  return `${n.cat}${dateStr}${centerStr}: ${txt}${amtStr}`;
  }).join('\n');
+ const notesData = tiNotes.filter(n=>(n.text||n.content||'').trim()||(n.cat==='주차료'&&n.entries?.length)).map(n=>({
+  cat: n.cat,
+  date: n.date||'',
+  centers: Array.isArray(n.centers) && n.centers.length ? n.centers : (n.center ? [n.center] : []),
+  entries: n.entries||null,
+  text: (n.text||n.content||'').trim(),
+  amount: n.amount||0
+ }));
  const submitData = {
  name: teacher,
  yearMonth: `${year}년 ${month}월`,
  account,
  note: noteStr,
+ notesData,
  dayGroups,
  lessons,
  totalSum,
@@ -11951,6 +12610,26 @@ function _renderHistoryCards(history) {
     if (km) submittedDate = `${km[2]}/${km[3]}`;
    }
   }
+  // 정산완료 여부: GAS isFinalized OR 현재 월이 아닌 과거 기록은 완료로 간주
+  const now = new Date();
+  const curYm = `${now.getFullYear()}년 ${now.getMonth()+1}월`;
+  const isPastMonth = (entry.yearMonth || '') !== curYm;
+  const isFinalized = entry.isFinalized === true || isPastMonth;
+  if(!isFinalized){
+   return `
+    <div style="border:1px solid #E5E2D0;border-radius:8px;margin-bottom:8px;background:white;">
+     <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+       <div style="font-size:13px;font-weight:600;color:#333;">📄 ${month}월 수업기록표</div>
+       <div style="font-size:10px;color:#888;margin-top:3px;">${year}년 · ${submittedDate} 제출</div>
+      </div>
+      <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#FEF3C7;color:#856404;font-weight:600;">⏳ 정산 중</span>
+     </div>
+     <div style="padding:8px 16px 12px;font-size:12px;color:#9B9888;border-top:1px solid #F0EDE8;">
+      정산 완료 후 내역을 확인하실 수 있어요
+     </div>
+    </div>`;
+  }
   return `
    <div class="history-card" data-yearmonth="${entry.yearMonth || ''}" onclick="toggleHistoryEntry(this)" style="border:1px solid #E5E2D0;border-radius:8px;margin-bottom:8px;cursor:pointer;background:white;transition:all .2s;">
     <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
@@ -11958,7 +12637,10 @@ function _renderHistoryCards(history) {
       <div style="font-size:13px;font-weight:600;color:#333;">📄 제출한 ${month}월 수업기록표 보기</div>
       <div style="font-size:10px;color:#888;margin-top:3px;">${year}년 · ${submittedDate} 제출</div>
      </div>
-     <span class="expand-icon" style="color:#888;font-size:11px;">▶</span>
+     <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#E8F5EE;color:#0F6E56;font-weight:600;">✅ 정산완료</span>
+      <span class="expand-icon" style="color:#888;font-size:11px;">▶</span>
+     </div>
     </div>
     <div class="history-detail" style="display:none;padding:0 16px 16px;border-top:1px solid #E5E2D0;overflow-x:auto;">
      <div style="padding:12px 0;color:#888;font-size:11px;text-align:center;">불러오는 중...</div>
@@ -12853,7 +13535,7 @@ function renderMobileLedger(){
    const delBtn2 = document.createElement('button');
    delBtn2.textContent='✕';
    delBtn2.style.cssText='width:22px;height:22px;border:none;background:#FEE2E2;color:#DC2626;border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;';
-   delBtn2.onclick=()=>{ g.centers.splice(ci,1); if(!g.centers.length) g.centers.push({name:'',attend:['','','','','']}); renderTiLedger(); };
+   delBtn2.onclick=()=>{ g.centers.splice(ci,1); if(!g.centers.length) tiDayGroups.splice(gi,1); renderTiLedger(); };
    delCell.appendChild(delBtn2);
    centerRow.appendChild(delCell);
    grid.appendChild(centerRow);
