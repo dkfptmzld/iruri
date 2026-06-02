@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.59</title>
+<title>수업기록표 정산 시스템 v13.61</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2178,7 +2178,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:57:39</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:05:49</div>
  </div>
 </div>
 
@@ -2238,21 +2238,170 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
   <!-- 탭 -->
   <div style="display:flex;border-bottom:1px solid var(--border);">
-   <button id="ntTab_manual" onclick="_switchNotifyTab('manual')" style="flex: 1 1 0%; padding: 10px; border-width: medium medium 2px; border-style: none none solid; border-color: currentcolor currentcolor transparent; border-image: initial; background: transparent; font-size: 12px; font-weight: 600; color: var(--text3); cursor: pointer;">수동 발송</button>
-   <button id="ntTab_auto" onclick="_switchNotifyTab('auto')" style="flex: 1 1 0%; padding: 10px; border-top-width: medium; border-right-width: medium; border-left-width: medium; border-top-style: none; border-right-style: none; border-left-style: none; border-top-color: currentcolor; border-right-color: currentcolor; border-left-color: currentcolor; border-image: initial; background: transparent; font-size: 12px; color: var(--green); border-bottom: 2px solid var(--green); cursor: pointer;">자동 설정 확인</button>
+   <button id="ntTab_manual" onclick="_switchNotifyTab('manual')" style="flex:1;padding:10px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--green);border-bottom:2px solid var(--green);cursor:pointer;">수동 발송</button>
+   <button id="ntTab_auto" onclick="_switchNotifyTab('auto')" style="flex:1;padding:10px;border:none;background:transparent;font-size:12px;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;">자동 설정 확인</button>
   </div>
   <!-- 수동 발송 탭 -->
-  <div id="ntPane_manual" style="padding: 16px 20px 20px; display: none;">
+  <div id="ntPane_manual" style="padding: 16px 20px 20px; display: block;">
    <div style="margin-bottom:14px;">
     <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:8px;">발송 대상</div>
     <div style="display:flex;gap:6px;">
-     <button onclick="_setNotifyTarget('all')" id="ntBtn_all" style="flex: 1 1 0%; padding: 8px; border-radius: 8px; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: var(--green); color: white; font-size: 12px; font-weight: 600; cursor: pointer;">전체 강사</button>
-     <button onclick="_setNotifyTarget('select')" id="ntBtn_select" style="flex: 1 1 0%; padding: 8px; border-radius: 8px; border-color: var(--border); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--text2); font-size: 12px; cursor: pointer;">직접 선택</button>
+     <button onclick="_setNotifyTarget('all')" id="ntBtn_all" style="flex: 1 1 0%; padding: 8px; border-radius: 8px; border-color: var(--border); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer;">전체 강사</button>
+     <button onclick="_setNotifyTarget('select')" id="ntBtn_select" style="flex: 1 1 0%; padding: 8px; border-radius: 8px; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: var(--green); color: white; font-size: 12px; cursor: pointer;">직접 선택</button>
     </div>
    </div>
-   <div id="ntTeacherSelect" style="display:none;margin-bottom:14px;">
+   <div id="ntTeacherSelect" style="display: block; margin-bottom: 14px;">
     <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;">강사 선택</div>
-    <div id="ntTeacherList" style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px;"></div>
+    <div id="ntTeacherList" style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px;"><div style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 3px;">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E6F1FB;color:#185FA5;">서울</span>
+        <span style="font-size:10px;color:var(--text3);">16명</span>
+        <button onclick="_ntSelectRegion('서울',this)" style="margin-left:auto;font-size:10px;color:#185FA5;border:none;background:none;cursor:pointer;padding:0;font-weight:600;">전체선택</button>
+      </div>
+      
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김은영" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김은영</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="오건" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">오건</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="구명훈" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">구명훈</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="송준기" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">송준기</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="정상준" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">정상준</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="양성모" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">양성모</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="이인경" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">이인경</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="조영미" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">조영미</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="윤혜미" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">윤혜미</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="장성기" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">장성기</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="변동" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">변동</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="박준형" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">박준형</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="양재원" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">양재원</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="신기윤" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">신기윤</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="이재하" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">이재하</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="이재열" class="nt-teacher-cb" style="accent-color:#185FA5;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">이재열</span>
+      </label>
+    </div><div style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 3px;">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E1F5EE;color:#0F6E56;">인천</span>
+        <span style="font-size:10px;color:var(--text3);">11명</span>
+        <button onclick="_ntSelectRegion('인천',this)" style="margin-left:auto;font-size:10px;color:#0F6E56;border:none;background:none;cursor:pointer;padding:0;font-weight:600;">전체선택</button>
+      </div>
+      
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="장호준" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">장호준</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김유천" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김유천</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="한수희" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">한수희</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="박기남" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">박기남</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김효민" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김효민</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="방진수" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">방진수</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김수민" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김수민</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="홍예은" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">홍예은</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="박종일" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">박종일</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="이재윤" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">이재윤</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김보창" class="nt-teacher-cb" style="accent-color:#0F6E56;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김보창</span>
+      </label>
+    </div><div style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 3px;">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EEE8FA;color:#5A3AB0;">수원</span>
+        <span style="font-size:10px;color:var(--text3);">5명</span>
+        <button onclick="_ntSelectRegion('수원',this)" style="margin-left:auto;font-size:10px;color:#5A3AB0;border:none;background:none;cursor:pointer;padding:0;font-weight:600;">전체선택</button>
+      </div>
+      
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="최정안" class="nt-teacher-cb" style="accent-color:#5A3AB0;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">최정안</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="안지훈" class="nt-teacher-cb" style="accent-color:#5A3AB0;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">안지훈</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="오수정" class="nt-teacher-cb" style="accent-color:#5A3AB0;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">오수정</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 5px 10px; cursor: pointer; border-radius: 6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="원보영" class="nt-teacher-cb" style="accent-color:#5A3AB0;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">원보영</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="김수도" class="nt-teacher-cb" style="accent-color:#5A3AB0;width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">김수도</span>
+      </label>
+    </div></div>
    </div>
    <div style="margin-bottom:10px;">
     <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:5px;">제목</div>
@@ -2265,7 +2414,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button id="ntSendBtn" onclick="_sendNotification()" style="width:100%;padding:11px;background:var(--green);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">📨 발송</button>
   </div>
   <!-- 자동 설정 탭 -->
-  <div id="ntPane_auto" style="display: block; padding: 16px 20px 20px;">
+  <div id="ntPane_auto" style="display:none;padding:16px 20px 20px;">
    <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">아래 3가지는 GAS에서 자동으로 발송돼요. 변경하려면 GAS 코드를 수정하세요.</div>
    <div style="display:flex;flex-direction:column;gap:8px;">
     <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
@@ -3298,7 +3447,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.59';
+const SYSTEM_VERSION='v13.61';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -16840,16 +16989,57 @@ function _openNotifyPanel(){
   const panel = document.getElementById('notifyPanel');
   if(!panel) return;
   panel.style.display='flex';
+  _switchNotifyTab('manual');
   _setNotifyTarget('all');
-  // 강사 목록 로드
+  // 강사 목록 - 지역별 그룹화
   const list = document.getElementById('ntTeacherList');
-  if(list && STATE.data?.teachers){
-    list.innerHTML = STATE.data.teachers.map(t=>`
-      <label style="display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
-        <input type="checkbox" value="${t.name}" style="accent-color:var(--green);width:14px;height:14px;">
-        <span style="font-size:12px;">${t.name}</span>
+  if(!list) return;
+  const teachers = (DB?.teachers || []).filter(t => t.name);
+  if(!teachers.length){ list.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px;">강사 데이터가 없어요. 강사 관리에서 강사를 추가해주세요.</div>'; return; }
+
+  // 지역별 색상
+  const regionColors = [
+    {bg:'#E6F1FB',color:'#185FA5'}, {bg:'#E1F5EE',color:'#0F6E56'},
+    {bg:'#EEE8FA',color:'#5A3AB0'}, {bg:'#FAEEDA',color:'#633806'},
+    {bg:'#FCEBEB',color:'#A32D2D'}, {bg:'#CCFBF1',color:'#0F766E'},
+    {bg:'#F0F9FF',color:'#0369A1'}, {bg:'#EAF3DE',color:'#3B6D11'},
+    {bg:'#FBEAF0',color:'#993556'},
+  ];
+  const regionMap = {};
+  teachers.forEach(t => {
+    const r = (t.region||'기타').trim()||'기타';
+    if(!regionMap[r]) regionMap[r]=[];
+    regionMap[r].push(t);
+  });
+  const regions = Object.keys(regionMap);
+  const getStyle = r => regionColors[regions.indexOf(r) % regionColors.length];
+
+  list.innerHTML = regions.map(region => {
+    const {bg, color} = getStyle(region);
+    const tList = regionMap[region];
+    const items = tList.map(t => `
+      <label style="display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <input type="checkbox" value="${t.name}" class="nt-teacher-cb" style="accent-color:${color};width:14px;height:14px;">
+        <span style="font-size:12px;color:var(--text1);">${t.name}</span>
       </label>`).join('');
-  }
+    return `<div style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 3px;">
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${color};">${region}</span>
+        <span style="font-size:10px;color:var(--text3);">${tList.length}명</span>
+        <button onclick="_ntSelectRegion('${region}',this)" style="margin-left:auto;font-size:10px;color:${color};border:none;background:none;cursor:pointer;padding:0;font-weight:600;">전체선택</button>
+      </div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+
+function _ntSelectRegion(region, btn){
+  const teachers = DB?.teachers || [];
+  const names = teachers.filter(t=>(t.region||'기타').trim()===region).map(t=>t.name);
+  const cbs = [...document.querySelectorAll('.nt-teacher-cb')].filter(cb=>names.includes(cb.value));
+  const allChecked = cbs.every(cb=>cb.checked);
+  cbs.forEach(cb=>cb.checked=!allChecked);
+  btn.textContent = allChecked ? '전체선택' : '전체해제';
 }
 
 function _closeNotifyPanel(){
@@ -16878,7 +17068,7 @@ async function _sendNotification(){
 
   let targets = _ntTarget;
   if(_ntTarget==='select'){
-    const checked = [...document.querySelectorAll('#ntTeacherList input:checked')].map(el=>el.value);
+    const checked = [...document.querySelectorAll('.nt-teacher-cb:checked')].map(el=>el.value);
     if(!checked.length){ showToast('강사를 선택해주세요'); return; }
     targets = checked;
   }
