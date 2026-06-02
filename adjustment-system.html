@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" style="--font-scale: 1;"><head>
+<html lang="ko"><head>
 <style>#adminTopbar{display:none!important}#adminTopbar.visible{display:flex!important}</style><!-- v11.30: 깜빡임 방지 -->
 <meta charset="UTF-8">
   <!-- ═══ PWA v11.30 ═══ -->
@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.64</title>
+<title>수업기록표 정산 시스템 v13.65</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -864,7 +864,7 @@ body.edit-mode-active .ledger-wrap textarea {
  #presenceWidget{ display:none!important; }
 }
 </style>
-<style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
+</head>
 <body>
 
 <!-- ══════════════════════════════════
@@ -902,7 +902,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
  <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
- <div id="login-err" style="color: rgb(229, 57, 53); font-size: 12px; margin-bottom: 12px; display: none;">비밀번호가 틀렸습니다</div>
+ <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
@@ -930,7 +930,7 @@ body.edit-mode-active .ledger-wrap textarea {
  이미 계정이 있나요? <span onclick="switchLoginTab('login')" style="color:#1A7A50;font-weight:600;cursor:pointer;">로그인</span>
  </div>
  <div style="text-align:center;margin-top:8px;">
- <span onclick="showConfirm({icon:'⚠️',title:'계정 초기화',desc:'모든 강사 계정을 초기화할까요?',okText:'초기화',okStyle:'danger',onOk:()=&gt;{localStorage.removeItem('iruri_teacher_accounts');initLoginScreen();showToast('계정 초기화 완료');}});" style="font-size:11px;color:#C8C6B8;cursor:pointer;">계정 초기화 (오류 시)</span>
+ <span onclick="showConfirm({icon:'⚠️',title:'계정 초기화',desc:'모든 강사 계정을 초기화할까요?',okText:'초기화',okStyle:'danger',onOk:()=>{localStorage.removeItem('iruri_teacher_accounts');initLoginScreen();showToast('계정 초기화 완료');}});" style="font-size:11px;color:#C8C6B8;cursor:pointer;">계정 초기화 (오류 시)</span>
  </div>
  </div>
  </div>
@@ -1350,15 +1350,23 @@ body.edit-mode-active .ledger-wrap textarea {
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">9+</span></button>
+<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: none; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;"></span></button>
  </div>
- <div id="adminTimerChip" style="display: flex; background: var(--green-bg); border-color: var(--green); color: var(--green);" title="남은 세션 시간 (활동 시 자동 갱신)">
+ <div id="adminTimerChip" style="display:none;" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
   <span id="adminTimerText">30:00</span>
   <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
  </div>
- <div class="topbar-right" id="topbarRight"><span class="chip">월을 선택하거나 제출 데이터를 반영하세요</span></div>
- <button onclick="_openNotifyPanel()" style="font-size:12px;background:#1A7A50;color:white;border-color:#1A7A50;font-weight:600;display:flex;align-items:center;gap:5px;" class="btn"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M18 8.5c0-.28-.22-.5-.5-.5H17V5c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3h.5c.28 0 .5-.22.5-.5v-3zM9.5 14.5l-2-2.5H6v2.5H4.5v-9h3.5c1.38 0 2.5 1.12 2.5 2.5 0 .92-.5 1.71-1.24 2.14L11.5 14.5H9.5zm5.5 0h-1.5v-9H15v9zM6 10.5h2c.55 0 1-.45 1-1s-.45-1-1-1H6v2z"></path></svg> 알림 발송</button>
+ <div class="topbar-right" id="topbarRight">
+ <span class="chip green">2026년 4월</span>
+ <div style="display:flex;gap:4px;align-items:center;">
+ 
+ 
+ </div>
+ <!-- v12.47: CSV 다운로드 버튼 제거 (박기남님 요청) -->
+ <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
+ <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
+ <button onclick="_openNotifyPanel()" style="font-size:12px;background:#1A7A50;color:white;border-color:#1A7A50;font-weight:600;display:flex;align-items:center;gap:5px;" class="btn"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M18 8.5c0-.28-.22-.5-.5-.5H17V5c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3h.5c.28 0 .5-.22.5-.5v-3zM9.5 14.5l-2-2.5H6v2.5H4.5v-9h3.5c1.38 0 2.5 1.12 2.5 2.5 0 .92-.5 1.71-1.24 2.14L11.5 14.5H9.5zm5.5 0h-1.5v-9H15v9zM6 10.5h2c.55 0 1-.45 1-1s-.45-1-1-1H6v2z"/></svg> 알림 발송</button>
  <button id="githubUploadBtn" onclick="githubUpload()" class="btn" style="font-size:12px;background:#24292e;color:white;border-color:#24292e;font-weight:600;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 98 96" style="width:14px;height:14px;fill:white;"><path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> GitHub 업로드</button>
  
 <button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
@@ -1369,7 +1377,7 @@ body.edit-mode-active .ledger-wrap textarea {
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
 </button>
-<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/31 오후 07:43 · 강사 32명 · 센터 294개</span>
+<span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 5/2 오후 11:59 · 강사 32명 · 센터 314개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
 <button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
@@ -1391,126 +1399,10 @@ body.edit-mode-active .ledger-wrap textarea {
 <!-- 정산 뷰 -->
 <div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
- <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
-  <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
-  <div style="display:flex;gap:5px;margin-bottom:12px;">
-   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="2024">2024년</option><option value="2025">2025년</option><option value="2026" selected="">2026년</option></select>
-   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6" selected="">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-  </div>
-  <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;">
-   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-    <span style="font-size:12px;font-weight:600;color:var(--green);">0명 제출</span>
-    <span style="font-size:10px;color:var(--text3);">0 / 32명</span>
-   </div>
-   <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
-    <div style="width:0%;height:100%;background:var(--green);border-radius:3px;transition:width .3s;"></div>
-   </div>
-  </div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label" style="border-left:3px solid #185FA5;padding-left:7px;">서울 <span style="font-size:10px;font-weight:400;opacity:.6;">0/16</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">김</div>
-     <div class="t-info"><div class="t-name">김은영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">오</div>
-     <div class="t-info"><div class="t-name">오건</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">구</div>
-     <div class="t-info"><div class="t-name">구명훈</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">송</div>
-     <div class="t-info"><div class="t-name">송준기</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">정</div>
-     <div class="t-info"><div class="t-name">정상준</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
-     <div class="t-info"><div class="t-name">양성모</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이인경</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">조</div>
-     <div class="t-info"><div class="t-name">조영미</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">윤</div>
-     <div class="t-info"><div class="t-name">윤혜미</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">장</div>
-     <div class="t-info"><div class="t-name">장성기</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">변</div>
-     <div class="t-info"><div class="t-name">변동</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">박</div>
-     <div class="t-info"><div class="t-name">박준형</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
-     <div class="t-info"><div class="t-name">양재원</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">신</div>
-     <div class="t-info"><div class="t-name">신기윤</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이재하</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이재열</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="region-group-label" style="border-left:3px solid #0F6E56;padding-left:7px;">인천 <span style="font-size:10px;font-weight:400;opacity:.6;">0/11</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">장</div>
-     <div class="t-info"><div class="t-name">장호준</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김유천</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">한</div>
-     <div class="t-info"><div class="t-name">한수희</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">박</div>
-     <div class="t-info"><div class="t-name">박기남</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김효민</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">방</div>
-     <div class="t-info"><div class="t-name">방진수</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김수민</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">홍</div>
-     <div class="t-info"><div class="t-name">홍예은</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">박</div>
-     <div class="t-info"><div class="t-name">박종일</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">이</div>
-     <div class="t-info"><div class="t-name">이재윤</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김보창</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="region-group-label" style="border-left:3px solid #534AB7;padding-left:7px;">수원 <span style="font-size:10px;font-weight:400;opacity:.6;">0/5</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">최</div>
-     <div class="t-info"><div class="t-name">최정안</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">안</div>
-     <div class="t-info"><div class="t-name">안지훈</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">오</div>
-     <div class="t-info"><div class="t-name">오수정</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">원</div>
-     <div class="t-info"><div class="t-name">원보영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">김</div>
-     <div class="t-info"><div class="t-name">김수도</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div></div>
+ <div id="month-selector" style="display:none;"></div>
+ <div class="teacher-scroll" id="teacherList"></div>
  </div>
- <div class="content" id="mainContent">
-  <div class="upload-wrap">
-   <div style="text-align:center;color:var(--text3);font-size:14px;padding:40px;line-height:2;">
-    📅 좌측 사이드바에서 월을 선택해 수업기록표를 불러오거나<br>
-    강사 제출 배너에서 <b>반영하기</b>를 눌러 데이터를 업데이트하세요
-   </div>
-  </div></div>
+ <div class="content" id="mainContent"></div>
 </div>
 <!-- 강사 관리 뷰 -->
 <div class="mgr-view" id="teachersView" style="display: none;">
@@ -1739,7 +1631,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
   <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:35:05</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
  </div>
 </div>
 
@@ -1775,14 +1667,14 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- 커스텀 confirm 모달 -->
-<div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
- <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🔔</div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">알림 수신 동의</h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;">정산이 완료되면 휴대폰으로 알림을 보내드려요.<br><br><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;">• 정산 완료 시 즉시 알림<br>• 수업기록표 제출 안내 (매월)<br>• 관리자 공지사항</div><br><span style="font-size:11px;color:var(--text3);">언제든 브라우저 설정에서 끌 수 있어요.</span></p>
+<div class="modal-overlay" id="confirmOverlay" style="display:none;" onclick="if(event.target===this)_confirmCancel()">
+ <div class="modal" style="max-width:360px;padding:24px 24px 20px;">
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;"></div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;"></h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"></p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
-   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">나중에</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px;">허용하기</button>
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width:90px;">확인</button>
   </div>
  </div>
 </div>
@@ -1857,11 +1749,11 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
  </div>
 </div>
-<div id="globalLoader" class="">
+<div id="globalLoader">
  <div class="loader-card">
   <div class="loader-spinner"></div>
-  <div class="loader-text" id="loaderText">GitHub에 업로드하는 중...</div>
-  <div class="loader-sub" id="loaderSub">완료까지 잠시 기다려주세요</div>
+  <div class="loader-text" id="loaderText">불러오는 중...</div>
+  <div class="loader-sub" id="loaderSub"></div>
  </div>
 </div>
 
@@ -2859,7 +2751,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.64';
+const SYSTEM_VERSION='v13.65';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -16539,7 +16431,7 @@ async function subscribeFCM(teacherName){
     _initFCM();
     const perm = await Notification.requestPermission();
     if(perm !== 'granted') return null;
-    const reg = await navigator.serviceWorker.register('/iruri/firebase-messaging-sw.js');
+    const reg = await navigator.serviceWorker.register('/iruri/sw.js');
     await navigator.serviceWorker.ready;
     const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID, serviceWorkerRegistration: reg });
     if(!token){ console.warn('FCM 토큰 발급 실패'); return null; }

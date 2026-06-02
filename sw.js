@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════
-   이루리 실버아카데미 — Service Worker v1.2
+   이루리 실버아카데미 — Service Worker v2.0
    전략: 네트워크 우선 (항상 최신 버전)
-   - HTML은 절대 캐시 안 함 (버전 업데이트 즉시 반영)
-   - 아이콘/manifest만 캐시
+   + Firebase Cloud Messaging 푸시 알림 지원
 ═══════════════════════════════════════════ */
 const CACHE_NAME = 'iruri-v2';
 const STATIC_ASSETS = [
@@ -29,26 +28,15 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   const url = e.request.url;
-
-  // http/https만 처리
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
-
-  // GAS 요청 캐시 제외
   if (url.includes('script.google.com')) return;
-
-  // GET만 처리
   if (e.request.method !== 'GET') return;
-
-  // HTML 파일은 항상 네트워크 우선 (캐시 저장 안 함)
-  // → 새 버전 배포 시 즉시 반영, 임시저장 데이터 유실 방지
   if (url.includes('.html')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))
     );
     return;
   }
-
-  // 아이콘/manifest: 캐시 우선
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
@@ -59,6 +47,46 @@ self.addEventListener('fetch', e => {
         }
         return res;
       });
+    })
+  );
+});
+
+/* ═══ Firebase Cloud Messaging ═══ */
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyB7Ek_fy1kQX10bMgU-c-wl15cQ8qsPxDw",
+  authDomain: "iruri-settlement.firebaseapp.com",
+  projectId: "iruri-settlement",
+  storageBucket: "iruri-settlement.firebasestorage.app",
+  messagingSenderId: "34878096416",
+  appId: "1:34878096416:web:7cafa9e7faf45376092845"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage(payload => {
+  const title = payload.notification?.title || '이루리 정산 시스템';
+  const body  = payload.notification?.body  || '';
+  self.registration.showNotification(title, {
+    body,
+    icon: '/iruri/icon-192.png',
+    badge: '/iruri/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { url: 'https://dkfptmzld.github.io/iruri/adjustment-system.html' }
+  });
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(list => {
+      const url = e.notification.data?.url || 'https://dkfptmzld.github.io/iruri/adjustment-system.html';
+      for (const c of list) {
+        if (c.url === url && 'focus' in c) return c.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });
