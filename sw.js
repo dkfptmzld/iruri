@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   이루리 실버아카데미 — Service Worker v2.0
+   이루리 실버아카데미 — Service Worker v2.1
    전략: 네트워크 우선 (항상 최신 버전)
    + Firebase Cloud Messaging 푸시 알림 지원
 ═══════════════════════════════════════════ */
@@ -67,14 +67,25 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
-  const title = payload.notification?.title || '이루리 정산 시스템';
-  const body  = payload.notification?.body  || '';
-  self.registration.showNotification(title, {
-    body,
-    icon: '/iruri/icon-192.png',
-    badge: '/iruri/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: { url: 'https://dkfptmzld.github.io/iruri/adjustment-system.html' }
+  // data 페이로드 우선, notification 필드는 폴백
+  const title = payload.data?.title || payload.notification?.title || '이루리 정산 시스템';
+  const body  = payload.data?.body  || payload.notification?.body  || '';
+
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+    const foreground = clientList.filter(c => c.visibilityState === 'visible');
+    if (foreground.length > 0) {
+      // 앱 열려있음(포그라운드) → postMessage로 앱에 전달, 시스템 알림 생략
+      foreground.forEach(c => c.postMessage({ type: 'FCM_FOREGROUND', title, body }));
+      return;
+    }
+    // 백그라운드/종료 → 시스템 알림 1개만
+    self.registration.showNotification(title, {
+      body,
+      icon: '/iruri/icon-192.png',
+      badge: '/iruri/icon-192.png',
+      vibrate: [200, 100, 200],
+      data: { url: 'https://dkfptmzld.github.io/iruri/adjustment-system.html' }
+    });
   });
 });
 
