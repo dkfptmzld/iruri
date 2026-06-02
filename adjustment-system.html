@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.72</title>
+<title>수업기록표 정산 시스템 v13.73</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -902,7 +902,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
  <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
- <div id="login-err" style="color: rgb(229, 57, 53); font-size: 12px; margin-bottom: 12px; display: none;">비밀번호가 틀렸습니다</div>
+ <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
@@ -1739,7 +1739,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
   <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 11:17:24</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 11:23:26</div>
  </div>
 </div>
 
@@ -2859,7 +2859,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.72';
+const SYSTEM_VERSION='v13.73';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -16530,7 +16530,7 @@ function _showNotifyBanner(title, body){
         <div id="notifyBannerBody" style="font-size:13px;color:var(--text2);line-height:1.5;"></div>
       </div>
       <div style="border-top:1px solid var(--border);">
-        <button onclick="document.getElementById('notifyBanner').style.display='none'" style="width:100%;padding:12px;border:none;background:none;font-size:14px;font-weight:600;color:var(--green);cursor:pointer;">확인</button>
+        <button onclick="document.getElementById('notifyBanner').style.display='none';var ov=document.getElementById('notifyBannerOverlay');if(ov)ov.style.display='none';" style="width:100%;padding:12px;border:none;background:none;font-size:14px;font-weight:600;color:var(--green);cursor:pointer;">확인</button>
       </div>`;
     document.body.appendChild(el);
   }
