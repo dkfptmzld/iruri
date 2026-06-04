@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.77</title>
+<title>수업기록표 정산 시스템 v13.78</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1410,7 +1410,7 @@ body.edit-mode-active .ledger-wrap textarea {
   </div></div>
  <div class="teacher-scroll" id="teacherList"><div class="region-group-label" style="border-left:3px solid #185FA5;padding-left:7px;">서울 <span style="font-size:10px;font-weight:400;opacity:.6;">16/17</span></div><div class="t-item " id="ti-18" onclick="selT(18)" style="position:relative;border-left:3px solid #185FA5;">
      <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">김</div>
-     <div class="t-info"><div class="t-name">김은영<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(18)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">773,600 원</div></div>
+     <div class="t-info"><div class="t-name">김은영<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(18)" title="클릭하면 미완료로 변경">✓ 완료</span></div><div class="t-pay">812,280 원</div></div>
      <span onclick="event.stopPropagation();deleteTeacherRecord(18)" class="t-del-btn" title="김은영 기록 삭제">✕</span>
     </div><div class="t-item " id="ti-19" onclick="selT(19)" style="position:relative;border-left:3px solid #185FA5;">
      <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">오</div>
@@ -2169,7 +2169,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
   <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 08:29:19</div>
  </div>
 </div>
 
@@ -3289,7 +3289,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.77';
+const SYSTEM_VERSION='v13.78';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -5431,6 +5431,9 @@ function selectCenter(centerName, fee){
  lsSave();
  recalcTeacher(ti);
  closeCenterPicker();
+ STATE.cur = ti;
+ document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
+ document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
  // v11.33 fix: 수업기록표 즉시 저장 (updateFee 패턴 동일)
  //            누락 시 "처음으로" 클릭 후 다시 들어오면 센터 변경 사라짐
@@ -5510,6 +5513,9 @@ function syncAccountInput(ti, val){
 
 function updateExtraCost(ti, field, val){
  if (_checkEditMode()) return;
+ STATE.cur = ti;
+ document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
+ document.getElementById(`ti-${ti}`)?.classList.add('active');
  const t=STATE.data.teachers[ti];
  t[field]=parseInt(val)||0;
  lsSave();
@@ -6012,6 +6018,9 @@ function _addAdminNote(ti, cat){
  t.notesData.push(newNote);
  const ym=t.yearMonth||STATE.data.teachers[0]?.yearMonth||'';
  if(ym) saveMonthlySnapshot(ym,STATE.data);
+ STATE.cur = ti;
+ document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
+ document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
  setTimeout(()=>_startNoteEdit(ti,t.notesData.length-1),50);
  showToast('✅ 특이사항 항목 추가됨');
@@ -6054,6 +6063,9 @@ function _saveOldNote(ti){
   gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note, notesData:t.notesData||null}).catch(()=>{});
  }
  _cancelNoteEdit(ti);
+ STATE.cur = ti;
+ document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
+ document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
  showToast('✅ 특이사항 저장됨');
 }
@@ -6163,6 +6175,9 @@ function _saveNoteEdit(ti, ni){
  if(ym) saveMonthlySnapshot(ym,STATE.data);
  if(t.settleStatus==='done') gasPost({action:'finalizeSettlement',teacher:t.name,yearMonth:ym,note:t.note,notesData:t.notesData}).catch(()=>{});
  _cancelNoteEdit(ti);
+ STATE.cur = ti;
+ document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
+ document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
  showToast('✅ 특이사항 저장됨');
 }
