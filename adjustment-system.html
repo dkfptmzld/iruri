@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.82</title>
+<title>수업기록표 정산 시스템 v13.84</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -865,7 +865,7 @@ body.edit-mode-active .ledger-wrap textarea {
 }
 </style>
 <style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
-<body class="edit-mode-active">
+<body>
 
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
@@ -1387,9 +1387,9 @@ body.edit-mode-active .ledger-wrap textarea {
 </div>
 
 <!-- v11.41: 편집 모드 안내 배너 (편집 모드일 때만 표시) -->
-<div id="editModeBanner" style="display: flex; position: sticky; top: 52px; z-index: 199; background: rgb(255, 243, 205); border-bottom: 2px solid rgb(255, 215, 0); padding: 8px 20px; font-size: 13px; color: rgb(133, 100, 4); font-weight: 600; align-items: center; gap: 12px;">
+<div id="editModeBanner" style="display:none;position:sticky;top:52px;z-index:199;background:#FFF3CD;border-bottom:2px solid #FFD700;padding:8px 20px;font-size:13px;color:#856404;font-weight:600;align-items:center;gap:12px;">
  <span style="font-size:14px;">✏️ 편집 모드</span>
- <span style="font-weight:400;">변경사항 <span id="editChangeCount" style="font-weight:700;color:#D32F2F;">2</span>개 — 저장 또는 취소 버튼을 눌러 종료하세요</span>
+ <span style="font-weight:400;">변경사항 <span id="editChangeCount" style="font-weight:700;color:#D32F2F;">0</span>개 — 저장 또는 취소 버튼을 눌러 종료하세요</span>
 </div>
 
 <style>
@@ -1422,7 +1422,7 @@ body.edit-mode-active .ledger-wrap textarea {
      <span onclick="event.stopPropagation();deleteTeacherRecord(18)" class="t-del-btn" title="김은영 기록 삭제">✕</span>
     </div><div class="t-item active" id="ti-19" onclick="selT(19)" style="position:relative;border-left:3px solid #185FA5;">
      <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">오</div>
-     <div class="t-info"><div class="t-name">오건<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(19)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,663,240 원</div></div>
+     <div class="t-info"><div class="t-name">오건<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(19)" title="클릭하면 완료로 변경">미정산</span></div><div class="t-pay">1,624,560 원</div></div>
      <span onclick="event.stopPropagation();deleteTeacherRecord(19)" class="t-del-btn" title="오건 기록 삭제">✕</span>
     </div><div class="t-item" id="ti-13" onclick="selT(13)" style="position:relative;border-left:3px solid #185FA5;">
      <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 18%,white);color:#185FA5;">구</div>
@@ -1558,10 +1558,10 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  </div>
  <div class="metrics">
- <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">43<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
- <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">2,395,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">675,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
- <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">1,663,240<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">총 수업 횟수</div><div class="metric-value">42<span style="font-size:14px;font-weight:400;color:var(--text3);margin-left:2px;">회</span></div></div>
+ <div class="metric"><div class="metric-label">수업료 합계</div><div class="metric-value">2,335,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">영업 이익</div><div class="metric-value blue">655,000<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
+ <div class="metric"><div class="metric-label">확정 월급</div><div class="metric-value green">1,624,560<span style="font-size:12px;color:var(--text3);margin-left:2px;">원</span></div></div>
  </div>
  <div>
  <div class="tabs-bar">
@@ -1573,8 +1573,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div id="tabBody"><div class="ledger-wrap">
  <div class="ledger-title-row" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;">
   <div class="ledger-title" style="margin:0;">2026년 5월 수업 기록표 ( 오건 ) 강사</div>
-  <div class="edit-controls" style="display:flex;gap:6px;"><button onclick="saveEdits()" class="edit-mode-action-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #1A7A50;background:#1A7A50;color:white;font-weight:600;cursor:pointer;font-size:13px;">💾 저장 (<span class="edit-count-num">2</span>)</button>
-       <button onclick="cancelEdits()" class="edit-mode-action-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #A03020;background:#fff;color:#A03020;font-weight:600;cursor:pointer;font-size:13px;">❌ 취소</button></div>
+  <div class="edit-controls" style="display:flex;gap:6px;"><button onclick="startEditMode()" class="edit-mode-start-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #FFD700;background:#FFF3CD;color:#856404;font-weight:600;cursor:pointer;font-size:13px;">✏️ 편집 시작</button></div>
  </div>
   <div style="overflow-x:auto;">
  <table class="ledger-table">
@@ -1645,7 +1644,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  <td style="background:#F8F7F2;border:1px solid #E2E0D8;"></td>
  </tr><tr>
- <td class="day-cell" rowspan="5" style="border-right:2px solid #AAA8A0;">화</td>
+ <td class="day-cell" rowspan="4" style="border-right:2px solid #AAA8A0;">화</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
  <td style="background:#E8E6DC;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;"></td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">5일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">12일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">19일</td><td style="background:#F0EFE6;font-size:10px;color:#666;font-weight:600;text-align:center;padding:2px 3px;border:1px solid #C8C6B8;">26일</td>
  <td style="background:#F0EFE6;border:1px solid #C8C6B8;"></td>
@@ -1685,17 +1684,6 @@ body.edit-mode-active .ledger-wrap textarea {
  <td style="width:28px;"></td>
  <td class="fee-cell"><input type="number" value="55000" onchange="updateFee(19,5,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
  <td class="amt-cell">220,000</td>
- </tr><tr>
- <td class="center-cell" title="대상행사" onclick="openCenterPicker(19,16,this)">
- <span class="">대상행사</span>
- 
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(19,16)" title="대상행사 삭제">✕</button>
- </td>
- <td class="attend-cell att-x" style="pointer-events:none;opacity:.45;" title="해당 없음">X</td><td class="attend-cell att-empty" onclick="toggleAttend(19,16,1)" title="5일"></td><td class="attend-cell att-o" onclick="toggleAttend(19,16,2)" title="12일">O</td><td class="attend-cell att-empty" onclick="toggleAttend(19,16,3)" title="19일"></td><td class="attend-cell att-empty" onclick="toggleAttend(19,16,4)" title="26일"></td>
- <td class="count-cell">1</td>
- <td style="width:28px;"></td>
- <td class="fee-cell"><input type="number" value="60000" onchange="updateFee(19,16,this.value)" style="width:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'DM Mono',monospace;text-align:right;padding:0 4px;"></td>
- <td class="amt-cell">60,000</td>
  </tr><tr style="background:#F8F7F2;">
  <td colspan="2" style="padding:4px 8px;border:1px solid #E2E0D8;">
   <button onclick="openAddLessonModal(19,'화')" style="width:100%;height:26px;border:1px dashed #1A7A50;border-radius:6px;background:transparent;color:#1A7A50;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;">
@@ -1896,8 +1884,8 @@ body.edit-mode-active .ledger-wrap textarea {
  <tr class="ledger-foot">
  <td colspan="7"></td>
  <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">40,000원/회</td>
- <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">2,395,000</td>
- <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">1,720,000</td>
+ <td colspan="2" style="font-family:'DM Mono',monospace;font-size:13px;font-weight:700;">2,335,000</td>
+ <td style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:#1A5FA0;">1,680,000</td>
  </tr>
  </tfoot>
  </table>
@@ -1916,15 +1904,16 @@ body.edit-mode-active .ledger-wrap textarea {
  <th class="cost-col">주차료</th>
  <th class="cost-col">물품</th>
  <th class="cost-col">기타</th>
+ <th class="cost-col" style="background:#FDF3DC;border-color:#EF9F27;">대상행사<div class="cost-hint">3.3% 공제</div></th>
  </tr>
  </thead>
  <tbody>
  <tr>
  <td style="font-weight:700;color:#1A5FA0;">40,000원/회</td>
- <td style="font-weight:700;">₩2,395,000</td>
- <td style="font-weight:700;color:#1A5FA0;">₩1,720,000</td>
- <td style="font-weight:700;color:#1A7A50;">+675,000</td>
- <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩1,663,240</td>
+ <td style="font-weight:700;">₩2,335,000</td>
+ <td style="font-weight:700;color:#1A5FA0;">₩1,680,000</td>
+ <td style="font-weight:700;color:#1A7A50;">+655,000</td>
+ <td style="font-weight:700;color:#1A7A50;font-size:14px;">₩1,624,560</td>
  <td class="cost-col">
  <div style="font-size:11px;color:#888;margin-bottom:3px;">자동: △1회 = 20,000원</div>
  <input type="number" class="cost-input" placeholder="0" value="20000" onchange="updateExtraCost(19,'mockLesson',this.value)" min="0">
@@ -1932,6 +1921,9 @@ body.edit-mode-active .ledger-wrap textarea {
  <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(19,'parkingCost',this.value)" min="0"></td>
  <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(19,'supplyCost',this.value)" min="0"></td>
  <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="0" onchange="updateExtraCost(19,'etcCost',this.value)" min="0"></td>
+ <td class="cost-col" style="background:#FDF3DC;border-color:#EF9F27;">
+  <input type="number" class="cost-input" value="50000" readonly="" style="background:#FDF3DC;border-color:#EF9F27;color:#854F0B;cursor:default;" title="특이사항 대상행사 합계 (읽기 전용)">
+ </td>
  </tr>
  <tr class="cost-display-row">
  <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액</td>
@@ -1939,6 +1931,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <td class="cost-col" id="extraParking-19" style="font-weight:700;font-size:13px;color:#5A3AB0;">-</td>
  <td class="cost-col" id="extraSupply-19" style="font-weight:700;font-size:13px;color:#0F766E;">-</td>
  <td class="cost-col" id="extraEtc-19" style="font-weight:700;font-size:13px;color:#0369A1;">-</td>
+ <td class="cost-col" id="extraEvent-19" style="font-weight:700;font-size:13px;color:#854F0B;background:#FDF3DC;border-color:#EF9F27;">₩48,350</td>
  </tr>
  </tbody>
  </table>
@@ -1961,6 +1954,13 @@ body.edit-mode-active .ledger-wrap textarea {
      
      <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;"><span style="font-size:11px;color:#666;">05.22 엔젤 모의수업 진행 20,000원</span></div>
      <span style="font-size:11px;font-weight:500;color:#0F6E56;white-space:nowrap;">합계 20,000원</span>
+     <span style="font-size:11px;color:#C8A020;margin-left:auto;flex-shrink:0;">✏️</span>
+    </div><div class="note-view-row" onclick="_startNoteEdit(19,1)" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FDF3DC;color:#854F0B;white-space:nowrap;flex-shrink:0;">대상행사</span>
+     
+     
+     <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;"><span style="font-size:11px;color:#666;">5/11 대상행사 50,000원</span></div>
+     <span style="font-size:11px;font-weight:500;color:#854F0B;white-space:nowrap;">합계 50,000원</span>
      <span style="font-size:11px;color:#C8A020;margin-left:auto;flex-shrink:0;">✏️</span>
     </div></div>
  <div id="noteInlineEditor-19"></div>
@@ -2217,7 +2217,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:51:00</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:59:10</div>
  </div>
 </div>
 
@@ -2255,12 +2255,12 @@ body.edit-mode-active .ledger-wrap textarea {
 <!-- 커스텀 confirm 모달 -->
 <div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
  <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🔔</div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">알림 수신 동의</h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;">정산이 완료되면 휴대폰으로 알림을 보내드려요.<br><br><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;">• 정산 완료 시 즉시 알림<br>• 수업기록표 제출 안내 (매월)<br>• 관리자 공지사항</div><br><span style="font-size:11px;color:var(--text3);">언제든 브라우저 설정에서 끌 수 있어요.</span></p>
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">✅</div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">정산 완료 처리</h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;"><b>오건</b> 강사를 <b style="color:var(--green)">정산 완료</b>로 표시할까요?</p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
-   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">나중에</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px;">허용하기</button>
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">취소</button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: var(--green); color: white; border-color: var(--green); font-weight: 700;">완료 처리</button>
   </div>
  </div>
 </div>
@@ -3337,7 +3337,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.82';
+const SYSTEM_VERSION='v13.84';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -5172,6 +5172,7 @@ function renderLedger(ti){
  <th class="cost-col">주차료</th>
  <th class="cost-col">물품</th>
  <th class="cost-col">기타</th>
+ <th class="cost-col" style="background:#FDF3DC;border-color:#EF9F27;">대상행사<div class="cost-hint">3.3% 공제</div></th>
  </tr>
  </thead>
  <tbody>
@@ -5192,6 +5193,9 @@ function renderLedger(ti){
  onchange="updateExtraCost(${ti},'supplyCost',this.value)" min="0"></td>
  <td class="cost-col"><input type="number" class="cost-input" placeholder="0" value="${t.etcCost||0}"
  onchange="updateExtraCost(${ti},'etcCost',this.value)" min="0"></td>
+ <td class="cost-col" style="background:#FDF3DC;border-color:#EF9F27;">
+  ${(()=>{ const ev=(t.notesData||[]).filter(n=>n.cat==='대상행사'); const evTotal=ev.reduce((s,n)=>s+(Array.isArray(n.entries)?n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0):(Number(n.amount)||0)),0); return evTotal>0?`<input type="number" class="cost-input" value="${evTotal}" readonly style="background:#FDF3DC;border-color:#EF9F27;color:#854F0B;cursor:default;" title="특이사항 대상행사 합계 (읽기 전용)">`:'<input type="number" class="cost-input" placeholder="0" value="0" readonly style="background:#FDF3DC;border-color:#EF9F27;color:#854F0B;cursor:default;">'; })()}
+ </td>
  </tr>
  <tr class="cost-display-row">
  <td colspan="5" style="text-align:right;color:#555;font-size:11px;padding:6px 12px;">추가 지급액${(t.costExtra||t.otherCost)?` <span style="color:#BA7517;font-size:10px;">⚠️ 과거 통합 비용 있음 (₩${((t.costExtra||0)+(t.otherCost||0)).toLocaleString()})</span>`:''}</td>
@@ -5199,6 +5203,7 @@ function renderLedger(ti){
  <td class="cost-col" id="extraParking-${ti}" style="font-weight:700;font-size:13px;color:#5A3AB0;">${t.parkingCost?'₩'+Number(t.parkingCost).toLocaleString():'-'}</td>
  <td class="cost-col" id="extraSupply-${ti}" style="font-weight:700;font-size:13px;color:#0F766E;">${t.supplyCost?'₩'+Number(t.supplyCost).toLocaleString():'-'}</td>
  <td class="cost-col" id="extraEtc-${ti}" style="font-weight:700;font-size:13px;color:#0369A1;">${t.etcCost?'₩'+Number(t.etcCost).toLocaleString():'-'}</td>
+ <td class="cost-col" id="extraEvent-${ti}" style="font-weight:700;font-size:13px;color:#854F0B;background:#FDF3DC;border-color:#EF9F27;">${(()=>{ const ev=(t.notesData||[]).filter(n=>n.cat==='대상행사'); const evTotal=ev.reduce((s,n)=>s+(Array.isArray(n.entries)?n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0):(Number(n.amount)||0)),0); const evNet=evTotal-Math.round(evTotal*0.033); return evNet>0?'₩'+evNet.toLocaleString():'-'; })()}</td>
  </tr>
  </tbody>
  </table>
@@ -5586,6 +5591,8 @@ function updateExtraCost(ti, field, val){
  if(elParking) elParking.textContent=t.parkingCost?'₩'+Number(t.parkingCost).toLocaleString():'-';
  if(elSupply) elSupply.textContent=t.supplyCost?'₩'+Number(t.supplyCost).toLocaleString():'-';
  if(elEtc) elEtc.textContent=t.etcCost?'₩'+Number(t.etcCost).toLocaleString():'-';
+ const elEvent=document.getElementById(`extraEvent-${ti}`);
+ if(elEvent){ const ev=(t.notesData||[]).filter(n=>n.cat==='대상행사'); const evTotal=ev.reduce((s,n)=>s+(Array.isArray(n.entries)?n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0):(Number(n.amount)||0)),0); const evNet=evTotal-Math.round(evTotal*0.033); elEvent.textContent=evNet>0?'₩'+evNet.toLocaleString():'-'; }
  // v11.33 fix: 수업기록표 즉시 저장 (비용 변경도 정산 데이터)
  const ym=STATE.data.teachers[ti]?.yearMonth;
  if(ym) saveMonthlySnapshot(ym, STATE.data);
@@ -6151,7 +6158,7 @@ function _startNoteEdit(ti, ni){
  // 센터 목록: 해당 강사의 이번 달 수업 센터
  const tCenters = [...new Set((t.lessons||[]).map(l=>l.center).filter(Boolean))];
  // entries 초기화
- if(isMulti && !Array.isArray(n.entries)) n.entries = [{date:n.date||'',center:n.center||'',text:n.text||'',amount:n.amount||0}];
+ if(isMulti && !Array.isArray(n.entries)) n.entries = [{date:n.date||'',center:n.center||'',text:n.text||'',amount:n.cat==='대상행사'?50000:(n.amount||0)}];
 
  const gridCols = isMulti ? (n.cat==='대상행사' ? '72px 1fr 90px 28px' : (hasAmt ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px')) : '62px 1fr 1fr';
  const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄'};
@@ -6178,7 +6185,7 @@ function _startNoteEdit(ti, ni){
     <select class="me-center" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){const cv=prompt('센터명 입력');if(cv&&nd.entries)nd.entries[${ei}].center=cv.trim();else this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
     <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
     <div class="me-amt">${amtCell}</div>
-    ${isMulti?`<button class="me-del" onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
+    ${isMulti?`<button class="me-del" onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:nd.cat==='대상행사'?50000:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
    </div>`;
   }).join('');
  }
@@ -11940,12 +11947,14 @@ function _addEntry(i){
  if(!Array.isArray(tiNotes[i].entries)) tiNotes[i].entries=[{date:'',center:'',text:'',amount:defaultAmt}];
  tiNotes[i].entries.push({date:'',center:'',text:'',amount:defaultAmt});
  renderTiNotes();
+ const _t4 = document.getElementById('ti-teacher')?.value;
+ if(_t4) tiUpdateSettleSummary(_t4);
 }
 /** 멀티엔트리 항목 제거 */
 function _removeEntry(i, ei){
  if(!tiNotes[i]?.entries) return;
  tiNotes[i].entries.splice(ei,1);
- if(!tiNotes[i].entries.length) tiNotes[i].entries=[{date:'',center:'',text:'',amount:0}];
+ if(!tiNotes[i].entries.length) tiNotes[i].entries=[{date:'',center:'',text:'',amount:tiNotes[i].cat==='대상행사'?50000:0}];
  const total = tiNotes[i].entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
  tiNotes[i].amount = total;
  renderTiNotes();
