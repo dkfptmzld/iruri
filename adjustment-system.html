@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.94</title>
+<title>수업기록표 정산 시스템 v14.08</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2196,7 +2196,7 @@ body.edit-mode-active .ledger-wrap textarea {
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
   <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 06:42:38</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
  </div>
 </div>
 
@@ -3316,7 +3316,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.94';
+const SYSTEM_VERSION='v14.08';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -4413,6 +4413,100 @@ function getFilteredTeachers(){
   if (safeA !== safeB) return safeA - safeB;
   return a.i - b.i;
  });
+}
+
+/* ═══ PDF 페이지 빌드 (내 제출 내역에서도 재사용) ═══ */
+function _buildTeacherPdfPage(t){
+ const feePctDisp=t.feePct?(t.feePct<10?Math.round(t.feePct*100)+'%':Math.round(t.feePct).toLocaleString()+'원/회'):'-';
+ const mockVal=t.mockLesson!==undefined?t.mockLesson:(t.mockLessonAuto||0)*20000;
+ const totalExtra=_sumExtraCosts(t)+mockVal;
+ const totalPay=(t.finalPay||0)+totalExtra;
+ const dayMap=new Map();
+ t.lessons.forEach(l=>{if(!dayMap.has(l.day)) dayMap.set(l.day,[]);dayMap.get(l.day).push(l);});
+ const DAYS=['월','화','수','목','금','토','일'];
+ const dayOrder=t.dayGroups?t.dayGroups.map(g=>g.day):DAYS.filter(d=>dayMap.has(d));
+ const maxWeeks=Math.max(5,...(t.dayGroups||[]).map(g=>(g.dates||[]).filter(Boolean).length));
+ let bodyRows='';
+ dayOrder.forEach(day=>{
+  const lessons=dayMap.get(day)||[];
+  if(!lessons.length) return;
+  const g=t.dayGroups?.find(g=>g.day===day);
+  const dates=g?.dates||[];
+  const rowspan=lessons.length;
+  const dateCells=Array.from({length:maxWeeks},(_,i)=>`<td class="date-hdr-td">${dates[i]?dates[i]+'일':''}</td>`).join('');
+  bodyRows+=`<tr class="date-hdr-row"><td class="day-cell" rowspan="${rowspan+1}">${day}</td><td class="date-label-td"></td>${dateCells}<td></td><td></td><td></td></tr>`;
+  lessons.forEach(l=>{
+   const attend=l.attend||[];
+   const attendCells=Array.from({length:maxWeeks},(_,wi)=>{
+    const raw=String(attend[wi]||'').trim();
+    const vl=raw.toLowerCase();
+    const isO=vl==='o'||vl==='○'||vl==='◯'||vl==='0';
+    const isX=vl==='x'||raw==='×';
+    const lab=isO?'O':isX?'X':(raw||'');
+    const cls=isO?'att-o':isX?'att-x':raw?'att-tri':'';
+    return`<td class="att-td ${cls}">${lab}</td>`;
+   }).join('');
+   bodyRows+=`<tr><td class="center-td">${l.center}${l.isSubstitute?` <span class="sub-badge">보강${l.substituteFor?` (${l.substituteFor})`:''}</span>`:''}</td>${attendCells}<td>${l.count}</td><td class="amt">${l.feePer?l.feePer.toLocaleString():''}</td><td class="amt">${l.total?l.total.toLocaleString():''}</td></tr>`;
+  });
+ });
+ const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
+ const {bank:accBank,num:accNum,name:accName}=parseAccount(t.account);
+ const accStr=[accBank,accNum,accName].filter(Boolean).join(' ')||'계좌 미등록';
+ const centerCount=[...new Set(t.lessons.map(l=>l.center))].length;
+ const totalLessons=t.lessons.reduce((s,l)=>s+(l.count||0),0);
+ const summaryRows=[];
+ summaryRows.push(`<tr><td>수업료 합계</td><td style="color:#bbb;">${t.totalSum?t.totalSum.toLocaleString():0}원</td></tr>`);
+ summaryRows.push(`<tr><td>세전 (${feePctDisp})</td><td style="color:#bbb;">${t.pretax?t.pretax.toLocaleString():0}원</td></tr>`);
+ summaryRows.push(`<tr><td>확정 월급 <span style="font-size:8px;color:#A32D2D;font-weight:400;">3.3% 공제</span></td><td>${t.finalPay?Math.round(t.finalPay).toLocaleString():0}원</td></tr>`);
+ if(mockVal) summaryRows.push(`<tr><td>모의수업</td><td class="plus">+${Number(mockVal).toLocaleString()}원</td></tr>`);
+ if(t.parkingCost) summaryRows.push(`<tr><td>주차료</td><td class="plus">+${Number(t.parkingCost).toLocaleString()}원</td></tr>`);
+ if(t.supplyCost) summaryRows.push(`<tr><td>물품</td><td class="plus">+${Number(t.supplyCost).toLocaleString()}원</td></tr>`);
+ if(t.etcCost) summaryRows.push(`<tr><td>기타</td><td class="plus">+${Number(t.etcCost).toLocaleString()}원</td></tr>`);
+ const eventEntries2=(t.notesData||[]).filter(n=>n.cat==='대상행사');
+ const eventTotal2=eventEntries2.reduce((s,n)=>s+(n.entries?n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0):(Number(n.amount)||0)),0);
+ const eventCount2=eventEntries2.reduce((s,n)=>s+(n.entries?n.entries.filter(e=>e.date||e.center).length:1),0);
+ if(eventTotal2>0){
+  const eventNet2=eventTotal2-Math.round(eventTotal2*0.033);
+  summaryRows.push(`<tr style="background:#FDF3DC;"><td style="color:#854F0B;font-weight:600;">대상행사 (${eventCount2}건) <span style="font-size:8px;color:#A32D2D;font-weight:400;">3.3% 공제</span></td><td class="plus" style="color:#854F0B;">+${eventNet2.toLocaleString()}원</td></tr>`);
+ }
+ summaryRows.push(`<tr class="final-row"><td>최종 지급액</td><td>${totalPay.toLocaleString()}원</td></tr>`);
+ const catColor={'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
+ let noteHtml='';
+ if(t.notesData&&t.notesData.length){
+  noteHtml=t.notesData.map(n=>{
+   const [bg,col]=(catColor[n.cat]||'#F8F7F2|#555').split('|');
+   const badge=`<span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">${n.cat}</span>`;
+   let entries='',total=0;
+   if(n.entries?.length){
+    entries=n.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
+    total=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   }else{
+    entries=[n.date,n.text||n.content].filter(Boolean).join(' ');
+    total=Number(n.amount)||0;
+   }
+   const totalHtml=total>0?`<span style="font-size:8.5px;font-weight:700;color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">합계 ${total.toLocaleString()}원</span>`:'';
+   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;">${badge}<span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span>${totalHtml}</div>`;
+  }).join('');
+ }
+ // t.note 폴백 (구버전 데이터)
+ if(!noteHtml && t.note){
+  const CAT_KEYS2=Object.keys(catColor);
+  const groups={},order=[];
+  t.note.split('\n').filter(l=>l.trim()).forEach(line=>{
+   const cat=CAT_KEYS2.find(k=>line.startsWith(k))||'기타';
+   const rest=line.startsWith(cat)?line.slice(cat.length).trim().replace(/^\[([^\]]*)\]\s*/,'$1 ').replace(/^[:\s]+/,''):line;
+   if(!groups[cat]){groups[cat]=[];order.push(cat);}
+   if(rest) groups[cat].push(rest);
+  });
+  noteHtml=order.map(cat=>{
+   const [bg,col]=catColor[cat]?catColor[cat].split('|'):['#F8F7F2','#555'];
+   const entries=groups[cat].join(' / ')||'-';
+   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;"><span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span><span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span></div>`;
+  }).join('');
+ }
+ if(!noteHtml) noteHtml='<span style="font-size:8.5px;color:#aaa;">특이사항 없음</span>';
+ const feeLabelText=(t.feePct&&t.feePct<10)?'강사료율':'강사료 단가';
+ return {bodyRows,weekHeaders,summaryRows,noteHtml,accStr,centerCount,totalLessons,totalPay,feePctDisp,feeLabelText};
 }
 
 function dlPDF(){
@@ -12579,23 +12673,30 @@ function submitTiData(){
  const month=document.getElementById('ti-month').value;
  const account=document.getElementById('ti-account').value;
 
- // v13.35: 특이사항 카드 내용 필수 입력 검증 - 팝업 대신 인라인 하이라이트
- const _MCAT = ['휴강','보강','신규(모의) 수업','주차료'];
- const _TEXT_OPTIONAL = ['대상행사']; // 내용 필드 없는 카테고리
+ // v14.07: 특이사항 카드 전체 카테고리 필수 입력 검증
+ const _MULTI_ALL = ['휴강','보강','신규(모의) 수업','주차료','대상행사']; // entries 기반 카테고리
+ const _DATE_ONLY = ['대상행사']; // text 불필요, 날짜+센터만
  const emptyContent = tiNotes.filter(n => {
-  if(_TEXT_OPTIONAL.includes(n.cat)) return false; // 대상행사는 text 불필요
-  if(_MCAT.includes(n.cat) && Array.isArray(n.entries)){
+  if(_DATE_ONLY.includes(n.cat)) return false; // 대상행사는 text 불필요
+  if(_MULTI_ALL.includes(n.cat) && Array.isArray(n.entries)){
    return n.entries.some(e => !(e.text||'').trim());
   }
-  return !((n.text||n.content||'').trim());
+  return !((n.text||n.content||'').trim()); // 물품, 기타 등 단일 카테고리
  });
  const emptyDate = tiNotes.filter(n => {
-  if(_MCAT.includes(n.cat) && Array.isArray(n.entries)){
+  if(_MULTI_ALL.includes(n.cat) && Array.isArray(n.entries)){
    return n.entries.some(e => !(e.date||'').trim());
   }
-  return !(n.date||'').trim();
+  return !(n.date||'').trim(); // 물품, 기타 등 단일 카테고리
  });
- if(emptyContent.length > 0 || emptyDate.length > 0){
+ // 대상행사 센터명 필수 검사
+ const emptyCenter = tiNotes.filter(n => {
+  if(n.cat === '대상행사' && Array.isArray(n.entries)){
+   return n.entries.some(e => !(e.center||'').trim());
+  }
+  return false;
+ });
+ if(emptyContent.length > 0 || emptyDate.length > 0 || emptyCenter.length > 0){
   const list = document.getElementById('ti-note-list');
   let firstEl = null;
   if(list){
@@ -12616,13 +12717,24 @@ function submitTiData(){
     }
    });
   }
+  // 대상행사 센터명 빈 칸 하이라이트
+  if(list){
+   list.querySelectorAll('input[placeholder="센터명 직접 입력"]').forEach(el=>{
+    if(!(el.value||'').trim()){
+     el.style.borderColor='#DC2626';
+     el.style.background='#FEF2F2';
+     if(!firstEl) firstEl=el;
+     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
+    }
+   });
+  }
   if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); firstEl.focus(); }
-  showToast('⚠️ 날짜와 내용을 모두 입력해 주세요');
+  showToast('⚠️ 날짜·센터명·내용을 모두 입력해 주세요');
   return;
  }
 
  // v12.48: 금액 필수 검증 — 금액칸 있는 카테고리(모의/주차/물품/기타)는 금액 0/미입력 시 제출 차단
- const AMT_CATS = ['신규(모의) 수업', '주차료', '물품', '기타'];
+ const AMT_CATS = ['신규(모의) 수업', '주차료', '물품', '기타', '대상행사'];
  const emptyAmount = tiNotes.filter(n => AMT_CATS.includes(n.cat) && !(Number(n.amount) > 0));
  if(emptyAmount.length > 0){
   const uniqueCats = [...new Set(emptyAmount.map(n => n.cat))];
@@ -13090,7 +13202,7 @@ function _renderHistoryCards(history) {
       <span class="expand-icon" style="color:#888;font-size:11px;">▶</span>
      </div>
     </div>
-    <div class="history-detail" style="display:none;padding:0 16px 16px;border-top:1px solid #E5E2D0;overflow-x:auto;">
+    <div class="history-detail" style="display:none;padding:0;border-top:1px solid #E5E2D0;">
      <div style="padding:12px 0;color:#888;font-size:11px;text-align:center;">불러오는 중...</div>
     </div>
    </div>
@@ -13156,7 +13268,7 @@ function showHistoryModal(teacher) {
     #history-modal-overlay .history-detail { padding: 0 10px 10px !important; }
    }
   </style>
-  <div style="background:white;border-radius:14px;max-width:900px;width:100%;max-height:85vh;color:#333;display:flex;flex-direction:column;overflow:hidden;">
+  <div style="background:white;border-radius:14px;max-width:1200px;width:calc(100% - 40px);max-height:90vh;color:#333;display:flex;flex-direction:column;overflow:hidden;">
    <div style="padding:16px 20px;border-bottom:1px solid #E5E2D0;display:flex;justify-content:space-between;align-items:center;">
     <div>
      <div style="font-size:16px;font-weight:700;color:#333;">📋 내 제출 내역</div>
@@ -13222,10 +13334,14 @@ function showHistoryModal(teacher) {
     // 최근 10개월만 유지
     const limited = merged.slice(0, 10);
 
-    // 카드 영역 다시 그리기 (race condition 방지)
+    // 카드 영역 다시 그리기 (열린 카드 있으면 건너뜀)
     const cardsContainer = document.getElementById('historyCardsContainer');
     if (!cardsContainer || !cardsContainer.isConnected) return;
-    cardsContainer.innerHTML = _renderHistoryCards(limited);
+    // 이미 열린 카드가 있으면 리렌더 건너뜀 (토글 상태 보호)
+    const openCard = cardsContainer.querySelector('.history-detail[style*="block"]');
+    if (!openCard) {
+      cardsContainer.innerHTML = _renderHistoryCards(limited);
+    }
 
     // localStorage도 업데이트 (다음 번엔 즉시 표시)
     try {
@@ -13271,8 +13387,9 @@ function toggleHistoryEntry(cardElement) {
 
  const isOpen = detail.style.display !== 'none';
 
- // 다른 카드 모두 닫기
+ // 다른 카드 모두 닫기 (현재 카드 제외)
  document.querySelectorAll('.history-card').forEach(card => {
+  if (card === cardElement) return; // 현재 카드는 건드리지 않음
   const d = card.querySelector('.history-detail');
   const i = card.querySelector('.expand-icon');
   if (d) d.style.display = 'none';
@@ -13450,10 +13567,7 @@ function _compareLocalVsGas(localData, gasData) {
 function _loadHistoryDetail(yearMonth, teacher, container, localData) {
  gasGet({ action: 'getMonthlySnapshot', yearMonth: yearMonth })
   .then(r => {
-   // race condition 방지: 카드 닫혔으면 무시
-   if (!container.isConnected) return;
-
-   // 분기 3: 오프라인 (응답 자체 없거나 실패)
+    // 분기 3: 오프라인 (응답 자체 없거나 실패)
    if (!r || !r.ok || !r.data) {
     return _renderHistoryLedger(localData, null, null, container, 'offline');
    }
@@ -13472,7 +13586,6 @@ function _loadHistoryDetail(yearMonth, teacher, container, localData) {
    _renderHistoryLedger(localData, myData, diff, container, 'normal');
   })
   .catch(err => {
-   if (!container.isConnected) return;
    console.error('[_loadHistoryDetail] GAS 호출 실패:', err);
    _renderHistoryLedger(localData, null, null, container, 'offline');
   });
@@ -13497,14 +13610,86 @@ function _loadHistoryDetail(yearMonth, teacher, container, localData) {
 function _renderHistoryLedger(localData, gasData, diff, container, status) {
  if (!container || !container.isConnected) return;
 
+ // ✅ 정산완료 (normal): PDF와 동일한 최종본 표시
+ if (status === 'normal' && gasData) {
+  const p = _buildTeacherPdfPage(gasData);
+  // PDF 스타일 인라인으로 포함
+  container.style.cssText = "padding:0;display:block;";
+  container.innerHTML = `
+   <style>
+    .hp-pdf-wrap { padding: 12px 12px 12px 12px; overflow-x: auto; }
+    .hp-pdf-wrap ~ * { padding-bottom: 0 !important; }
+    .hp-pdf-wrap .top-bar { display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:6px;border-bottom:2px solid #1A7A50;margin-bottom:6px;flex-wrap:wrap;gap:6px; }
+    .hp-pdf-wrap .t-name { font-size:14px;font-weight:700;color:#1a1916; }
+    .hp-pdf-wrap .t-meta { font-size:10px;color:#888;margin-left:6px; }
+    .hp-pdf-wrap .pay-label { font-size:9px;color:#888;font-weight:600;letter-spacing:.3px;text-align:right; }
+    .hp-pdf-wrap .pay-val { font-size:16px;font-weight:700;color:#1A7A50;text-align:right; }
+    .hp-pdf-wrap .lesson-table { width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px;min-width:500px; }
+    .hp-pdf-wrap .lesson-table th,.hp-pdf-wrap .lesson-table td { border:1px solid #C8C6B8;padding:2px 4px;text-align:center;vertical-align:middle; }
+    .hp-pdf-wrap .lesson-table thead th { background:#E8E6DC;font-weight:600;color:#333; }
+    .hp-pdf-wrap .day-cell { background:#E8E6DC;color:#1A7A50;font-weight:700;font-size:12px;writing-mode:vertical-lr;width:22px; }
+    .hp-pdf-wrap .center-td { text-align:left;padding:2px 6px; }
+    .hp-pdf-wrap .date-hdr-td { background:#F0EFE6;font-size:9px;color:#555;font-weight:600; }
+    .hp-pdf-wrap .date-hdr-row td { background:#F0EFE6; }
+    .hp-pdf-wrap .att-o { color:#1A7A50;font-weight:700; }
+    .hp-pdf-wrap .att-x { color:#A03020;font-weight:700; }
+    .hp-pdf-wrap .att-tri { color:#8A6010;font-weight:700; }
+    .hp-pdf-wrap .amt { text-align:right;padding-right:5px;font-weight:500; }
+    .hp-pdf-wrap .sub-badge { font-size:9px;background:#FAEEDA;color:#633806;border:1px solid #EF9F27;border-radius:4px;padding:0 3px;margin-left:3px; }
+    .hp-pdf-wrap .bottom-grid { display:flex !important;flex-direction:row !important;gap:8px;margin-top:8px;align-items:flex-start !important; }
+    .hp-pdf-wrap .note-box { background:#fffbeb !important;border:1px solid #fde68a;border-radius:5px;padding:6px 8px;flex:1 !important;align-self:flex-start !important; }
+    .hp-pdf-wrap .note-title { font-weight:700;font-size:9px;color:#8A6010;margin-bottom:4px;letter-spacing:.3px; }
+    .hp-pdf-wrap .settle-table { border-collapse:collapse;font-size:10px;border:1px solid #e2e0d8;width:100%; }
+    .hp-pdf-wrap .settle-table td { padding:3px 6px;border-bottom:1px solid #e2e0d8; }
+    .hp-pdf-wrap .settle-table td:first-child { background:#f5f4f0;font-weight:600;color:#555; }
+    .hp-pdf-wrap .settle-table td:last-child { text-align:right;font-weight:500; }
+    .hp-pdf-wrap .settle-table .plus { color:#1A7A50; }
+    .hp-pdf-wrap .settle-table .final-row td:first-child { background:#156840;color:#fff;font-weight:700; }
+    .hp-pdf-wrap .settle-table .final-row td:last-child { background:#1A7A50;color:#fff;font-weight:700;font-size:11px;text-align:right; }
+   </style>
+   <div class="hp-pdf-wrap">
+    <div class="top-bar">
+     <div>
+      <span class="t-name">${gasData.name} 강사</span>
+      <span class="t-meta">${gasData.yearMonth} · 수업 ${p.totalLessons}회 · 센터 ${p.centerCount}곳</span>
+      <span class="t-meta">계좌: ${p.accStr}</span>
+     </div>
+     <div style="text-align:right;">
+      <div class="pay-label">최종 지급액</div>
+      <div class="pay-val">${p.totalPay.toLocaleString()}원</div>
+     </div>
+    </div>
+    <div style="overflow-x:auto;">
+     <table class="lesson-table">
+      <thead>
+       <tr>
+        <th style="width:22px;">요일</th>
+        <th style="text-align:left;padding-left:6px;">센터명</th>
+        ${p.weekHeaders}
+        <th style="width:30px;">횟수</th><th style="width:50px;">수업료</th><th style="width:58px;">금액</th>
+       </tr>
+      </thead>
+      <tbody>${p.bodyRows}</tbody>
+     </table>
+    </div>
+    <div style="display:flex;flex-direction:row;gap:8px;margin-top:8px;">
+     <div style="flex:1;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:6px 8px;align-self:flex-start;">
+      <div style="font-weight:700;font-size:9px;color:#8A6010;margin-bottom:4px;letter-spacing:.3px;">특이사항</div>
+      <div>${p.noteHtml}</div>
+     </div>
+     <table class="settle-table" style="flex-shrink:0;width:180px;align-self:flex-start;">
+      ${p.summaryRows.join('')}
+     </table>
+    </div>
+   </div>`;
+  return;
+ }
+
  // status별 데이터 결정
- // normal: GAS lessons (관리자 반영 후)
  // pending/offline: localStorage dayGroups → lessons 변환 (강사 제출 시점)
- const useGas = (status === 'normal' && gasData);
- const teacherName = (localData && localData.teacher) || (gasData && gasData.name) || '';
- const displayLessons = useGas
-   ? (gasData.lessons || [])
-   : _dayGroupsToLessons(localData.dayGroups, teacherName);
+ const useGas = false;
+ const teacherName = (localData && localData.teacher) || '';
+ const displayLessons = _dayGroupsToLessons(localData.dayGroups, teacherName);
 
  // 합계 계산
  const totalCount = displayLessons.reduce((s, l) => s + (l.count || 0), 0);
