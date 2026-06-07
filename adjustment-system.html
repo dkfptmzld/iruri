@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v13.87</title>
+<title>수업기록표 정산 시스템 v13.92</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -961,8 +961,8 @@ body.edit-mode-active .ledger-wrap textarea {
  <div id="landing-no-user" style="margin-bottom: 28px; font-size: 13px; color: rgb(155, 152, 136); display: none;"></div>
 
  <!-- 모드 카드 -->
- <div style="display:flex;gap:16px;justify-content:center;">
- <div onclick="goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div id="landingCardsWrap" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+ <div onclick="if(_landingEditMode)return; goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -970,13 +970,24 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="font-size:12px;color:#6B9A7A;line-height:1.6;">수업 기록표를 작성하고<br>관리자에게 제출합니다</div>
  </div>
 
- <div onclick="showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
+ <div onclick="if(_landingEditMode)return; showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
  <div style="width:56px;height:56px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"></path></svg>
  </div>
  <div style="font-size:16px;font-weight:700;color:white;margin-bottom:8px;">관리자 모드</div>
  <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;">정산 내역을 확인하고<br>강사/센터를 관리합니다</div>
  </div>
+  <!-- 커스텀 앱 카드 동적 렌더 -->
+  <div id="landingCustomCards" style="display:contents;"></div>
+ </div>
+
+ <!-- 홈 편집 버튼 (PC 전용, 편집모드 시 표시) -->
+ <div id="landingEditBtn" style="margin-top: 16px; text-align: center; display: block; gap: 8px; justify-content: center;">
+  <button onclick="_toggleLandingEdit()" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border: 0.5px solid rgb(226, 224, 216); border-radius: 20px; background: white; font-size: 12px; color: rgb(136, 136, 136); cursor: pointer; font-family: inherit;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> 홈 편집</button>
+  <button id="landingAddAppBtn" onclick="_openAddAppModal()" style="display: none; align-items: center; gap: 6px; padding: 7px 16px; border: 0.5px solid rgb(93, 202, 165); border-radius: 20px; background: rgb(225, 245, 238); font-size: 12px; color: rgb(15, 110, 86); cursor: pointer; font-family: inherit; font-weight: 600;">
+   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+   앱 추가
+  </button>
  </div>
 
  <!-- v11.74: 사용자 가이드 링크 제거 (튜토리얼이 강사 모드에 내장됨) -->
@@ -2181,26 +2192,8 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
-   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
-   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
-   <span style="font-size:11px;color:#2e7d32;">방금</span>
-  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
-  </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 11:02:39</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 05:25:07</div>
  </div>
 </div>
 
@@ -3320,7 +3313,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v13.87';
+const SYSTEM_VERSION='v13.92';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -4524,9 +4517,9 @@ function dlPDF(){
 
  // 정산 요약 행 - 0이 아닌 것만 표시
  const summaryRows=[];
- summaryRows.push(`<tr><td>수업료 합계</td><td>${t.totalSum?t.totalSum.toLocaleString():0}원</td></tr>`);
- summaryRows.push(`<tr><td>세전 (${feePctDisp})</td><td>${t.pretax?t.pretax.toLocaleString():0}원</td></tr>`);
- summaryRows.push(`<tr><td>확정 월급</td><td>${t.finalPay?Math.round(t.finalPay).toLocaleString():0}원</td></tr>`);
+ summaryRows.push(`<tr><td>수업료 합계</td><td style="color:#bbb;">${t.totalSum?t.totalSum.toLocaleString():0}원</td></tr>`);
+ summaryRows.push(`<tr><td>세전 (${feePctDisp})</td><td style="color:#bbb;">${t.pretax?t.pretax.toLocaleString():0}원</td></tr>`);
+ summaryRows.push(`<tr><td>확정 월급 <span style="font-size:8px;color:#A32D2D;font-weight:400;">3.3% 공제</span></td><td>${t.finalPay?Math.round(t.finalPay).toLocaleString():0}원</td></tr>`);
  if(mockVal) summaryRows.push(`<tr><td>모의수업</td><td class="plus">+${Number(mockVal).toLocaleString()}원</td></tr>`);
  // v12.01: 4개 분리 카테고리 표시
  if(t.parkingCost) summaryRows.push(`<tr><td>주차료</td><td class="plus">+${Number(t.parkingCost).toLocaleString()}원</td></tr>`);
@@ -4542,7 +4535,7 @@ function dlPDF(){
  if(eventTotal>0){
   const eventDeduct = Math.round(eventTotal*0.033);
   const eventNet = eventTotal - eventDeduct;
-  summaryRows.push(`<tr style="background:#FDF3DC;"><td style="color:#854F0B;font-weight:600;">대상행사 (${eventCount}건)<br><span style="font-size:8px;color:#A32D2D;font-weight:400;">3.3% 공제 후</span></td><td class="plus" style="color:#854F0B;">+${eventNet.toLocaleString()}원</td></tr>`);
+  summaryRows.push(`<tr style="background:#FDF3DC;"><td style="color:#854F0B;font-weight:600;">대상행사 (${eventCount}건) <span style="font-size:8px;color:#A32D2D;font-weight:400;">3.3% 공제</span></td><td class="plus" style="color:#854F0B;">+${eventNet.toLocaleString()}원</td></tr>`);
  }
  summaryRows.push(`<tr class="final-row"><td>최종 지급액</td><td>${totalPay.toLocaleString()}원</td></tr>`);
 
@@ -9885,6 +9878,8 @@ function _showLandingUI(){
  
  // 랜딩 표시
  document.getElementById('modeSelectScreen').style.display='flex';
+ // 커스텀 앱 카드 렌더
+ setTimeout(()=>{ if(typeof _renderLandingCustomCards==='function') _renderLandingCustomCards(); }, 50);
 
  // 로그인 사용자 표시
  const teacher = window._loggedInTeacher;
@@ -9901,6 +9896,182 @@ function _showLandingUI(){
 }
 
 // 강사 모드 카드 클릭 - 로그인 여부 확인
+/* ═══ 홈화면 커스텀 앱 카드 시스템 ═══ */
+const _LS_CUSTOM_APPS = 'iruri_custom_apps';
+const _ICON_MAP = {
+  'ti-book':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+  'ti-calendar':        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  'ti-calendar-check':  '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/></svg>',
+  'ti-chart-bar':       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8"/><rect x="9" y="8" width="4" height="12"/><rect x="15" y="4" width="4" height="16"/></svg>',
+  'ti-chart-line':      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  'ti-users':           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  'ti-user':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  'ti-star':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  'ti-heart':           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>',
+  'ti-file':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  'ti-file-text':       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+  'ti-clipboard':       '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+  'ti-bell':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>',
+  'ti-home':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  'ti-map-pin':         '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'ti-camera':          '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  'ti-video':           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+  'ti-music':           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  'ti-award':           '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+  'ti-cpu':             '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  'ti-grid':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  'ti-tool':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>',
+  'ti-settings':        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+  'ti-link':            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
+};
+const _COLOR_MAP = {
+  'blue':   {bg:'#E6F1FB', stroke:'#185FA5'},
+  'green':  {bg:'#E1F5EE', stroke:'#0F6E56'},
+  'teal':   {bg:'#CCFBF1', stroke:'#0F766E'},
+  'amber':  {bg:'#FAEEDA', stroke:'#854F0B'},
+  'yellow': {bg:'#FEF9C3', stroke:'#854D0E'},
+  'purple': {bg:'#EEEDFE', stroke:'#3C3489'},
+  'pink':   {bg:'#FBEAF0', stroke:'#72243E'},
+  'coral':  {bg:'#FAECE7', stroke:'#712B13'},
+  'red':    {bg:'#FCEBEB', stroke:'#A32D2D'},
+  'gray':   {bg:'#F1EFE8', stroke:'#444441'},
+};
+
+let _landingEditMode = false;
+
+function _getCustomApps(){
+  try{ return JSON.parse(localStorage.getItem(_LS_CUSTOM_APPS)||'[]'); }catch{ return []; }
+}
+function _saveCustomApps(apps){
+  localStorage.setItem(_LS_CUSTOM_APPS, JSON.stringify(apps));
+}
+
+function _renderLandingCustomCards(){
+  const wrap = document.getElementById('landingCustomCards');
+  if(!wrap) return;
+  const apps = _getCustomApps();
+  const editBtn = document.getElementById('landingEditBtn');
+  const isMobile = window.innerWidth <= 768;
+  if(editBtn) editBtn.style.display = isMobile ? 'none' : 'block';
+  if(!apps.length){ wrap.innerHTML=''; return; }
+  let html = '';
+  apps.forEach((app, idx) => {
+    const c = _COLOR_MAP[app.color||'blue'];
+    const iconSvg = _ICON_MAP[app.icon||'ti-link'] || _ICON_MAP['ti-link'];
+    const delBtn = _landingEditMode ? `<button onclick="event.stopPropagation();_deleteCustomApp(${idx})" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:50%;cursor:pointer;font-size:13px;color:#A32D2D;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10;line-height:1;">×</button>` : '';
+    const editStyle = _landingEditMode ? 'outline:2px dashed #EF9F27;outline-offset:2px;border-radius:22px;' : '';
+    html += `<div style="position:relative;${editStyle}">
+      ${delBtn}
+      <div onclick="${_landingEditMode ? 'void 0' : `openLink('${app.url}')`}" style="background:white;border:1.5px solid ${c.stroke}33;border-radius:20px;padding:24px 20px;width:160px;cursor:${_landingEditMode?'default':'pointer'};transition:0.2s;box-shadow:0 4px 16px ${c.stroke}15;text-align:center;" onmouseover="if(!_landingEditMode)this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
+        <div style="width:50px;height:50px;background:${c.bg};border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:${c.stroke};">
+          ${iconSvg}
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#1a4a2e;margin-bottom:6px;">${app.name}</div>
+        <div style="font-size:11px;color:#9B9888;line-height:1.5;">${app.desc||''}</div>
+      </div>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function _openAddAppModal(){
+  // 기존 모달 제거
+  document.getElementById('landingAddModal')?.remove();
+  window._newIcon = 'ti-link';
+  window._newColor = 'blue';
+  const iconBtns = Object.keys(_ICON_MAP).map(k=>`<button onclick="_selectIcon('${k}')" id="iconBtn-${k}" style="width:30px;height:30px;border:1px solid #E2E0D8;border-radius:6px;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;padding:3px;flex-shrink:0;" title="${k}">${_ICON_MAP[k]}</button>`).join('');
+  const colorBtns = Object.entries(_COLOR_MAP).map(([k,v])=>`<button onclick="_selectColor('${k}')" id="colorBtn-${k}" style="width:24px;height:24px;border-radius:50%;background:${v.bg};border:2px solid ${v.stroke};cursor:pointer;flex-shrink:0;" title="${k}"></button>`).join('');
+  const modal = document.createElement('div');
+  modal.id = 'landingAddModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:99999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:20px;padding:24px;width:320px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.2);">
+      <div style="font-size:15px;font-weight:700;color:#1a4a2e;margin-bottom:16px;">새 앱 추가</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input id="newAppName" placeholder="앱 이름" style="height:36px;border:0.5px solid #E2E0D8;border-radius:8px;padding:0 12px;font-size:13px;width:100%;box-sizing:border-box;outline:none;">
+        <input id="newAppUrl" placeholder="URL (https://...)" style="height:36px;border:0.5px solid #E2E0D8;border-radius:8px;padding:0 12px;font-size:13px;width:100%;box-sizing:border-box;outline:none;">
+        <input id="newAppDesc" placeholder="설명 (선택)" style="height:36px;border:0.5px solid #E2E0D8;border-radius:8px;padding:0 12px;font-size:13px;width:100%;box-sizing:border-box;outline:none;">
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;">아이콘</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">${iconBtns}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:6px;">색상</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">${colorBtns}</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button onclick="document.getElementById('landingAddModal').remove()" style="flex:1;height:36px;border:0.5px solid #E2E0D8;border-radius:8px;background:white;font-size:13px;cursor:pointer;color:#888;">취소</button>
+          <button onclick="_addCustomApp()" style="flex:2;height:36px;background:#1A7A50;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">추가</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // 기본 선택 하이라이트
+  setTimeout(()=>{ _highlightIconBtn('ti-link'); _highlightColorBtn('blue'); }, 50);
+}
+
+function _selectIcon(key){
+  window._newIcon = key;
+  _highlightIconBtn(key);
+}
+function _selectColor(key){
+  window._newColor = key;
+  _highlightColorBtn(key);
+}
+function _highlightIconBtn(key){
+  document.querySelectorAll('[id^="iconBtn-"]').forEach(b=>b.style.borderColor='#E2E0D8');
+  const el = document.getElementById('iconBtn-'+key);
+  if(el) el.style.borderColor='#1A7A50';
+}
+function _highlightColorBtn(key){
+  document.querySelectorAll('[id^="colorBtn-"]').forEach(b=>b.style.transform='scale(1)');
+  const el = document.getElementById('colorBtn-'+key);
+  if(el) el.style.transform='scale(1.3)';
+}
+
+function _addCustomApp(){
+  const name = document.getElementById('newAppName')?.value.trim();
+  const url  = document.getElementById('newAppUrl')?.value.trim();
+  const desc = document.getElementById('newAppDesc')?.value.trim();
+  if(!name||!url){ showToast('앱 이름과 URL을 입력해주세요.'); return; }
+  if(!url.startsWith('http')){ showToast('URL은 https://로 시작해야 해요.'); return; }
+  const apps = _getCustomApps();
+  apps.push({ name, url, desc, icon: window._newIcon||'ti-link', color: window._newColor||'blue' });
+  _saveCustomApps(apps);
+  document.getElementById('landingAddModal')?.remove();
+  _renderLandingCustomCards();
+  showToast('✅ 앱이 추가됐어요!');
+}
+
+function _deleteCustomApp(idx){
+  const apps = _getCustomApps();
+  apps.splice(idx, 1);
+  _saveCustomApps(apps);
+  _renderLandingCustomCards();
+}
+
+function _toggleLandingEdit(){
+  _landingEditMode = !_landingEditMode;
+  const btn = document.querySelector('#landingEditBtn button');
+  if(btn){
+    if(_landingEditMode){
+      btn.style.background='#FDF3DC'; btn.style.borderColor='#EF9F27'; btn.style.color='#854F0B';
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 편집 완료';
+    } else {
+      btn.style.background='white'; btn.style.borderColor='#E2E0D8'; btn.style.color='#888';
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 홈 편집';
+    }
+  }
+  // 편집모드 진입 시 + 버튼 표시/숨기기
+  const addBtn = document.getElementById('landingAddAppBtn');
+  if(addBtn) addBtn.style.display = _landingEditMode ? 'inline-flex' : 'none';
+  _renderLandingCustomCards();
+}
+
+function openLink(url){
+  window.open(url, '_blank');
+}
+
 function goTeacherFromLanding(){
  if(window._loggedInTeacher){
  enterTeacherMode();
