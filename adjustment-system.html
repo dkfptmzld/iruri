@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v14.10</title>
+<title>수업기록표 정산 시스템 v14.16</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1367,12 +1367,12 @@ body.edit-mode-active .ledger-wrap textarea {
  수업기록표 정산 시스템
  </div>
  <div class="nav-tabs">
- <button class="nav-tab" id="nav0" onclick="switchView('settle')">📊 정산</button>
+ <button class="nav-tab active" id="nav0" onclick="switchView('settle')">📊 정산</button>
  <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
- <button class="nav-tab active" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
+ <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
-<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: block; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;">9+</span></button>
+<button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: none; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;"></span></button>
  </div>
  <div id="adminTimerChip" style="display: flex; background: var(--green-bg); border-color: var(--green); color: var(--green);" title="남은 세션 시간 (활동 시 자동 갱신)">
   <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
@@ -2038,10 +2038,10 @@ body.edit-mode-active .ledger-wrap textarea {
 
   <!-- 지역별 통계 -->
   <div class="region-stats">
-   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">296</div><div class="region-sub">개 센터</div></div>
-   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">146</div><div class="region-sub" id="rs-seoul-t">강사 16명 담당</div></div>
-   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">101</div><div class="region-sub" id="rs-incheon-t">강사 11명 담당</div></div>
-   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">49</div><div class="region-sub" id="rs-suwon-t">강사 5명 담당</div></div>
+   <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="rs-total">—</div><div class="region-sub">개 센터</div></div>
+   <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="rs-seoul">—</div><div class="region-sub" id="rs-seoul-t">—</div></div>
+   <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="rs-incheon">—</div><div class="region-sub" id="rs-incheon-t">—</div></div>
+   <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">—</div><div class="region-sub" id="rs-suwon-t">—</div></div>
   </div>
 
   <!-- 지역별 검색창 -->
@@ -2051,7 +2051,7 @@ body.edit-mode-active .ledger-wrap textarea {
     <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width:100%;height:36px;padding:0 12px 0 32px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
    </div>
    <!-- v12.40: 정리 필요 필터 버튼 (미배정 + 정확히 같은 이름 중복) -->
-   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">7</span></button>
+   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">0</span></button>
    <select id="cTreeRegionFilter" onchange="filterCenterTree()" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
     <option value="">전체 지역</option>
     <option value="서울">서울</option>
@@ -2061,276 +2061,14 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
 
   <!-- v12.40: 정리 필요 센터 영역 (기본 숨김) -->
-  <div id="cCleanupView" style="display: block; margin-bottom: 14px;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-   <!-- 미배정 섹션 -->
-   <div style="background:#FFFBEB;padding:9px 14px;font-size:12px;font-weight:600;color:#92670B;border-bottom:1px solid #FDE68A;">
-    📭 미배정 센터 (담당강사 없음) · 3개
-   </div>
-   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">행복플러스</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:var(--text3);font-size:11px;">55,000원</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',213)" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',213)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">시니어삼성</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:var(--text3);font-size:11px;">55,000원</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',229)" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',229)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">선두교회</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:var(--text3);font-size:11px;">50,000원</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',254)" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',254)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div>
-
-   <!-- v12.45: 요일 미지정 섹션 -->
-   <div style="background:#FEF6EC;padding:9px 14px;font-size:12px;font-weight:600;color:#B45309;border-bottom:1px solid #FCD9A5;border-top:1px solid var(--border);">
-    📅 요일 미지정 센터 (담당강사는 있으나 요일 없음) · 4개
-   </div>
-   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">스마일 데이케어</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김은영</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',130)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',130)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">대상행사</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김은영</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',256)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',256)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">가나안</span>
-    <span style="background:#E1F5EE;color:#0F6E56;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">인천</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 방진수</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',289)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',289)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div><div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-   <div style="display:flex;align-items:center;gap:8px;">
-    <span style="font-weight:500;font-size:13px;">효천사</span>
-    <span style="background:#EFF6FF;color:#1E40AF;padding:1px 8px;border-radius:8px;font-size:10px;font-weight:600;">서울</span>
-    <span style="color:#B45309;font-size:11px;">요일 미지정: 김은영</span>
-   </div>
-   <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',292)" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
-    <button onclick="delItem('center',292)" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
-   </div>
-  </div>
-
-   <!-- 중복 섹션 -->
-   <div style="background:#FEF2F2;padding:9px 14px;font-size:12px;font-weight:600;color:#DC2626;border-bottom:1px solid #FCA5A5;border-top:1px solid var(--border);">
-    🔁 이름 중복 센터 · 0종류
-   </div>
-   <div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">이름·지역이 모두 같은 중복 센터가 없습니다 ✅</div>
-
-   <!-- 수업료 불일치 섹션 -->
-   <div style="background:#FDF6EC;padding:9px 14px;font-size:12px;font-weight:600;color:#92670B;border-bottom:1px solid #F5D89A;border-top:1px solid var(--border);">
-    💰 수업료 불일치 (centerFees ≠ 센터 기본료) · 0건
-   </div>
-   <div style="padding:16px;text-align:center;color:var(--text3);font-size:12px;">수업료 불일치가 없습니다 ✅</div>
-  </div>
-  <div style="margin-top:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text3);line-height:1.5;">
-   💡 미배정 = 담당강사 0명 · 요일 미지정 = 담당은 있으나 요일 없음 · 중복 = 이름과 지역이 모두 같은 센터.
-  </div>
- </div>
+  <div id="cCleanupView" style="display:none;margin-bottom:14px;"></div>
 
   <!-- 지역·강사별 트리 뷰 (2컬럼) -->
-  <div id="cview-tree" style="display: none;">
+  <div id="cview-tree">
    <div style="display:grid;grid-template-columns:220px 1fr;gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:400px;">
     <!-- 좌측: 탐색 패널 -->
     <div style="background:var(--surface2);border-right:1px solid var(--border);overflow-y:auto;">
-     <div id="cTreeNav"><div>
-   <div id="cnav-서울-btn" onclick="toggleNavRegion('서울')" style="display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); user-select: none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge blue" style="font-size:11px;padding:2px 8px;">서울</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">146개</span>
-    <span id="cnav-서울-arrow" style="font-size:12px;color:var(--text3);transform:rotate(-90deg);display:inline-block;transition:transform .2s;">▾</span>
-   </div>
-   <div id="cnav-서울-list" style="display:none;">
-    
-     <div id="cnav-서울-구명훈" onclick="selectTreeTeacher('서울','구명훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">구</div>
-      <span style="flex:1;">구명훈</span>
-     </div>
-     <div id="cnav-서울-김은영" onclick="selectTreeTeacher('서울','김은영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김은영</span>
-     </div>
-     <div id="cnav-서울-박준형" onclick="selectTreeTeacher('서울','박준형',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박준형</span>
-     </div>
-     <div id="cnav-서울-변동" onclick="selectTreeTeacher('서울','변동',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">변</div>
-      <span style="flex:1;">변동</span>
-     </div>
-     <div id="cnav-서울-송준기" onclick="selectTreeTeacher('서울','송준기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">송</div>
-      <span style="flex:1;">송준기</span>
-     </div>
-     <div id="cnav-서울-신기윤" onclick="selectTreeTeacher('서울','신기윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">신</div>
-      <span style="flex:1;">신기윤</span>
-     </div>
-     <div id="cnav-서울-양성모" onclick="selectTreeTeacher('서울','양성모',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양성모</span>
-     </div>
-     <div id="cnav-서울-양재원" onclick="selectTreeTeacher('서울','양재원',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">양</div>
-      <span style="flex:1;">양재원</span>
-     </div>
-     <div id="cnav-서울-오건" onclick="selectTreeTeacher('서울','오건',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오건</span>
-     </div>
-     <div id="cnav-서울-윤혜미" onclick="selectTreeTeacher('서울','윤혜미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">윤</div>
-      <span style="flex:1;">윤혜미</span>
-     </div>
-     <div id="cnav-서울-이인경" onclick="selectTreeTeacher('서울','이인경',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이인경</span>
-     </div>
-     <div id="cnav-서울-이재열" onclick="selectTreeTeacher('서울','이재열',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재열</span>
-     </div>
-     <div id="cnav-서울-이재하" onclick="selectTreeTeacher('서울','이재하',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재하</span>
-     </div>
-     <div id="cnav-서울-임준우" onclick="selectTreeTeacher('서울','임준우',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">임</div>
-      <span style="flex:1;">임준우</span>
-     </div>
-     <div id="cnav-서울-장성기" onclick="selectTreeTeacher('서울','장성기',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장성기</span>
-     </div>
-     <div id="cnav-서울-정상준" onclick="selectTreeTeacher('서울','정상준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">정</div>
-      <span style="flex:1;">정상준</span>
-     </div>
-     <div id="cnav-서울-조영미" onclick="selectTreeTeacher('서울','조영미',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
-      <span style="flex:1;">조영미</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-인천-btn" onclick="toggleNavRegion('인천')" style="display: flex; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); user-select: none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge teal" style="font-size:11px;padding:2px 8px;">인천</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">101개</span>
-    <span id="cnav-인천-arrow" style="font-size:12px;color:var(--text3);transform:rotate(-90deg);display:inline-block;transition:transform .2s;">▾</span>
-   </div>
-   <div id="cnav-인천-list" style="display:none;">
-    
-     <div id="cnav-인천-김보창" onclick="selectTreeTeacher('인천','김보창',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김보창</span>
-     </div>
-     <div id="cnav-인천-김수민" onclick="selectTreeTeacher('인천','김수민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수민</span>
-     </div>
-     <div id="cnav-인천-김유천" onclick="selectTreeTeacher('인천','김유천',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김유천</span>
-     </div>
-     <div id="cnav-인천-김효민" onclick="selectTreeTeacher('인천','김효민',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김효민</span>
-     </div>
-     <div id="cnav-인천-박기남" onclick="selectTreeTeacher('인천','박기남',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박기남</span>
-     </div>
-     <div id="cnav-인천-박종일" onclick="selectTreeTeacher('인천','박종일',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">박</div>
-      <span style="flex:1;">박종일</span>
-     </div>
-     <div id="cnav-인천-방진수" onclick="selectTreeTeacher('인천','방진수',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">방</div>
-      <span style="flex:1;">방진수</span>
-     </div>
-     <div id="cnav-인천-이재윤" onclick="selectTreeTeacher('인천','이재윤',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">이</div>
-      <span style="flex:1;">이재윤</span>
-     </div>
-     <div id="cnav-인천-장호준" onclick="selectTreeTeacher('인천','장호준',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">장</div>
-      <span style="flex:1;">장호준</span>
-     </div>
-     <div id="cnav-인천-조아라" onclick="selectTreeTeacher('인천','조아라',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
-      <span style="flex:1;">조아라</span>
-     </div>
-     <div id="cnav-인천-한수희" onclick="selectTreeTeacher('인천','한수희',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">한</div>
-      <span style="flex:1;">한수희</span>
-     </div>
-     <div id="cnav-인천-홍예은" onclick="selectTreeTeacher('인천','홍예은',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">홍</div>
-      <span style="flex:1;">홍예은</span>
-     </div>
-   </div>
-  </div><div>
-   <div id="cnav-수원-btn" onclick="toggleNavRegion('수원')" style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-    <span class="badge purple" style="font-size:11px;padding:2px 8px;">수원</span>
-    <span style="flex:1;font-size:12px;color:var(--text2);">49개</span>
-    <span id="cnav-수원-arrow" style="font-size:12px;color:var(--text3);transform:rotate(-90deg);display:inline-block;transition:transform .2s;">▾</span>
-   </div>
-   <div id="cnav-수원-list" style="display:none;">
-    
-     <div id="cnav-수원-김수도" onclick="selectTreeTeacher('수원','김수도',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">김</div>
-      <span style="flex:1;">김수도</span>
-     </div>
-     <div id="cnav-수원-안지훈" onclick="selectTreeTeacher('수원','안지훈',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">안</div>
-      <span style="flex:1;">안지훈</span>
-     </div>
-     <div id="cnav-수원-오수정" onclick="selectTreeTeacher('수원','오수정',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">오</div>
-      <span style="flex:1;">오수정</span>
-     </div>
-     <div id="cnav-수원-원보영" onclick="selectTreeTeacher('수원','원보영',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">원</div>
-      <span style="flex:1;">원보영</span>
-     </div>
-     <div id="cnav-수원-최정안" onclick="selectTreeTeacher('수원','최정안',(window.innerWidth&lt;=600))" style="display:flex;align-items:center;gap:8px;padding:9px 14px 9px 22px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
-      <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">최</div>
-      <span style="flex:1;">최정안</span>
-     </div>
-   </div>
-  </div></div>
+     <div id="cTreeNav"></div>
     </div>
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
@@ -2464,26 +2202,22 @@ body.edit-mode-active .ledger-wrap textarea {
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">2</span>
+    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
   </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
    <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
    <span style="font-size:11px;color:#2e7d32;">방금</span>
-  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
-   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
-   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">한수희</span>
-   <span style="font-size:11px;color:#2e7d32;">방금</span>
   </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
    <div style="display:flex;align-items:center;gap:6px;">
     <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
     <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">32</span>
+    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">33</span>
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:44:45</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 10:04:57</div>
  </div>
 </div>
 
@@ -3603,7 +3337,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.10';
+const SYSTEM_VERSION='v14.16';
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
  * v12.16: 수업기록표 계좌 → 강사관리 일괄 마이그레이션 (박기남님 요청)
@@ -3908,7 +3642,8 @@ let STATE={data:null,cur:0,tab:'detail',view:'settle',modalType:null,editIdx:nul
 // - 변경 시 메모리만 변경, GAS/localStorage 동기화 차단 (saveMonthlySnapshot 가드)
 // - "저장" 시 한 번에 GAS 동기화 + 변경 이력 자동 기록
 // - "취소" 시 백업 데이터로 복원
-let _isEditMode = false;       // 편집 모드 여부
+let _isEditMode = false;
+let _editChangeLogs = [];       // 편집 모드 여부
 let _editBackup = null;        // 편집 시작 직전 STATE.data 백업 (취소용)
 let _editChangeCount = 0;      // 변경 카운터 (UI 표시용)
 
@@ -4001,6 +3736,12 @@ window.addEventListener('load', ()=>{
     const dedupMap1 = new Map();
     r.data.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap1.has(key)) dedupMap1.set(key,c); });
     const dedupedCenters1 = Array.from(dedupMap1.values());
+    // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
+    const _prevCnt1 = DB.centers.length;
+    if(_prevCnt1 > 0 && dedupedCenters1.length < _prevCnt1){
+     const _missing1 = DB.centers.filter(c=>!dedupedCenters1.find(d=>d.name===c.name&&d.region===c.region)).map(c=>`${c.name}(${c.region||'지역미상'})`);
+     try{ pushErrorLog(`센터 감소 감지 (앱 시작)`, `${_prevCnt1}개 → ${dedupedCenters1.length}개 | 없어진 센터: ${_missing1.join(', ')}`); }catch{}
+    }
     DB.centers = dedupedCenters1;
     localStorage.setItem(LS_C, JSON.stringify(dedupedCenters1));
     _rebuildCenterFeesFromCenters(dedupedCenters1); // v12.68: schedule.fee → centerFees 재구성
@@ -4160,6 +3901,12 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     const dedupMap2 = new Map();
     merged2.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap2.has(key)) dedupMap2.set(key,c); });
     const dedupedCenters2 = Array.from(dedupMap2.values());
+    // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
+    const _prevCnt2 = DB.centers.length;
+    if(_prevCnt2 > 0 && dedupedCenters2.length < _prevCnt2){
+     const _missing2 = DB.centers.filter(c=>!dedupedCenters2.find(d=>d.name===c.name&&d.region===c.region)).map(c=>`${c.name}(${c.region||'지역미상'})`);
+     try{ pushErrorLog(`센터 감소 감지 (센터탭)`, `${_prevCnt2}개 → ${dedupedCenters2.length}개 | 없어진 센터: ${_missing2.join(', ')}`); }catch{}
+    }
     DB.centers = dedupedCenters2;
     // v11.30 fix: LS_C_SHEETS(구버전 키, 매 로드 삭제됨) 대신 LS_C에 저장
     localStorage.setItem(LS_C, JSON.stringify(DB.centers));
@@ -4238,11 +3985,11 @@ function updateComboFee(center,teacher,val){
  const fee = parseInt(val)||0;
  DB.centerFees[`${center}|${teacher}`] = fee;
  // schedule.fee에도 동시 저장 → GAS 동기화 시 자동 포함
- const c = DB.centers.find(x=>x.name===center);
- if(c){
+ // 같은 이름 센터가 여러 지역에 있을 수 있으므로 모두 업데이트
+ DB.centers.filter(x=>x.name===center).forEach(c=>{
   const sched = (c.schedule||[]).find(s=>s.teacher===teacher);
   if(sched) sched.fee = fee;
- }
+ });
  lsSave();
  _refreshCenterView();
  showToast('수업료가 저장됐어요');
@@ -4390,6 +4137,7 @@ function startEditMode(){
  // STATE.data 깊은 복사로 백업 (deep clone)
  _editBackup = JSON.parse(JSON.stringify(STATE.data));
  _editChangeCount = 0;
+ _editChangeLogs = []; // 변경 상세 기록
  _isEditMode = true;
  renderEditModeUI();
  
@@ -4409,10 +4157,14 @@ function saveEdits(){
  // 1. 변경 이력에 자동 기록 (편집 시작 직전 데이터를 snapshot으로)
  const ym = STATE.data.teachers[0]?.yearMonth || '';
  try {
+  const _adminSess = sessionStorage.getItem('iruri_admin_session')==='true';
+  const _editor = _adminSess ? '관리자' : (window._loggedInTeacher || sessionStorage.getItem('iruri_session') || '관리자');
+  const _logSummary = _editChangeLogs.slice(0,20).map(l=>`• ${l}`).join('<br>') + (_editChangeLogs.length>20?`<br>… 외 ${_editChangeLogs.length-20}건`:'');
   pushChangelog({
    type: 'bulk_edit',
    desc: `일괄 편집 — ${_editChangeCount}개 변경`,
-   detail: ym,
+   detail: `${ym} · 수정자: ${_editor}`,
+   changes: _editChangeLogs,
    snapshot: { ym, data: _editBackup }
   });
  } catch(e) { console.warn('변경 이력 기록 실패:', e); }
@@ -4638,6 +4390,10 @@ function loadMonthlySnapshot(ym){
    if(gasSavedAt > localSavedAt || !localSnap?.data?.teachers || gasTeacherCount > localTeacherCount){
     const data = r.data;
     if(data.teachers) data.teachers = _normFeePct(data.teachers);
+  // 데이터 손상 감지
+  if(!Array.isArray(data.teachers) || data.teachers.length === 0){
+   try{ pushErrorLog('스냅샷 데이터 손상 감지', `강사 배열이 비어있거나 손상됨`); }catch{}
+  }
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
     localStorage.setItem(key, JSON.stringify(snap));
     // v11.30: GAS에서 받은 데이터에도 손상 복구됐으면 GAS에도 재저장
@@ -5655,6 +5411,7 @@ function toggleAttend(ti,li,wi){
  const t=STATE.data.teachers[ti];
  const l=t.lessons[li];
  const cur=l.attend[wi]||'';
+ const _prevAttend = cur;
  const vl=cur.trim().toLowerCase();
  const isO=ATTEND_SET.has(vl)||vl==='o';
  const isX=vl==='x';
@@ -5666,6 +5423,7 @@ function toggleAttend(ti,li,wi){
  else{l.attend[wi]='';}
  // O만 횟수에 포함 (△는 제외)
  l.count=l.attend.filter(v=>{const vl=v.trim().toLowerCase();return ATTEND_SET.has(vl)||vl==='o';}).length;
+ if(_isEditMode){ const _newA=l.attend[wi]||'빈칸'; if(_prevAttend!==_newA) _editChangeLogs.push(`${t.name} · ${l.center} · ${wi+1}주차 출석: ${_prevAttend||'빈칸'} → ${_newA}`); }
  // △(모의수업) 개수 집계 → mockLesson 자동 업데이트 (기존 수동입력보다 우선 안 함 — 자동 집계값만)
  const triCount=l.attend.filter(v=>v==='△'||v==='▲').length;
  l.triCount=triCount; // lesson별 저장
@@ -5802,7 +5560,7 @@ function renderCenterPickerList(q, teacherName, cur){
  if(lessonCenters.length){
  html+=`<div class="cpicker-section">📌 담당센터 <span class="cpicker-count">${lessonCenters.length}개</span></div>`;
  lessonCenters.forEach(name=>{
- const fee=DB.centerFees[`${name}|${teacherName}`]||(DB.centers.find(c=>c.name===name)?.fee)||0;
+ const fee=DB.centerFees[`${name}|${teacherName}`]||(DB.centers.find(c=>c.name===name&&(c.teachers||[]).includes(teacherName))?.fee)||(DB.centers.find(c=>c.name===name)?.fee)||0;
  html+=`<div class="cpicker-item${name===cur?' selected':''}" onclick="selectCenter('${name.replace(/'/g,"\\'")}',${fee})">
  <span>${name}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  });
@@ -5856,7 +5614,11 @@ function selectCenter(centerName, fee){
  if(oldCenter&&oldCenter!==centerName) CENTER_ALIAS[oldCenter]=centerName;
  const comboKey=`${centerName}|${t.name}`;
  if(fee>0) DB.centerFees[comboKey]=fee;
- const dbCenter=DB.centers.find(c=>c.name===centerName);
+ // 강사 지역 기준으로 센터 찾기 (동명 다지역 센터 오염 방지)
+ const _tRegion3 = DB.teachers.find(d=>d.name===t.name)?.region;
+ const dbCenter = _tRegion3
+  ? (DB.centers.find(c=>c.name===centerName&&c.region===_tRegion3)||DB.centers.find(c=>c.name===centerName))
+  : DB.centers.find(c=>c.name===centerName);
  if(dbCenter&&dbCenter.teachers&&!dbCenter.teachers.includes(t.name)) dbCenter.teachers.push(t.name);
  // 보강 정보 저장
  const isSub = document.getElementById('cpicker_isSub')?.checked || false;
@@ -5991,7 +5753,9 @@ function _sumExtraCosts(t){
 
 function updateCenter(ti,li,val){
  if (_checkEditMode()) return;
+ const _prevCenter = STATE.data.teachers[ti].lessons[li].center||'';
  STATE.data.teachers[ti].lessons[li].center=val.trim();
+ if(_isEditMode && _prevCenter !== val.trim()) _editChangeLogs.push(`${STATE.data.teachers[ti].name} · ${li+1}번 수업 센터: ${_prevCenter||'없음'} → ${val.trim()||'없음'}`);
  // v11.33 fix: 저장 호출이 통째로 누락되어 있었음 (lsSave + saveMonthlySnapshot)
  lsSave();
  const ym=STATE.data.teachers[ti]?.yearMonth;
@@ -6008,7 +5772,9 @@ function updateFee(ti,li,val){
  if (_checkEditMode()) return;
  const fee=parseInt(val)||0;
  const l=STATE.data.teachers[ti].lessons[li];
+ const _prevFee = l.feePer||0;
  l.feePer=fee;
+ if(_isEditMode && _prevFee !== fee) _editChangeLogs.push(`${STATE.data.teachers[ti].name} · ${l.center} 수업료: ${_prevFee.toLocaleString()}원 → ${fee.toLocaleString()}원`);
  l.total=l.count*fee;
  recalcTeacher(ti);
  STATE.cur = ti;
@@ -8811,8 +8577,8 @@ function buildDiffHTML(A, B, kA, kB){
  sections.push(diffSection(`💰 강사료 변경`,0,0,tChanged.length,rows,['강사명','지역','변경 내용']));
  }
 
- const cAdded=B.centers.filter(b=>!A.centers.find(a=>a.name===b.name));
- const cRemoved=A.centers.filter(a=>!B.centers.find(b=>b.name===a.name));
+ const cAdded=B.centers.filter(b=>!A.centers.find(a=>a.name===b.name&&a.region===b.region));
+ const cRemoved=A.centers.filter(a=>!B.centers.find(b=>b.name===a.name&&b.region===a.region));
  if(cAdded.length||cRemoved.length){
  const rows=[
  ...cAdded.map(c=>`<div class="diff-row added" style="grid-template-columns:1fr 70px 100px 1fr;"><div class="diff-cell">${c.name}</div><div class="diff-cell"><span class="badge ${c.region==='서울'?'blue':c.region==='인천'?'teal':'purple'}">${c.region||'-'}</span></div><div class="diff-cell"><span class="val-new">${Number(c.fee||0).toLocaleString()}원</span></div><div class="diff-cell">${(c.teachers||[]).join(', ')||'-'}</div></div>`),
@@ -8821,10 +8587,10 @@ function buildDiffHTML(A, B, kA, kB){
  sections.push(diffSection(`🏢 센터 추가/삭제`,cAdded.length,cRemoved.length,0,rows,['센터명','지역','수업료','담당 강사']));
  }
 
- const feeChanged=B.centers.filter(b=>{const a=A.centers.find(a=>a.name===b.name);return a&&a.fee!==b.fee;});
+ const feeChanged=B.centers.filter(b=>{const a=A.centers.find(a=>a.name===b.name&&a.region===b.region);return a&&a.fee!==b.fee;});
  if(feeChanged.length){
  const rows=feeChanged.map(b=>{
- const a=A.centers.find(a=>a.name===b.name);
+ const a=A.centers.find(a=>a.name===b.name&&a.region===b.region);
  const diff=(b.fee||0)-(a.fee||0);
  return`<div class="diff-row changed" style="grid-template-columns:1fr 70px 1fr 80px;"><div class="diff-cell">${b.name}</div><div class="diff-cell"><span class="badge ${b.region==='서울'?'blue':b.region==='인천'?'teal':'purple'}">${b.region||'-'}</span></div><div class="diff-cell"><span class="val-old">${Number(a.fee||0).toLocaleString()}원</span> → <span class="val-new">${Number(b.fee||0).toLocaleString()}원</span></div><div class="diff-cell" style="font-size:12px;color:${diff>0?'var(--red)':'var(--green)'};font-weight:600;">${diff>0?'▲':'▼'} ${Math.abs(diff).toLocaleString()}원</div></div>`;
  }).join('');
@@ -8834,7 +8600,7 @@ function buildDiffHTML(A, B, kA, kB){
  const tcChanged=B.centers.filter(b=>{const a=A.centers.find(a=>a.name===b.name);if(!a)return false;return [...(a.teachers||[])].sort().join(',')!=[...(b.teachers||[])].sort().join(',');});
  if(tcChanged.length){
  const rows=tcChanged.map(b=>{
- const a=A.centers.find(a=>a.name===b.name);
+ const a=A.centers.find(a=>a.name===b.name&&a.region===b.region);
  return`<div class="diff-row changed" style="grid-template-columns:1fr 70px 1fr 1fr;"><div class="diff-cell">${b.name}</div><div class="diff-cell"><span class="badge ${b.region==='서울'?'blue':b.region==='인천'?'teal':'purple'}">${b.region||'-'}</span></div><div class="diff-cell"><span class="val-old">${(a.teachers||[]).join(', ')||'없음'}</span></div><div class="diff-cell"><span class="val-new">${(b.teachers||[]).join(', ')||'없음'}</span></div></div>`;
  }).join('');
  sections.push(diffSection(`👥 담당 강사 변경`,0,0,tcChanged.length,rows,['센터명','지역','이전 담당','변경 후']));
@@ -8920,6 +8686,11 @@ function saveChangelog(log){
  localStorage.setItem(CHANGELOG_KEY, JSON.stringify(log));
  updateChangelogBadge();
 }
+/* ═══ 에러 로그 ═══ */
+function pushErrorLog(desc, detail=''){
+ pushChangelog({ type:'error_log', desc, detail });
+}
+
 function pushChangelog(entry){
  const log = getChangelog();
  log.unshift({ ...entry, id: Date.now(), at: new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) });
@@ -9198,25 +8969,27 @@ function renderChangelog(){
   return;
  }
 
- const typeIcon = { teacher_edit:'👤', teacher_delete:'🗑️', center_edit:'🏢', center_delete:'🗑️', record_delete:'📋', month_delete:'📅', bulk_edit:'📝', submission_apply:'✅' };
- const typeLabel = { teacher_edit:'강사 수정', teacher_delete:'강사 삭제', center_edit:'센터 수정', center_delete:'센터 삭제', record_delete:'수업기록 삭제', month_delete:'월 전체 삭제', bulk_edit:'일괄 편집', submission_apply:'재제출 반영' };
+ const typeIcon = { teacher_edit:'👤', teacher_delete:'🗑️', center_edit:'🏢', center_delete:'🗑️', record_delete:'📋', month_delete:'📅', bulk_edit:'📝', submission_apply:'✅', error_log:'🚨' };
+ const typeLabel = { teacher_edit:'강사 수정', teacher_delete:'강사 삭제', center_edit:'센터 수정', center_delete:'센터 삭제', record_delete:'수업기록 삭제', month_delete:'월 전체 삭제', bulk_edit:'일괄 편집', submission_apply:'재제출 반영', error_log:'오류 감지' };
 
- el.innerHTML = log.map(e=>`
+ el.innerHTML = log.map(e=>{
+  const hasBulkDetail = e.type==='bulk_edit' && Array.isArray(e.changes) && e.changes.length>0;
+  const bulkId = 'bulk-detail-'+e.id;
+  return `
   <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:white;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;">
    <div style="width:36px;height:36px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${typeIcon[e.type]||'📝'}</div>
    <div style="flex:1;min-width:0;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
-     <span style="font-size:12px;font-weight:600;background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:20px;">${typeLabel[e.type]||'변경'}</span>
+     <span style="font-size:12px;font-weight:600;background:${e.type==='error_log'?'#FEE2E2':'var(--green-bg)'};color:${e.type==='error_log'?'#DC2626':'var(--green)'};padding:2px 8px;border-radius:20px;">${typeLabel[e.type]||'변경'}</span>
      <span style="font-size:11px;color:var(--text3);">${e.at}</span>
     </div>
     <div style="font-size:13px;font-weight:500;color:var(--text);">${e.desc}</div>
     ${e.detail?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">${e.detail}</div>`:''}
+    ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▶ 상세 보기</button><div id="${bulkId}" style="display:none;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${c}`).join('<br>')}</div>`:''}
    </div>
-   ${e.snapshot?`<button onclick="restoreChangelog(${e.id})"
-    style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;"
-    onmouseover="this.style.background='var(--green)';this.style.color='white'"
-    onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
-  </div>`).join('');
+   ${e.snapshot?`<button onclick="restoreChangelog(${e.id})" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
+  </div>`;
+  }).join('');;
 }
 function restoreChangelog(id){
  const log = getChangelog();
@@ -9527,6 +9300,7 @@ async function syncAllToDB(){
    const info = {ok:false, time:now, teachers:0, centers:0};
    localStorage.setItem(LS_SYNC_TIME, JSON.stringify(info));
    _updateSyncChip(false, now, 0, 0);
+   try{ pushErrorLog('DB 동기화 실패', tr.message||cr.message||'알 수 없는 오류'); }catch{}
    showToast('❌ 동기화 실패: ' + (tr.message||cr.message||'오류'));
   }
  } catch(e){
@@ -11880,7 +11654,7 @@ function renderTiLedger(){
    nameTd.style.cssText = 'border:1px solid #C8C6B8;padding:5px 16px;font-size:12px;color:#555;';
    // 동명 센터 지역 표시
    const allNames = DB.centers.map(ct=>ct.name);
-   const isDup = allNames.filter(n=>n===c.name).length > 1 || DB.centers.filter(ct=>ct.name===c.name).length > 1;
+   const isDup = DB.centers.filter(ct=>ct.name===c.name&&ct.region===c.region).length > 1;
    nameTd.textContent = c.name + (isDup && c.region ? ` (${c.region})` : '');
    tr.appendChild(nameTd);
    tbody.appendChild(tr);
@@ -17280,6 +17054,7 @@ function _pushToGAS(){
   }
  }).catch(e=>{
   _showUnsyncedBadge(true);
+  try{ pushErrorLog('수업기록 GAS 저장 실패', String(e?.message||e||'네트워크 오류')); }catch{}
   if(chip){ chip.textContent='✗ 동기화 실패'; chip.style.background='var(--red-bg)'; chip.style.color='var(--red)';
    setTimeout(()=>{ chip.style.display='none'; }, 4000);
   }
