@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v14.17</title>
+<title>수업기록표 정산 시스템 v14.19</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -552,10 +552,7 @@ body.edit-mode-active .ledger-wrap textarea {
     order:1; font-size:13px!important; padding:0 10px!important;
     height:44px!important; flex-shrink:0!important;
   }
-  #adminTimerChip {
-    order:2; margin-left:auto!important; margin-right:6px!important;
-    align-self:center!important; padding:3px 8px!important; font-size:11px!important;
-  }
+
   /* GitHub/DB/설정/topbar-right: 모바일 숨김 */
   #githubUploadBtn,
   #syncDBBtn,
@@ -982,7 +979,7 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
 
  <!-- 홈 편집 버튼 (PC 전용, 편집모드 시 표시) -->
- <div id="landingEditBtn" style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+ <div id="landingEditBtn" style="margin-top: 16px; display: none; gap: 8px; justify-content: center;">
   <button onclick="_toggleLandingEdit()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid #E2E0D8;border-radius:20px;background:white;font-size:12px;color:#888;cursor:pointer;font-family:inherit;">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
    홈 편집
@@ -1367,18 +1364,14 @@ body.edit-mode-active .ledger-wrap textarea {
  수업기록표 정산 시스템
  </div>
  <div class="nav-tabs">
- <button class="nav-tab" id="nav0" onclick="switchView('settle')">📊 정산</button>
+ <button class="nav-tab active" id="nav0" onclick="switchView('settle')">📊 정산</button>
  <button class="nav-tab" id="nav1" onclick="switchView('submissions')" style="position:relative;">📋 기록표 관리<span id="submissionsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  <button class="nav-tab" id="nav2" onclick="switchView('teachers')">👥 강사 관리</button>
- <button class="nav-tab active" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
+ <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
 <button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: none; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;"></span></button>
  </div>
- <div id="adminTimerChip" style="display: flex; background: var(--green-bg); border-color: var(--green); color: var(--green);" title="남은 세션 시간 (활동 시 자동 갱신)">
-  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:var(--green);flex-shrink:0;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"></path></svg>
-  <span id="adminTimerText">30:00</span>
-  <button onclick="resetAdminTimer()" title="세션 연장" style="margin-left: 2px; width: 18px; height: 18px; border-radius: 50%; border-color: var(--green); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; background: transparent; color: var(--green); font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0px;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='var(--green)'">↺</button>
- </div>
+
  <div class="topbar-right" id="topbarRight">
  <button class="btn" onclick="dlPDF()"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>PDF</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
@@ -2045,19 +2038,23 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
 
   <!-- 지역별 검색창 -->
-  <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
-   <div style="position:relative;flex:1;">
+  <!-- 검색 + 필터 바: 모바일은 2줄 -->
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+   <!-- 1줄: 검색창 (전체 너비) -->
+   <div style="position:relative;">
     <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width: 100%; height: 36px; padding: 0px 12px 0px 32px; border-color: var(--border); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+    <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree()" style="width: 100%; height: 40px; padding: 0px 12px 0px 36px; border-color: var(--border); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-radius: 8px; font-size: 15px; font-family: inherit; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
    </div>
-   <!-- v12.40: 정리 필요 필터 버튼 (미배정 + 정확히 같은 이름 중복) -->
-   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">7</span></button>
-   <div id="cRegionTabsMobile"><button class="c-rgn-tab active" data-val="" onclick="_setCenterRegion(this,'')">전체</button><button class="c-rgn-tab" data-val="서울" onclick="_setCenterRegion(this,'서울')">서울</button><button class="c-rgn-tab" data-val="인천" onclick="_setCenterRegion(this,'인천')">인천</button><button class="c-rgn-tab" data-val="수원" onclick="_setCenterRegion(this,'수원')">수원</button></div><select id="cTreeRegionFilter" onchange="filterCenterTree()" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
-    <option value="">전체 지역</option>
-    <option value="서울">서울</option>
-    <option value="인천">인천</option>
-    <option value="수원">수원</option>
-   </select>
+   <!-- 2줄: 정리필요 버튼 + 지역 선택 -->
+   <div style="display:flex;gap:8px;align-items:center;">
+    <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">7</span></button>
+    <div id="cRegionTabsMobile"><button class="c-rgn-tab active" data-val="" onclick="_setCenterRegion(this,'')">전체</button><button class="c-rgn-tab" data-val="서울" onclick="_setCenterRegion(this,'서울')">서울</button><button class="c-rgn-tab" data-val="인천" onclick="_setCenterRegion(this,'인천')">인천</button><button class="c-rgn-tab" data-val="수원" onclick="_setCenterRegion(this,'수원')">수원</button></div><select id="cTreeRegionFilter" onchange="filterCenterTree()" style="flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
+     <option value="">전체 지역</option>
+     <option value="서울">서울</option>
+     <option value="인천">인천</option>
+     <option value="수원">수원</option>
+    </select>
+   </div>
   </div>
 
   <!-- v12.40: 정리 필요 센터 영역 (기본 숨김) -->
@@ -2235,9 +2232,151 @@ body.edit-mode-active .ledger-wrap textarea {
     </div>
     <!-- 우측: 상세 패널 -->
     <div style="background:white;overflow-y:auto;">
-     <div id="cTreeDetail" style="padding:20px;"><div style="padding:40px;text-align:center;color:var(--text3);">
-     "r"에 대한 검색 결과가 없어요
-    </div></div>
+     <div id="cTreeDetail" style="padding:20px;">
+     <div style="padding:14px;border-bottom:1px solid var(--border);background:var(--bg);">
+      🔍 "<strong>가</strong>" 검색 결과 <span style="color:var(--text3);">14개</span>
+     </div>
+     <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',5)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가람</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">송준기 · 55,000원 · <span style="font-size:10px;opacity:.75;">금</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',5)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',5)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',7)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가온</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">박준형 · 45,000원 · <span style="font-size:10px;opacity:.75;">목(×2)</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',7)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',7)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',12)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가평길누리</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">정상준 · 60,000원 · <span style="font-size:10px;opacity:.75;">목</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',12)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',12)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',11)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가평A+</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">정상준 · 60,000원 · <span style="font-size:10px;opacity:.75;">목</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',11)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',11)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',230)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">오남정가원</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">오건 · 55,000원 · <span style="font-size:10px;opacity:.75;">월</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',230)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',230)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',260)">
+      <span class="badge blue" style="font-size:10px;flex-shrink:0;">서울</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">정가원</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">신기윤 · 55,000원 · <span style="font-size:10px;opacity:.75;">화</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',260)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',260)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',10)">
+      <span class="badge purple" style="font-size:10px;flex-shrink:0;">수원</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가족사랑</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">최정안 · 55,000원 · <span style="font-size:10px;opacity:.75;">월</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',10)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',10)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',3)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가가호호봉천</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">박기남 · 50,000원 · <span style="font-size:10px;opacity:.75;">금</span></span> <span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">박종일 · 50,000원 · <span style="font-size:10px;opacity:.75;">월</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',3)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',3)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',4)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가가호호시흥</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">박종일 · 55,000원 · <span style="font-size:10px;opacity:.75;">수</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',4)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',4)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',289)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가나안</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">한수희 · 55,000원 · <span style="font-size:10px;opacity:.75;">수</span></span> <span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">방진수 · 55,000원</span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',289)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',289)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',6)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가로등</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">방진수 · 55,000원 · <span style="font-size:10px;opacity:.75;">목</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',6)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',6)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',8)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가은</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">김보창 · 55,000원 · <span style="font-size:10px;opacity:.75;">금</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',8)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',8)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',9)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가족데이케어</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">김보창 · 55,000원 · <span style="font-size:10px;opacity:.75;">금</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',9)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',9)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div><div style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''" onclick="openModal('center',13)">
+      <span class="badge teal" style="font-size:10px;flex-shrink:0;">인천</span>
+      <div style="flex:1;min-width:0;">
+       <div style="font-weight:500;font-size:13px;color:var(--green);">가현산요양</div>
+       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;"><span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:0.5px solid var(--border);">조아라 · 55,000원 · <span style="font-size:10px;opacity:.75;">목</span></span></div>
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+       <button onclick="event.stopPropagation();openModal('center',13)" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
+       <button onclick="event.stopPropagation();delItem('center',13)" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+      </div>
+     </div></div>
     </div>
    </div>
   </div>
@@ -2377,7 +2516,7 @@ body.edit-mode-active .ledger-wrap textarea {
    </div>
    <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
   </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 10:14:15</div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 10:23:07</div>
  </div>
 </div>
 
@@ -2415,12 +2554,12 @@ body.edit-mode-active .ledger-wrap textarea {
 <!-- 커스텀 confirm 모달 -->
 <div class="modal-overlay" id="confirmOverlay" style="display: none;" onclick="if(event.target===this)_confirmCancel()">
  <div class="modal" style="max-width: 360px; padding: 24px 24px 20px; transform: scale(1); opacity: 1; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;">
-  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🔔</div>
-  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">알림 수신 동의</h3>
-  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;">정산이 완료되면 휴대폰으로 알림을 보내드려요.<br><br><div style="background:var(--surface2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:1.6;">• 정산 완료 시 즉시 알림<br>• 수업기록표 제출 안내 (매월)<br>• 관리자 공지사항</div><br><span style="font-size:11px;color:var(--text3);">언제든 브라우저 설정에서 끌 수 있어요.</span></p>
+  <div id="confirmIcon" style="font-size:32px;text-align:center;margin-bottom:12px;">🖥️</div>
+  <h3 id="confirmTitle" style="font-size:15px;font-weight:700;margin-bottom:8px;text-align:center;">PC 전용</h3>
+  <p id="confirmDesc" style="font-size:13px;color:var(--text2);line-height:1.65;text-align:center;margin-bottom:0;">관리자 모드는 현재 PC에서만 접속 가능해요.<br><small>모바일 지원은 준비 중이에요.</small></p>
   <div class="modal-btns" style="margin-top:20px;justify-content:center;gap:10px;">
-   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width:90px;">나중에</button>
-   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px;">허용하기</button>
+   <button class="btn" id="confirmCancelBtn" onclick="_confirmCancel()" style="min-width: 90px; display: none;"></button>
+   <button class="btn" id="confirmOkBtn" onclick="_confirmOk()" style="min-width: 90px; background: var(--green); color: white; border-color: var(--green); font-weight: 700;">확인</button>
   </div>
  </div>
 </div>
@@ -3497,7 +3636,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.17';
+const SYSTEM_VERSION='v14.19';
 const BLOCK_MOBILE_ADMIN = true; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9198,79 +9337,6 @@ function _restoreChangelog_UNUSED(id){
 /* ═══ 관리자 자동 로그아웃 타이머 (30분) ═══ */
 const ADMIN_TIMEOUT_MS = 30 * 60 * 1000; // 30분
 const ADMIN_WARN_MS = 5 * 60 * 1000;     // 경고 5분 전
-let _adminTimer = null;
-let _adminWarnTimer = null;
-let _adminTimerStart = null;
-
-let _adminTickInterval = null;
-
-function _updateAdminTimerChip(){
- const chip = document.getElementById('adminTimerChip');
- const textEl = document.getElementById('adminTimerText');
- if(!chip || !textEl || !_adminTimerStart) return;
- const remaining = Math.max(0, Math.ceil((_adminTimerStart + ADMIN_TIMEOUT_MS - Date.now()) / 1000));
- const min = Math.floor(remaining / 60);
- const sec = remaining % 60;
- textEl.textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
- // 5분 이하이면 경고색
- if(remaining <= 300){
-  chip.style.background = '#FFF0EF';
-  chip.style.borderColor = 'var(--red)';
-  chip.style.color = 'var(--red)';
-  chip.querySelector('svg').style.fill = 'var(--red)';
-  chip.querySelector('button').style.borderColor = 'var(--red)';
-  chip.querySelector('button').style.color = 'var(--red)';
- } else {
-  chip.style.background = 'var(--green-bg)';
-  chip.style.borderColor = 'var(--green)';
-  chip.style.color = 'var(--green)';
-  chip.querySelector('svg').style.fill = 'var(--green)';
-  chip.querySelector('button').style.borderColor = 'var(--green)';
-  chip.querySelector('button').style.color = 'var(--green)';
- }
-}
-
-function startAdminAutoLogout(){
- stopAdminAutoLogout();
- _adminTimerStart = Date.now();
- // 타이머 chip 표시
- const chip = document.getElementById('adminTimerChip');
- if(chip) chip.style.display = 'flex';
- // 1초마다 chip 업데이트
- _adminTickInterval = setInterval(_updateAdminTimerChip, 1000);
- _updateAdminTimerChip();
- // 활동 감지 이벤트
- ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
-  document.addEventListener(ev, resetAdminTimer, { passive: true });
- });
- _setAdminTimers();
-}
-
-function _setAdminTimers(){
- _adminTimer = setTimeout(()=>{
-  // 30분 경과 → 자동 로그아웃
-  removeAdminAutoLogoutUI();
-  sessionStorage.removeItem('iruri_admin_session');
-  stopAdminAutoLogout();
-  // 모달로 알림 후 모드 선택 화면으로
-  showConfirm({icon:'⏱️',title:'자동 로그아웃',desc:'30분 동안 활동이 없어 관리자 모드에서 로그아웃됐어요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null});
-  adminLogout();
- }, ADMIN_TIMEOUT_MS);
-
- _adminWarnTimer = setTimeout(()=>{
-  showAdminTimeoutWarning();
- }, ADMIN_TIMEOUT_MS - ADMIN_WARN_MS);
-}
-
-function resetAdminTimer(){
- if(!sessionStorage.getItem('iruri_admin_session')) return;
- clearTimeout(_adminTimer);
- clearTimeout(_adminWarnTimer);
- removeAdminAutoLogoutUI();
- _adminTimerStart = Date.now();
- _updateAdminTimerChip();
- _setAdminTimers();
-}
 
 // ── 정산 데이터 전체 내보내기 ──────────────────────────
 function exportAllMonthlyData(){
@@ -9478,8 +9544,7 @@ function stopAdminAutoLogout(){
  _adminTimer = null;
  _adminWarnTimer = null;
  _adminTickInterval = null;
- const chip = document.getElementById('adminTimerChip');
- if(chip) chip.style.display = 'none';
+
  ['mousemove','mousedown','keydown','touchstart','click','scroll'].forEach(ev=>{
   document.removeEventListener(ev, resetAdminTimer);
  });
@@ -9494,7 +9559,7 @@ function stopAdminAutoLogout(){
 }
 
 function showAdminTimeoutWarning(){
- removeAdminAutoLogoutUI();
+ // removeAdminAutoLogoutUI();
  const bar = document.createElement('div');
  bar.id = 'admin-timeout-bar';
  bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#E53935;color:white;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;z-index:9998;font-size:13px;font-weight:500;box-shadow:0 -2px 8px rgba(0,0,0,.2);';
@@ -10189,7 +10254,7 @@ async function gasPost(body, ms=45000){
 
 // 랜딩 페이지 표시 (로그인 후 진입점)
 function showLanding(){
- stopAdminAutoLogout();
+ // stopAdminAutoLogout();
  // 관리자는 점검 모드 무관하게 즉시 진입
  if(sessionStorage.getItem('iruri_admin_session')){
   _showLandingUI();
@@ -10442,7 +10507,7 @@ function doLogout(){
  sessionStorage.removeItem('iruri_session');
  _stopPresence(window._loggedInTeacher);
  sessionStorage.removeItem('iruri_admin_session');
- stopAdminAutoLogout();
+ // stopAdminAutoLogout();
  window._loggedInTeacher = null;
  document.getElementById('adminTopbar').classList.remove('visible');
  document.getElementById('modeSelectScreen').style.display='none';
@@ -10452,8 +10517,8 @@ function doLogout(){
 
 function adminLogout(){
  sessionStorage.removeItem('iruri_admin_session');
- stopAdminAutoLogout();
- removeAdminAutoLogoutUI();
+ // stopAdminAutoLogout();
+ // removeAdminAutoLogoutUI();
  document.getElementById('adminTopbar').classList.remove('visible');
  ['settleView','teachersView','centersView','historyView','submissionsView','changelogView'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.style.display='none';
@@ -10503,7 +10568,7 @@ function _enterAdminMode(){
  goHome();
  checkAndApplyRaises();
  checkPendingSubmissions();
- startAdminAutoLogout();
+ // startAdminAutoLogout(); // 타이머 비활성화
  if(window.innerWidth <= 600) _initAdminMobile();
  // v11.30: 접속 현황 위젯 표시 + 30초 자동 갱신
  const _pw = document.getElementById('presenceWidget');
