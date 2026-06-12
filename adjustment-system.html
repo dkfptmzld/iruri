@@ -10255,6 +10255,12 @@ function simpleHash(str){
  return h.toString(36);
 }
 
+// SHA-256 해시 (신규 표준). simpleHash 는 레거시 계정 무중단 전환용 fallback 으로만 유지.
+async function sha256(str){
+ const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(str)));
+ return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 function getTeacherAccounts(){
  try{ return JSON.parse(localStorage.getItem(TEACHER_ACCOUNTS_KEY)||'{}'); }catch{ return {}; }
 }
@@ -10280,7 +10286,7 @@ function switchLoginTab(tab){
  document.getElementById('signup-err').style.display='none';
 }
 
-function doLogin(){
+async function doLogin(){
  const name = document.getElementById('login-name').value.trim();
  const pw = document.getElementById('login-pw').value;
  const err = document.getElementById('login-err');
@@ -10295,17 +10301,21 @@ function doLogin(){
  }
  err.style.display='none';
 
- const hashed = simpleHash(pw);
+ const newHash = await sha256(pw);   // SHA-256 (신규 표준)
+ const oldHash = simpleHash(pw);     // 레거시 해시 (무중단 전환용 fallback)
  const accounts = getTeacherAccounts();
 
  // ── 즉시 로그인: localStorage에 계정이 있으면 GAS 대기 없이 바로 진입 ──
- if(accounts[name] && accounts[name]===hashed){
+ // 로컬 캐시가 신규/레거시 어느 형식이든 통과시키고, 통과 시 신규 해시로 업그레이드
+ if(accounts[name] && (accounts[name]===newHash || accounts[name]===oldHash)){
+  accounts[name] = newHash;
+  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
   loginSuccess(name);
-  // 백그라운드: GAS 동기화 (결과와 무관하게 UX에 영향 없음)
-  gasPost({ action:'loginCheck', teacher:name, hashedPw:hashed })
+  // 백그라운드: GAS 동기화 (서버도 레거시→SHA-256 지연 업그레이드)
+  gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
    .then(r=>{
     if(r.message==='가입되지 않은 계정'){
-     gasPost({ action:'signupAccount', teacher:name, hashedPw:hashed }).catch(()=>{});
+     gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash }).catch(()=>{});
     }
    }).catch(()=>{});
   return;
@@ -10316,12 +10326,12 @@ function doLogin(){
  if(btn){ btn.disabled=true; btn.textContent='확인 중...'; }
  showLoader('로그인 확인 중...', '처음 로그인 시 잠시 기다려주세요', 50000);
 
- gasPost({ action:'loginCheck', teacher:name, hashedPw:hashed })
+ gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
   .then(r=>{
    hideLoader();
    if(r.ok){
-    // GAS 로그인 성공 → localStorage에도 캐시 저장
-    accounts[name] = hashed;
+    // GAS 로그인 성공 → localStorage에도 캐시 저장 (SHA-256)
+    accounts[name] = newHash;
     localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
     loginSuccess(name);
    } else if(r.message==='가입되지 않은 계정'){
@@ -10365,7 +10375,7 @@ function loginSuccess(name){
  setTimeout(()=> _showNotifyConsentIfNeeded(name), 1000);
 }
 
-function doSignup(){
+async function doSignup(){
  const name = document.getElementById('signup-name').value.trim();
  const pw = document.getElementById('signup-pw').value;
  const pw2 = document.getElementById('signup-pw2').value;
@@ -10383,14 +10393,15 @@ function doSignup(){
  if(btn){ btn.disabled=true; btn.textContent='가입 중...'; }
  err.style.display='none';
 
- gasPost({ action:'signupAccount', teacher:name, hashedPw:simpleHash(pw) })
+ const newHash = await sha256(pw);
+ gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash })
  .then(r=>{
  const isChange = r.isChange;
  const msg = isChange ? `${name} 비밀번호가 변경됐어요` : `${name} 가입이 완료됐어요! 로그인해주세요`;
 
  // localStorage에도 캐시 저장 (오프라인 대비)
  const accounts = getTeacherAccounts();
- accounts[name] = simpleHash(pw);
+ accounts[name] = newHash;
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
 
  document.getElementById('signup-name').value='';
@@ -10421,7 +10432,7 @@ function doSignup(){
  // 오프라인 fallback
  const accounts = getTeacherAccounts();
  const isChange = !!accounts[name];
- accounts[name] = simpleHash(pw);
+ accounts[name] = newHash;
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
  err.textContent='⚠️ 서버 저장 실패, 로컬에만 저장됐어요. 인터넷 연결을 확인해주세요.';
  err.style.color='#D97706'; err.style.display='block';
