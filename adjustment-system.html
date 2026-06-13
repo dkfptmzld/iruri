@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v13.26">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.37">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,7 +22,7 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v13.26">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.37">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
@@ -3774,6 +3774,8 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
 const SYSTEM_VERSION='v14.37';
+/* 운영 환경 디버그 로그 무음화 — 주소 끝에 ?debug=1 붙이면 다시 켜짐. warn/error 는 항상 유지 */
+(function(){ try{ if(!/[?&]debug=1\b/.test(location.search)){ console.log=function(){}; console.debug=function(){}; console.info=function(){}; } }catch(e){} })();
 const BLOCK_MOBILE_ADMIN = true; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4116,6 +4118,8 @@ function normalizeDates(){
  });
 }
 window.addEventListener('load', ()=>{
+ // 탭 제목을 단일 버전 소스(SYSTEM_VERSION)로 동기화 — 버전 변경 시 상수 한 곳만 수정
+ document.title = '수업기록표 정산 시스템 ' + SYSTEM_VERSION;
  // 이전 outerHTML 캡처로 인한 잔여 상태 초기화
  const _t=document.getElementById('saveToast');
  if(_t){_t.classList.remove('show');_t.textContent='';}
@@ -4568,9 +4572,15 @@ function saveMonthlySnapshot(ym, data, pushGAS=true){
   const now = new Date().toISOString();
   const snap = { ym, savedAt: now, data };
   localStorage.setItem(key, JSON.stringify(snap));
-  // GAS Drive 저장 (명시적 변경 시에만)
-  if(pushGAS) gasPost({ action:'saveMonthlySnapshot', yearMonth: ym, data }).catch(()=>{});
+  // GAS Drive 저장 (명시적 변경 시에만) — localStorage 는 위에서 이미 즉시 저장됨
+  if(pushGAS) _pushSnapshotGAS(ym, data);
  } catch(e){ console.warn('월별 저장 실패:', e); }
+}
+
+// 클라우드(GAS) 스냅샷 푸시 — 네트워크 일시 오류 시 백오프 재시도 (localStorage 는 영향 없음)
+function _pushSnapshotGAS(ym, data, attempt=0){
+ gasPost({ action:'saveMonthlySnapshot', yearMonth: ym, data })
+  .catch(()=>{ if(attempt<2) setTimeout(()=>_pushSnapshotGAS(ym, data, attempt+1), (attempt+1)*4000); });
 }
 
 // ═══ v11.41: 편집 모드 진입/저장/취소 함수 ═══
@@ -7227,7 +7237,7 @@ function populateTeacherFilter(){
  if(!sel)return;
  const cur=sel.value;
  const tnames=DB.teachers.map(t=>t.name).sort();
- sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${n}" ${n===cur?'selected':''}>${n}</option>`).join('')}`;
+ sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${esc(n)}" ${n===cur?'selected':''}>${esc(n)}</option>`).join('')}`;
 }
 
 /* ═══ 센터 관리 뷰 탭 ═══ */
@@ -9128,7 +9138,7 @@ function showAddrHint(msg) {
  if (el) { el.textContent = msg; el.style.color = 'var(--green)'; }
 }
 
-function esc(s) { return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"\\'"); }
 
 /* ═══ TOAST ═══ */
 
@@ -10245,6 +10255,12 @@ function simpleHash(str){
  return h.toString(36);
 }
 
+// SHA-256 해시 (신규 표준). simpleHash 는 레거시 계정 무중단 전환용 fallback 으로만 유지.
+async function sha256(str){
+ const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(str)));
+ return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 function getTeacherAccounts(){
  try{ return JSON.parse(localStorage.getItem(TEACHER_ACCOUNTS_KEY)||'{}'); }catch{ return {}; }
 }
@@ -10270,7 +10286,7 @@ function switchLoginTab(tab){
  document.getElementById('signup-err').style.display='none';
 }
 
-function doLogin(){
+async function doLogin(){
  const name = document.getElementById('login-name').value.trim();
  const pw = document.getElementById('login-pw').value;
  const err = document.getElementById('login-err');
@@ -10285,17 +10301,21 @@ function doLogin(){
  }
  err.style.display='none';
 
- const hashed = simpleHash(pw);
+ const newHash = await sha256(pw);   // SHA-256 (신규 표준)
+ const oldHash = simpleHash(pw);     // 레거시 해시 (무중단 전환용 fallback)
  const accounts = getTeacherAccounts();
 
  // ── 즉시 로그인: localStorage에 계정이 있으면 GAS 대기 없이 바로 진입 ──
- if(accounts[name] && accounts[name]===hashed){
+ // 로컬 캐시가 신규/레거시 어느 형식이든 통과시키고, 통과 시 신규 해시로 업그레이드
+ if(accounts[name] && (accounts[name]===newHash || accounts[name]===oldHash)){
+  accounts[name] = newHash;
+  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
   loginSuccess(name);
-  // 백그라운드: GAS 동기화 (결과와 무관하게 UX에 영향 없음)
-  gasPost({ action:'loginCheck', teacher:name, hashedPw:hashed })
+  // 백그라운드: GAS 동기화 (서버도 레거시→SHA-256 지연 업그레이드)
+  gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
    .then(r=>{
     if(r.message==='가입되지 않은 계정'){
-     gasPost({ action:'signupAccount', teacher:name, hashedPw:hashed }).catch(()=>{});
+     gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash }).catch(()=>{});
     }
    }).catch(()=>{});
   return;
@@ -10306,12 +10326,12 @@ function doLogin(){
  if(btn){ btn.disabled=true; btn.textContent='확인 중...'; }
  showLoader('로그인 확인 중...', '처음 로그인 시 잠시 기다려주세요', 50000);
 
- gasPost({ action:'loginCheck', teacher:name, hashedPw:hashed })
+ gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
   .then(r=>{
    hideLoader();
    if(r.ok){
-    // GAS 로그인 성공 → localStorage에도 캐시 저장
-    accounts[name] = hashed;
+    // GAS 로그인 성공 → localStorage에도 캐시 저장 (SHA-256)
+    accounts[name] = newHash;
     localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
     loginSuccess(name);
    } else if(r.message==='가입되지 않은 계정'){
@@ -10355,7 +10375,7 @@ function loginSuccess(name){
  setTimeout(()=> _showNotifyConsentIfNeeded(name), 1000);
 }
 
-function doSignup(){
+async function doSignup(){
  const name = document.getElementById('signup-name').value.trim();
  const pw = document.getElementById('signup-pw').value;
  const pw2 = document.getElementById('signup-pw2').value;
@@ -10373,14 +10393,15 @@ function doSignup(){
  if(btn){ btn.disabled=true; btn.textContent='가입 중...'; }
  err.style.display='none';
 
- gasPost({ action:'signupAccount', teacher:name, hashedPw:simpleHash(pw) })
+ const newHash = await sha256(pw);
+ gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash })
  .then(r=>{
  const isChange = r.isChange;
  const msg = isChange ? `${name} 비밀번호가 변경됐어요` : `${name} 가입이 완료됐어요! 로그인해주세요`;
 
  // localStorage에도 캐시 저장 (오프라인 대비)
  const accounts = getTeacherAccounts();
- accounts[name] = simpleHash(pw);
+ accounts[name] = newHash;
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
 
  document.getElementById('signup-name').value='';
@@ -10411,7 +10432,7 @@ function doSignup(){
  // 오프라인 fallback
  const accounts = getTeacherAccounts();
  const isChange = !!accounts[name];
- accounts[name] = simpleHash(pw);
+ accounts[name] = newHash;
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
  err.textContent='⚠️ 서버 저장 실패, 로컬에만 저장됐어요. 인터넷 연결을 확인해주세요.';
  err.style.color='#D97706'; err.style.display='block';
