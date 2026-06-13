@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.37">
+<meta property="og:title" content="수업기록표 정산 시스템 v13.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.37">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v13.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v14.37</title>
+<title>수업기록표 정산 시스템 v14.39</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -592,6 +592,9 @@ body.edit-mode-active .ledger-wrap textarea {
     border-bottom:0.5px solid #e2e0d8;
     font-size:12px; z-index:100;
   }
+}
+@media(min-width:601px){
+  #mgr-teacher-bar { display:none!important; }
   #mgr-teacher-bar-label { color:#888; font-size:11px; }
   #mgr-teacher-bar-pill {
     background:#E8F5EE; color:#1A7A50; border:0.5px solid #B8DFCC;
@@ -1990,73 +1993,19 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- 지역별 통계 카드 -->
  <div class="region-stats">
- <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">34</div><div class="region-sub">명</div></div>
- <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="ts-seoul">17</div><div class="region-sub" id="ts-seoul-s">비율 4 · 고정 13</div></div>
- <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">12</div><div class="region-sub" id="ts-incheon-s">비율 5 · 고정 7</div></div>
- <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="ts-suwon">5</div><div class="region-sub" id="ts-suwon-s">비율 2 · 고정 3</div></div>
+ <div class="region-card total"><div class="region-label">전체</div><div class="region-num" id="ts-total">—</div><div class="region-sub">명</div></div>
+ <div class="region-card seoul"><div class="region-label">서울</div><div class="region-num" id="ts-seoul">—</div><div class="region-sub" id="ts-seoul-s">—</div></div>
+ <div class="region-card incheon"><div class="region-label">인천</div><div class="region-num" id="ts-incheon">—</div><div class="region-sub" id="ts-incheon-s">—</div></div>
+ <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="ts-suwon">—</div><div class="region-sub" id="ts-suwon-s">—</div></div>
  </div>
 
  <!-- v12.18: 옵션 8 — 지역×과목 매트릭스 (박기남님 요청) -->
- <div id="regionSubjectMatrix-mgr" style="padding:0 0 16px 0;">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;">
-   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
-    <div style="display:flex;align-items:baseline;gap:10px;">
-     <div style="font-size:14px;font-weight:600;color:var(--text1);">🎯 지역 × 과목 매트릭스 (옵션 8)</div>
-     <div style="font-size:11px;color:var(--text3);">셀 클릭 → 강사 목록 펼침</div>
-    </div>
-    <button onclick="_openSubjectManageModal()" style="padding:5px 12px;background:white;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;color:var(--text2);display:flex;align-items:center;gap:4px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='white'">⚙️ 과목 관리</button>
-   </div>
-
-   <div style="display:grid;grid-template-columns:70px repeat(3, 1fr);gap:8px;font-size:12px;">
-    <div></div>
-    <div style="text-align:center;padding:8px;font-weight:600;color:#854F0B;background:#FFFBEC;border-radius:6px;">실버스포츠</div><div style="text-align:center;padding:8px;font-weight:600;color:#3C3489;background:#F0EAFA;border-radius:6px;">도구 레크레이션</div><div style="text-align:center;padding:8px;font-weight:600;color:#085041;background:#E1F5EE;border-radius:6px;">도구인지</div>
-    
-     <div style="text-align:center;padding:8px;font-weight:600;background:#EFF6FF;color:#1E40AF;border-radius:6px;display:flex;align-items:center;justify-content:center;">서울</div>
-     <div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','서울','실버스포츠')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#BA7517;font-family:'DM Mono',monospace;line-height:1;">9</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','서울','도구 레크레이션')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#5A3AB0;font-family:'DM Mono',monospace;line-height:1;">7</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','서울','도구인지')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#0F6E56;font-family:'DM Mono',monospace;line-height:1;">1</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div>
-    
-     <div style="text-align:center;padding:8px;font-weight:600;background:#E1F5EE;color:#0F6E56;border-radius:6px;display:flex;align-items:center;justify-content:center;">인천</div>
-     <div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','인천','실버스포츠')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#BA7517;font-family:'DM Mono',monospace;line-height:1;">9</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','인천','도구 레크레이션')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#5A3AB0;font-family:'DM Mono',monospace;line-height:1;">2</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','인천','도구인지')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#0F6E56;font-family:'DM Mono',monospace;line-height:1;">1</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div>
-    
-     <div style="text-align:center;padding:8px;font-weight:600;background:#F0EAFA;color:#5A3AB0;border-radius:6px;display:flex;align-items:center;justify-content:center;">수원</div>
-     <div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','수원','실버스포츠')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#BA7517;font-family:'DM Mono',monospace;line-height:1;">2</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="_growthExpandMatrix('regionSubjectMatrix-mgr','수원','도구 레크레이션')" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:pointer;opacity:1;transition:transform 0.1s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
-       <div style="font-size:22px;font-weight:500;color:#5A3AB0;font-family:'DM Mono',monospace;line-height:1;">3</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">명</div>
-      </div><div onclick="" style="background:white;border:1px solid var(--border);padding:14px 8px;border-radius:8px;text-align:center;cursor:default;opacity:0.4;transition:transform 0.1s;">
-       <div style="font-size:22px;font-weight:500;color:var(--text3);font-family:'DM Mono',monospace;line-height:1;">0</div>
-       <div style="font-size:10px;color:var(--text3);margin-top:4px;">-</div>
-      </div>
-    
-   </div>
-
-   
-  </div>
- </div>
+ <div id="regionSubjectMatrix-mgr" style="padding:0 0 16px 0;"></div>
  <div id="regionSubjectMatrixExpand-mgr" style="padding:0 0 16px 0;"></div>
 
  <div class="mgr-section">
  <div class="mgr-sec-head">
- <span>강사 목록</span><span class="badge green" id="tCount">34명 (전체 34명)</span>
+ <span>강사 목록</span><span class="badge green" id="tCount">0명</span>
  </div>
  <!-- 지역 탭 + 검색 -->
  <div class="search-bar" style="gap:6px;flex-wrap:wrap;">
@@ -2071,381 +2020,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div class="mgr-head-row mgr-row t-mgr-row">
  <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">입사일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell"></div>
  </div>
- <div id="tRows"><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',0)">
- <div class="mgr-cell" style="font-weight:500;">김은영<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">352-1704-2930-23</span><span style="display:block;">김은영</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-03-09</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-08-19<br><span style="color:var(--text3);">D-72</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',0)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',3)">
- <div class="mgr-cell" style="font-weight:500;">오건<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333111275417</span><span style="display:block;">오건</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-03-09</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-08-19<br><span style="color:var(--text3);">D-72</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',3)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',32)">
- <div class="mgr-cell" style="font-weight:500;">임준우<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">우리은행</span><span style="font-family:'DM Mono',monospace;display:block;">1002-259-693785</span><span style="display:block;">임준우</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-06-05</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-11-20<br><span style="color:var(--text3);">D-165</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',32)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',25)">
- <div class="mgr-cell" style="font-weight:500;">박준형<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">814301-04-024952</span><span style="display:block;">박준형</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',25)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',23)">
- <div class="mgr-cell" style="font-weight:500;">변동<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110532315670</span><span style="display:block;">변동</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',23)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',28)">
- <div class="mgr-cell" style="font-weight:500;">신기윤<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">302-0525-3101-11</span><span style="display:block;">신기윤</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',28)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',15)">
- <div class="mgr-cell" style="font-weight:500;">양성모<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신협</span><span style="font-family:'DM Mono',monospace;display:block;">132085004607</span><span style="display:block;">양성모</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',15)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',27)">
- <div class="mgr-cell" style="font-weight:500;">양재원<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">497802-01-645215</span><span style="display:block;">양재원</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',27)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',20)">
- <div class="mgr-cell" style="font-weight:500;">윤혜미<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">055210790429</span><span style="display:block;">윤혜미</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',20)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',16)">
- <div class="mgr-cell" style="font-weight:500;">이인경<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구인지</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">수협</span><span style="font-family:'DM Mono',monospace;display:block;">1010-1165-5453</span><span style="display:block;">이인경</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',16)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',21)">
- <div class="mgr-cell" style="font-weight:500;">장성기<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110-322-112402</span><span style="display:block;">장성기</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',21)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',18)">
- <div class="mgr-cell" style="font-weight:500;">조영미<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">부산은행</span><span style="font-family:'DM Mono',monospace;display:block;">098-12-029209-7</span><span style="display:block;">조영미</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',18)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',31)">
- <div class="mgr-cell" style="font-weight:500;">이재열<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">하나은행</span><span style="font-family:'DM Mono',monospace;display:block;">620</span><span style="display:block;">242500 823 이재열</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">50,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',31)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',6)">
- <div class="mgr-cell" style="font-weight:500;">구명훈<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">233-21-0417-550</span><span style="display:block;">구명훈</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',6)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',9)">
- <div class="mgr-cell" style="font-weight:500;">송준기<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">694702-01-433455</span><span style="display:block;">송준기</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',9)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',12)">
- <div class="mgr-cell" style="font-weight:500;">정상준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">351-0826-7304-73</span><span style="display:block;">정상준</span></div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',12)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',29)">
- <div class="mgr-cell" style="font-weight:500;">이재하<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
- <div class="mgr-cell"><span class="badge blue">서울</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">100%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2016-09-01</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',29)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',30)">
- <div class="mgr-cell" style="font-weight:500;">김보창<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-05-01</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-10-20<br><span style="color:var(--text3);">D-134</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',30)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',26)">
- <div class="mgr-cell" style="font-weight:500;">이재윤<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">302-1446-8065-81</span><span style="display:block;">이재윤</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-02-09</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-07-19<br><span style="color:var(--text3);">D-41</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',26)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',33)">
- <div class="mgr-cell" style="font-weight:500;">조아라<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;">-</div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">40,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2026-06-08</div>
- <div class="mgr-cell"><span style="font-size:11px;color:var(--text2);">2026-11-20<br><span style="color:var(--text3);">D-165</span></span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',33)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',19)">
- <div class="mgr-cell" style="font-weight:500;">김수민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333122404956</span><span style="display:block;">김수민</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',19)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',24)">
- <div class="mgr-cell" style="font-weight:500;">박종일<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">351-0685-6911-73</span><span style="display:block;">박종일</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',24)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',17)">
- <div class="mgr-cell" style="font-weight:500;">방진수<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">기업은행</span><span style="font-family:'DM Mono',monospace;display:block;">124-091094-01-015</span><span style="display:block;">방진수</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-12-09</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',17)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',22)">
- <div class="mgr-cell" style="font-weight:500;">홍예은<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">302-0482-2740-21</span><span style="display:block;">홍예은</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',22)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',4)">
- <div class="mgr-cell" style="font-weight:500;">김유천<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구인지</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">156-02-226505</span><span style="display:block;">김유천</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',4)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',1)">
- <div class="mgr-cell" style="font-weight:500;">장호준<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">16450104356440</span><span style="display:block;">장호준</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">80%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',1)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',10)">
- <div class="mgr-cell" style="font-weight:500;">박기남<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">597302-04-146046</span><span style="display:block;">박기남</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2024-01-21</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',10)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',7)">
- <div class="mgr-cell" style="font-weight:500;">한수희<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협은행</span><span style="font-family:'DM Mono',monospace;display:block;">302-1298-3302-01</span><span style="display:block;">한수희</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',7)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',13)">
- <div class="mgr-cell" style="font-weight:500;">김효민<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">카카오뱅크</span><span style="font-family:'DM Mono',monospace;display:block;">3333-02-495-8181</span><span style="display:block;">김효민</span></div>
- <div class="mgr-cell"><span class="badge teal">인천</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">95%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',13)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',14)">
- <div class="mgr-cell" style="font-weight:500;">김수도<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">새마을금고</span><span style="font-family:'DM Mono',monospace;display:block;">9003-2394-3083-6</span><span style="display:block;">김수도</span></div>
- <div class="mgr-cell"><span class="badge purple">수원</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',14)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',8)">
- <div class="mgr-cell" style="font-weight:500;">오수정<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">농협</span><span style="font-family:'DM Mono',monospace;display:block;">352-1138-0638-83</span><span style="display:block;">오수정</span></div>
- <div class="mgr-cell"><span class="badge purple">수원</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">2025-11-09</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',8)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',11)">
- <div class="mgr-cell" style="font-weight:500;">원보영<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">국민은행</span><span style="font-family:'DM Mono',monospace;display:block;">422402-01-267662</span><span style="display:block;">원보영</span></div>
- <div class="mgr-cell"><span class="badge purple">수원</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">42,000원/회</span></div>
- <div class="mgr-cell"><span class="badge green">회당고정</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',11)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',5)">
- <div class="mgr-cell" style="font-weight:500;">안지훈<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">도구 레크레이션</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">신한은행</span><span style="font-family:'DM Mono',monospace;display:block;">110-230-562050</span><span style="display:block;">안지훈</span></div>
- <div class="mgr-cell"><span class="badge purple">수원</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',5)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div><div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',2)">
- <div class="mgr-cell" style="font-weight:500;">최정안<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">실버스포츠</div></div>
- <div class="mgr-cell" style="font-size:12px;line-height:1.6;"><span style="color:var(--text3);font-size:10px;display:block;">하나은행</span><span style="font-family:'DM Mono',monospace;display:block;">336-910040-19707</span><span style="display:block;">최정안</span></div>
- <div class="mgr-cell"><span class="badge purple">수원</span></div>
- <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">85%</span></div>
- <div class="mgr-cell"><span class="badge blue">비율</span></div>
- <div class="mgr-cell" style="font-size:12px;color:var(--text2);">-</div>
- <div class="mgr-cell"><span style="color:var(--text3);font-size:12px;">-</span></div>
- <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
- <button class="btn sm danger" onclick="delItem('teacher',2)"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
- </div>
- </div></div>
+ <div id="tRows"></div>
  </div>
  <div class="panel" style="padding:16px 20px;">
  <div style="font-size:13px;font-weight:600;margin-bottom:10px;">강사료 유형 안내</div>
@@ -2634,26 +2209,8 @@ body.edit-mode-active .ledger-wrap textarea {
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div onclick="_togglePresenceSection('online')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">온라인</span>
-    <span style="font-size:11px;background:#4CAF5022;color:#4CAF50;border-radius:20px;padding:1px 7px;font-weight:600;">1</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(0deg);">▾</span>
-  </div><div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--green-bg);">
-   <span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>
-   <span style="font-size:13px;font-weight:600;color:var(--green);flex:1;">박기남</span>
-   <span style="font-size:11px;color:#2e7d32;">방금</span>
-  </div><div style="height:1px;background:var(--border);margin:4px 0;"></div><div onclick="_togglePresenceSection('offline')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;cursor:pointer;border-radius:7px;user-select:none;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-   <div style="display:flex;align-items:center;gap:6px;">
-    <span style="width:8px;height:8px;border-radius:50%;background:#ccc;display:inline-block;"></span>
-    <span style="font-size:12px;font-weight:600;color:var(--text2);">오프라인</span>
-    <span style="font-size:11px;background:#ccc22;color:#ccc;border-radius:20px;padding:1px 7px;font-weight:600;">33</span>
-   </div>
-   <span style="font-size:12px;color:var(--text3);transition:transform .2s;display:inline-block;transform:rotate(180deg);">▾</span>
-  </div></div>
-  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 11:17:31</div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 06:54:28</div>
  </div>
 </div>
 
@@ -3773,9 +3330,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.37';
-/* 운영 환경 디버그 로그 무음화 — 주소 끝에 ?debug=1 붙이면 다시 켜짐. warn/error 는 항상 유지 */
-(function(){ try{ if(!/[?&]debug=1\b/.test(location.search)){ console.log=function(){}; console.debug=function(){}; console.info=function(){}; } }catch(e){} })();
+const SYSTEM_VERSION='v14.39';
 const BLOCK_MOBILE_ADMIN = true; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4118,8 +3673,6 @@ function normalizeDates(){
  });
 }
 window.addEventListener('load', ()=>{
- // 탭 제목을 단일 버전 소스(SYSTEM_VERSION)로 동기화 — 버전 변경 시 상수 한 곳만 수정
- document.title = '수업기록표 정산 시스템 ' + SYSTEM_VERSION;
  // 이전 outerHTML 캡처로 인한 잔여 상태 초기화
  const _t=document.getElementById('saveToast');
  if(_t){_t.classList.remove('show');_t.textContent='';}
@@ -4462,6 +4015,14 @@ function fmtDate(raw){
   return d.toISOString().slice(0,10);
  }catch(e){ return String(raw); }
 }
+/* ═══ 디버그 로그 무음화 (운영 환경) ═══ */
+(function(){
+ if(!location.search.includes('debug=1')){
+  const noop=()=>{};
+  console.log=noop; console.info=noop; console.debug=noop; console.warn=noop;
+ }
+})();
+
 /* ═══ FORMAT ═══ */
 function W(n){return Math.round(n||0).toLocaleString()+'원';}
 function W2(n){return Math.round(n||0).toLocaleString();}
@@ -4558,6 +4119,20 @@ window.addEventListener('beforeunload', function(e){
  }
 });
 
+/* ═══ GAS 스냅샷 푸시 (백오프 재시도) ═══ */
+async function _pushSnapshotGAS(ym, data, retries=2, delay=4000){
+ for(let i=0; i<=retries; i++){
+  try{
+   const r = await gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:JSON.stringify(data)});
+   if(r && r.ok) return r;
+   if(i<retries) await new Promise(res=>setTimeout(res, delay * Math.pow(2,i)));
+  }catch(e){
+   if(i<retries) await new Promise(res=>setTimeout(res, delay * Math.pow(2,i)));
+   else throw e;
+  }
+ }
+}
+
 function saveMonthlySnapshot(ym, data, pushGAS=true){
  // v11.41: 편집 모드 중에는 GAS 호출 차단 + 카운터 증가
  // pushGAS=true 호출은 일반적인 자동 저장이므로 차단
@@ -4572,15 +4147,9 @@ function saveMonthlySnapshot(ym, data, pushGAS=true){
   const now = new Date().toISOString();
   const snap = { ym, savedAt: now, data };
   localStorage.setItem(key, JSON.stringify(snap));
-  // GAS Drive 저장 (명시적 변경 시에만) — localStorage 는 위에서 이미 즉시 저장됨
-  if(pushGAS) _pushSnapshotGAS(ym, data);
+  // GAS Drive 저장 (명시적 변경 시에만)
+  if(pushGAS) gasPost({ action:'saveMonthlySnapshot', yearMonth: ym, data }).catch(()=>{});
  } catch(e){ console.warn('월별 저장 실패:', e); }
-}
-
-// 클라우드(GAS) 스냅샷 푸시 — 네트워크 일시 오류 시 백오프 재시도 (localStorage 는 영향 없음)
-function _pushSnapshotGAS(ym, data, attempt=0){
- gasPost({ action:'saveMonthlySnapshot', yearMonth: ym, data })
-  .catch(()=>{ if(attempt<2) setTimeout(()=>_pushSnapshotGAS(ym, data, attempt+1), (attempt+1)*4000); });
 }
 
 // ═══ v11.41: 편집 모드 진입/저장/취소 함수 ═══
@@ -7237,7 +6806,7 @@ function populateTeacherFilter(){
  if(!sel)return;
  const cur=sel.value;
  const tnames=DB.teachers.map(t=>t.name).sort();
- sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${esc(n)}" ${n===cur?'selected':''}>${esc(n)}</option>`).join('')}`;
+ sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${n}" ${n===cur?'selected':''}>${n}</option>`).join('')}`;
 }
 
 /* ═══ 센터 관리 뷰 탭 ═══ */
@@ -9138,7 +8707,7 @@ function showAddrHint(msg) {
  if (el) { el.textContent = msg; el.style.color = 'var(--green)'; }
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,"\\'"); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
 /* ═══ TOAST ═══ */
 
@@ -10249,16 +9818,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 /* ═══ 로그인 / 회원가입 ═══ */
 const TEACHER_ACCOUNTS_KEY = 'iruri_teacher_accounts'; // {name: hashedPw}
 
+/* ═══ SHA-256 해싱 (Web Crypto API) ═══ */
+async function sha256(str){
+ const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+ return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 function simpleHash(str){
  let h = 0;
  for(let i=0;i<str.length;i++) h = (Math.imul(31,h)+str.charCodeAt(i))|0;
  return h.toString(36);
-}
-
-// SHA-256 해시 (신규 표준). simpleHash 는 레거시 계정 무중단 전환용 fallback 으로만 유지.
-async function sha256(str){
- const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(str)));
- return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
 function getTeacherAccounts(){
@@ -10301,17 +9870,16 @@ async function doLogin(){
  }
  err.style.display='none';
 
- const newHash = await sha256(pw);   // SHA-256 (신규 표준)
- const oldHash = simpleHash(pw);     // 레거시 해시 (무중단 전환용 fallback)
+ const newHash = await sha256(pw);   // SHA-256 (신규)
+ const oldHash = simpleHash(pw);     // legacy (기존)
  const accounts = getTeacherAccounts();
 
  // ── 즉시 로그인: localStorage에 계정이 있으면 GAS 대기 없이 바로 진입 ──
- // 로컬 캐시가 신규/레거시 어느 형식이든 통과시키고, 통과 시 신규 해시로 업그레이드
  if(accounts[name] && (accounts[name]===newHash || accounts[name]===oldHash)){
-  accounts[name] = newHash;
-  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
+  // SHA-256으로 자동 업그레이드
+  if(accounts[name]===oldHash){ accounts[name]=newHash; localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts)); }
   loginSuccess(name);
-  // 백그라운드: GAS 동기화 (서버도 레거시→SHA-256 지연 업그레이드)
+  // 백그라운드: GAS 동기화
   gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
    .then(r=>{
     if(r.message==='가입되지 않은 계정'){
@@ -10330,7 +9898,7 @@ async function doLogin(){
   .then(r=>{
    hideLoader();
    if(r.ok){
-    // GAS 로그인 성공 → localStorage에도 캐시 저장 (SHA-256)
+    // GAS 로그인 성공 → localStorage에 SHA-256으로 캐시 저장
     accounts[name] = newHash;
     localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
     loginSuccess(name);
@@ -10393,15 +9961,15 @@ async function doSignup(){
  if(btn){ btn.disabled=true; btn.textContent='가입 중...'; }
  err.style.display='none';
 
- const newHash = await sha256(pw);
- gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash })
+ const _newHash = await sha256(pw);
+ gasPost({ action:'signupAccount', teacher:name, hashedPw:_newHash })
  .then(r=>{
  const isChange = r.isChange;
  const msg = isChange ? `${name} 비밀번호가 변경됐어요` : `${name} 가입이 완료됐어요! 로그인해주세요`;
 
- // localStorage에도 캐시 저장 (오프라인 대비)
+ // localStorage에도 SHA-256으로 캐시 저장
  const accounts = getTeacherAccounts();
- accounts[name] = newHash;
+ accounts[name] = _newHash;
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
 
  document.getElementById('signup-name').value='';
@@ -10428,11 +9996,11 @@ async function doSignup(){
  const loginInput = document.getElementById('login-name');
  if(loginInput){ loginInput.value=name; document.getElementById('login-pw').focus(); }
  })
- .catch(()=>{
+ .catch(async ()=>{
  // 오프라인 fallback
  const accounts = getTeacherAccounts();
  const isChange = !!accounts[name];
- accounts[name] = newHash;
+ accounts[name] = await sha256(pw);
  localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
  err.textContent='⚠️ 서버 저장 실패, 로컬에만 저장됐어요. 인터넷 연결을 확인해주세요.';
  err.style.color='#D97706'; err.style.display='block';
