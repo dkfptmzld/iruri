@@ -8959,12 +8959,19 @@ async function renderSubmissionsView(){
  }
 }
 
+// 제출 시각 표시: 파싱 가능한 날짜면 한국식 포맷, 아니면(현지화 문자열 등) 원문 그대로 — "Invalid Date" 방지
+function _fmtSubmittedAt(v){
+ if(!v) return '–';
+ const d = new Date(v);
+ return isNaN(d.getTime()) ? String(v) : d.toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
 function _renderSubPendingList(list){
  if(!list.length) return '<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">📭 대기 중인 수업기록표가 없어요</div>';
  return list.map((s,i)=>{
   const isRev = s.isRevision || s.revCount > 0;
   const badge = isRev ? `<span style="background:var(--amber-bg);color:#7a5000;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">🔄 수정 제출</span>` : `<span style="background:var(--green-bg);color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">신규</span>`;
-  const submittedAt = s.submittedAt ? new Date(s.submittedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '–';
+  const submittedAt = _fmtSubmittedAt(s.submittedAt);
   return `
   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -8988,7 +8995,7 @@ function _renderSubDoneList(list){
  // 최신순 정렬
  const sorted = [...list].sort((a,b)=>new Date(b.submittedAt||0)-new Date(a.submittedAt||0)).slice(0,50);
  return sorted.map(s=>{
-  const submittedAt = s.submittedAt ? new Date(s.submittedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '–';
+  const submittedAt = _fmtSubmittedAt(s.submittedAt);
   return `
   <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;opacity:.85;">
    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
