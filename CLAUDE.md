@@ -23,3 +23,11 @@
 - 데이터는 localStorage 우선 + GAS 동기화(대부분 `.catch`로 백그라운드). 추가/수정은 **즉시 화면 반영 후 GAS 동기화** 패턴을 유지.
 - 관리자 모드는 PC/모바일 모두 지원. 모바일 반응형 규칙은 `@media(max-width:600px)` 에 둔다.
 - 렌더링 산출물이므로 변경 검증은 **실제 브라우저로 렌더해서 확인**(정적 검사만으로 끝내지 않음).
+
+## 배포 · 보안 (주의)
+
+- **배포:** `main` 병합 → **GitHub Pages 자동 배포** (`https://dkfptmzld.github.io/iruri/`). PWA.
+- **비밀번호:** **SHA-256** 해시 사용. 기존 약한 `simpleHash`(32비트)는 legacy fallback으로 두어 다음 로그인 시 자동 전환됨. 이 로그인/해시 흐름(`doLogin`/`doSignup`의 dual-hash)을 **깨뜨리지 말 것**.
+- **XSS:** 사용자 입력을 화면에 출력할 때 `esc()`로 이스케이프(`&`,`<`,`>` 처리). 새 출력 경로에도 적용.
+- ⚠️ **비밀키 절대 금지:** GAS 쪽 **FCM 개인키** 등 비밀 값은 `adjustment-system.html`이나 공개 저장소에 **절대 넣지 말 것**.
+- 콘솔 보안 설정(Firebase API 키 도메인 제한, GAS `doPost`/`doGet` 토큰 검사)은 코드가 아닌 **콘솔 작업** — `SECURITY-SETUP.md` 참고.
