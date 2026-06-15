@@ -601,6 +601,21 @@ body.edit-mode-active .ledger-wrap textarea {
     border-bottom:0.5px solid #e2e0d8;
     font-size:12px; z-index:100;
   }
+
+  /* ── 내부 관리자 뷰 모바일 정리 ── */
+  /* 지표 카드 4열 → 2x2 (강사/센터 관리, 정산) */
+  .metrics, .region-stats { grid-template-columns:repeat(2,1fr)!important; gap:8px!important; }
+  /* 센터 관리: 목록|상세 2단 → 세로 스택 */
+  #cTreeGrid { grid-template-columns:1fr!important; min-height:0!important; }
+  #cTreeGrid > div:first-child { max-height:260px!important; overflow-y:auto!important; border-right:none!important; border-bottom:1px solid var(--border)!important; }
+  /* 성장추이: 월별 현황 표(7열 grid) → 가로 스크롤로 열 눌림 방지 */
+  #monthlyDashboard > div:last-child { overflow-x:auto!important; -webkit-overflow-scrolling:touch!important; }
+  #monthlyDashboard > div:last-child > div { min-width:600px!important; }
+  /* 정산 그리드/탭바 */
+  .settle-grid { grid-template-columns:1fr!important; }
+  .tabs-bar { overflow-x:auto!important; flex-wrap:nowrap!important; }
+  .tabs-bar::-webkit-scrollbar { display:none!important; }
+  .tab { flex-shrink:0!important; white-space:nowrap!important; }
 }
 @media(min-width:601px){
   #mgr-teacher-bar { display:none!important; }
