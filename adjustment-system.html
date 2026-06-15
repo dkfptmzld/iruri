@@ -8139,15 +8139,14 @@ function saveModal(){
    _openDupCenterFlow(dupCenter, [...STATE.modalChips], {...STATE.modalSchedule});
    return;
   }
-  // v14.09: GAS 저장 완료 후 push (getCenters 타이밍 충돌로 인한 중복 방지)
-  const _saveDone = ()=>{
-   const alreadyIn = DB.centers.find(c=>c.name.trim()===obj.name.trim()&&c.region===obj.region);
-   if(!alreadyIn) DB.centers.push(obj);
-   localStorage.setItem(LS_C, JSON.stringify(DB.centers));
-   lsSave();
-   _refreshCenterView();
-  };
-  gasPost({action:'saveCenter', center:obj}).then(_saveDone).catch(_saveDone);
+  // 즉시 화면 반영 후 GAS는 백그라운드 동기화 (강사 추가와 동일 패턴).
+  // 중복 방지: push 전 동일 이름·지역 존재 여부 검사 (getCenters 타이밍 충돌 대비)
+  const alreadyIn = DB.centers.find(c=>c.name.trim()===obj.name.trim()&&c.region===obj.region);
+  if(!alreadyIn) DB.centers.push(obj);
+  localStorage.setItem(LS_C, JSON.stringify(DB.centers));
+  lsSave();
+  _refreshCenterView();
+  gasPost({action:'saveCenter', center:obj}).catch(()=>{});
  }
  closeModal();showToast('저장되었습니다');
  if(STATE.data)recompute();
