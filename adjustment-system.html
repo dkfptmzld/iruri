@@ -552,11 +552,20 @@ body.edit-mode-active .ledger-wrap textarea {
     padding:0!important; height:auto!important;
     flex-wrap:wrap!important; gap:0!important; align-items:stretch!important;
   }
-  /* 1줄: 로고 + 타이머 */
+  /* 1줄: 로고(제목) — 전체 너비 단독 행 */
   #adminTopbar .logo {
-    order:1; font-size:13px!important; padding:0 10px!important;
-    height:44px!important; flex-shrink:0!important;
+    order:0; font-size:14px!important; padding:0 12px!important;
+    height:42px!important; flex-shrink:0!important; width:100%!important;
   }
+  /* 2줄: 관리자 액션 버튼들 (알림 발송 / 점검 모드 / 미동기화 뱃지) */
+  #adminTopbar > button.btn,
+  #adminTopbar #unsyncedBadge {
+    order:1; height:34px!important; align-self:center!important;
+    margin:3px 0 3px 8px!important;
+  }
+  /* top:52px(데스크톱 topbar 높이)로 하드코딩된 알림 배너들을 늘어난 모바일 topbar 아래로 */
+  #raise-applied-banner,
+  #editModeBanner { top:120px!important; }
 
   /* GitHub/DB/설정/topbar-right: 모바일 숨김 */
   #githubUploadBtn,
