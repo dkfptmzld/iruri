@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.54">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.55">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.54">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.55">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.54</title>
+<title>수업기록표 정산 시스템 v14.55</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.54';
+const SYSTEM_VERSION='v14.55';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9305,7 +9305,7 @@ async function syncSnapshotsToGAS(){
  if(btn){ btn.innerHTML = ICON_SVG + '📋 기록표 업로드'; btn.disabled=false; }
 }
 
-async function syncAllToDB(){
+async function syncAllToDB(force){
  const btn = document.getElementById('syncDBBtn');
  const chip = document.getElementById('syncStatusChip');
  const orig = btn?.innerHTML || '';
@@ -9325,11 +9325,23 @@ async function syncAllToDB(){
   });
 
   const [tr, cr] = await Promise.all([
-   gasPost({action:'syncTeachers', teachers:DB.teachers}),
-   gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })()}),
+   gasPost({action:'syncTeachers', teachers:DB.teachers, force: force||undefined}),
+   gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })(), force: force||undefined}),
    ...snapPromises
   ]);
   const now = new Date().toISOString();
+  // v14.55: 서버가 '급감 차단'(blocked)하면 → 확인 후 force로 재시도 (정상적 대량변경 허용 / 실수 방지)
+  if(!force && ((tr&&tr.blocked) || (cr&&cr.blocked))){
+   const msgs=[];
+   if(tr&&tr.blocked) msgs.push(`강사 ${tr.curCount}명 → ${DB.teachers.length}명`);
+   if(cr&&cr.blocked) msgs.push(`센터 ${cr.curCount}개 → ${DB.centers.length}개`);
+   _updateSyncChip(false, now, 0, 0);
+   if(btn){ btn.innerHTML=orig; btn.disabled=false; }
+   showConfirm({icon:'⚠️', title:'대폭 감소 감지',
+     desc:`서버보다 데이터가 많이 적어요:<br><b>${msgs.join('<br>')}</b><br><small style="color:var(--red)">실수로 옛 데이터를 올리는 거면 <b>취소</b>하세요. 의도한 변경이면 반영하세요.</small>`,
+     okText:'그래도 반영', okStyle:'danger', cancelText:'취소', onOk:()=>syncAllToDB(true)});
+   return false;
+  }
   if(tr.ok && cr.ok){
    // GAS가 반환한 실제 저장 건수 파싱
    const tCount = parseInt((tr.message||'').match(/(\d+)/)?.[1]) || DB.teachers.length;
@@ -9338,15 +9350,18 @@ async function syncAllToDB(){
    localStorage.setItem(LS_SYNC_TIME, JSON.stringify(info));
    _updateSyncChip(true, now, tCount, cCount);
    showToast(`✅ 동기화 완료 — 강사 ${tCount}명, 센터 ${cCount}개 Sheets 저장 확인`);
+   return true;
   } else {
    const info = {ok:false, time:now, teachers:0, centers:0};
    localStorage.setItem(LS_SYNC_TIME, JSON.stringify(info));
    _updateSyncChip(false, now, 0, 0);
    try{ pushErrorLog('DB 동기화 실패', tr.message||cr.message||'알 수 없는 오류'); }catch{}
    showToast('❌ 동기화 실패: ' + (tr.message||cr.message||'오류'));
+   return false;
   }
  } catch(e){
   showToast('❌ 동기화 오류: ' + e.message);
+  return false;
  } finally {
   if(btn){ btn.innerHTML=orig; btn.disabled=false; }
  }
@@ -17200,7 +17215,8 @@ function _pushToGAS(){
  const chip = document.getElementById('syncStatusChip');
  if(chip){ chip.style.display='inline-block'; chip.style.background='#FFF3CD'; chip.style.color='#856404'; chip.textContent='↑ GAS 동기화 중…'; }
  // syncAllToDB는 이미 구현되어 있음 — 강사+센터 GAS push
- syncAllToDB().then(()=>{
+ syncAllToDB().then((res)=>{
+  if(res===false){ _showUnsyncedBadge(true); if(chip){ chip.style.display='none'; } return; }   // v14.55: 차단/실패면 완료표시 안 함
   if(chip){ chip.textContent='✓ 동기화 완료'; chip.style.background='var(--green-bg)'; chip.style.color='var(--green)';
    setTimeout(()=>{ chip.style.display='none'; }, 3000);
   }
