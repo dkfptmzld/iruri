@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.53">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.54">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.53">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.54">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.53</title>
+<title>수업기록표 정산 시스템 v14.54</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.53';
+const SYSTEM_VERSION='v14.54';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3739,6 +3739,7 @@ window.addEventListener('load', ()=>{
  gasGet({ action: 'getTeachers', teacher: sessionStorage.getItem('iruri_session') || '', isAdmin: sessionStorage.getItem('iruri_admin_session') === 'true' ? 'true' : 'false' })
   .then(r => {
    if(r.ok && r.data && r.data.length > 0){
+    if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
     // Sheets 데이터로 DB 업데이트
     DB.teachers = r.data;
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(r.data));
@@ -3771,6 +3772,7 @@ window.addEventListener('load', ()=>{
      const _missing1 = DB.centers.filter(c=>!dedupedCenters1.find(d=>d.name===c.name&&d.region===c.region)).map(c=>`${c.name}(${c.region||'지역미상'})`);
      try{ pushErrorLog(`센터 감소 감지 (앱 시작)`, `${_prevCnt1}개 → ${dedupedCenters1.length}개 | 없어진 센터: ${_missing1.join(', ')}`); }catch{}
     }
+    if(!_acceptDbPull('centers', dedupedCenters1)) return;   // v14.54 L1: 센터 급감이면 거부
     DB.centers = dedupedCenters1;
     localStorage.setItem(LS_C, JSON.stringify(dedupedCenters1));
     _rebuildCenterFeesFromCenters(dedupedCenters1); // v12.68: schedule.fee → centerFees 재구성
@@ -3910,6 +3912,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    if(!r.ok || !r.data?.length) return;
    // 변경 있을 때만 업데이트
    if(JSON.stringify(r.data) !== JSON.stringify(DB.teachers)){
+    if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
     DB.teachers = r.data;
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     renderFn(); // 최신 데이터로 다시 렌더
@@ -4166,6 +4169,28 @@ async function _pushSnapshotGAS(ym, data, retries=2, delay=4000){
    else throw e;
   }
  }
+}
+
+// ══ v14.54 L1: DB(강사/센터) 과소 데이터 덮어쓰기 차단 + 백업 ══
+// GAS가 현재 로컬보다 '많이 적은' 데이터를 주면 = 옛 데이터로 되돌리는 사고 → 적용 거부(로컬 유지) + 백업.
+// 임계: 6개 이상 보유 + 감소폭이 max(3개, 5%) 이상이면 차단. (정상 소규모 편집은 통과)
+function _dbBackupSnapshot(kind, arr){
+ try{ localStorage.setItem('iruri_db_bak_'+kind, JSON.stringify({backedUpAt:new Date().toISOString(), count:(arr||[]).length, data:arr})); }catch(e){}
+}
+function _dbDropBlocked(curLen, incLen){
+ return curLen >= 6 && incLen < curLen && (curLen - incLen) >= Math.max(3, Math.ceil(curLen*0.05));
+}
+function _acceptDbPull(kind, incomingArr){
+ const cur = ((kind==='teachers' ? (window.DB&&DB.teachers) : (window.DB&&DB.centers)) || []);
+ const incLen = (incomingArr||[]).length;
+ if(_dbDropBlocked(cur.length, incLen)){
+  _dbBackupSnapshot(kind, cur);   // 최신일 가능성 높은 현재 로컬 백업
+  const label = kind==='teachers' ? '강사' : '센터';
+  try{ pushErrorLog(`${label} 급감 차단 (L1)`, `로컬 ${cur.length}개 → GAS ${incLen}개 : GAS 데이터 적용 거부, 로컬 유지 (수동 확인 필요)`); }catch(e){}
+  try{ showToast(`⚠️ GAS의 ${label}가 ${cur.length}→${incLen}로 적어 적용 안 함 — 로컬 유지(백업됨)`); }catch(e){}
+  return false;
+ }
+ return true;
 }
 
 function saveMonthlySnapshot(ym, data, pushGAS=true){
