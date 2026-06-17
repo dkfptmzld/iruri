@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.51">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.52">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.51">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.52">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.51</title>
+<title>수업기록표 정산 시스템 v14.52</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.51';
+const SYSTEM_VERSION='v14.52';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4459,23 +4459,35 @@ function loadMonthlySnapshot(ym){
   if(!Array.isArray(data.teachers) || data.teachers.length === 0){
    try{ pushErrorLog('스냅샷 데이터 손상 감지', `강사 배열이 비어있거나 손상됨`); }catch{}
   }
+    // v14.52: 덮어쓰기 직전 로컬 스냅샷 백업 (복구용 — 최근 1개 롤링)
+    if(localSnap?.data?.teachers?.length){
+     try{ localStorage.setItem(key+'_bak', JSON.stringify({ym, savedAt:localSnap.savedAt||'', backedUpAt:new Date().toISOString(), data:localSnap.data})); }catch{}
+    }
+    // v14.52: settleStatus(정산완료) 보존 — localStorage에 쓰기 '전에' GAS 데이터로 병합
+    //         + GAS가 누락시킨 '완료(done)' 강사는 로컬에서 되살림 (조용한 데이터 손실 방지)
+    let _restoredDone=0;
+    if(localSnap?.data?.teachers){
+     const localByName = new Map(localSnap.data.teachers.map(t=>[t.name?.trim(), t]));
+     (data.teachers||[]).forEach(t=>{
+      const lt=localByName.get(t.name?.trim());
+      if(lt){ if(!t.settleStatus && lt.settleStatus) t.settleStatus = lt.settleStatus; }
+     });
+     const gasNames=new Set((data.teachers||[]).map(t=>t.name?.trim()));
+     localSnap.data.teachers.forEach(lt=>{
+      if(lt.settleStatus==='done' && !gasNames.has(lt.name?.trim())){ data.teachers.push(lt); _restoredDone++; }
+     });
+    }
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
-    localStorage.setItem(key, JSON.stringify(snap));
-    // v11.30: GAS에서 받은 데이터에도 손상 복구됐으면 GAS에도 재저장
-    if(_normRepairCount > 0){
+    localStorage.setItem(key, JSON.stringify(snap));   // ← 복원된 settleStatus 포함해 영속화
+    // v11.30/v14.52: 손상 복구됐거나 완료강사 되살렸으면 GAS에도 재저장
+    if(_normRepairCount > 0 || _restoredDone > 0){
      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data}).catch(()=>{});
-     showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
+     if(_restoredDone>0) showToast(`⚠️ ${ym} 누락된 완료 강사 ${_restoredDone}명 복구됨`);
+     else showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
     } else {
      showToast(`✅ ${ym} 최신 데이터로 업데이트됐어요`);
     }
     STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
-    // settleStatus 보존: GAS 데이터에 없으면 로컬에서 복원
-    if(localSnap?.data?.teachers){
-     const localMap = new Map(localSnap.data.teachers.map(t=>[t.name.trim(), t.settleStatus]));
-     (STATE.data.teachers||[]).forEach(t=>{
-      if(!t.settleStatus && localMap.get(t.name?.trim())) t.settleStatus = localMap.get(t.name.trim());
-     });
-    }
     renderSettle();
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
@@ -11063,8 +11075,10 @@ function _applySubmissions(subs){
    // GAS에도 저장
    try { saveMonthlySnapshot(sub.yearMonth, data); } catch{}
   };
+  // v14.52: yearMonth 포맷 차이('2026년 5월' vs '2026-05' 등)에도 같은 달로 인식
+  const _ymKey = (s) => String(s||'').replace(/[^0-9]/g,'').replace(/^(\d{4})0?(\d{1,2})$/,'$1-$2');
   const _hasExisting = (sub) => {
-   return STATE.data.teachers.some(t => t.name === sub.name && t.yearMonth === sub.yearMonth);
+   return STATE.data.teachers.some(t => t.name?.trim() === sub.name?.trim() && _ymKey(t.yearMonth) === _ymKey(sub.yearMonth));
   };
   const newSubs = subs.filter(s => !_hasExisting(s));
   const revSubs = subs.filter(s => _hasExisting(s));
@@ -11076,10 +11090,15 @@ function _applySubmissions(subs){
     // 다른 월 - 그 월의 localStorage에 직접 저장
     _saveDifferentMonth(sub);
    } else {
-    // 같은 월 또는 STATE 비어있음 - 기존 로직대로
-    const idx = STATE.data.teachers.findIndex(t=>t.name===sub.name&&t.yearMonth===sub.yearMonth);
-    if(idx>=0) STATE.data.teachers[idx] = sub;
-    else STATE.data.teachers.push(sub);
+    // 같은 월 또는 STATE 비어있음
+    const idx = STATE.data.teachers.findIndex(t=>t.name?.trim()===sub.name?.trim()&&_ymKey(t.yearMonth)===_ymKey(sub.yearMonth));
+    if(idx>=0){
+     // v14.52: 기존 강사 덮어쓸 때 관리자 입력 보존 — 정산완료 상태 + 비용항목(있던 값 유지)
+     const ex=STATE.data.teachers[idx];
+     if(ex.settleStatus && !sub.settleStatus) sub.settleStatus=ex.settleStatus;
+     ['mockLesson','parkingCost','supplyCost','etcCost','costExtra'].forEach(k=>{ if((sub[k]==null||sub[k]===0)&&ex[k]) sub[k]=ex[k]; });
+     STATE.data.teachers[idx] = sub;
+    } else STATE.data.teachers.push(sub);
    }
   });
 
