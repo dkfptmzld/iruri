@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.50">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.52">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.50">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.52">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>수업기록표 정산 시스템 v14.50</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>수업기록표 정산 시스템 v14.52</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -56,6 +56,12 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:calc(14px * var(--font-scale));line-height:1.5;transition:background .25s,color .25s;}
+/* 숫자 자릿수 정렬 — 정산 표/금액/카운트가 흔들리지 않도록 등폭 숫자 사용 */
+body{font-variant-numeric:tabular-nums;}
+/* 키보드 포커스 가시화 — outline:none 으로 사라진 포커스를 :focus-visible 로 복구 (마우스 클릭엔 안 보임) */
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:4px;}
+/* 동작 최소화 선호 사용자 존중 */
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important;}}
 
 /* TOP BAR */
 .topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;position:sticky;top:0;z-index:200;}
@@ -397,9 +403,12 @@ body.edit-mode-active .ledger-wrap textarea {
 .t-chip .rm:hover{opacity:1;}
 
 /* TOAST */
-.save-toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:white;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;}
+/* 우하단 접속현황 위젯(#presenceWidget)과 겹치지 않도록 좌하단에 배치 */
+.save-toast{position:fixed;bottom:20px;left:20px;right:auto;background:var(--green);color:white;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100vw - 40px);box-shadow:0 4px 16px rgba(0,0,0,.18);}
 .save-toast.show{opacity:1;transform:translateY(0);}
-@media(max-width:600px){.save-toast{bottom:auto;top:64px;right:12px;left:12px;text-align:center;}}
+.save-toast.toast-error{background:#E53935;}
+/* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
+@media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
 /* GLOBAL LOADING OVERLAY */
 #globalLoader{position:fixed;inset:0;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
@@ -927,11 +936,11 @@ body.edit-mode-active .ledger-wrap textarea {
  </div>
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">이름</label>
- <input id="login-name" type="text" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()">
+ <input id="login-name" type="text" autocomplete="username" name="username" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('login-pw').focus()">
  </div>
  <div style="margin-bottom:20px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호</label>
- <input id="login-pw" type="password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
+ <input id="login-pw" type="password" autocomplete="current-password" name="current-password" placeholder="비밀번호 입력" style="width: 100%; height: 42px; border: 1.5px solid rgb(226, 224, 216); border-radius: 10px; padding: 0px 12px; font-size: 14px; outline: none; box-sizing: border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doLogin()">
  </div>
  <div id="login-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
@@ -944,16 +953,16 @@ body.edit-mode-active .ledger-wrap textarea {
  <div id="signup-form" style="display:none;background:white;border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(26,122,80,.1);">
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">강사 이름</label>
- <input id="signup-name" type="text" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('signup-pw').focus()">
+ <input id="signup-name" type="text" autocomplete="username" name="new-username" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('signup-pw').focus()">
  <div style="font-size:11px;color:#9B9888;margin-top:4px;">관리자에게 등록된 이름과 정확히 일치해야 합니다</div>
  </div>
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 설정</label>
- <input id="signup-pw" type="password" placeholder="4자리 이상" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <input id="signup-pw" type="password" autocomplete="new-password" name="new-password" placeholder="4자리 이상" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
  </div>
  <div style="margin-bottom:20px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 확인</label>
- <input id="signup-pw2" type="password" placeholder="동일하게 입력" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doSignup()">
+ <input id="signup-pw2" type="password" autocomplete="new-password" name="confirm-password" placeholder="동일하게 입력" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doSignup()">
  </div>
  <div id="signup-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doSignup()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">가입하기</button>
@@ -993,7 +1002,7 @@ body.edit-mode-active .ledger-wrap textarea {
 
  <!-- 모드 카드 -->
  <div id="landingCardsWrap" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
- <div onclick="if(_landingEditMode)return; goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div role="button" tabindex="0" aria-label="강사 모드 — 수업 기록표 작성" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
@@ -1001,7 +1010,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="font-size:12px;color:#6B9A7A;line-height:1.6;">수업 기록표를 작성하고<br>관리자에게 제출합니다</div>
  </div>
 
- <div onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
+ <div role="button" tabindex="0" aria-label="관리자 모드 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
  <div style="width:56px;height:56px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"></path></svg>
  </div>
@@ -1205,7 +1214,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="padding:14px 20px;border-bottom:1px solid #E2E0D8;background:#F8F7F2;display:flex;align-items:center;gap:10px;">
  <span style="width:24px;height:24px;background:#1A7A50;border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</span>
  <span style="font-size:14px;font-weight:600;">기본 정보</span>
- <button onclick="startTutorialFromStep(1)" title="이 섹션 도움말" style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;">?</button>
+ <button onclick="startTutorialFromStep(1)" title="이 섹션 도움말" aria-label="이 섹션 도움말" style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;">?</button>
  </div>
  <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;" class="ti-grid-3">
  <div>
@@ -1232,7 +1241,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="display:flex;align-items:center;gap:10px;">
  <span style="width:24px;height:24px;background:#1A7A50;border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
  <span style="font-size:14px;font-weight:600;">수업 기록표</span>
- <button onclick="startTutorialFromStep(3)" title="이 섹션 도움말" style="width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</button>
+ <button onclick="startTutorialFromStep(3)" title="이 섹션 도움말" aria-label="이 섹션 도움말" style="width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</button>
  <span style="font-size:12px;color:#9B9888;">셀을 클릭해 O → X → △ 순으로 변경</span>
  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
   <span style="display:inline-flex;align-items:center;gap:3px;background:#E8F5EE;border:1px solid #B8E0CC;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;color:#1A7A50;">
@@ -1283,7 +1292,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="padding:14px 20px;border-bottom:1px solid #E2E0D8;background:#F8F7F2;display:flex;align-items:center;gap:10px;">
  <span style="width:24px;height:24px;background:#1A7A50;border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</span>
  <span style="font-size:14px;font-weight:600;">특이사항 · 계좌 · 첨부파일</span>
- <button onclick="startTutorialFromStep(7)" title="이 섹션 도움말" style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;">?</button>
+ <button onclick="startTutorialFromStep(7)" title="이 섹션 도움말" aria-label="이 섹션 도움말" style="margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;">?</button>
  </div>
  <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
 
@@ -1422,7 +1431,7 @@ body.edit-mode-active .ledger-wrap textarea {
 </button>
 <span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 6/4 오후 07:48 · 강사 33명 · 센터 297개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
-<button onclick="openGithubSettings()" title="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
+<button onclick="openGithubSettings()" title="GitHub 설정" aria-label="GitHub 설정" class="btn" style="font-size:12px;background:#444d56;color:white;border-color:#444d56;padding:0 8px;">
   <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M12 15.5A3.5 3.5 0 018.5 12 3.5 3.5 0 0112 8.5a3.5 3.5 0 013.5 3.5 3.5 3.5 0 01-3.5 3.5m7.43-2.92c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"></path></svg>
  </button>
 </div>
@@ -3353,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.50';
+const SYSTEM_VERSION='v14.52';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4450,23 +4459,35 @@ function loadMonthlySnapshot(ym){
   if(!Array.isArray(data.teachers) || data.teachers.length === 0){
    try{ pushErrorLog('스냅샷 데이터 손상 감지', `강사 배열이 비어있거나 손상됨`); }catch{}
   }
+    // v14.52: 덮어쓰기 직전 로컬 스냅샷 백업 (복구용 — 최근 1개 롤링)
+    if(localSnap?.data?.teachers?.length){
+     try{ localStorage.setItem(key+'_bak', JSON.stringify({ym, savedAt:localSnap.savedAt||'', backedUpAt:new Date().toISOString(), data:localSnap.data})); }catch{}
+    }
+    // v14.52: settleStatus(정산완료) 보존 — localStorage에 쓰기 '전에' GAS 데이터로 병합
+    //         + GAS가 누락시킨 '완료(done)' 강사는 로컬에서 되살림 (조용한 데이터 손실 방지)
+    let _restoredDone=0;
+    if(localSnap?.data?.teachers){
+     const localByName = new Map(localSnap.data.teachers.map(t=>[t.name?.trim(), t]));
+     (data.teachers||[]).forEach(t=>{
+      const lt=localByName.get(t.name?.trim());
+      if(lt){ if(!t.settleStatus && lt.settleStatus) t.settleStatus = lt.settleStatus; }
+     });
+     const gasNames=new Set((data.teachers||[]).map(t=>t.name?.trim()));
+     localSnap.data.teachers.forEach(lt=>{
+      if(lt.settleStatus==='done' && !gasNames.has(lt.name?.trim())){ data.teachers.push(lt); _restoredDone++; }
+     });
+    }
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
-    localStorage.setItem(key, JSON.stringify(snap));
-    // v11.30: GAS에서 받은 데이터에도 손상 복구됐으면 GAS에도 재저장
-    if(_normRepairCount > 0){
+    localStorage.setItem(key, JSON.stringify(snap));   // ← 복원된 settleStatus 포함해 영속화
+    // v11.30/v14.52: 손상 복구됐거나 완료강사 되살렸으면 GAS에도 재저장
+    if(_normRepairCount > 0 || _restoredDone > 0){
      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data}).catch(()=>{});
-     showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
+     if(_restoredDone>0) showToast(`⚠️ ${ym} 누락된 완료 강사 ${_restoredDone}명 복구됨`);
+     else showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
     } else {
      showToast(`✅ ${ym} 최신 데이터로 업데이트됐어요`);
     }
     STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
-    // settleStatus 보존: GAS 데이터에 없으면 로컬에서 복원
-    if(localSnap?.data?.teachers){
-     const localMap = new Map(localSnap.data.teachers.map(t=>[t.name.trim(), t.settleStatus]));
-     (STATE.data.teachers||[]).forEach(t=>{
-      if(!t.settleStatus && localMap.get(t.name?.trim())) t.settleStatus = localMap.get(t.name.trim());
-     });
-    }
     renderSettle();
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
@@ -9358,7 +9379,13 @@ function removeAdminAutoLogoutUI(){
 }
 
 let _toastTimer=null;
-function showToast(msg){const el=document.getElementById('saveToast');el.textContent='✓ '+msg;el.classList.add('show');if(_toastTimer)clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{el.classList.remove('show');_toastTimer=null;},2000);}
+function showToast(msg){const el=document.getElementById('saveToast');
+ // 메시지가 이미 상태 아이콘(❌⚠️⛔🔴 등)으로 시작하면 ✓ 를 덧붙이지 않는다 (성공/실패 아이콘 혼용 방지)
+ const hasIcon=/^\s*(✓|✔|❌|⚠️?|⛔|🔴|🟡|⏳|🚫|ℹ️?|✅)/.test(msg);
+ const isErr=/^\s*(❌|⚠️?|⛔|🔴|🚫)/.test(msg);
+ el.textContent=hasIcon?msg:('✓ '+msg);
+ el.classList.toggle('toast-error',isErr);
+ el.classList.add('show');if(_toastTimer)clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{el.classList.remove('show');_toastTimer=null;},2000);}
 
 /* ═══ 커스텀 Confirm 모달 ═══ */
 let _confirmCallback = null;
@@ -11048,8 +11075,10 @@ function _applySubmissions(subs){
    // GAS에도 저장
    try { saveMonthlySnapshot(sub.yearMonth, data); } catch{}
   };
+  // v14.52: yearMonth 포맷 차이('2026년 5월' vs '2026-05' 등)에도 같은 달로 인식
+  const _ymKey = (s) => String(s||'').replace(/[^0-9]/g,'').replace(/^(\d{4})0?(\d{1,2})$/,'$1-$2');
   const _hasExisting = (sub) => {
-   return STATE.data.teachers.some(t => t.name === sub.name && t.yearMonth === sub.yearMonth);
+   return STATE.data.teachers.some(t => t.name?.trim() === sub.name?.trim() && _ymKey(t.yearMonth) === _ymKey(sub.yearMonth));
   };
   const newSubs = subs.filter(s => !_hasExisting(s));
   const revSubs = subs.filter(s => _hasExisting(s));
@@ -11061,10 +11090,15 @@ function _applySubmissions(subs){
     // 다른 월 - 그 월의 localStorage에 직접 저장
     _saveDifferentMonth(sub);
    } else {
-    // 같은 월 또는 STATE 비어있음 - 기존 로직대로
-    const idx = STATE.data.teachers.findIndex(t=>t.name===sub.name&&t.yearMonth===sub.yearMonth);
-    if(idx>=0) STATE.data.teachers[idx] = sub;
-    else STATE.data.teachers.push(sub);
+    // 같은 월 또는 STATE 비어있음
+    const idx = STATE.data.teachers.findIndex(t=>t.name?.trim()===sub.name?.trim()&&_ymKey(t.yearMonth)===_ymKey(sub.yearMonth));
+    if(idx>=0){
+     // v14.52: 기존 강사 덮어쓸 때 관리자 입력 보존 — 정산완료 상태 + 비용항목(있던 값 유지)
+     const ex=STATE.data.teachers[idx];
+     if(ex.settleStatus && !sub.settleStatus) sub.settleStatus=ex.settleStatus;
+     ['mockLesson','parkingCost','supplyCost','etcCost','costExtra'].forEach(k=>{ if((sub[k]==null||sub[k]===0)&&ex[k]) sub[k]=ex[k]; });
+     STATE.data.teachers[idx] = sub;
+    } else STATE.data.teachers.push(sub);
    }
   });
 
