@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.59">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.60">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.59">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.60">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.59</title>
+<title>수업기록표 정산 시스템 v14.60</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2147,8 +2147,8 @@ body.edit-mode-active .ledger-wrap textarea {
  <!-- v11.85: KPI 카드 클릭 시 12개월 막대 펼침 영역 -->
  <div id="kpiExpandArea" style="padding:0 32px;display:none;"></div>
 
- <!-- v11.87: 옵션 6 — 출석 분류 (정상/휴강/모의) -->
- <div style="padding:24px 32px 0;">
+ <!-- v11.87: 옵션 6 — 출석 분류 (v14.60: 요청으로 제거/숨김) -->
+ <div style="padding:24px 32px 0;display:none;">
   <div id="option6Area"></div>
  </div>
 
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.59';
+const SYSTEM_VERSION='v14.60';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15355,7 +15355,7 @@ function _renderSignalCardDemo(){
  _renderSettlementCycleNotice();
  _renderMonthlyDashboard();
  _renderOption1Kpis();
- _renderOption6Attendance();
+ // v14.60: 옵션6(출석 분류) 제거 (요청)
  _renderOption5Churn();
  _renderOption7Cost();
  // v12.18: 옵션 8 — 지역×과목 매트릭스
@@ -15765,13 +15765,8 @@ function _renderOption1Kpis(){
   {key:'teachers', label:'👥 활동 강사', color:'blue',
    value:curr.teachers+'명', subvalue:isYearMode?'연말 시점':'활동 중', fmt:fmtCount('명')},
   {key:'centers', label:'🏢 활동 센터', color:'amber',
-   value:curr.centers+'곳', subvalue:isYearMode?'연말 시점':'활동 중', fmt:fmtCount('곳')},
-  {key:'lessonHours', label:'⏰ 총 수업 시간'+sumSuffix, color:'purple',
-   value:curr.lessonHours.toLocaleString()+'시간', subvalue:'O 출석 합계', fmt:fmtCount('시간')},
-  {key:'revPerTeacher', label:'👤 강사 1인당 평균', color:'green',
-   value:_krMoney(curr.revPerTeacher), subvalue:isYearMode?'연 매출/연말 강사':'매출/강사 수', fmt:fmtMoney},
-  {key:'revPerCenter', label:'🏪 센터 1곳당 평균', color:'green',
-   value:_krMoney(curr.revPerCenter), subvalue:isYearMode?'연 매출/연말 센터':'매출/센터 수', fmt:fmtMoney}
+   value:curr.centers+'곳', subvalue:isYearMode?'연말 시점':'활동 중', fmt:fmtCount('곳')}
+  // v14.60: 총 수업 시간 / 강사 1인당 평균 / 센터 1곳당 평균 카드 제거 (요청)
  ];
 
  const cards=kpis.map(k=>{
@@ -15885,7 +15880,7 @@ function _switchKpiTab(mode){
   if(costArea){ costArea.style.display='none'; costArea.innerHTML=''; }
  }
  _renderOption1Kpis();
- _renderOption6Attendance();
+ // v14.60: 옵션6(출석 분류) 제거 (요청)
  _renderOption5Churn();
  _renderOption7Cost();
 }
