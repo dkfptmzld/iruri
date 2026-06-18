@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.57">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.58">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.57">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.58">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.57</title>
+<title>수업기록표 정산 시스템 v14.58</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.57';
+const SYSTEM_VERSION='v14.58';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8283,6 +8283,7 @@ function _renderSidebarYM(ym){
  const total=DB.teachers?.length||0;
  const submitted=(STATE.data?.teachers||[]).length;
  const pct=total?Math.round(submitted/total*100):0;
+ const _pendingDone=(STATE.data?.teachers||[]).filter(t=>(t.lessons?.length>0)&&t.settleStatus!=='done').length;
  container.style.display='block';
  container.style.padding='14px 14px 12px';
  container.style.borderBottom='1px solid var(--border)';
@@ -8300,7 +8301,28 @@ function _renderSidebarYM(ym){
    <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
     <div style="width:${pct}%;height:100%;background:var(--green);border-radius:3px;transition:width .3s;"></div>
    </div>
-  </div>`;
+  </div>
+  ${_pendingDone>0?`<button onclick="markAllSettled()" title="미정산 강사를 한번에 정산완료로 변경" style="width:100%;margin-top:10px;height:32px;border:none;border-radius:8px;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">✓ 미정산 ${_pendingDone}명 전체 완료</button>`:''}`;
+}
+
+// 미정산 강사를 한번에 정산완료로 처리
+function markAllSettled(){
+ const teachers = STATE.data?.teachers || [];
+ const targets = teachers.filter(t => (t.lessons?.length>0) && t.settleStatus!=='done');
+ if(!targets.length){ showToast('정산완료할 미정산 강사가 없어요'); return; }
+ const ym = teachers[0]?.yearMonth || '';
+ showConfirm({icon:'✅', title:'전체 정산완료',
+  desc:`미정산 강사 <b>${targets.length}명</b>을 모두 <b style="color:var(--green)">정산완료</b>로 변경할까요?<br><small style="color:var(--text3)">개별 강사 뱃지를 다시 누르면 되돌릴 수 있어요.</small>`,
+  okText:'전체 완료 처리', okStyle:'primary', onOk:()=>{
+   targets.forEach(t=>{ t.settleStatus='done'; });
+   try{ lsSave(); }catch(e){}
+   try{ saveMonthlySnapshot(ym, STATE.data); }catch(e){}
+   // GAS 정산이력 업데이트 (각 강사, 백그라운드)
+   targets.forEach(t=>{ try{ gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note||'', notesData:t.notesData||null}).catch(()=>{}); }catch(e){} });
+   try{ _renderSidebarYM(ym); }catch(e){}
+   try{ _renderNewTeacherList(); }catch(e){}
+   showToast(`✅ ${targets.length}명 정산완료 처리됨`);
+  }});
 }
 
 function _onSbYmChange(){
