@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.58">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.59">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.58">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.59">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.58</title>
+<title>수업기록표 정산 시스템 v14.59</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3362,7 +3362,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.58';
+const SYSTEM_VERSION='v14.59';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3793,6 +3793,8 @@ window.addEventListener('load', ()=>{
   .then(r => {
    if(!r.ok || !r.data) return;
    r.data.forEach(item => {
+    // v14.59: 삭제된 달은 GAS에서 다시 받지 않음 (예: 제거한 3월 더미)
+    try{ const _dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); if(_dm.some(d=>d.ym===item.yearMonth)) return; }catch(e){}
     const key = MONTHLY_KEY_PREFIX + item.yearMonth.replace(/\s/g,'_');
 
     // 로컬 저장 시각 추출 (없으면 0 → 무조건 GAS 가져오기)
@@ -14588,8 +14590,16 @@ function downloadTiExcel(){
 
 /* ═══ 3월 데이터 초기 로드 ═══ */
 function seed2026March(){
- // v14.57: 3월 더미 baseline 영구 제거 — 불완전 데이터라 성장추이/정산에서 제외 (더 이상 재시드하지 않음)
- try{ localStorage.removeItem('iruri_monthly_2026년_3월'); }catch(e){}
+ // v14.59: 3월 더미 baseline 영구 제거 — 로컬삭제 + 삭제목록 등록(GAS 재다운로드 차단) + GAS 드라이브 1회 정리
+ try{
+  localStorage.removeItem('iruri_monthly_2026년_3월');
+  const dm = JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]');
+  if(!dm.some(d=>d.ym==='2026년 3월')){ dm.push({ym:'2026년 3월', deletedAt:Date.now()}); localStorage.setItem('iruri_deleted_months', JSON.stringify(dm)); }
+  if(!localStorage.getItem('iruri_march_gas_purged')){
+   if(typeof gasPost==='function'){ gasPost({action:'deleteMonthlySnapshot', yearMonth:'2026년 3월'}).catch(()=>{}); }
+   localStorage.setItem('iruri_march_gas_purged','1');
+  }
+ }catch(e){}
  return;
  const KEY = 'iruri_monthly_2026년_3월';
  // 이미 있으면 스킵 (관리자 수정 내용 보호)
@@ -15175,6 +15185,8 @@ function getGrowthData(){
    const raw=JSON.parse(localStorage.getItem(k));
    const snap=raw.data||raw;
    const ym=raw.ym||k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
+   // v14.59: 삭제된 달(예: 제거한 3월 더미)은 성장추이 집계에서 제외
+   try{ const _dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); if(_dm.some(d=>d.ym===ym)) continue; }catch(e){}
    if(!snap?.teachers) continue;
    let revenue=0;
    let lessonHours=0; // v11.83: 총 수업 시간 = O 출석 횟수
