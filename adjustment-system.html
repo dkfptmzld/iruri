@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.64">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.65">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.64">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.65">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.64</title>
+<title>수업기록표 정산 시스템 v14.65</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -973,8 +973,10 @@ body.edit-mode-active .ledger-wrap textarea {
  <select id="signup-region" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">지역 선택</option><option value="서울">서울</option><option value="수원">수원</option><option value="인천">인천</option></select>
  </div>
  <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌번호</label>
- <input id="signup-account" type="text" placeholder="예: 농협 123-456-789 홍길동" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌 정보</label>
+ <input id="signup-bank" type="text" placeholder="은행명 (예: 국민은행)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:8px;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <input id="signup-accnum" type="text" placeholder="계좌번호 (예: 597302-04-146046)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:8px;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <input id="signup-accname" type="text" placeholder="예금주 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
  </div>
  <div style="margin-bottom:20px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">과목</label>
@@ -3393,7 +3395,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.64';
+const SYSTEM_VERSION='v14.65';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10109,7 +10111,10 @@ async function doSignup(){
  const pw2 = document.getElementById('signup-pw2').value;
  const hireDate = document.getElementById('signup-hireDate')?.value || '';
  const region = document.getElementById('signup-region')?.value || '';
- const account = (document.getElementById('signup-account')?.value || '').trim();
+ const bank = (document.getElementById('signup-bank')?.value || '').trim();
+ const accnum = (document.getElementById('signup-accnum')?.value || '').trim();
+ const accname = (document.getElementById('signup-accname')?.value || '').trim();
+ const account = [bank, accnum, accname].filter(Boolean).join(' ');
  const subject = document.getElementById('signup-subject')?.value || '';
  const err = document.getElementById('signup-err');
  const showErr=(m,c)=>{ err.textContent=m; err.style.color=c||'#e53935'; err.style.display='block'; };
@@ -10118,7 +10123,9 @@ async function doSignup(){
  if(pw!==pw2){ showErr('비밀번호가 일치하지 않습니다'); return; }
  if(!hireDate){ showErr('입사일(수업 시작일)을 선택해주세요'); return; }
  if(!region){ showErr('지역을 선택해주세요'); return; }
- if(!account){ showErr('계좌번호를 입력해주세요'); return; }
+ if(!bank){ showErr('은행명을 입력해주세요'); return; }
+ if(!accnum){ showErr('계좌번호를 입력해주세요'); return; }
+ if(!accname){ showErr('예금주를 입력해주세요'); return; }
  if(!subject){ showErr('과목을 선택해주세요'); return; }
 
  const dbTeacher = DB.teachers.find(t=>t.name===name);
@@ -10153,7 +10160,7 @@ async function doSignup(){
 
 // 회원가입 후 폼 초기화 + 로그인 탭 이동 + 안내
 function _signupClearAndGoLogin(name, msg, pending){
- ['signup-name','signup-pw','signup-pw2','signup-account','signup-hireDate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+ ['signup-name','signup-pw','signup-pw2','signup-bank','signup-accnum','signup-accname','signup-hireDate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
  const rg=document.getElementById('signup-region'); if(rg) rg.value='';
  const sj=document.getElementById('signup-subject'); if(sj) sj.value='';
  switchLoginTab('login'); initLoginScreen();
