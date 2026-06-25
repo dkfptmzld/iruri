@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.67">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.68">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.67">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.68">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.67</title>
+<title>수업기록표 정산 시스템 v14.68</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1408,6 +1408,9 @@ body.edit-mode-active .ledger-wrap textarea {
  <div class="ti-draft-btns" style="display:flex;gap:10px;">
  <button onclick="manualSaveDraft()" style="flex:1;height:46px;background:#F0EDE8;color:#3A3A3A;border:1px solid #D8D5CE;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">💾 임시저장</button>
  <button onclick="manualLoadDraft()" style="flex:1;height:46px;background:#FDF3DC;color:#8A6D1F;border:1px solid #E8CC80;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📂 임시저장 불러오기</button>
+ </div>
+ <div style="display:flex;justify-content:flex-end;">
+ <button onclick="deleteDraft()" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #FCA5A5;background:#FEF2F2;color:#DC2626;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;">🗑 임시저장 삭제</button>
  </div>
  <button onclick="submitTiData()" style="width:100%;height:52px;background:#1A7A50;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;">
  <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
@@ -3396,7 +3399,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.67';
+const SYSTEM_VERSION='v14.68';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11841,26 +11844,21 @@ function initTeacherInput(){
  tiUpdateSettleSummary(teacher);
  }
 
- // 임시저장 데이터 확인 (v12.59: 배너 대신 다이얼로그)
- const draftRaw = localStorage.getItem(getDraftKey());
- if(draftRaw){
-  try{
-   const draft = JSON.parse(draftRaw);
-   if(draft && draft.teacher === teacher){
-    // 제출 완료 여부 확인 — sessionStorage 없으면 localStorage 히스토리 동기 확인
-    const now2 = new Date();
-    const curYM2 = `${now2.getFullYear()}년 ${now2.getMonth()+1}월`;
-    let isSubmitted = sessionStorage.getItem('ti_submitted_'+teacher) === curYM2;
-    if(!isSubmitted){
-     try{
-      const hist = JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
-      isSubmitted = hist.some(h=>h.yearMonth===curYM2);
-      if(isSubmitted) sessionStorage.setItem('ti_submitted_'+teacher, curYM2);
-     }catch(e){}
-    }
-    _showDraftDialog(teacher, draft.savedAt, isSubmitted, now2.getMonth()+1);
-   }
-  } catch(e){}
+ // 임시저장 데이터 확인 (v12.59: 배너 대신 다이얼로그 / v14.68: 매달 10일 만료분은 자동 삭제)
+ const draft = _getValidDraft();
+ if(draft && draft.teacher === teacher){
+  // 제출 완료 여부 확인 — sessionStorage 없으면 localStorage 히스토리 동기 확인
+  const now2 = new Date();
+  const curYM2 = `${now2.getFullYear()}년 ${now2.getMonth()+1}월`;
+  let isSubmitted = sessionStorage.getItem('ti_submitted_'+teacher) === curYM2;
+  if(!isSubmitted){
+   try{
+    const hist = JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
+    isSubmitted = hist.some(h=>h.yearMonth===curYM2);
+    if(isSubmitted) sessionStorage.setItem('ti_submitted_'+teacher, curYM2);
+   }catch(e){}
+  }
+  _showDraftDialog(teacher, draft.savedAt, isSubmitted, now2.getMonth()+1);
  }
 }
 
@@ -12277,8 +12275,10 @@ function saveTiDraft(){
  teacher, year, month, account,
  dayGroups: tiDayGroups,
  notes: tiNotes,
- savedAt: new Date().toLocaleString('ko-KR')
+ savedAt: new Date().toLocaleString('ko-KR'),
+ savedTs: Date.now() // v14.68: 매달 10일 만료 판단용 타임스탬프
  };
+ // v14.68: 강사별 단일 키 덮어쓰기 → 항상 최신 1개만 유지
  localStorage.setItem(getDraftKey(), JSON.stringify(draft));
 
  // 상태 텍스트 업데이트 (v12.56: 자동저장 안내)
@@ -12312,12 +12312,39 @@ function stopAutoSave(){
  if(_autoSaveTimer){ clearInterval(_autoSaveTimer); _autoSaveTimer = null; }
 }
 
+/**
+ * v14.68: 임시저장 만료 기준 — 매달 10일 00:00에 초기화.
+ * 가장 최근에 지나간 "매달 10일 00:00"의 timestamp 반환.
+ * (오늘이 10일 이후면 이번 달 10일, 아니면 지난 달 10일)
+ */
+function _draftCycleStart(){
+ const n = new Date();
+ const base = n.getDate() >= 10
+  ? new Date(n.getFullYear(), n.getMonth(), 10)
+  : new Date(n.getFullYear(), n.getMonth() - 1, 10); // 1월이면 작년 12월로 자동 처리
+ base.setHours(0, 0, 0, 0);
+ return base.getTime();
+}
+
+/** v14.68: 저장 시점이 직전 10일 사이클 이전이면 만료된 초안 */
+function _isDraftStale(draft){
+ return !!(draft && draft.savedTs && draft.savedTs < _draftCycleStart());
+}
+
+/** v14.68: 유효한(만료되지 않은) 임시저장본 반환 — 만료분은 삭제 후 null */
+function _getValidDraft(){
+ const raw = localStorage.getItem(getDraftKey());
+ if(!raw) return null;
+ let draft;
+ try { draft = JSON.parse(raw); } catch(e){ return null; }
+ if(!draft) return null;
+ if(_isDraftStale(draft)){ clearTiDraft(); return null; }
+ return draft;
+}
+
 function loadTiDraft(){
- const key = getDraftKey();
  try {
- const raw = localStorage.getItem(key);
- if(!raw) return false;
- const draft = JSON.parse(raw);
+ const draft = _getValidDraft();
  if(!draft) return false;
 
  // 연월 복원
@@ -12411,12 +12438,11 @@ function manualSaveDraft(){
  showToast('💾 임시저장 했어요');
 }
 
-/** v14.66: 다이얼로그를 닫은 뒤에도 언제든 임시저장본을 다시 불러오는 버튼 */
+/** v14.66: 다이얼로그를 닫은 뒤에도 언제든 임시저장본을 다시 불러오는 버튼 (v14.68: 만료분 제외) */
 function manualLoadDraft(){
- const raw = localStorage.getItem(getDraftKey());
- if(!raw){ showToast('저장된 임시저장본이 없어요'); return; }
- let savedAt = '';
- try { savedAt = (JSON.parse(raw) || {}).savedAt || ''; } catch(e){}
+ const draft = _getValidDraft();
+ if(!draft){ showToast('저장된 임시저장본이 없어요'); return; }
+ const savedAt = draft.savedAt || '';
  showConfirm({
   icon:'📂',
   title:'임시저장본을 불러올까요?',
@@ -12425,6 +12451,27 @@ function manualLoadDraft(){
   okStyle:'primary',
   cancelText:'취소',
   onOk:()=>{ if(loadTiDraft()) showToast('임시저장본을 불러왔어요'); }
+ });
+}
+
+/** v14.68: 임시저장본 수동 삭제 버튼 (현재 작성 중인 화면 내용은 유지, 저장본만 삭제) */
+function deleteDraft(){
+ const draft = _getValidDraft();
+ if(!draft){ showToast('삭제할 임시저장본이 없어요'); return; }
+ const savedAt = draft.savedAt || '';
+ showConfirm({
+  icon:'🗑',
+  title:'임시저장본을 삭제할까요?',
+  desc:`저장된 임시저장 내용이 완전히 삭제돼요.${savedAt?`<br><span style="font-size:11px;color:#9B9888;">${esc(savedAt)} 저장본</span>`:''}`,
+  okText:'삭제',
+  okStyle:'danger',
+  cancelText:'취소',
+  onOk:()=>{
+   clearTiDraft();
+   const status = document.getElementById('ti-draft-status');
+   if(status){ status.textContent='🔄 30초마다 자동 저장 중'; status.style.color='#9B9888'; }
+   showToast('🗑 임시저장을 삭제했어요');
+  }
  });
 }
 
