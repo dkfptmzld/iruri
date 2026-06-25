@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.63">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.64">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.63">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.64">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.63</title>
+<title>수업기록표 정산 시스템 v14.64</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -954,7 +954,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">강사 이름</label>
  <input id="signup-name" type="text" autocomplete="username" name="new-username" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('signup-pw').focus()">
- <div style="font-size:11px;color:#9B9888;margin-top:4px;">관리자에게 등록된 이름과 정확히 일치해야 합니다</div>
+ <div style="font-size:11px;color:#9B9888;margin-top:4px;">신규 강사는 가입 신청 후 관리자 승인을 받으면 로그인할 수 있어요</div>
  </div>
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 설정</label>
@@ -963,6 +963,22 @@ body.edit-mode-active .ledger-wrap textarea {
  <div style="margin-bottom:20px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 확인</label>
  <input id="signup-pw2" type="password" autocomplete="new-password" name="confirm-password" placeholder="동일하게 입력" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doSignup()">
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">입사일 (수업 시작일)</label>
+ <input id="signup-hireDate" type="date" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">지역</label>
+ <select id="signup-region" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">지역 선택</option><option value="서울">서울</option><option value="수원">수원</option><option value="인천">인천</option></select>
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌번호</label>
+ <input id="signup-account" type="text" placeholder="예: 농협 123-456-789 홍길동" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ </div>
+ <div style="margin-bottom:20px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">과목</label>
+ <select id="signup-subject" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">과목 선택</option></select>
  </div>
  <div id="signup-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
  <button onclick="doSignup()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">가입하기</button>
@@ -1413,6 +1429,7 @@ body.edit-mode-active .ledger-wrap textarea {
  <button class="nav-tab" id="nav3" onclick="switchView('centers')">🏢 센터 관리</button>
  <button class="nav-tab" id="nav4" onclick="switchView('history')">📈 성장추이</button>
 <button class="nav-tab" id="nav5" onclick="switchView('changelog')" style="position:relative;">🔔 변경 이력<span id="changelogBadge" style="display: none; position: absolute; top: 6px; right: 4px; background: var(--red); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; line-height: 16px; text-align: center; font-weight: 700;"></span></button>
+ <button class="nav-tab" id="nav6" onclick="switchView('signups')" style="position:relative;">🆕 신규 가입<span id="signupsBadge" style="display:none;position:absolute;top:6px;right:4px;background:var(--red);color:white;border-radius:50%;width:16px;height:16px;font-size:10px;line-height:16px;text-align:center;font-weight:700;"></span></button>
  </div>
 
  <div class="topbar-right" id="topbarRight">
@@ -2212,6 +2229,20 @@ body.edit-mode-active .ledger-wrap textarea {
   </div>
   <div id="subPendingList"></div>
   <div id="subDoneList" style="display:none;"></div>
+ </div>
+</div>
+
+<!-- v14.64: 신규 가입 승인 -->
+<div class="mgr-view" id="signupsView" style="display:none;">
+ <div class="mgr-wrap">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+   <div>
+    <div style="font-size:18px;font-weight:700;">🆕 신규 가입 승인</div>
+    <div style="font-size:13px;color:var(--text3);margin-top:2px;">새로 가입 신청한 강사를 검토하고 승인합니다</div>
+   </div>
+   <button class="btn sm" onclick="renderSignupsView()" style="gap:4px;">🔄 새로고침</button>
+  </div>
+  <div id="signupsList"></div>
  </div>
 </div>
 
@@ -3362,7 +3393,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.63';
+const SYSTEM_VERSION='v14.64';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3866,7 +3897,7 @@ window.addEventListener('load', ()=>{
 /* ═══ VIEW SWITCH ═══ */
 function switchView(v){
  STATE.view=v;
- ['settle','submissions','teachers','centers','history','changelog'].forEach((n,i)=>document.getElementById(`nav${i}`)?.classList.toggle('active',n===v));
+ ['settle','submissions','teachers','centers','history','changelog','signups'].forEach((n,i)=>document.getElementById(`nav${i}`)?.classList.toggle('active',n===v));
  // 강사 선택 바: 정산 탭에서만 표시
  const _bar = document.getElementById('mgr-teacher-bar');
  if(_bar) _bar.style.display = v==='settle' ? 'flex' : 'none';
@@ -3878,6 +3909,8 @@ function switchView(v){
  const _subv=document.getElementById('submissionsView'); if(_subv) _subv.style.display=v==='submissions'?'block':'none';
  if(v==='submissions') renderSubmissionsView();
  const _clv=document.getElementById('changelogView'); if(_clv) _clv.style.display=v==='changelog'?'block':'none';
+ const _suv=document.getElementById('signupsView'); if(_suv) _suv.style.display=v==='signups'?'block':'none';
+ if(v==='signups') renderSignupsView();
  if(v==='teachers'){
   // v11.30: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
   _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); });
@@ -9977,6 +10010,8 @@ function switchLoginTab(tab){
  document.getElementById('tab-signup').style.color = isLogin?'#5a8a6a':'white';
  document.getElementById('login-err').style.display='none';
  document.getElementById('signup-err').style.display='none';
+ // v14.64: 회원가입 과목 드롭다운 채우기
+ if(!isLogin){ const ss=document.getElementById('signup-subject'); if(ss && ss.options.length<=1){ try{ (_getSubjects()||[]).forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; ss.appendChild(o); }); }catch(e){} } }
 }
 
 async function doLogin(){
@@ -9989,7 +10024,7 @@ async function doLogin(){
  // DB에 존재하는 강사인지 확인
  const dbTeacher = DB.teachers.find(t=>t.name===name);
  if(!dbTeacher){
-  err.textContent=`"${name}" 강사를 찾을 수 없어요. 이름을 정확히 입력해주세요.`;
+  err.textContent=`"${name}" 강사를 찾을 수 없어요. 이름을 확인하거나, 신규 가입이면 관리자 승인을 기다려주세요.`;
   err.style.display='block'; return;
  }
  err.style.display='none';
@@ -10068,70 +10103,114 @@ function loginSuccess(name){
 }
 
 async function doSignup(){
+ // v14.64: 전 항목 필수 + 신규(명단에 없음)는 관리자 승인 대기
  const name = document.getElementById('signup-name').value.trim();
  const pw = document.getElementById('signup-pw').value;
  const pw2 = document.getElementById('signup-pw2').value;
+ const hireDate = document.getElementById('signup-hireDate')?.value || '';
+ const region = document.getElementById('signup-region')?.value || '';
+ const account = (document.getElementById('signup-account')?.value || '').trim();
+ const subject = document.getElementById('signup-subject')?.value || '';
  const err = document.getElementById('signup-err');
- if(!name){ err.textContent='이름을 입력해주세요'; err.style.display='block'; return; }
+ const showErr=(m,c)=>{ err.textContent=m; err.style.color=c||'#e53935'; err.style.display='block'; };
+ if(!name){ showErr('이름을 입력해주세요'); return; }
+ if(pw.length<4){ showErr('비밀번호는 4자리 이상이어야 합니다'); return; }
+ if(pw!==pw2){ showErr('비밀번호가 일치하지 않습니다'); return; }
+ if(!hireDate){ showErr('입사일(수업 시작일)을 선택해주세요'); return; }
+ if(!region){ showErr('지역을 선택해주세요'); return; }
+ if(!account){ showErr('계좌번호를 입력해주세요'); return; }
+ if(!subject){ showErr('과목을 선택해주세요'); return; }
+
  const dbTeacher = DB.teachers.find(t=>t.name===name);
- if(!dbTeacher){
- err.textContent=`"${name}" 강사를 찾을 수 없어요. 이름을 정확히 입력해주세요.`;
- err.style.display='block'; return;
- }
- if(pw.length<4){ err.textContent='비밀번호는 4자리 이상이어야 합니다'; err.style.display='block'; return; }
- if(pw!==pw2){ err.textContent='비밀번호가 일치하지 않습니다'; err.style.display='block'; return; }
-
  const btn = document.querySelector('#signup-form button[onclick="doSignup()"]');
- if(btn){ btn.disabled=true; btn.textContent='가입 중...'; }
+ if(btn){ btn.disabled=true; btn.textContent='처리 중...'; }
  err.style.display='none';
-
  const _newHash = await sha256(pw);
- gasPost({ action:'signupAccount', teacher:name, hashedPw:_newHash })
- .then(r=>{
- const isChange = r.isChange;
- const msg = isChange ? `${name} 비밀번호가 변경됐어요` : `${name} 가입이 완료됐어요! 로그인해주세요`;
 
- // localStorage에도 SHA-256으로 캐시 저장
- const accounts = getTeacherAccounts();
- accounts[name] = _newHash;
- localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
-
- document.getElementById('signup-name').value='';
- document.getElementById('signup-pw').value='';
- document.getElementById('signup-pw2').value='';
- switchLoginTab('login');
- initLoginScreen();
-
- const loginErr = document.getElementById('login-err');
- if(loginErr){
- loginErr.textContent = '✅ ' + msg;
- loginErr.style.color = '#1A7A50';
- loginErr.style.background = '#E8F5EE';
- loginErr.style.padding = '8px 12px';
- loginErr.style.borderRadius = '8px';
- loginErr.style.display = 'block';
- setTimeout(()=>{
- loginErr.style.display='none';
- loginErr.style.color='#e53935';
- loginErr.style.background='transparent';
- loginErr.style.padding='0';
- }, 4000);
+ // 이미 명단에 있는 기존 강사 → 즉시 비밀번호 설정/로그인 (기존 흐름 유지)
+ if(dbTeacher){
+  gasPost({ action:'signupAccount', teacher:name, hashedPw:_newHash })
+   .then(r=>{
+    const msg = r.isChange ? `${name} 비밀번호가 변경됐어요` : `${name} 가입 완료! 로그인해주세요`;
+    const accounts=getTeacherAccounts(); accounts[name]=_newHash; localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
+    _signupClearAndGoLogin(name, '✅ '+msg, false);
+   })
+   .catch(async()=>{ const accounts=getTeacherAccounts(); accounts[name]=await sha256(pw); localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts)); showErr('⚠️ 서버 저장 실패, 로컬에만 저장됐어요. 인터넷 연결을 확인해주세요.','#D97706'); })
+   .finally(()=>{ if(btn){ btn.disabled=false; btn.textContent='가입하기'; } });
+  return;
  }
- const loginInput = document.getElementById('login-name');
- if(loginInput){ loginInput.value=name; document.getElementById('login-pw').focus(); }
- })
- .catch(async ()=>{
- // 오프라인 fallback
- const accounts = getTeacherAccounts();
- const isChange = !!accounts[name];
- accounts[name] = await sha256(pw);
- localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
- err.textContent='⚠️ 서버 저장 실패, 로컬에만 저장됐어요. 인터넷 연결을 확인해주세요.';
- err.style.color='#D97706'; err.style.display='block';
- })
- .finally(()=>{
- if(btn){ btn.disabled=false; btn.textContent='가입하기'; }
- });
+
+ // 신규(명단에 없음) → 관리자 승인 대기 신청
+ gasPost({ action:'signupRequest', data:{ name, hashedPw:_newHash, region, hireDate, account, subject } })
+  .then(r=>{
+   if(r && r.existing){ _signupClearAndGoLogin(name, '✅ 기존 강사로 확인됐어요. 로그인해주세요', false); return; }
+   if(r && r.ok){ _signupClearAndGoLogin(name, '✅ 가입 신청 완료! 관리자 승인 후 로그인할 수 있어요', true); return; }
+   showErr('가입 신청에 실패했어요. 다시 시도해주세요.');
+  })
+  .catch(()=>{ showErr('⚠️ 서버 연결 실패로 신청을 보내지 못했어요. 인터넷 확인 후 다시 시도해주세요.','#D97706'); })
+  .finally(()=>{ if(btn){ btn.disabled=false; btn.textContent='가입하기'; } });
+}
+
+// 회원가입 후 폼 초기화 + 로그인 탭 이동 + 안내
+function _signupClearAndGoLogin(name, msg, pending){
+ ['signup-name','signup-pw','signup-pw2','signup-account','signup-hireDate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+ const rg=document.getElementById('signup-region'); if(rg) rg.value='';
+ const sj=document.getElementById('signup-subject'); if(sj) sj.value='';
+ switchLoginTab('login'); initLoginScreen();
+ const loginErr=document.getElementById('login-err');
+ if(loginErr){
+  loginErr.textContent=msg; loginErr.style.color=pending?'#0F6E56':'#1A7A50';
+  loginErr.style.background='#E8F5EE'; loginErr.style.padding='8px 12px'; loginErr.style.borderRadius='8px'; loginErr.style.display='block';
+  setTimeout(()=>{ loginErr.style.display='none'; loginErr.style.color='#e53935'; loginErr.style.background='transparent'; loginErr.style.padding='0'; }, pending?7000:4000);
+ }
+ const loginInput=document.getElementById('login-name'); if(loginInput && !pending){ loginInput.value=name; const lp=document.getElementById('login-pw'); lp&&lp.focus(); }
+}
+
+// ═══ v14.64: 신규 가입 승인 (관리자) ═══
+function _updateSignupsBadge(n){ const b=document.getElementById('signupsBadge'); if(b){ if(n>0){ b.textContent=n; b.style.display='inline-block'; } else b.style.display='none'; } }
+function _refreshSignupsBadge(){ try{ gasGet({action:'getPendingSignups'}).then(r=>{ const n=(r&&r.ok&&Array.isArray(r.data))?r.data.length:0; _updateSignupsBadge(n); }).catch(()=>{}); }catch(e){} }
+function renderSignupsView(){
+ const list=document.getElementById('signupsList');
+ if(!list) return;
+ list.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">불러오는 중...</div>';
+ gasGet({action:'getPendingSignups'})
+  .then(r=>{
+   const items=(r&&r.ok&&Array.isArray(r.data))?r.data:[];
+   _updateSignupsBadge(items.length);
+   if(!items.length){ list.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3);font-size:14px;">🆕 대기 중인 가입 신청이 없어요</div>'; return; }
+   list.innerHTML=items.map(it=>{
+    const e=(s)=>esc(String(s||''));
+    return `<div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--surface);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+       <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:15px;font-weight:700;">${e(it.name)} <span style="font-size:11px;font-weight:500;color:var(--text3);">${e(it.region)}</span></div>
+        <div style="font-size:12px;color:var(--text2);">입사일 ${e(it.hireDate)||'-'} · 과목 ${e(it.subject)||'-'}</div>
+        <div style="font-size:12px;color:var(--text3);">${e(it.account)||'계좌 미입력'}</div>
+        <div style="font-size:11px;color:var(--text3);">신청 ${e(it.requestedAt)}</div>
+       </div>
+       <div style="display:flex;gap:6px;">
+        <button class="btn sm" onclick="rejectSignupRequest('${e(it.name)}')" style="border-color:var(--red);color:var(--red);">거절</button>
+        <button class="btn sm primary" onclick="approveSignupRequest('${e(it.name)}')">✓ 승인</button>
+       </div>
+      </div>
+    </div>`;
+   }).join('');
+  })
+  .catch(()=>{ list.innerHTML='<div style="text-align:center;padding:24px;color:var(--red);font-size:13px;">서버 연결 실패 — 새로고침 해주세요</div>'; });
+}
+function approveSignupRequest(name){
+ showConfirm({icon:'✅',title:'가입 승인',desc:`<b>${esc(name)}</b> 강사의 가입을 승인할까요?<br><small style="color:var(--text3)">강사 명단에 추가되고 로그인할 수 있게 됩니다.</small>`,okText:'승인',okStyle:'primary',onOk:()=>{
+  gasPost({action:'approveSignup', name})
+   .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast((r&&r.message)||'승인 실패'); })
+   .catch(()=>showToast('서버 연결 실패'));
+ }});
+}
+function rejectSignupRequest(name){
+ showConfirm({icon:'🗑',title:'가입 거절',desc:`<b>${esc(name)}</b> 강사의 가입 신청을 거절(삭제)할까요?`,okText:'거절',okStyle:'danger',onOk:()=>{
+  gasPost({action:'rejectSignup', name})
+   .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast((r&&r.message)||'실패'); })
+   .catch(()=>showToast('서버 연결 실패'));
+ }});
 }
 
 /* ═══ 모드 전환 ═══ */
@@ -10473,6 +10552,7 @@ function _enterAdminMode(){
  goHome();
  checkAndApplyRaises();
  checkPendingSubmissions();
+ try{ _refreshSignupsBadge(); }catch(e){} // v14.64: 신규 가입 대기 배지
  // startAdminAutoLogout(); // 타이머 비활성화
  _initAdminMobile(); // 항상 초기화 (CSS로 모바일에서만 표시)
  // v11.30: 접속 현황 위젯 표시 + 30초 자동 갱신
