@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.69">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.70">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.69">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.70">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.69</title>
+<title>수업기록표 정산 시스템 v14.70</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -519,6 +519,13 @@ body.edit-mode-active .ledger-wrap textarea {
   /* ══ 정산 미리보기 ══ */
   #ti-settle-summary .ti-summary-grid { grid-template-columns:1fr 1fr!important; }
   #ti-settle-summary .ti-summary-cell { border-right:none!important; border-bottom:1px solid var(--border)!important; }
+  /* v14.70: 헤더 글자 축소 — 제목/설명이 줄바꿈으로 깨지지 않게 (제목 1줄, 설명 아래 1줄) */
+  #ti-settle-summary > div:first-child { padding:10px 14px!important; gap:2px 8px!important; flex-wrap:wrap!important; }
+  #ti-settle-summary > div:first-child > span:first-child { font-size:12.5px!important; }
+  #ti-settle-summary > div:first-child > span:last-child { font-size:10px!important; flex-basis:100%!important; }
+  /* v14.70: 본문 수치·여백 약간 축소 */
+  #ti-settle-summary .ti-summary-grid > div { padding:12px 14px!important; }
+  #ti-s-feepct, #ti-s-pretax, #ti-s-final { font-size:15px!important; }
 
   /* ══ 특이사항 ══ */
   #ti-note-cats { gap:6px!important; flex-wrap:wrap!important; }
@@ -621,6 +628,8 @@ body.edit-mode-active .ledger-wrap textarea {
 }
 /* 데스크톱 전용: 모바일 강사선택 바를 강제 숨김 (JS 인라인 flex보다 우선) */
 @media(min-width:601px){ #mgr-teacher-bar, #mgr-sidebar-overlay, #mgr-sidebar-panel { display:none!important; } }
+/* v14.70: 강사 모드(수업기록표 작성)에서는 관리자용 강사선택 바를 항상 숨김 */
+body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #mgr-sidebar-panel { display:none!important; }
 /* ↓ 원래 모바일용 규칙들 — 실수로 min-width:601(데스크톱)에 묶여 모바일에 적용 안 되던 것을 max-width:600으로 정정 */
 @media(max-width:600px){
   #mgr-teacher-bar-label { color:#888; font-size:11px; }
@@ -3396,7 +3405,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.69';
+const SYSTEM_VERSION='v14.70';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11403,6 +11412,7 @@ function enterTeacherMode(){
  document.getElementById('modeSelectScreen').style.display = 'none';
  document.getElementById('loginScreen').style.display = 'none';
  document.getElementById('teacherInputScreen').style.display = 'block';
+ document.body.classList.add('ti-mode'); // v14.70: 관리자용 강사선택 바 숨김
  initTeacherInput();
  startAutoSave(); // v11.20: 자동저장 시작
 
@@ -11442,6 +11452,7 @@ function exitTeacherMode(){
  stopAutoSave(); // v11.20: 자동저장 중단
  closeHistoryModal(); // v11.54: 모달 자동 정리 (spec v3.3 이슈 13)
  _closeTeacherTutorial(); // v11.62: 튜토리얼 정리
+ document.body.classList.remove('ti-mode'); // v14.70: 강사 모드 종료
  document.getElementById('teacherInputScreen').style.display = 'none';
  const overlay = document.getElementById('ti-success-overlay');
  if(overlay) overlay.style.display = 'none';
