@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.76">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.77">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.76">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.77">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.76</title>
+<title>수업기록표 정산 시스템 v14.77</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3561,7 +3561,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.76';
+const SYSTEM_VERSION='v14.77';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4714,31 +4714,24 @@ function loadMonthlySnapshot(ym){
     }
     return;
    }
-   // v12.06: 박기남님 인사이트 — GAS가 잘못된 월 데이터 반환 시 자동 정리
-   // 받은 데이터의 yearMonth가 요청한 ym과 다르면 잘못된 데이터로 판정
+   // v14.77: 오염 판정을 '스냅샷 자체의 월'(top-level yearMonth)로 — 강사 개별 태그가 아니라.
+   //   배경: 6월 스냅샷이 5월에서 이월돼 강사 태그만 5월인 정상 데이터를, 강사 태그 기준으로는
+   //   오염으로 오판해 로드를 막던 문제(2026년 6월). 스냅샷 식별자가 명시적으로 다른 월일 때만
+   //   '진짜 잘못된 스냅샷'으로 판정한다.
+   const wantYM = _normYM(ym);
+   const snapYM = _normYM(r.yearMonth || r.ym || r.data?.yearMonth || '');
    const receivedTeachers = r.data?.teachers || [];
-   // v14.73: 포맷 차이("2026년 06월"·공백·Date 문자열 등)로 인한 오염 오판 방지 →
-   //         양쪽 yearMonth를 정규화해서 '진짜로 다른 월'일 때만 오염으로 판정.
-   //         파싱 불가(빈 문자열)한 yearMonth는 mismatch에서 제외(보수적: 로드 우선).
-   const _ymWant = _normYM(ym);
-   const mismatched = receivedTeachers.filter(t => {
-    const got = _normYM(t.yearMonth);
-    return got && _ymWant && got !== _ymWant;
-   });
-   if(receivedTeachers.length > 0 && mismatched.length === receivedTeachers.length){
-    // 받은 강사 전체가 (정규화 후에도) 다른 월 → GAS 오염 (예: 5월 데이터가 6월에 저장된 상태)
-    const wrongYm = _normYM(mismatched[0].yearMonth) || mismatched[0].yearMonth;
-    console.warn(`⚠️ ${ym} 요청에 다른 월(${wrongYm}) 데이터 ${receivedTeachers.length}명 반환됨`);
-    // v14.75: 파괴적 자동 덮어쓰기/빈 데이터 초기화 제거 (실데이터 손실 방지).
+   if(snapYM && wantYM && snapYM !== wantYM){
+    // 서버가 요청과 다른 '월 스냅샷'을 반환 → 비파괴 진단 + 수동 복구 (실데이터 삭제 안 함)
+    const wrongYm = snapYM;
+    console.warn(`⚠️ ${ym} 요청에 다른 월 스냅샷(${wrongYm}) 반환됨 (${receivedTeachers.length}명)`);
     if(localSnap?.data?.teachers?.length > 0){
-     // 로컬에 해당 월 데이터가 있으면 그대로 표시(이미 렌더됨) + GAS를 로컬로 복구(비파괴적)
-     showToast(`ℹ️ ${ym}: 서버엔 ${wrongYm} 데이터가 있어 로컬 기록을 표시합니다`);
+     showToast(`ℹ️ ${ym}: 서버엔 ${wrongYm} 스냅샷이 있어 로컬 기록을 표시합니다`);
      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:localSnap.data})
       .then(()=>console.log(`✅ 로컬 ${ym}(${localSnap.data.teachers.length}명)로 GAS 복구`))
       .catch(()=>{});
      return;
     }
-    // 로컬도 없음 → GAS를 절대 비우지 않고, 깔끔한 안내 + 수동 복구(강제 불러오기) 제공
     window.__mismatchedSnap = { ym, wrongYm, data: r.data };
     STATE.data = null; STATE.regionFilter = null;
     _renderSidebarYM(ym);
@@ -4747,14 +4740,20 @@ function loadMonthlySnapshot(ym){
      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:14px;text-align:center;padding:20px;">
       <div style="font-size:36px;">📭</div>
       <div style="font-size:15px;font-weight:600;color:var(--text2);">${ym} 기록을 불러오지 못했어요</div>
-      <div style="font-size:13px;color:var(--text3);line-height:1.7;">서버가 다른 월(<b>${esc(wrongYm)}</b>) 데이터 <b>${receivedTeachers.length}명</b>을 반환했어요.<br>${ym} 스냅샷이 아직 없거나, 데이터가 ${esc(wrongYm)}로 잘못 저장돼 있을 수 있어요.</div>
+      <div style="font-size:13px;color:var(--text3);line-height:1.7;">서버가 다른 월(<b>${esc(wrongYm)}</b>) 스냅샷을 반환했어요.<br>잠시 후 다시 시도하거나, 아래로 강제 복구할 수 있어요.</div>
       <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:center;">
        <button onclick="loadMonthlySnapshot('${ym}')" class="btn" style="font-size:13px;">🔄 다시 시도</button>
        <button onclick="_forceLoadMismatchedSnap()" class="btn" style="font-size:13px;background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">↪ 그래도 이 데이터를 ${ym}로 불러오기</button>
       </div>
      </div>`;
-    return; // GAS 오염 데이터는 STATE에 절대 반영하지 않음
+    return;
    }
+   // v14.77: 정상 데이터 — 강사 태그가 이월(다른 월)이면 요청 월로 재태깅(표시/저장 정합성 + 다음 로드 정상화)
+   let _retag = 0;
+   if(Array.isArray(receivedTeachers)){
+    receivedTeachers.forEach(t=>{ const g=_normYM(t.yearMonth); if(g && g!==wantYM){ t.yearMonth = ym; _retag++; } });
+   }
+   if(_retag) console.log(`ℹ️ ${ym}: 이월 데이터 강사 ${_retag}명 yearMonth를 ${ym}로 정규화`);
    const gasSavedAt = r.savedAt ? new Date(r.savedAt).getTime() : 0;
    const gasTeacherCount = r.data?.teachers?.length || 0;
    const localTeacherCount = localSnap?.data?.teachers?.length || 0;
