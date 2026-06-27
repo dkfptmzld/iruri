@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.89">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.90">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.89">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.90">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.89</title>
+<title>수업기록표 정산 시스템 v14.90</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3527,7 +3527,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.89';
+const SYSTEM_VERSION='v14.90';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17949,6 +17949,10 @@ async function _fetchMaintenanceFromGAS(){
     localStorage.setItem(MAINTENANCE_KEY, JSON.stringify(parsed));
    }
   }
+  // v14.90: 공지도 미리 캐시 → 로그인 시 즉시 팝업 (랜딩 단계에서 워밍업)
+  if(s.notice !== undefined){
+   try{ if(JSON.parse(s.notice)) localStorage.setItem(NOTICE_KEY, s.notice); }catch{}
+  }
  } catch(e){ /* GAS 실패 시 localStorage 캐시 사용 */ }
 }
 
@@ -18062,20 +18066,30 @@ function clearNotice(){
 
 // 로그인 직후: 게시 중인 공지가 있고 이 강사가 (이 기기에서) 아직 안 봤으면 1회 팝업
 // v14.89: 확인 기록을 강사 이름 기준으로 분리 — 한 기기를 여러 강사가 써도 각자 1회
+// v14.90: 캐시 우선 표시(즉시) + GAS 백그라운드 갱신 — 로그인하자마자 보이게
 function _maybeShowNoticeOnLogin(teacherName){
  const seenKey = NOTICE_SEEN_KEY + '_' + (teacherName||'');
- gasGet({ action:'getSystemSettings' }).then(r=>{
-  if(!r.ok || !r.data || r.data.notice===undefined) return;
-  let notice;
-  try{ notice = JSON.parse(r.data.notice); }catch{ return; }
+ const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ let surfacedId = null; // 이번 로그인에서 이미 띄운 공지 id (캐시·GAS 중복 방지)
+ const surface = (notice)=>{
   if(!notice || !notice.on || !notice.message) return;
-  localStorage.setItem(NOTICE_KEY, JSON.stringify(notice));
   if(localStorage.getItem(seenKey) === String(notice.id)) return; // 이 강사가 이미 확인함
-  const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(surfacedId === String(notice.id)) return;                    // 이번에 이미 띄움
+  surfacedId = String(notice.id);
   const body = escHtml(notice.message).split('\n').join('<br>');
   const markSeen = ()=> localStorage.setItem(seenKey, String(notice.id));
   showConfirm({ icon:'📢', title: notice.title || '공지사항', desc: body,
    okText:'확인', okStyle:'primary', cancelText:'', onOk: markSeen, onCancel: markSeen });
+ };
+ // 1) 즉시: localStorage 캐시로 바로 표시 (랜딩 단계에서 워밍업된 값)
+ try{ surface(JSON.parse(localStorage.getItem(NOTICE_KEY)||'{}')); }catch{}
+ // 2) 백그라운드: GAS 최신본으로 캐시 갱신 — 새 공지면 그때 표시
+ gasGet({ action:'getSystemSettings' }).then(r=>{
+  if(!r.ok || !r.data || r.data.notice===undefined) return;
+  let notice;
+  try{ notice = JSON.parse(r.data.notice); }catch{ return; }
+  localStorage.setItem(NOTICE_KEY, JSON.stringify(notice));
+  surface(notice);
  }).catch(()=>{});
 }
 
