@@ -21,20 +21,15 @@
   .seg button.on{background:var(--green);color:#fff;}
   .btn{height:38px;border:1.5px solid var(--green);background:var(--green);color:#fff;border-radius:9px;font-size:13px;font-weight:700;padding:0 16px;cursor:pointer;font-family:inherit;}
   .btn.ghost{background:#fff;color:var(--green);}
-  .meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--text2);margin-top:4px;}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--text2);margin:2px 0 12px;}
   .meta b{color:#1a4a2e;}
+  .secttl{font-size:13px;font-weight:800;color:#1a4a2e;margin-bottom:10px;}
   table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;}
   th,td{border:1px solid #d9e4d2;padding:7px 9px;vertical-align:top;text-align:left;}
   thead th{background:var(--head);color:#1a4a2e;font-weight:700;text-align:center;white-space:nowrap;position:sticky;top:0;}
   td.c,th.c{text-align:center;white-space:nowrap;}
   td.wk{font-weight:800;color:#7a5a10;background:#fffdf3;}
   td.main{font-weight:800;color:#0f5a37;background:#f2f9ef;}
-  tr.off td{background:#fdecec!important;color:#b23b3b;}
-  tr.off td.act{font-weight:700;}
-  .hg{display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;user-select:none;color:#b23b3b;font-weight:700;}
-  .hg input{width:14px;height:14px;accent-color:#b23b3b;}
-  .tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:#E1F5EE;color:#0f6e56;}
-  .note{font-size:11px;color:var(--text3);margin-top:10px;line-height:1.7;}
   .scroll{overflow-x:auto;border-radius:10px;border:1px solid #d9e4d2;}
   @media print{
     body{padding:0;background:#fff;}
@@ -47,13 +42,12 @@
 </head>
 <body>
   <h1>📅 실버 레크레이션 계획표 <span style="font-size:12px;color:#b23b3b;font-weight:700;">프로토타입</span></h1>
-  <div class="sub">시트 동작 그대로 — 1주차 메인활동 + 시작날짜만 정하면 26주 순환으로 자동 생성 · 휴강은 수동 · 날짜 +7일 자동</div>
+  <div class="sub">1주차 메인활동 + 시작날짜만 정하면 26주 순환으로 자동 생성 · 날짜 +7일 자동</div>
 
   <!-- 입력 -->
   <div class="card noprint">
     <div class="row">
       <div class="field"><label>센터명</label><input id="center" type="text" value="○○노인복지센터" style="width:170px;"></div>
-      <div class="field"><label>진행 강사</label><input id="teacher" type="text" value="박기남" style="width:120px;"></div>
       <div class="field"><label>1주차 메인활동</label><select id="firstAct" style="width:150px;"></select></div>
       <div class="field"><label>시작 날짜 (1주차)</label><input id="startDate" type="date" value="2026-01-07"></div>
       <div class="field">
@@ -63,21 +57,27 @@
       <div class="field" id="monthPickWrap"><label>월 선택</label><select id="monthPick" style="width:130px;"></select></div>
       <div class="field"><label>&nbsp;</label><button class="btn ghost" onclick="window.print()">🖨️ 인쇄 / PDF</button></div>
     </div>
-    <div class="meta">
-      <span>프로그램명 <b>실버 도구 레크레이션</b></span>
-      <span>일시 <b id="mWeekday">매주 수요일</b></span>
-      <span>진행자 <b id="mTeacher">박기남 강사</b></span>
-      <span>대상 <b>센터 이용 어르신</b></span>
-    </div>
   </div>
 
   <!-- 출력 -->
   <div class="card">
-    <div id="planTitle" style="font-size:15px;font-weight:800;color:#1a4a2e;margin-bottom:10px;"></div>
+    <div id="planTitle" style="font-size:15px;font-weight:800;color:#1a4a2e;margin-bottom:6px;"></div>
+    <div class="meta">
+      <span>프로그램명 <b id="mProgram">실버 도구 레크레이션</b></span>
+      <span>일시 <b id="mIlsi">매주 수요일</b></span>
+      <span>진행자 <b id="mTeacher">박기남 강사</b></span>
+      <span>대상 <b>센터 이용 어르신</b></span>
+    </div>
     <div class="scroll"><div id="planBody"></div></div>
-    <div class="note noprint">
-      • 휴강 체크 시 그 주는 비워지고, 원래 그 주에 올 활동은 <b>다음 주로 밀립니다</b> (시트와 동일).<br>
-      • 월간 보기의 ‘주차’는 그 달 안에서의 회차(1~5주차)예요. 연간 보기는 1~52주 전체.
+  </div>
+
+  <!-- 계획표 정보 (수정 가능) -->
+  <div class="card noprint">
+    <div class="secttl">계획표 정보 (수정 가능)</div>
+    <div class="row">
+      <div class="field"><label>프로그램명</label><input id="program" type="text" value="실버 도구 레크레이션" style="width:200px;"></div>
+      <div class="field"><label>일시</label><input id="ilsi" type="text" value="매주 수요일" style="width:200px;"></div>
+      <div class="field"><label>진행자</label><input id="teacher" type="text" value="박기남 강사" style="width:200px;"></div>
     </div>
   </div>
 
@@ -113,53 +113,39 @@ const CATALOG = [
 ];
 const WD = ['일','월','화','수','목','금','토'];
 let view = 'month';
-const off = new Set();   // 휴강 처리된 전역 주차 번호(1~52)
+let _autoIlsi = '매주 수요일';  // 시작일 요일로 자동 채운 값(사용자가 직접 고치면 유지)
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
 
-/* 1주차 활동+시작일 → 52주 시퀀스(휴강 밀기 반영) */
+/* 1주차 활동+시작일 → 52주 순환 시퀀스 */
 function buildWeeks(){
   const startName = document.getElementById('firstAct').value;
   const startIdx = Math.max(0, CATALOG.findIndex(a=>a.name===startName));
   const sd = new Date(document.getElementById('startDate').value+'T00:00:00');
   const weeks=[];
-  let ptr = startIdx;
   for(let n=1;n<=52;n++){
-    const date = addDays(sd, 7*(n-1));
-    if(off.has(n)){
-      weeks.push({n,date,off:true});
-    }else{
-      weeks.push({n,date,act:CATALOG[((ptr%26)+26)%26]});
-      ptr++;
-    }
+    weeks.push({ n, date: addDays(sd, 7*(n-1)), act: CATALOG[((startIdx+n-1)%26)] });
   }
   return weeks;
 }
 
-function hgCell(n){
-  return `<label class="hg noprint"><input type="checkbox" ${off.has(n)?'checked':''} onchange="toggleOff(${n})">휴강</label>`;
-}
-function toggleOff(n){ off.has(n)?off.delete(n):off.add(n); render(); }
-
 function renderYear(weeks){
-  let rows = weeks.map(w=>{
-    if(w.off) return `<tr class="off"><td class="c wk">${w.n}주차</td><td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td><td class="act c" colspan="6">휴강</td><td class="c">${hgCell(w.n)}</td></tr>`;
+  const rows = weeks.map(w=>{
     const a=w.act;
     return `<tr>
       <td class="c wk">${w.n}주차</td>
-      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
       <td class="main c">${esc(a.name)}</td>
       <td>${esc(a.desc)}</td>
       <td class="c">${esc(a.a1)}</td><td>${esc(a.m1)}</td>
       <td class="c">${esc(a.a2)}</td><td>${esc(a.m2)}</td>
-      <td class="c">${hgCell(w.n)}</td>
+      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
     </tr>`;
   }).join('');
   return `<table><thead><tr>
-    <th class="c">주차</th><th class="c">예정일</th><th>메인활동</th><th>활동 설명</th>
-    <th>활동1</th><th>준비물</th><th>활동2</th><th>준비물</th><th class="c noprint">휴강</th>
+    <th class="c">주차</th><th>메인활동</th><th>활동 설명</th>
+    <th>활동1</th><th>준비물</th><th>활동2</th><th>준비물</th><th class="c">예정일</th>
    </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -167,23 +153,20 @@ function renderMonth(weeks){
   const ym = document.getElementById('monthPick').value; // 'YYYY-MM'
   const inMonth = weeks.filter(w=>fmtDate(w.date).slice(0,7)===ym);
   let rows = inMonth.map((w,i)=>{
-    const wk = (i+1)+'주차';
-    if(w.off) return `<tr class="off"><td class="c wk">${wk}</td><td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td><td class="act c" colspan="4">휴강</td><td class="c">${hgCell(w.n)}</td></tr>`;
     const a=w.act;
     const prep = [a.name, a.a1, a.a2].filter(Boolean).join(', ');
     return `<tr>
-      <td class="c wk">${wk}</td>
-      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
+      <td class="c wk">${(i+1)}주차</td>
       <td class="main c">${esc(a.name)}</td>
       <td style="min-width:230px;">${esc(a.goal)}</td>
       <td style="min-width:230px;">${esc(a.desc)}</td>
       <td>${esc(prep)}</td>
-      <td class="c">${hgCell(w.n)}</td>
+      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
     </tr>`;
   }).join('');
-  if(!inMonth.length) rows = `<tr><td colspan="7" class="c" style="color:#9B9888;padding:20px;">해당 월에 수업이 없어요</td></tr>`;
+  if(!inMonth.length) rows = `<tr><td colspan="6" class="c" style="color:#9B9888;padding:20px;">해당 월에 수업이 없어요</td></tr>`;
   return `<table><thead><tr>
-    <th class="c">주차</th><th class="c">예정일</th><th>프로그램명</th><th>목표</th><th>내용</th><th>준비물</th><th class="c noprint">휴강</th>
+    <th class="c">주차</th><th>프로그램명</th><th>목표</th><th>내용</th><th>준비물</th><th class="c">예정일</th>
    </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -209,10 +192,16 @@ function setView(v){
 function render(){
   const weeks = buildWeeks();
   refreshMonthOptions(weeks);
-  // 메타
+  // 시작일 요일 → 일시 자동(사용자가 직접 고쳤으면 유지)
   const sd = new Date(document.getElementById('startDate').value+'T00:00:00');
-  document.getElementById('mWeekday').textContent = '매주 '+WD[sd.getDay()]+'요일';
-  document.getElementById('mTeacher').textContent = (document.getElementById('teacher').value||'')+' 강사';
+  const newAuto = '매주 '+WD[sd.getDay()]+'요일';
+  const ilsiEl = document.getElementById('ilsi');
+  if(ilsiEl.value.trim()==='' || ilsiEl.value===_autoIlsi) ilsiEl.value = newAuto;
+  _autoIlsi = newAuto;
+  // 메타 반영
+  document.getElementById('mProgram').textContent = document.getElementById('program').value || '실버 도구 레크레이션';
+  document.getElementById('mIlsi').textContent = ilsiEl.value || newAuto;
+  document.getElementById('mTeacher').textContent = document.getElementById('teacher').value || '';
   const center = document.getElementById('center').value;
   if(view==='year'){
     document.getElementById('planTitle').textContent = `${center} · 2026년 연간 계획표 (1~52주)`;
@@ -230,7 +219,7 @@ function render(){
   const sel=document.getElementById('firstAct');
   sel.innerHTML = CATALOG.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
   sel.value='스카프'; // 시트 예시(2026 시작 = 스카프)
-  ['firstAct','startDate','center','teacher'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ if(id==='startDate'||id==='firstAct') off.clear(); render(); }));
+  ['firstAct','startDate','center','program','ilsi','teacher'].forEach(id=>document.getElementById(id).addEventListener('input',render));
   document.getElementById('monthPick').addEventListener('change',render);
   render();
 })();
