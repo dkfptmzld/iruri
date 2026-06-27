@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.82">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.83">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.82">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.83">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.82</title>
+<title>수업기록표 정산 시스템 v14.83</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3562,7 +3562,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.82';
+const SYSTEM_VERSION='v14.83';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4272,6 +4272,37 @@ function calcPretax(total,feePct,lessons){
  return feePct*lessons.reduce((s,l)=>s+l.count,0);
 }
 
+/**
+ * v14.83: 제출이력 복구 레코드는 계산값(feePct·totalSum·pretax·finalPay·비용)이 빠져 있어
+ * 정산 요약이 0/"-"로 표시됨 → 빠진 값만 채워 넣는다(있는 값은 보존).
+ *  - feePct: DB 강사료에서(비율형 feeVal/100, 정액형 feeVal)
+ *  - totalSum/pretax/profit/finalPay: lessons + feePct로 재계산(calcPretax, 3.3% 공제)
+ *  - parkingCost/supplyCost/etcCost/mockLesson: notesData 카테고리별 합
+ */
+function _fillSettleFields(rec){
+ if(!rec || !Array.isArray(rec.lessons)) return rec;
+ if(!(typeof rec.feePct==='number' && rec.feePct>0)){
+  const _dbList = (typeof DB!=='undefined' && Array.isArray(DB.teachers)) ? DB.teachers : [];
+  const dbT = _dbList.find(d=>d.name===rec.name);
+  if(dbT && dbT.feeVal!=null) rec.feePct = (dbT.feeType==='pct') ? (dbT.feeVal/100) : dbT.feeVal;
+ }
+ if(!(typeof rec.totalSum==='number' && rec.totalSum>0))
+  rec.totalSum = rec.lessons.reduce((s,l)=>s+(Number(l.total)||0),0);
+ if(!(typeof rec.pretax==='number' && rec.pretax>0))
+  rec.pretax = calcPretax(rec.totalSum, rec.feePct, rec.lessons);
+ if(rec.profit==null) rec.profit = (rec.totalSum||0) - (rec.pretax||0);
+ if(!(typeof rec.finalPay==='number' && rec.finalPay>0))
+  rec.finalPay = Math.round((rec.pretax||0)*0.967);
+ const notes = Array.isArray(rec.notesData) ? rec.notesData : [];
+ const _amt = n => (Array.isArray(n.entries)&&n.entries.length) ? n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0) : (Number(n.amount)||0);
+ const sumCat = c => notes.filter(n=>n.cat===c).reduce((s,n)=>s+_amt(n),0);
+ if(rec.parkingCost==null) rec.parkingCost = sumCat('주차료');
+ if(rec.supplyCost==null) rec.supplyCost = sumCat('물품');
+ if(rec.etcCost==null) rec.etcCost = sumCat('기타');
+ if(rec.mockLesson==null) rec.mockLesson = sumCat('신규(모의) 수업');
+ return rec;
+}
+
 function guessRegion(){ return ''; }
 
 
@@ -4718,7 +4749,8 @@ async function recoverSubmissionsFromHistory(){
   const prev = byName.get(nm);
   if(!prev || new Date(h.submittedAt||0) > new Date(prev.submittedAt||0)) byName.set(nm, h);
  });
- const recovered = Array.from(byName.values()).map(h=>({ ...h, yearMonth: targetYM }));
+ // v14.83: 복구 레코드는 계산값이 빠져 있어 정산 요약이 0으로 나옴 → 빠진 값 채우기
+ const recovered = Array.from(byName.values()).map(h=>_fillSettleFields({ ...h, yearMonth: targetYM }));
  if(!recovered.length){ showToast(`${targetYM} 제출이력이 없어요`); return; }
 
  // 기존 '대기중'(getSubmissions)과 병합 — 같은 강사·월이 이미 대기중이면 중복 추가 안 함
@@ -11537,6 +11569,8 @@ function _showSubmissionDiffModal(existing, submission, onConfirm, onCancel){
 }
 
 function _applySubmissions(subs){
+ // v14.83: 제출이력 복구분 등 계산값이 빠진 레코드 보강(있는 값은 보존) → 정산 요약 0 방지
+ subs = subs.map(_fillSettleFields);
  // parkingCost/etcCost → costExtra 자동 설정 (있을 때만)
  subs = subs.map(s=>{
   if((s.parkingCost !== undefined || s.etcCost !== undefined)){
