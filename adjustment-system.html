@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.79">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.80">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.79">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.80">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.79</title>
+<title>수업기록표 정산 시스템 v14.80</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3562,7 +3562,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.79';
+const SYSTEM_VERSION='v14.80';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4667,13 +4667,43 @@ function recoverSubmissionsUI(){
  * v14.79: GAS 제출이력(getHistory __all__)에서 '최신 2026년 월'의 제출 기록표를 찾아
  * 기록표 관리 '대기중' 목록(_subPendingData)에 추가하고 렌더. 정산 반영은 기존 '반영하기' 흐름으로.
  */
+/**
+ * v14.80: getHistory 한 레코드에서 '전체 기록표 레코드 + 이름'을 견고하게 추출.
+ * - 이름이 name/teacher/teacherName 등 다른 키에 있거나, 전체 JSON이 문자열 필드에 들어있어도 복원.
+ * - 이게 없으면 이름이 undefined가 되어 dedup에서 여러 명이 1건으로 뭉개졌음(2026년 6월 버그).
+ */
+function _histFullRecord(h){
+ if(!h || typeof h!=='object') return { };
+ let rec = null;
+ // (1) 내부에 전체 JSON(문자열) 또는 수업데이터 객체가 있으면 그걸 본문으로
+ for(const k in h){
+  const v = h[k];
+  if(typeof v==='string' && v.length>10 && v.indexOf('"name"')>=0 && v.trim().charAt(0)==='{'){
+   try{ const o=JSON.parse(v); if(o && typeof o==='object'){ rec=o; break; } }catch(e){}
+  } else if(v && typeof v==='object' && (Array.isArray(v.lessons)||Array.isArray(v.dayGroups))){
+   rec=v; break;
+  }
+ }
+ if(!rec) rec = h; // 전체 레코드가 top-level인 경우
+ const name = rec.name || h.name || h.teacher || h.teacherName || rec.teacher || '';
+ return Object.assign({}, rec, {
+  name: name,
+  yearMonth: rec.yearMonth || h.yearMonth,
+  submittedAt: rec.submittedAt || h.submittedAt
+ });
+}
+
 async function recoverSubmissionsFromHistory(){
  showToast('제출이력에서 불러오는 중...');
  let r;
  try{ r = await gasGet({ action:'getHistory', teacher:'__all__' }); }
  catch(e){ showToast('제출이력 조회 실패 — 네트워크를 확인해주세요'); return; }
- const hist = (r && r.ok && Array.isArray(r.data)) ? r.data : [];
- if(!hist.length){ showToast('제출이력이 비어있어요'); return; }
+ const raw = (r && r.ok && Array.isArray(r.data)) ? r.data : [];
+ if(!raw.length){ showToast('제출이력이 비어있어요'); return; }
+ try{ console.log('[복구] getHistory 첫 레코드 키:', Object.keys(raw[0]||{}), raw[0]); }catch(e){}
+
+ // v14.80: 레코드/이름 견고 추출 (undefined 이름으로 뭉개지던 문제 해결)
+ const hist = raw.map(_histFullRecord);
 
  const monthNum = y=>{ const mm=(y||'').match(/(\d+)년\s*(\d+)월/); return mm ? parseInt(mm[1])*100+parseInt(mm[2]) : 0; };
  // 2026년 중 최신 월만 대상
@@ -4681,11 +4711,12 @@ async function recoverSubmissionsFromHistory(){
  if(!cand.length){ showToast('2026년 제출이력이 없어요'); return; }
  const targetYM = cand.sort((a,b)=>monthNum(b)-monthNum(a))[0];
 
- // 해당 월 레코드 → 강사별 최신 1건
+ // 해당 월 레코드 → 강사별 최신 1건 (이름 없으면 인덱스로 고유키 → 뭉개짐 방지)
  const byName = new Map();
- hist.filter(h=>_normYM(h.yearMonth)===targetYM).forEach(h=>{
-  const prev = byName.get(h.name);
-  if(!prev || new Date(h.submittedAt||0) > new Date(prev.submittedAt||0)) byName.set(h.name, h);
+ hist.filter(h=>_normYM(h.yearMonth)===targetYM).forEach((h,idx)=>{
+  const nm = h.name || ('__noname_'+idx);
+  const prev = byName.get(nm);
+  if(!prev || new Date(h.submittedAt||0) > new Date(prev.submittedAt||0)) byName.set(nm, h);
  });
  const recovered = Array.from(byName.values()).map(h=>({ ...h, yearMonth: targetYM }));
  if(!recovered.length){ showToast(`${targetYM} 제출이력이 없어요`); return; }
