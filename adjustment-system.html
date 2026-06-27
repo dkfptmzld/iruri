@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.75">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.76">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.75">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.76">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.75</title>
+<title>수업기록표 정산 시스템 v14.76</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2232,6 +2232,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button class="rgn-tab" data-r="수원" onclick="setTRegion(this,'수원')">수원</button>
  </div>
  <input class="search-input" id="tSearch" placeholder="강사 이름 검색..." oninput="renderTeacherMgr()" style="flex:1;min-width:120px;">
+ <button onclick="recoverAccountsUI()" class="btn" title="저장된 정산 기록에서 비어있는 계좌번호를 채웁니다" style="font-size:12px;white-space:nowrap;background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">📋 정산기록에서 계좌 복구</button>
  </div>
  <div class="mgr-head-row mgr-row t-mgr-row">
  <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">입사일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell"></div>
@@ -3560,7 +3561,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.75';
+const SYSTEM_VERSION='v14.76';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3588,9 +3589,11 @@ window.migrateAccountsFromRecords = function(force=false){
  const accountByTeacher = {};
  monthKeys.sort().forEach(key => {
   try{
-   const data = JSON.parse(localStorage.getItem(key));
-   if(data?.teachers){
-    data.teachers.forEach(t => {
+   const parsed = JSON.parse(localStorage.getItem(key));
+   // v14.76: 스냅샷 래퍼 {ym,savedAt,data:{teachers}} 및 구버전 {teachers} 모두 지원
+   const teachers = parsed?.data?.teachers || parsed?.teachers;
+   if(Array.isArray(teachers)){
+    teachers.forEach(t => {
      if(t.name && t.account && t.account.trim()){
       accountByTeacher[t.name] = t.account.trim();
      }
@@ -3658,8 +3661,37 @@ window.migrateAccountsFromRecords = function(force=false){
  console.log(`⏭️ 건너뜀: ${skipped.length}명`);
  console.log('═══ 완료 ═══');
 
- return { updated: updated.length, conflicts: conflicts.length, skipped: skipped.length };
+ return { updated: updated.length, conflicts: conflicts.length, skipped: skipped.length, found: Object.keys(accountByTeacher).length };
 };
+
+/**
+ * v14.76: 강사 관리 화면용 — '정산 기록에서 계좌 복구' 버튼 핸들러.
+ * 저장된 월별 정산 스냅샷에서 강사별 계좌를 찾아 '빈 계좌'에 채움(기존 계좌는 보존).
+ */
+function recoverAccountsUI(){
+ const blanks = (DB.teachers||[]).filter(t=>!(t.account||'').trim()).length;
+ showConfirm({
+  icon:'📋',
+  title:'정산 기록에서 계좌 복구',
+  desc:`저장된 월별 정산 기록(수업기록표)에서 강사별 계좌번호를 찾아 <b>비어있는 계좌</b>에 채웁니다.<br><span style="font-size:12px;color:#9B9888;">기존에 입력된 계좌는 덮어쓰지 않아요.${blanks?` · 현재 빈 계좌 ${blanks}명`:''}</span>`,
+  okText:'복구하기',
+  okStyle:'primary',
+  cancelText:'취소',
+  onOk:()=>{
+   let r;
+   try{ r = migrateAccountsFromRecords(false); }catch(e){ showToast('복구 중 오류: '+e.message); return; }
+   if(r.updated>0){
+    showConfirm({icon:'✅',title:'계좌 복구 완료',desc:`정산 기록에서 <b>${r.updated}명</b>의 계좌를 복구했어요.${r.conflicts?`<br><span style="font-size:12px;color:#B45309;">기존 계좌와 다른 ${r.conflicts}명은 보존(덮어쓰지 않음).</span>`:''}`,okText:'확인',okStyle:'primary',cancelText:''});
+   } else if(r.found===0){
+    showToast('정산 기록에서 계좌를 찾지 못했어요');
+   } else if(r.conflicts>0){
+    showToast(`복구 대상 없음 — 기존 계좌와 다른 ${r.conflicts}명은 보존됨`);
+   } else {
+    showToast('이미 모든 계좌가 채워져 있어요');
+   }
+  }
+ });
+}
 
 /**
  * v12.17: DEFAULT_TEACHERS에서 계좌 복원 (박기남님 요청)
