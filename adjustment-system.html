@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.70">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.71">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.70">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.71">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.70</title>
+<title>수업기록표 정산 시스템 v14.71</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -912,6 +912,166 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 </style>
 <style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
 <body>
+
+<!-- ══════════════════════════════════
+ v14.71: 첫 진입 픽셀 로딩 스플래시 (이루리 실버 아카데미)
+ - body 최상단 인라인 → 즉시 표시(흰 화면 깜빡임 가림)
+ - 노부부가 나무까지 걸어가며 로딩바 채움 → 초기화 완료(window load) 시 100% 도착 후 페이드아웃
+ - 안전장치: 최대 6초 후 강제 제거
+══════════════════════════════════ -->
+<style id="iruri-splash-style">
+#iruriSplash{position:fixed;inset:0;z-index:999999;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:linear-gradient(#fff6e8 0%,#ffe9cc 48%,#ffd9ad 100%);font-family:ui-monospace,'DM Mono',monospace;transition:opacity .5s ease;}
+#iruriSplash.iruri-hide{opacity:0;pointer-events:none;}
+#iruriSplash .iruri-sun{position:absolute;top:12%;left:50%;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,184,.95),rgba(255,236,184,0) 70%);}
+#iruriSplash .iruri-cloud{position:absolute;background:#fffaf2;border-radius:16px;opacity:.85;box-shadow:0 6px 0 #ffe9cf;}
+#iruriSplash .iruri-cloud.a{width:96px;height:26px;top:20%;animation:iruri-drift 26s linear infinite;}
+#iruriSplash .iruri-cloud.b{width:64px;height:20px;top:30%;animation:iruri-drift 36s linear infinite reverse;}
+@keyframes iruri-drift{from{left:-18%}to{left:118%}}
+#iruriSplash .iruri-title{position:relative;z-index:2;text-align:center;padding:0 12px;}
+#iruriSplash .iruri-title h1{font-size:28px;font-weight:800;letter-spacing:1px;color:#4a7a34;text-shadow:2px 2px 0 #fff,4px 4px 0 rgba(120,90,40,.18);}
+#iruriSplash .iruri-title .iruri-sub{margin-top:8px;font-size:12px;letter-spacing:4px;color:#a9824f;}
+#iruriSplash .iruri-field{position:relative;z-index:2;width:min(560px,92vw);height:170px;}
+#iruriSplash .iruri-grass{position:absolute;left:0;right:0;bottom:0;height:26px;background:linear-gradient(#86c46f 0 9px,#6fb05a 9px 14px,#9c6b3e 14px 100%);border-radius:4px;}
+#iruriSplash .iruri-tree{position:absolute;right:6px;bottom:18px;width:92px;z-index:2;}
+#iruriSplash .iruri-tree svg{width:100%;height:auto;display:block;filter:drop-shadow(0 5px 0 rgba(120,70,20,.16));}
+#iruriSplash .iruri-couple{position:absolute;bottom:14px;left:6px;z-index:3;}
+#iruriSplash .iruri-couple svg{height:116px;width:auto;display:block;filter:drop-shadow(0 4px 0 rgba(120,70,20,.18));}
+#iruriSplash .iruri-walkbob{animation:iruri-bob .5s steps(2,jump-none) infinite alternate;transform-origin:50% 100%;}
+@keyframes iruri-bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+#iruriSplash .iruri-legA{animation:iruri-lA .5s steps(1) infinite;}
+#iruriSplash .iruri-legB{animation:iruri-lB .5s steps(1) infinite;}
+@keyframes iruri-lA{0%,49%{transform:translateX(-2.5px)}50%,100%{transform:translateX(2.5px)}}
+@keyframes iruri-lB{0%,49%{transform:translateX(2.5px)}50%,100%{transform:translateX(-2.5px)}}
+#iruriSplash .iruri-barwrap{position:relative;z-index:2;width:min(560px,92vw);}
+#iruriSplash .iruri-bar{height:24px;background:#efe6d2;border:3px solid #6b5a3e;border-radius:6px;padding:3px;box-shadow:0 3px 0 #cbb88f,inset 0 2px 0 rgba(0,0,0,.06);}
+#iruriSplash .iruri-fill{height:100%;width:0%;border-radius:3px;background:repeating-linear-gradient(90deg,#74b85c 0 9px,#67aa50 9px 11px);transition:width .14s steps(4);}
+#iruriSplash .iruri-pct{margin-top:12px;text-align:center;font-size:14px;font-weight:700;color:#7a5a2c;letter-spacing:.5px;text-shadow:1px 1px 0 #fff;}
+#iruriSplash .iruri-dots::after{content:'';animation:iruri-dots 1.2s steps(4,end) infinite;}
+@keyframes iruri-dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+@media(max-width:600px){#iruriSplash .iruri-title h1{font-size:22px;}#iruriSplash{gap:14px;}}
+@media(prefers-reduced-motion:reduce){#iruriSplash .iruri-walkbob,#iruriSplash .iruri-legA,#iruriSplash .iruri-legB,#iruriSplash .iruri-cloud{animation:none;}}
+</style>
+<div id="iruriSplash" role="status" aria-label="이루리 실버 아카데미 로딩 중">
+  <div class="iruri-sun"></div>
+  <div class="iruri-cloud a"></div>
+  <div class="iruri-cloud b"></div>
+  <div class="iruri-title"><h1>🌳 이루리 실버 아카데미</h1><div class="iruri-sub">수업기록표 정산 시스템</div></div>
+  <div class="iruri-field">
+    <div class="iruri-grass"></div>
+    <div class="iruri-tree">
+      <svg viewBox="0 0 64 80" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="8" y="14" width="48" height="30" fill="#5fa84e"/>
+        <rect x="14" y="6" width="36" height="12" fill="#6fbf5a"/>
+        <rect x="2" y="22" width="10" height="16" fill="#5fa84e"/>
+        <rect x="52" y="22" width="10" height="16" fill="#5fa84e"/>
+        <rect x="20" y="2" width="24" height="8" fill="#7cce67"/>
+        <rect x="16" y="10" width="14" height="8" fill="#82d06d"/>
+        <rect x="8" y="38" width="48" height="6" fill="#4e8c3f"/>
+        <rect x="18" y="20" width="4" height="4" fill="#e85d6a"/>
+        <rect x="40" y="28" width="4" height="4" fill="#e85d6a"/>
+        <rect x="30" y="16" width="4" height="4" fill="#e85d6a"/>
+        <rect x="27" y="44" width="10" height="30" fill="#8a5a2c"/>
+        <rect x="29" y="48" width="3" height="22" fill="#6e4622"/>
+        <rect x="20" y="72" width="24" height="4" fill="#6fb05a"/>
+      </svg>
+    </div>
+    <div class="iruri-couple" id="iruriCouple">
+      <svg class="iruri-walkbob" viewBox="0 0 92 64" shape-rendering="crispEdges" aria-hidden="true">
+        <g>
+          <rect x="6" y="13" width="22" height="7" fill="#ededed"/>
+          <rect x="6" y="20" width="5" height="10" fill="#ededed"/>
+          <rect x="11" y="16" width="17" height="15" fill="#f1c9a5"/>
+          <rect x="28" y="21" width="3" height="5" fill="#f1c9a5"/>
+          <rect x="9" y="23" width="3" height="4" fill="#e3b890"/>
+          <circle cx="24" cy="24" r="4" fill="#dff0ff" stroke="#4a4a4a" stroke-width="1.6"/>
+          <rect x="12" y="23" width="8" height="1.5" fill="#4a4a4a"/>
+          <rect x="23" y="23" width="2" height="2" fill="#3a3a3a"/>
+          <rect x="22" y="29" width="9" height="2" fill="#cfcfcf"/>
+          <rect x="10" y="31" width="18" height="14" fill="#7a5230"/>
+          <rect x="22" y="31" width="7" height="14" fill="#e8dcc0"/>
+          <rect x="22" y="31" width="7" height="2" fill="#f4f4ee"/>
+          <rect x="25" y="35" width="2" height="2" fill="#5a4a35"/>
+          <rect x="25" y="39" width="2" height="2" fill="#5a4a35"/>
+          <rect x="20" y="33" width="4" height="9" fill="#7a5230"/>
+          <rect x="21" y="42" width="3" height="3" fill="#f1c9a5"/>
+          <rect x="27" y="42" width="2" height="16" fill="#8a5a2c"/>
+          <rect x="25" y="42" width="4" height="2" fill="#8a5a2c"/>
+          <g class="iruri-legB"><rect x="12" y="45" width="6" height="15" fill="#454a59"/><rect x="11" y="60" width="11" height="3" fill="#30303a"/></g>
+          <g class="iruri-legA"><rect x="20" y="45" width="6" height="15" fill="#4a4f5e"/><rect x="20" y="60" width="11" height="3" fill="#33333a"/></g>
+        </g>
+        <g transform="translate(27,3)">
+          <circle cx="8" cy="17" r="4" fill="#dcdcdc"/>
+          <rect x="6" y="13" width="22" height="7" fill="#e6e6e6"/>
+          <rect x="6" y="20" width="5" height="9" fill="#e6e6e6"/>
+          <rect x="11" y="16" width="17" height="15" fill="#ffd9b3"/>
+          <rect x="28" y="21" width="3" height="5" fill="#ffd9b3"/>
+          <circle cx="24" cy="24" r="3.6" fill="#fff3f8" stroke="#7a5a6a" stroke-width="1.5"/>
+          <rect x="12" y="23" width="9" height="1.5" fill="#7a5a6a"/>
+          <rect x="23" y="23" width="2" height="2" fill="#3a3a3a"/>
+          <rect x="22" y="28" width="3" height="2" fill="#ff9bb0"/>
+          <rect x="24" y="30" width="6" height="2" fill="#c97b62"/>
+          <rect x="10" y="31" width="18" height="14" fill="#c8a8e0"/>
+          <rect x="22" y="31" width="6" height="2" fill="#f3eaf7"/>
+          <rect x="14" y="36" width="2" height="2" fill="#fff0b3"/>
+          <rect x="18" y="40" width="2" height="2" fill="#fce4ec"/>
+          <rect x="15" y="42" width="2" height="2" fill="#fce4ec"/>
+          <rect x="10" y="45" width="18" height="8" fill="#9a9aa5"/>
+          <rect x="10" y="51" width="18" height="2" fill="#86868f"/>
+          <rect x="26" y="33" width="11" height="2.5" fill="#c8a8e0"/>
+          <rect x="36" y="32" width="3" height="3" fill="#ffd9b3"/>
+          <rect x="26" y="38" width="11" height="2.5" fill="#c8a8e0"/>
+          <rect x="36" y="38" width="3" height="3" fill="#ffd9b3"/>
+          <g class="iruri-legA"><rect x="13" y="53" width="5" height="4" fill="#ffd9b3"/><rect x="12" y="57" width="9" height="3" fill="#6b6b75"/></g>
+          <g class="iruri-legB"><rect x="20" y="53" width="5" height="4" fill="#ffd9b3"/><rect x="20" y="57" width="9" height="3" fill="#5d5d68"/></g>
+          <rect x="34" y="31" width="14" height="3" fill="#b8c0c8"/>
+          <rect x="34" y="31" width="3" height="3" fill="#6b7178"/>
+          <rect x="44" y="31" width="3" height="24" fill="#aeb6bf"/>
+          <rect x="37" y="34" width="3" height="21" fill="#9aa2ab"/>
+          <rect x="37" y="45" width="10" height="2" fill="#aeb6bf"/>
+          <circle cx="45" cy="57" r="4" fill="#3a3a3a"/><circle cx="45" cy="57" r="1.4" fill="#888"/>
+          <rect x="36" y="55" width="5" height="2" fill="#6b7178"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="iruri-barwrap">
+    <div class="iruri-bar"><div class="iruri-fill" id="iruriFill"></div></div>
+    <div class="iruri-pct">로딩 중<span class="iruri-dots"></span> <span id="iruriPctNum">0%</span></div>
+  </div>
+</div>
+<script>
+(function(){
+  var splash=document.getElementById('iruriSplash'); if(!splash) return;
+  var couple=document.getElementById('iruriCouple'),
+      field=splash.querySelector('.iruri-field'),
+      tree=splash.querySelector('.iruri-tree'),
+      fill=document.getElementById('iruriFill'),
+      pnum=document.getElementById('iruriPctNum');
+  var p=0, fin=false, creep=null;
+  function place(v){
+    var fw=field.clientWidth, cw=couple.offsetWidth, tw=tree.offsetWidth;
+    var s=6, e=Math.max(s, fw-tw-cw+6);
+    couple.style.left=(s+(e-s)*v/100)+'px';
+    fill.style.width=v+'%';
+    pnum.textContent=Math.floor(v)+'%';
+  }
+  place(0);
+  creep=setInterval(function(){ if(fin) return; p+=Math.max(0.5,(93-p)*0.05); if(p>93)p=93; place(p); },130);
+  function arrive(){
+    setTimeout(function(){
+      splash.classList.add('iruri-hide');
+      setTimeout(function(){ if(splash.parentNode) splash.parentNode.removeChild(splash); },650);
+    },420);
+  }
+  function finish(){
+    if(fin) return; fin=true; if(creep) clearInterval(creep);
+    var v=p, run=setInterval(function(){ v+=7; if(v>=100){ v=100; clearInterval(run); place(100); arrive(); } else place(v); },40);
+  }
+  if(document.readyState==='complete') setTimeout(finish,400);
+  else window.addEventListener('load', function(){ setTimeout(finish,400); });
+  setTimeout(finish, 6000);
+})();
+</script>
 
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
@@ -3405,7 +3565,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.70';
+const SYSTEM_VERSION='v14.71';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
