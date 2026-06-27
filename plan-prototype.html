@@ -71,16 +71,6 @@
     <div class="scroll"><div id="planBody"></div></div>
   </div>
 
-  <!-- 계획표 정보 (수정 가능) -->
-  <div class="card noprint">
-    <div class="secttl">계획표 정보 (수정 가능)</div>
-    <div class="row">
-      <div class="field"><label>프로그램명</label><input id="program" type="text" value="실버 도구 레크레이션" style="width:200px;"></div>
-      <div class="field"><label>일시</label><input id="ilsi" type="text" value="매주 수요일" style="width:200px;"></div>
-      <div class="field"><label>진행자</label><input id="teacher" type="text" value="박기남 강사" style="width:200px;"></div>
-    </div>
-  </div>
-
 <script>
 /* ── 26주 순환 활동 카탈로그 (활동목록 탭 행 순서 그대로) ── */
 const CATALOG = [
@@ -113,7 +103,6 @@ const CATALOG = [
 ];
 const WD = ['일','월','화','수','목','금','토'];
 let view = 'month';
-let _autoIlsi = '매주 수요일';  // 시작일 요일로 자동 채운 값(사용자가 직접 고치면 유지)
 
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -192,16 +181,9 @@ function setView(v){
 function render(){
   const weeks = buildWeeks();
   refreshMonthOptions(weeks);
-  // 시작일 요일 → 일시 자동(사용자가 직접 고쳤으면 유지)
+  // 시작일 요일 → 일시 자동
   const sd = new Date(document.getElementById('startDate').value+'T00:00:00');
-  const newAuto = '매주 '+WD[sd.getDay()]+'요일';
-  const ilsiEl = document.getElementById('ilsi');
-  if(ilsiEl.value.trim()==='' || ilsiEl.value===_autoIlsi) ilsiEl.value = newAuto;
-  _autoIlsi = newAuto;
-  // 메타 반영
-  document.getElementById('mProgram').textContent = document.getElementById('program').value || '실버 도구 레크레이션';
-  document.getElementById('mIlsi').textContent = ilsiEl.value || newAuto;
-  document.getElementById('mTeacher').textContent = document.getElementById('teacher').value || '';
+  document.getElementById('mIlsi').textContent = '매주 '+WD[sd.getDay()]+'요일';
   const center = document.getElementById('center').value;
   if(view==='year'){
     document.getElementById('planTitle').textContent = `${center} · 2026년 연간 계획표 (1~52주)`;
@@ -219,7 +201,7 @@ function render(){
   const sel=document.getElementById('firstAct');
   sel.innerHTML = CATALOG.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
   sel.value='스카프'; // 시트 예시(2026 시작 = 스카프)
-  ['firstAct','startDate','center','program','ilsi','teacher'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+  ['firstAct','startDate','center'].forEach(id=>document.getElementById(id).addEventListener('input',render));
   document.getElementById('monthPick').addEventListener('change',render);
   render();
 })();
