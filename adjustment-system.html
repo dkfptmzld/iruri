@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.78">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.79">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.78">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.79">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.78</title>
+<title>수업기록표 정산 시스템 v14.79</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2382,7 +2382,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    </div>
    <div style="display:flex;gap:6px;">
     <button class="btn sm" onclick="renderSubmissionsView()" style="gap:4px;">🔄 새로고침</button>
-    <button class="btn sm" onclick="recoverSubmissionsUI()" title="GAS 제출이력에서 최신 2026년 월 제출 기록을 정산 데이터로 복구" style="gap:4px;background:#FEF3C7;color:#92400E;border-color:#FCD34D;font-weight:600;">🛟 제출데이터 복구</button>
+    <button class="btn sm" onclick="recoverSubmissionsUI()" title="GAS 제출이력에서 최신 2026년 월 제출 기록표를 대기중으로 불러옵니다" style="gap:4px;background:#FEF3C7;color:#92400E;border-color:#FCD34D;font-weight:600;">📥 제출 기록표 불러오기</button>
     <button class="btn sm primary" onclick="_applyAllSubs()" id="applyAllBtn" style="gap:4px;">✅ 전체 반영</button>
    </div>
   </div>
@@ -3562,7 +3562,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.78';
+const SYSTEM_VERSION='v14.79';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4647,15 +4647,16 @@ function _forceLoadMismatchedSnap(){
 }
 
 /**
- * v14.78: 제출데이터 복구 — 기록표 관리 버튼 핸들러(확인 다이얼로그).
- * GAS 저장은 됐지만 오류로 제출이력/정산에서 사라진 데이터를, 제출이력에서 되살린다.
+ * v14.79: 제출 기록표 불러오기 — 기록표 관리 버튼 핸들러(확인 다이얼로그).
+ * GAS 저장은 됐지만 오류로 제출데이터(대기중)에서 사라진 기록표를, 제출이력에서 찾아
+ * 기록표 관리 '대기중'으로 불러온다. (정산 탭으로 보내지 않음 — 검토 후 '반영하기'로 반영)
  */
 function recoverSubmissionsUI(){
  showConfirm({
-  icon:'🛟',
-  title:'제출데이터 복구',
-  desc:'GAS 제출이력에서 <b>가장 최근 2026년 월</b>의 제출 기록을 찾아 해당 월 정산 데이터에 복구합니다.<br><span style="font-size:12px;color:#9B9888;">전체 월이 아니라 최신 1개월만 · 기존 데이터는 강사 이름 기준으로 병합(추가/갱신, 삭제 없음)합니다.</span>',
-  okText:'복구하기',
+  icon:'📥',
+  title:'제출 기록표 불러오기',
+  desc:'GAS 제출이력에서 <b>가장 최근 2026년 월</b>의 제출 기록표를 찾아 <b>대기중</b> 목록으로 불러옵니다.<br><span style="font-size:12px;color:#9B9888;">전체 월이 아니라 최신 1개월만 · 불러온 뒤 각 카드의 \'반영하기\'로 정산에 반영하세요.</span>',
+  okText:'불러오기',
   okStyle:'primary',
   cancelText:'취소',
   onOk:()=>recoverSubmissionsFromHistory()
@@ -4663,11 +4664,11 @@ function recoverSubmissionsUI(){
 }
 
 /**
- * v14.78: GAS 제출이력(getHistory __all__)에서 '최신 2026년 월'의 제출 기록을 찾아
- * 해당 월 정산 스냅샷에 강사 이름 기준 업서트 병합 후 저장(local+GAS) → 정산 탭으로 이동.
+ * v14.79: GAS 제출이력(getHistory __all__)에서 '최신 2026년 월'의 제출 기록표를 찾아
+ * 기록표 관리 '대기중' 목록(_subPendingData)에 추가하고 렌더. 정산 반영은 기존 '반영하기' 흐름으로.
  */
 async function recoverSubmissionsFromHistory(){
- showToast('제출이력에서 복구 중...');
+ showToast('제출이력에서 불러오는 중...');
  let r;
  try{ r = await gasGet({ action:'getHistory', teacher:'__all__' }); }
  catch(e){ showToast('제출이력 조회 실패 — 네트워크를 확인해주세요'); return; }
@@ -4689,35 +4690,26 @@ async function recoverSubmissionsFromHistory(){
  const recovered = Array.from(byName.values()).map(h=>({ ...h, yearMonth: targetYM }));
  if(!recovered.length){ showToast(`${targetYM} 제출이력이 없어요`); return; }
 
- // 기존 월 스냅샷과 병합(이름 업서트: 복구분이 우선이되, 복구분에 없는 필드는 기존값 보존)
- const key = MONTHLY_KEY_PREFIX + targetYM.replace(/\s/g,'_');
- let existing = [];
- try{ const raw=localStorage.getItem(key); const p=raw?JSON.parse(raw):null; existing = (p && p.data && p.data.teachers) || []; }catch(e){}
- const merged = existing.slice();
- let added=0, updated=0;
- recovered.forEach(rec=>{
-  const i = merged.findIndex(t=>t.name===rec.name);
-  if(i>=0){ merged[i] = { ...merged[i], ...rec }; updated++; }
-  else { merged.push(rec); added++; }
- });
- const data = { teachers: _normFeePct(merged), fileName:'강사 제출 데이터' };
- saveMonthlySnapshot(targetYM, data, true);
+ // 기존 '대기중'(getSubmissions)과 병합 — 같은 강사·월이 이미 대기중이면 중복 추가 안 함
+ if(!Array.isArray(_subPendingData)) _subPendingData = [];
+ const existKeys = new Set(_subPendingData.map(s=>`${s.name}|${_normYM(s.yearMonth)}`));
+ const addList = recovered.filter(s=>!existKeys.has(`${s.name}|${targetYM}`));
+ _subPendingData = [..._subPendingData, ...addList];
 
- // 정산 탭으로 이동 + 해당 월 로드(세션 캐시 무시하고 새로 렌더)
- const ymm = targetYM.match(/(\d+)년\s*(\d+)월/);
- if(ymm){
-  const yEl=document.getElementById('sbYear'), mEl=document.getElementById('sbMonth');
-  if(yEl) yEl.value = ymm[1];
-  if(mEl) mEl.value = String(parseInt(ymm[2],10));
- }
- try{ if(typeof _sessionLoadedMonths!=='undefined' && _sessionLoadedMonths.delete) _sessionLoadedMonths.delete(targetYM); }catch(e){}
- try{ switchView('settle'); }catch(e){}
- try{ loadMonthlySnapshot(targetYM); }catch(e){}
+ // 대기중 목록/뱃지/카운트 갱신 + 대기중 탭으로 (정산 탭 이동 없음)
+ const pendingEl = document.getElementById('subPendingList');
+ if(pendingEl) pendingEl.innerHTML = _renderSubPendingList(_subPendingData);
+ const badge = document.getElementById('submissionsBadge');
+ if(badge){ badge.textContent=_subPendingData.length; badge.style.display=_subPendingData.length>0?'block':'none'; }
+ const countEl = document.getElementById('subPendingCount');
+ if(countEl) countEl.textContent = _subPendingData.length;
+ try{ switchSubTab('pending'); }catch(e){}
 
+ const dup = recovered.length - addList.length;
  showConfirm({
-  icon:'🛟',
-  title:'제출데이터 복구 완료',
-  desc:`<b>${targetYM}</b> 제출이력에서 <b>${recovered.length}명</b>을 복구했어요.<br><span style="font-size:12px;color:#9B9888;">신규 ${added}명 · 갱신 ${updated}명 · 정산 탭으로 이동합니다.</span>`,
+  icon:'📥',
+  title:'제출 기록표 불러오기 완료',
+  desc:`<b>${targetYM}</b> 제출이력에서 <b>${addList.length}명</b>의 기록표를 대기중으로 불러왔어요.${dup>0?`<br><span style="font-size:12px;color:#9B9888;">이미 대기중인 ${dup}명은 제외.</span>`:''}<br><span style="font-size:12px;color:#9B9888;">각 카드의 \'반영하기\'(또는 전체 반영)로 정산에 반영하세요.</span>`,
   okText:'확인', okStyle:'primary', cancelText:''
  });
 }
