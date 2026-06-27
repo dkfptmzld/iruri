@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.72">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.73">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.72">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.73">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.72</title>
+<title>수업기록표 정산 시스템 v14.73</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3565,7 +3565,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.72';
+const SYSTEM_VERSION='v14.73';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4585,6 +4585,23 @@ function _normFeePct(teachers){
 // 세션 캐시: 이번 접속에서 이미 GAS에서 확인한 월 목록
 const _sessionLoadedMonths = new Set();
 
+/**
+ * v14.73: 연월 문자열을 "YYYY년 M월"로 정규화 (오염 감지 오판 방지).
+ * "2026년 06월", 후행 공백, "2026-06", Date 문자열 등 다양한 포맷을 동일 표기로 통일.
+ * 파싱 불가 시 빈 문자열 반환(→ 오염 판정에서 제외).
+ */
+function _normYM(s){
+ if(s==null) return '';
+ s = String(s).trim();
+ let m = s.match(/(\d{4})\s*년\s*(\d{1,2})\s*월/);
+ if(m) return `${m[1]}년 ${parseInt(m[2],10)}월`;
+ m = s.match(/(\d{4})[-/.]\s*(\d{1,2})/);
+ if(m) return `${m[1]}년 ${parseInt(m[2],10)}월`;
+ const d = new Date(s);
+ if(!isNaN(d.getTime())) return `${d.getFullYear()}년 ${d.getMonth()+1}월`;
+ return '';
+}
+
 function loadMonthlySnapshot(ym){
  const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
  const raw = localStorage.getItem(key);
@@ -4657,10 +4674,17 @@ function loadMonthlySnapshot(ym){
    // v12.06: 박기남님 인사이트 — GAS가 잘못된 월 데이터 반환 시 자동 정리
    // 받은 데이터의 yearMonth가 요청한 ym과 다르면 잘못된 데이터로 판정
    const receivedTeachers = r.data?.teachers || [];
-   const mismatched = receivedTeachers.filter(t => t.yearMonth && t.yearMonth !== ym);
+   // v14.73: 포맷 차이("2026년 06월"·공백·Date 문자열 등)로 인한 오염 오판 방지 →
+   //         양쪽 yearMonth를 정규화해서 '진짜로 다른 월'일 때만 오염으로 판정.
+   //         파싱 불가(빈 문자열)한 yearMonth는 mismatch에서 제외(보수적: 로드 우선).
+   const _ymWant = _normYM(ym);
+   const mismatched = receivedTeachers.filter(t => {
+    const got = _normYM(t.yearMonth);
+    return got && _ymWant && got !== _ymWant;
+   });
    if(receivedTeachers.length > 0 && mismatched.length === receivedTeachers.length){
-    // 받은 강사 전체가 다른 월 → GAS 오염 (4월 데이터가 5월에 저장된 상태)
-    const wrongYm = mismatched[0].yearMonth;
+    // 받은 강사 전체가 (정규화 후에도) 다른 월 → GAS 오염 (예: 5월 데이터가 6월에 저장된 상태)
+    const wrongYm = _normYM(mismatched[0].yearMonth) || mismatched[0].yearMonth;
     console.warn(`⚠️ GAS 오염 감지: 요청=${ym}, 받음=${wrongYm} (${receivedTeachers.length}명 모두)`);
     showToast(`⚠️ ${ym} GAS 데이터 오류 — 로컬로 자동 정리 중...`);
     // 로컬에 올바른 데이터가 있으면 GAS에 강제 덮어쓰기 (정리)
