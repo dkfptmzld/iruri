@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.87">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.88">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.87">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.88">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.87</title>
+<title>수업기록표 정산 시스템 v14.88</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1324,6 +1324,34 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
 </div>
 
+<!-- v14.88: 공지하기 모달 -->
+<div id="noticeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10002;align-items:center;justify-content:center;padding:16px;">
+ <div style="background:white;border-radius:20px;width:100%;max-width:420px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.2);">
+  <div style="text-align:center;margin-bottom:20px;">
+   <div style="font-size:36px;margin-bottom:8px;">📢</div>
+   <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px;">강사 공지하기</div>
+   <div style="font-size:13px;color:#888;">올리면 강사 로그인 시 1회 확인 팝업이 떠요</div>
+  </div>
+  <!-- 현재 공지 상태 -->
+  <div id="noticeStatus" style="font-size:12px;color:#666;background:#f8f7f2;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;">현재 게시 중인 공지가 없어요</div>
+  <!-- 제목(선택) -->
+  <div style="margin-bottom:12px;">
+   <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;display:block;">제목 <span style="font-weight:400;color:#aaa;">(선택)</span></label>
+   <input type="text" id="noticeTitle" maxlength="40" placeholder="예) 6월 정산 안내" style="width:100%;border:1px solid #e2e0d8;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;box-sizing:border-box;outline:none;">
+  </div>
+  <!-- 내용 -->
+  <div style="margin-bottom:20px;">
+   <label style="font-size:12px;font-weight:600;color:#666;margin-bottom:6px;display:block;">공지 내용</label>
+   <textarea id="noticeMsg" rows="4" placeholder="강사에게 전달할 공지 내용을 입력하세요." style="width:100%;border:1px solid #e2e0d8;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;outline:none;"></textarea>
+  </div>
+  <div style="display:flex;gap:10px;">
+   <button onclick="document.getElementById('noticeModal').style.display='none'" style="flex:1;height:44px;border:1px solid #ddd;border-radius:10px;background:white;cursor:pointer;font-size:14px;font-family:inherit;">취소</button>
+   <button id="noticeClearBtn" onclick="clearNotice()" style="flex:1;height:44px;border:1px solid #E05252;border-radius:10px;background:white;color:#E05252;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;display:none;">공지 내리기</button>
+   <button onclick="saveNotice()" style="flex:2;height:44px;border:none;border-radius:10px;background:#7B3FA0;color:white;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;">공지 올리기</button>
+  </div>
+ </div>
+</div>
+
 <!-- v11.30: 점검 화면 -->
 <div id="maintenanceScreen" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#f7faf4,#e8f5e2,#d4edda);z-index:9998;align-items:center;justify-content:center;padding:20px;">
  <div style="text-align:center;max-width:400px;width:100%;">
@@ -1614,6 +1642,10 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 <!-- v11.30: 점검 모드 버튼 -->
 <button id="maintenanceBtn" onclick="openMaintenanceModal()" title="점검 모드 설정" class="btn" style="font-size:12px;background:#E65100;color:white;border-color:#E65100;font-weight:600;display:flex;align-items:center;gap:4px;">
  🔧 점검 모드
+</button>
+<!-- v14.88: 공지하기 버튼 -->
+<button id="noticeBtn" onclick="openNoticeModal()" title="강사 공지 작성 (로그인 시 1회 표시)" class="btn" style="font-size:12px;background:#7B3FA0;color:white;border-color:#7B3FA0;font-weight:600;display:flex;align-items:center;gap:4px;">
+ 📢 공지하기
 </button>
 <span id="syncStatusChip" style="display: inline-flex; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; background: rgb(232, 245, 238); color: rgb(26, 122, 80); border: 1px solid rgb(184, 224, 204); gap: 4px; align-items: center;">✅ 6/4 오후 07:48 · 강사 33명 · 센터 297개</span>
 <!-- v12.47: 다크모드·글자크기 버튼 제거 (박기남님 요청) -->
@@ -3495,7 +3527,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.87';
+const SYSTEM_VERSION='v14.88';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10450,7 +10482,8 @@ function loginSuccess(name){
    localStorage.setItem('iruri_notified_settle_'+name, JSON.stringify(already));
   }).catch(()=>{});
  showLanding();
- // v14.74: 알림 기능 미사용 — FCM 알림 동의 팝업 제거
+ // v14.88: 게시 중인 공지가 있으면 로그인 시 1회 확인 팝업
+ _maybeShowNoticeOnLogin();
 }
 
 async function doSignup(){
@@ -17970,6 +18003,78 @@ function saveMaintenanceSettings(){
   .catch(() => {
    showToast((on ? '🔧 점검 모드 ON' : '✅ 점검 모드 OFF') + ' — ⚠️ GAS 저장 실패 (이 기기에만 적용됨)');
   });
+}
+
+/* ═══ v14.88: 강사 공지 (로그인 시 1회 확인 팝업) ═══ */
+const NOTICE_KEY = 'iruri_notice';            // localStorage 캐시
+const NOTICE_SEEN_KEY = 'iruri_notice_seen';  // 이 기기에서 마지막으로 확인한 공지 id
+
+function _loadNotice(){
+ try{ return JSON.parse(localStorage.getItem(NOTICE_KEY)||'{}'); }catch{ return {}; }
+}
+
+// 공지 모달 열기 — 현재 게시 중인 공지가 있으면 채워서 보여줌
+function openNoticeModal(){
+ const n = _loadNotice();
+ const active = !!(n && n.on && n.message);
+ const titleEl = document.getElementById('noticeTitle');
+ const msgEl = document.getElementById('noticeMsg');
+ const statusEl = document.getElementById('noticeStatus');
+ const clearBtn = document.getElementById('noticeClearBtn');
+ if(titleEl) titleEl.value = active ? (n.title||'') : '';
+ if(msgEl)   msgEl.value   = active ? (n.message||'') : '';
+ if(active){
+  const when = n.updatedAt ? new Date(n.updatedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+  if(statusEl) statusEl.innerHTML = '🟢 게시 중' + (when?(' · '+when):'') + '<br><span style="color:#999;">강사가 로그인하면 1회 표시됩니다</span>';
+  if(clearBtn) clearBtn.style.display = '';
+ } else {
+  if(statusEl) statusEl.textContent = '현재 게시 중인 공지가 없어요';
+  if(clearBtn) clearBtn.style.display = 'none';
+ }
+ document.getElementById('noticeModal').style.display = 'flex';
+}
+
+// 공지 올리기 — 새 id 발급(이전에 확인한 강사도 다시 1회 보게 됨)
+function saveNotice(){
+ const title = document.getElementById('noticeTitle').value.trim();
+ const message = document.getElementById('noticeMsg').value.trim();
+ if(!message){ showToast('공지 내용을 입력해주세요'); return; }
+ const now = new Date().toISOString();
+ const notice = { id: now, on: true, title, message, updatedAt: now };
+ localStorage.setItem(NOTICE_KEY, JSON.stringify(notice));
+ document.getElementById('noticeModal').style.display = 'none';
+ gasPost({ action:'saveSystemSettings', settings:{ notice: JSON.stringify(notice) } })
+  .then(()=> showToast('📢 공지를 올렸어요 — 강사 로그인 시 1회 표시됩니다'))
+  .catch(()=> showToast('📢 공지 저장됨 — ⚠️ GAS 저장 실패(이 기기에만 적용)'));
+}
+
+// 공지 내리기 — on:false 로 비활성화
+function clearNotice(){
+ const n = _loadNotice();
+ const now = new Date().toISOString();
+ const notice = { id:(n&&n.id)||now, on:false, title:'', message:'', updatedAt:now };
+ localStorage.setItem(NOTICE_KEY, JSON.stringify(notice));
+ document.getElementById('noticeModal').style.display = 'none';
+ gasPost({ action:'saveSystemSettings', settings:{ notice: JSON.stringify(notice) } })
+  .then(()=> showToast('✅ 공지를 내렸어요'))
+  .catch(()=> showToast('✅ 공지 내림 — ⚠️ GAS 저장 실패(이 기기에만 적용)'));
+}
+
+// 로그인 직후: 게시 중인 공지가 있고 이 기기에서 아직 안 봤으면 1회 팝업
+function _maybeShowNoticeOnLogin(){
+ gasGet({ action:'getSystemSettings' }).then(r=>{
+  if(!r.ok || !r.data || r.data.notice===undefined) return;
+  let notice;
+  try{ notice = JSON.parse(r.data.notice); }catch{ return; }
+  if(!notice || !notice.on || !notice.message) return;
+  localStorage.setItem(NOTICE_KEY, JSON.stringify(notice));
+  if(localStorage.getItem(NOTICE_SEEN_KEY) === String(notice.id)) return; // 이미 확인함
+  const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const body = escHtml(notice.message).split('\n').join('<br>');
+  const markSeen = ()=> localStorage.setItem(NOTICE_SEEN_KEY, String(notice.id));
+  showConfirm({ icon:'📢', title: notice.title || '공지사항', desc: body,
+   okText:'확인', okStyle:'primary', cancelText:'', onOk: markSeen, onCancel: markSeen });
+ }).catch(()=>{});
 }
 
 // 점검 화면 체크 (랜딩/강사 로그인 시)
