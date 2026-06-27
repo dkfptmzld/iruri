@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.80">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.82">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.80">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.82">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.80</title>
+<title>수업기록표 정산 시스템 v14.82</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3562,7 +3562,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.80';
+const SYSTEM_VERSION='v14.82';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4759,6 +4759,10 @@ function loadMonthlySnapshot(ym){
  const localSavedAt = localSnap?.savedAt && localSnap.savedAt !== 'GAS'
    ? new Date(localSnap.savedAt).getTime() : 0;
 
+ // v14.82: 자동 재태깅 제거 — 데이터(강사 yearMonth)를 자동으로 바꾸지 않음.
+ //   (잘못 이월된 데이터는 자동 라벨 변경 대신 삭제/수동복구로 처리. 로드 차단 해제는 GAS 경로의
+ //    '스냅샷 자체 월 판정'으로 유지됨.)
+
  // 먼저 로컬 데이터로 즉시 표시 (UX: 빠른 응답)
  if(localSnap?.data?.teachers){
   let d = localSnap.data;
@@ -4848,12 +4852,7 @@ function loadMonthlySnapshot(ym){
      </div>`;
     return;
    }
-   // v14.77: 정상 데이터 — 강사 태그가 이월(다른 월)이면 요청 월로 재태깅(표시/저장 정합성 + 다음 로드 정상화)
-   let _retag = 0;
-   if(Array.isArray(receivedTeachers)){
-    receivedTeachers.forEach(t=>{ const g=_normYM(t.yearMonth); if(g && g!==wantYM){ t.yearMonth = ym; _retag++; } });
-   }
-   if(_retag) console.log(`ℹ️ ${ym}: 이월 데이터 강사 ${_retag}명 yearMonth를 ${ym}로 정규화`);
+   // v14.82: 자동 재태깅 제거 — 데이터를 자동으로 바꾸지 않음(차단 해제만 위 snapYM 판정으로 유지).
    const gasSavedAt = r.savedAt ? new Date(r.savedAt).getTime() : 0;
    const gasTeacherCount = r.data?.teachers?.length || 0;
    const localTeacherCount = localSnap?.data?.teachers?.length || 0;
