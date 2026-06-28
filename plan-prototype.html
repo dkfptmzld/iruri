@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>실버 레크레이션 계획표 (프로토타입)</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{--green:#1A7A50;--green2:#2E7D32;--bg:#F7FBF4;--surface:#fff;--border:#E2E0D8;--text1:#1a1a1a;--text2:#555;--text3:#9B9888;--head:#EAF3E2;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',sans-serif;background:var(--bg);color:var(--text1);padding:18px;line-height:1.5;}
+  h1{font-size:20px;font-weight:800;color:#1a4a2e;margin-bottom:2px;}
+  .sub{font-size:12px;color:var(--text3);margin-bottom:16px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(26,122,80,.05);}
+  .row{display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:11px;font-weight:700;color:var(--text2);}
+  .field input,.field select{height:38px;border:1.5px solid var(--border);border-radius:9px;padding:0 10px;font-size:14px;font-family:inherit;outline:none;background:#fff;}
+  .field input:focus,.field select:focus{border-color:var(--green);}
+  .seg{display:inline-flex;border:1.5px solid var(--green);border-radius:10px;overflow:hidden;}
+  .seg button{border:none;background:#fff;color:var(--green);font-size:13px;font-weight:700;padding:9px 18px;cursor:pointer;font-family:inherit;}
+  .seg button.on{background:var(--green);color:#fff;}
+  .btn{height:38px;border:1.5px solid var(--green);background:var(--green);color:#fff;border-radius:9px;font-size:13px;font-weight:700;padding:0 16px;cursor:pointer;font-family:inherit;}
+  .btn.ghost{background:#fff;color:var(--green);}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;color:var(--text2);margin:2px 0 12px;}
+  .meta b{color:#1a4a2e;}
+  .secttl{font-size:13px;font-weight:800;color:#1a4a2e;margin-bottom:10px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff;}
+  th,td{border:1px solid #d9e4d2;padding:7px 9px;vertical-align:top;text-align:left;}
+  thead th{background:var(--head);color:#1a4a2e;font-weight:700;text-align:center;white-space:nowrap;position:sticky;top:0;}
+  td.c,th.c{text-align:center;white-space:nowrap;}
+  td.wk{font-weight:800;color:#7a5a10;background:#fffdf3;}
+  td.main{font-weight:800;color:#0f5a37;background:#f2f9ef;}
+  .scroll{overflow-x:auto;border-radius:10px;border:1px solid #d9e4d2;}
+  /* 월간 세로형 카드 */
+  .wcard{border:1px solid #d9e4d2;border-radius:10px;margin-bottom:12px;overflow:hidden;background:#fff;}
+  .wcard .wh{display:flex;align-items:center;gap:10px;background:var(--head);padding:8px 12px;}
+  .wcard .wh .wk2{font-weight:800;color:#7a5a10;font-size:13px;}
+  .wcard .wh .dt{font-size:12px;color:#557;}
+  .wcard .wh .mn{margin-left:auto;font-weight:800;color:#0f5a37;font-size:14px;background:#f2f9ef;border:1px solid #cfe6cf;border-radius:20px;padding:2px 14px;}
+  .wcard .wrow{display:grid;grid-template-columns:64px 1fr;border-top:1px solid #eef3ea;}
+  .wcard .wrow .wl{background:#fafcf8;font-size:12px;font-weight:700;color:#5a6a5a;padding:8px 10px;border-right:1px solid #eef3ea;text-align:center;}
+  .wcard .wrow .wv{padding:8px 12px;font-size:13px;line-height:1.55;}
+  .wcard .wrow .wv b{color:#0f5a37;}
+  @media print{ .wcard{break-inside:avoid;} }
+  @media print{
+    body{padding:0;background:#fff;}
+    .noprint{display:none!important;}
+    .card{border:none;box-shadow:none;padding:0;margin:0 0 10px;}
+    thead th{position:static;}
+    .scroll{border:none;}
+  }
+</style>
+</head>
+<body>
+  <h1>📅 실버 레크레이션 계획표 <span style="font-size:12px;color:#b23b3b;font-weight:700;">프로토타입</span></h1>
+  <div class="sub">1주차 메인활동 + 시작날짜만 정하면 26주 순환으로 자동 생성 · 날짜 +7일 자동</div>
+
+  <!-- 입력 -->
+  <div class="card noprint">
+    <div class="row">
+      <div class="field"><label>센터명</label><input id="center" type="text" value="○○노인복지센터" style="width:170px;"></div>
+      <div class="field"><label>1주차 메인활동</label><select id="firstAct" style="width:150px;"></select></div>
+      <div class="field"><label>시작 날짜 (1주차)</label><input id="startDate" type="date" value="2026-01-07"></div>
+      <div class="field">
+        <label>보기</label>
+        <div class="seg"><button id="segM" class="on" onclick="setView('month')">월간</button><button id="segY" onclick="setView('year')">연간</button></div>
+      </div>
+      <div class="field" id="monthPickWrap"><label>월 선택</label><select id="monthPick" style="width:130px;"></select></div>
+      <div class="field"><label>&nbsp;</label><button class="btn ghost" onclick="window.print()">🖨️ 인쇄 / PDF</button></div>
+    </div>
+  </div>
+
+  <!-- 출력 -->
+  <div class="card">
+    <div id="planTitle" style="font-size:15px;font-weight:800;color:#1a4a2e;margin-bottom:6px;"></div>
+    <div class="meta">
+      <span>프로그램명 <b id="mProgram">실버 도구 레크레이션</b></span>
+      <span>일시 <b id="mIlsi">매주 수요일</b></span>
+      <span>진행자 <b id="mTeacher">박기남 강사</b></span>
+      <span>대상 <b>센터 이용 어르신</b></span>
+    </div>
+    <div class="scroll"><div id="planBody"></div></div>
+  </div>
+
+<script>
+/* ── 26주 순환 활동 카탈로그 (활동목록 탭 행 순서 그대로) ── */
+const CATALOG = [
+ {name:`한삼`,      desc:`한삼을 이용한 활동으로 전래민요에 맞춰 강사와 함께 “아리랑“ 음악에 맞춰 탈춤을 추며 흥과 추억을 회상하는 활동`, a1:`삐에로바지`, m1:`훌라후프 바지, 바구니, 공`, a2:`럭비공 흔들기`, m2:`럭비공 모형, 공, 바구니`, goal:`한삼을 활용한 전통 춤 동작을 통해 시각과 촉각을 자극하며, 음악에 맞춘 신체 활동으로 인지 기능을 활성화하고 치매 예방에 도움을 준다.`},
+ {name:`응원수술`,   desc:`응원수술을 이용한 활동으로 “낭랑18세” 노래에 맞춰 치어리딩 동작을 배우는 활동`, a1:`큰공`, m1:`전기 에어건, 공`, a2:`도넛꿰기`, m2:`도넛, 줄, 바구니`, goal:`화려한 응원수술을 흔드는 규칙적인 운동을 통해 상지 근력을 강화하고, 리듬감을 익힘으로써 뇌세포를 자극하여 치매 예방을 도모한다.`},
+ {name:`선글라스`,   desc:`과일 선글라스를 이용한 활동으로 트위스트 동작을 배워 “울릉도 트위스트”와 “사랑의 트위스트” 노래에 맞춘 추억의 고고장 활동`, a1:`협동 병넘기기`, m1:`자갈 병, 줄 야구공`, a2:`핑거국수`, m2:`줄 감기 도구`, goal:`개성 있는 선글라스를 착용하고 트위스트 동작을 수행하며 자존감을 높이고, 과거의 기억을 회상하는 활동을 통해 인지 기능 유지 및 치매 예방에 기여한다.`},
+ {name:`캐스터네츠`, desc:`캐스터네츠를 이용한 활동으로 박자감있는 율동과 함께 “어부바” 노래에 맞춰 신나게 디스코를 배우는 활동`, a1:`실패감기`, m1:`막대 줄`, a2:`수박배달`, m2:`수박 공, 색깔 공, 줄 달린 바구니`, goal:`캐스터네츠를 이용한 소리 내기와 박자 맞추기 활동으로 소근육과 청각을 동시에 자극하며, 반복적인 학습을 통해 인지력을 향상시키고 치매를 예방한다.`},
+ {name:`리본`,      desc:`손 리본을 이용한 활동으로 간단한 리본동작을 배우고 “풍악을 울려라” 노래에 맞춰 흥겨운 리본율동을 배우는 활동`, a1:`화투 뿅망치`, m1:`화투 사진, 뽕망치`, a2:`깡통재기공`, m2:`깡통, 재기공`, goal:`손 리본을 활용한 다양한 율동 동작으로 시각과 촉각을 자극하며, 음악에 맞춘 신체 활동을 통해 인지 기능을 활성화하고 노인성 치매 예방에 도움을 준다.`},
+ {name:`태보`,      desc:`태보장갑을 이용한 활동으로 간단한 태권도와 복싱 기본동작을 배워 “아파트”와 “두주먹” 노래에 맞춰 흥겨운 태보댄스를 배우는 활동`, a1:`CD돌리기`, m1:`스프링 장난감, 원판`, a2:`원판 공 띄우기`, m2:`협동 원판, 재기공`, goal:`태보 장갑을 착용하고 규칙적인 태권도 및 복싱 동작을 수행함으로써 상지 근력을 강화하고, 리듬감을 익혀 뇌세포를 활발하게 자극하여 치매를 예방하고 인지력을 향상시킨다.`},
+ {name:`에그쉐이커`, desc:`에그쉐이커를 이용한 활동으로 양손에 들고 “마카레나”와 “한잔해” 노래에 맞춰 즐겁게 에그쉐이커를 연주하는 활동`, a1:`창과방패`, m1:`콩주머니, 바구니`, a2:`바닥빙고`, m2:`빙고 틀, 원반, 콩주머니`, goal:`에그쉐이커를 양손에 쥐고 음악의 박자에 맞춰 흔드는 리듬 악기 연주 활동을 통해 청각적 자극을 주고, 반복적인 박자 맞추기로 뇌세포를 활성화하여 인지 기능을 강화하고 치매를 예방한다.`},
+ {name:`깃발`,      desc:`오색깃발을 이용한 활동으로 양손에 깃발을 들고 “강강수월래”와 “월드컵송” 노래에 맞춰 함께 응원하는 활동`, a1:`판뒤집기`, m1:`원판`, a2:`삼각대 컵 넘기기`, m2:`컵, 막대, 지지대, 네트 판`, goal:`오색 깃발을 이용한 신체 표현과 응원 활동으로 소근육과 청각을 동시에 자극하며, 반복적인 학습과 상호작용을 통해 인지력을 강화하고 치매를 효과적으로 예방한다.`},
+ {name:`트라이앵글`, desc:`트라이앵글을 이용한 활동으로 기본적인 동작을 배우고 “땡벌” 노래에 맞춰 리듬감 있게 연주하는 활동`, a1:`곱창밴드`, m1:`밴드, 골프공, 바가지`, a2:`페트병 구슬빼기`, m2:`구슬 페트병`, goal:`트라이앵글을 이용한 박자 맞추기와 악기 연주 활동을 통해 청각적 자극을 극대화하며, 음악에 맞춘 리듬 활동으로 인지 기능을 활성화하고 치매 예방에 도움을 준다.`},
+ {name:`탬버린`,    desc:`탬버린을 이용한 활동으로 기본 율동 동작을 배우고 “춤추는탬버린” 노래에 맞춰 신나게 몸을 흔드는 활동`, a1:`고무신 던지기`, m1:`고무신, 과녁판, 바구니`, a2:`발종이접기`, m2:`코팅 종이`, goal:`탬버린을 흔들고 두드리는 활동을 통해 손과 팔의 근력을 강화하고, 신나는 율동을 병행함으로써 뇌세포를 자극하여 치매를 예방하고 인지력을 향상시킨다.`},
+ {name:`소고`,      desc:`소고를 이용한 활동으로 소고와 북채를 이용해 “님과함께”와 “쓰리랑” 노래에 맞춰 장단과 율동을 맞추는 활동`, a1:`팀빌딩`, m1:`협동 걸쇠 줄, 블럭`, a2:`컵 업앤다운`, m2:`컵`, goal:`소고와 북채를 활용해 전통 장단을 맞추는 과정에서 소근육을 자극하고, 노래에 맞춘 박자 조절 능력을 키워 인지 기능을 강화하며 노인성 치매 예방에 기여한다.`},
+ {name:`짝짝이`,    desc:`짝짝이를 이용한 활동으로 인지율동을 배우고 “나성에가면” 노래에 맞춰 짝짝이로 함께 응원하는 활동`, a1:`술통 줄빼기`, m1:`줄 담긴 술통`, a2:`접시 콩주머니`, m2:`접시, 콩주머니`, goal:`짝짝이를 활용한 인지 율동과 응원 활동으로 소리와 박자에 집중하게 함으로써 집중력을 높이고, 반복적인 학습과 상호작용을 통해 인지력을 개선하고 치매를 효과적으로 예방한다.`},
+ {name:`접시`,      desc:`색깔접시를 이용한 활동으로 양손에 하나씩 들고 “나는 행복합니다“와 “아빠의청춘” 노래에 맞춰 함께 접시율동을 배우는 활동`, a1:`오리발`, m1:`오리발, 김장 매트, 바구니`, a2:`헬멧 골대`, m2:`헬멧 골대`, goal:`색깔접시를 양손에 들고 음악에 맞춰 접시 율동을 배우는 활동을 통해 시각적 자극과 상지 근력을 강화하며, 규칙적인 동작 반복으로 인지 기능을 활성화하고 치매 예방에 도움을 준다.`},
+ {name:`경광봉`,    desc:`경광봉을 이용한 활동으로 댄스음악에 맞춰 인지율동을 배우고 “찐이야” 노래에 맞춰 신나는 율동을 배우는 활동`, a1:`코퍼밴드`, m1:`밴드, 바퀴 의자`, a2:`파라슈트`, m2:`원형 파라슈트 천`, goal:`경광봉을 활용한 시각적 효과와 인지 율동을 통해 주의 집중력을 높이고, 신나는 음악에 맞춰 몸을 흔드는 신체 활동으로 뇌세포를 자극하여 치매 예방 및 인지력 향상을 도모한다.`},
+ {name:`숟가락`,    desc:`숟가락악기를 이용한 활동으로 “닐리리맘보”와 “남행열차” 노래에 맞춰 함께하는 숟가락 난타 활동`, a1:`만보기`, m1:`만보기, 아대`, a2:`다람쥐잡기`, m2:`바구니, 방망이, 다람쥐 인형`, goal:`숟가락 악기를 이용한 난타 활동으로 리듬감을 익히고 청각 및 촉각 자극을 극대화하며, 노래에 맞춰 박자를 조절하는 과정을 통해 인지 기능을 강화하고 치매를 효과적으로 예방한다.`},
+ {name:`짤랑이`,    desc:`짤랑이를 이용한 활동으로 손목에 짤랑이를 착용하고 “짤랑짤랑”과 “꿍따리샤바라” 노래에 맞춰 댄스율동을 배우는 활동`, a1:`파리채`, m1:`파리채, 파리모형, 바구니`, a2:`뱀넘기기 발줄다리기`, m2:`긴 줄넘기 줄`, goal:`손목에 짤랑이를 착용하고 댄스 율동을 수행하며 소근육과 청각을 동시에 자극하고, 음악에 맞춘 지속적인 신체 표현 활동을 통해 인지력을 개선하며 노인성 치매 예방에 기여한다.`},
+ {name:`백업봉`,    desc:`백업봉을 이용한 활동으로 백업봉을 들고 “무조건”과 “초련” 노래에 맞춰 치어리딩 동작을 함께 배우는 활동`, a1:`봉투부채`, m1:`비닐 봉투, 부채, 거치대`, a2:`풍선테니스`, m2:`라켓, 풍선`, goal:`백업봉을 활용한 리듬 활동을 통해 청각 자극과 인지 기능 반응을 강화하고, 상·하지 협응을 통한 전신 운동으로 균형 능력과 두뇌 활성화, 치매 예방에 도움을 준다.`},
+ {name:`뿅망치`,    desc:`뿅망치를 이용한 활동으로 뿅망치를 들고 “하트뿅”과 “짝짝짝” 노래에 맞춰 함께 배우는 뿅망치 난타 활동`, a1:`인간두더지`, m1:`두더지 잡기 천, 낮은 의자`, a2:`물고기잡기`, m2:`올가미 막대, 물고기 모형`, goal:`뿅망치를 이용한 활동으로 시각·청각 자극을 동시에 유도하고, 리듬에 맞춘 동작 수행을 통해 집중력 향상, 인지 자극, 운동 반응 속도 증가, 두뇌 활성화를 돕는다.`},
+ {name:`장갑`,      desc:`반짝이 장갑을 이용한 활동으로 간단한 치어리딩 동작을 익히고 “짱가”와 “질풍가도” 노래에 맞춰 치어리딩을 함께 배우는 활동`, a1:`철가방`, m1:`철가방, 과일 야채 모형`, a2:`막대와 접시콘`, m2:`막대, 삼각대, 원형 접시`, goal:`손을 활용한 섬세한 움직임으로 소근육 발달과 인지 자극을 촉진하며, 반복적 리듬 동작을 통해 기억력 향상과 치매 예방, 주의 집중력 향상에 기여한다.`},
+ {name:`빨래판`,    desc:`빨래판 악기를 이용한 활동으로 기본 동작을 익히고 “내 나이가 어때서” 노래에 맞춰 함께 연주하는 빨래판 난타 활동`, a1:`수건&스카프 전달하기`, m1:`수건, 스카프`, a2:`컵 전달하기`, m2:`큰 컵, 작은 컵`, goal:`빨래판 난타 활동으로 상지 근력과 리듬 반응 속도를 향상시키고, 단체 리듬 활동을 통해 사회적 상호작용 능력 및 두뇌 활성화를 강화한다.`},
+ {name:`리듬스틱`,  desc:`리듬스틱을 이용한 활동으로 리듬스틱으로 기본박자를 배우고 틀어드리는 노래에 맞춰 악기를 연주하는 레크레이션 활동`, a1:`컵줍기`, m1:`컵, 막대 줄 페트병`, a2:`딸기따기`, m2:`빨래 건조대, 딸기 모형, 바구니`, goal:`리듬스틱을 양손에 쥐고 박자에 맞춰 두드리는 반복적 리듬 활동으로 집중력과 기억력을 향상시키고, 좌우 교차 동작을 통해 뇌를 균형적으로 자극하여 인지 기능 개선 및 노인성 치매 예방에 기여한다.`},
+ {name:`나무 핸드벨`,desc:`나무핸드벨을 이용한 활동으로 기본 동작을 익히고 “날봐귀순”과 “빵빵” 노래에 맞춰 흥겨운 연주곡 댄스를 배우는 활동`, a1:`리본 줄당기기`, m1:`리본 달린 줄, 거치대`, a2:`원판 줄당기기 (돼지잡기)`, m2:`돼지에 줄이 감긴 원형 틀`, goal:`나무 핸드벨을 활용한 연주 활동으로 청각 자극과 손의 협응력을 강화하고, 음악에 맞춘 리듬 활동을 통해 인지 기능 활성화와 치매 예방에 도움을 준다.`},
+ {name:`스카프`,    desc:`오색스카프를 이용한 활동으로 기본 동작을 익히고 “노란손수건”과 “찰랑찰랑” 노래에 맞춰 손수건 치어리딩을 배우는 활동`, a1:`접시방지턱`, m1:`줄 접시, 방지턱, 공, 바구니`, a2:`협동저울`, m2:`저울 거치대, 숟가락, 공, 바구니`, goal:`스카프를 활용한 부드러운 동작 활동으로 시각·촉각 자극과 인지 기능 활성화를 도모하고, 음악에 맞춘 움직임을 통해 두뇌와 신체의 협응 능력 및 치매 예방에 도움을 준다.`},
+ {name:`부채`,      desc:`부채를 이용한 활동으로 부채춤 동작을 익히고 “잘했군 잘했어”와 “사랑의 재개발” 노래에 맞춰 부채춤을 추는 활동`, a1:`전뒤집기`, m1:`부침개 사진, 원형 나무 판`, a2:`지압축구`, m2:`축구 골대, 가림막, 골프공, 바구니`, goal:`부채를 활용한 전통 동작 활동으로 기억력과 인지 기능 자극을 촉진하고, 리듬감 있는 움직임을 통해 두뇌 활성화와 신체 표현력 향상을 도모한다.`},
+ {name:`안마볼`,    desc:`안마볼을 이용한 활동으로 기본 동작을 익히고 “샤방샤방”과 “앗뜨거”에 안마볼 댄스를 배우는 활동`, a1:`안마활동`, m1:`안마볼`, a2:`옷걸이`, m2:`림보 대, 옷걸이, 옷걸이 봉`, goal:`안마볼을 활용한 신체 움직임으로 치매 예방과 인지 기능 자극을 돕고, 리듬감 있는 동작을 통해 정서적 안정과 즐거움을 느낄 수 있도록 한다.`},
+ {name:`샌드쉐이커`, desc:`샌드쉐이커를 이용한 활동으로 샌드쉐이커를 들고 “어젯밤이야기”와 “담다디” 노래에 맞춰 복고댄스를 배우는 활동`, a1:`기찻길 달리기`, m1:`기찻길`, a2:`협동고무줄`, m2:`소쿠리, 스티로폼 막대, 줄 달린 고무줄`, goal:`샌드셰이커를 활용한 리듬 활동으로 청각 자극과 집중력 향상을 유도하고, 음악과 함께하는 율동을 통해 인지 기능 유지와 자신감 회복을 돕는다.`},
+];
+const WD = ['일','월','화','수','목','금','토'];
+let view = 'month';
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmtDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x;}
+
+/* 1주차 활동+시작일 → 52주 순환 시퀀스 */
+function buildWeeks(){
+  const startName = document.getElementById('firstAct').value;
+  const startIdx = Math.max(0, CATALOG.findIndex(a=>a.name===startName));
+  const sd = new Date(document.getElementById('startDate').value+'T00:00:00');
+  const weeks=[];
+  for(let n=1;n<=52;n++){
+    weeks.push({ n, date: addDays(sd, 7*(n-1)), act: CATALOG[((startIdx+n-1)%26)] });
+  }
+  return weeks;
+}
+
+function renderYear(weeks){
+  const rows = weeks.map(w=>{
+    const a=w.act;
+    return `<tr>
+      <td class="c wk">${w.n}주차</td>
+      <td class="main c">${esc(a.name)}</td>
+      <td>${esc(a.desc)}</td>
+      <td class="c">${esc(a.a1)}</td><td>${esc(a.m1)}</td>
+      <td class="c">${esc(a.a2)}</td><td>${esc(a.m2)}</td>
+      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
+    </tr>`;
+  }).join('');
+  return `<table><thead><tr>
+    <th class="c">주차</th><th>메인활동</th><th>활동 설명</th>
+    <th>활동1</th><th>준비물</th><th>활동2</th><th>준비물</th><th class="c">예정일</th>
+   </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderMonth(weeks){
+  const ym = document.getElementById('monthPick').value; // 'YYYY-MM'
+  const inMonth = weeks.filter(w=>fmtDate(w.date).slice(0,7)===ym);
+  if(!inMonth.length) return `<div style="color:#9B9888;padding:24px;text-align:center;">해당 월에 수업이 없어요</div>`;
+  return inMonth.map((w,i)=>{
+    const a=w.act;
+    return `<div class="wcard">
+      <div class="wh">
+        <span class="wk2">${i+1}주차</span>
+        <span class="dt">${fmtDate(w.date)}(${WD[w.date.getDay()]})</span>
+        <span class="mn">${esc(a.name)}</span>
+      </div>
+      <div class="wrow"><div class="wl">목표</div><div class="wv">${esc(a.goal)}</div></div>
+      <div class="wrow"><div class="wl">내용</div><div class="wv">${esc(a.desc)}</div></div>
+      <div class="wrow"><div class="wl">활동1</div><div class="wv"><b>${esc(a.a1)}</b> · 준비물 : ${esc(a.m1)}</div></div>
+      <div class="wrow"><div class="wl">활동2</div><div class="wv"><b>${esc(a.a2)}</b> · 준비물 : ${esc(a.m2)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function refreshMonthOptions(weeks){
+  const sel = document.getElementById('monthPick');
+  const prev = sel.value;
+  const months = [...new Set(weeks.map(w=>fmtDate(w.date).slice(0,7)))];
+  sel.innerHTML = months.map(m=>{
+    const [y,mm]=m.split('-');
+    return `<option value="${m}">${y}년 ${parseInt(mm)}월</option>`;
+  }).join('');
+  if(months.includes(prev)) sel.value=prev;
+}
+
+function setView(v){
+  view=v;
+  document.getElementById('segM').classList.toggle('on',v==='month');
+  document.getElementById('segY').classList.toggle('on',v==='year');
+  document.getElementById('monthPickWrap').style.display = v==='month'?'':'none';
+  render();
+}
+
+function render(){
+  const weeks = buildWeeks();
+  refreshMonthOptions(weeks);
+  // 시작일 요일 → 일시 자동
+  const sd = new Date(document.getElementById('startDate').value+'T00:00:00');
+  document.getElementById('mIlsi').textContent = '매주 '+WD[sd.getDay()]+'요일';
+  const center = document.getElementById('center').value;
+  if(view==='year'){
+    document.getElementById('planTitle').textContent = `${center} · 2026년 연간 계획표 (1~52주)`;
+    document.getElementById('planBody').innerHTML = renderYear(weeks);
+  }else{
+    const ym=document.getElementById('monthPick').value;
+    const [y,mm]=ym.split('-');
+    document.getElementById('planTitle').textContent = `${center} · ${y}년 ${parseInt(mm)}월 월간 계획표`;
+    document.getElementById('planBody').innerHTML = renderMonth(weeks);
+  }
+}
+
+// 초기화
+(function init(){
+  const sel=document.getElementById('firstAct');
+  sel.innerHTML = CATALOG.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  sel.value='스카프'; // 시트 예시(2026 시작 = 스카프)
+  ['firstAct','startDate','center'].forEach(id=>document.getElementById(id).addEventListener('input',render));
+  document.getElementById('monthPick').addEventListener('change',render);
+  render();
+})();
+</script>
+</body>
+</html>

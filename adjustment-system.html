@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.90">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.91">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.90">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.91">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.90</title>
+<title>수업기록표 정산 시스템 v14.91</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -444,6 +444,8 @@ body.edit-mode-active .ledger-wrap textarea {
   input, select, textarea { font-size:16px!important; }
 
   /* ══ 로그인 / 랜딩 화면 ══ */
+  /* v14.91: 회원가입 폼이 화면보다 길어 가입하기 버튼이 화면 밖으로 잘려 못 누르던 문제 → 위 정렬 + 스크롤 허용 */
+  #loginScreen { align-items:flex-start!important; overflow-y:auto!important; padding:24px 16px 48px!important; }
   #loginScreen img { width:64px!important; height:64px!important; }
   #loginScreen div[style*="font-size:20px"] { font-size:18px!important; }
   #loginScreen > div { padding:0 16px!important; }
@@ -1074,7 +1076,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 <!-- ══════════════════════════════════
  로그인 화면 (최초 진입)
 ══════════════════════════════════ -->
-<div id="loginScreen" style="position: fixed; inset: 0px; background: linear-gradient(160deg, rgb(247, 251, 244) 0%, rgb(232, 245, 226) 40%, rgb(212, 237, 218) 100%); display: none; align-items: center; justify-content: center; z-index: 10000;">
+<div id="loginScreen" style="position: fixed; inset: 0px; background: linear-gradient(160deg, rgb(247, 251, 244) 0%, rgb(232, 245, 226) 40%, rgb(212, 237, 218) 100%); display: none; align-items: center; justify-content: center; overflow-y: auto; z-index: 10000;">
  <div style="position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(26,122,80,.06);pointer-events:none;"></div>
  <div style="position:absolute;bottom:-60px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(26,122,80,.05);pointer-events:none;"></div>
 
@@ -3527,7 +3529,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.90';
+const SYSTEM_VERSION='v14.91';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10500,15 +10502,26 @@ async function doSignup(){
  const subject = document.getElementById('signup-subject')?.value || '';
  const err = document.getElementById('signup-err');
  const showErr=(m,c)=>{ err.textContent=m; err.style.color=c||'#e53935'; err.style.display='block'; };
- if(!name){ showErr('이름을 입력해주세요'); return; }
- if(pw.length<4){ showErr('비밀번호는 4자리 이상이어야 합니다'); return; }
- if(pw!==pw2){ showErr('비밀번호가 일치하지 않습니다'); return; }
- if(!hireDate){ showErr('입사일(수업 시작일)을 선택해주세요'); return; }
- if(!region){ showErr('지역을 선택해주세요'); return; }
- if(!bank){ showErr('은행명을 입력해주세요'); return; }
- if(!accnum){ showErr('계좌번호를 입력해주세요'); return; }
- if(!accname){ showErr('예금주를 입력해주세요'); return; }
- if(!subject){ showErr('과목을 선택해주세요'); return; }
+ // v14.91: 필수항목 누락 시 해당 칸으로 스크롤 + 빨간 테두리 강조 (모바일에서 에러가 화면 밖이라 "버튼이 안 눌린다"고 느끼던 문제)
+ const need=(id,m)=>{
+  showErr(m);
+  const el=document.getElementById(id);
+  if(el){
+   el.style.borderColor='#e53935';
+   try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ try{ el.scrollIntoView(); }catch(__){} }
+   const clr=()=>{ el.style.borderColor='#E2E0D8'; el.removeEventListener('input',clr); el.removeEventListener('change',clr); el.removeEventListener('focus',clr); };
+   el.addEventListener('input',clr); el.addEventListener('change',clr); el.addEventListener('focus',clr);
+  }
+ };
+ if(!name){ need('signup-name','이름을 입력해주세요'); return; }
+ if(pw.length<4){ need('signup-pw','비밀번호는 4자리 이상이어야 합니다'); return; }
+ if(pw!==pw2){ need('signup-pw2','비밀번호가 일치하지 않습니다'); return; }
+ if(!hireDate){ need('signup-hireDate','입사일(수업 시작일)을 선택해주세요'); return; }
+ if(!region){ need('signup-region','지역을 선택해주세요'); return; }
+ if(!bank){ need('signup-bank','은행명을 입력해주세요'); return; }
+ if(!accnum){ need('signup-accnum','계좌번호를 입력해주세요'); return; }
+ if(!accname){ need('signup-accname','예금주를 입력해주세요'); return; }
+ if(!subject){ need('signup-subject','과목을 선택해주세요'); return; }
 
  const dbTeacher = DB.teachers.find(t=>t.name===name);
  const btn = document.querySelector('#signup-form button[onclick="doSignup()"]');
