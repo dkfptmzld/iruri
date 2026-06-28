@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.93">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.94">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.93">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.94">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.93</title>
+<title>수업기록표 정산 시스템 v14.94</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1112,6 +1112,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button onclick="doLogin()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">로그인</button>
  <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
  처음이신가요? <span onclick="switchLoginTab('signup')" style="color:#1A7A50;font-weight:600;cursor:pointer;">회원가입</span>
+ <div style="margin-top:7px;">비밀번호를 잊으셨나요? <span onclick="showResetForm()" style="color:#1A7A50;font-weight:600;cursor:pointer;">비밀번호 찾기</span></div>
  </div>
  </div>
 
@@ -1155,6 +1156,34 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div style="text-align:center;margin-top:8px;">
  <span onclick="showConfirm({icon:'⚠️',title:'계정 초기화',desc:'모든 강사 계정을 초기화할까요?',okText:'초기화',okStyle:'danger',onOk:()=&gt;{localStorage.removeItem('iruri_teacher_accounts');initLoginScreen();showToast('계정 초기화 완료');}});" style="font-size:11px;color:#C8C6B8;cursor:pointer;">계정 초기화 (오류 시)</span>
+ </div>
+ </div>
+
+ <!-- v14.94: 비밀번호 찾기(재설정) 폼 -->
+ <div id="reset-form" style="display:none;background:white;border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(26,122,80,.1);">
+ <div style="font-size:15px;font-weight:700;color:#1a4a2e;margin-bottom:4px;">비밀번호 재설정</div>
+ <div style="font-size:12px;color:#9B9888;margin-bottom:16px;">본인확인 후 새 비밀번호를 설정합니다</div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">강사 이름</label>
+ <input id="reset-name" type="text" placeholder="이름을 정확히 입력하세요" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌번호 끝 4자리 <span style="font-weight:400;color:#9B9888;">(본인확인)</span></label>
+ <input id="reset-acc4" type="text" inputmode="numeric" maxlength="4" placeholder="예) 2330" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;letter-spacing:2px;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+ <div style="font-size:11px;color:#9B9888;margin-top:4px;">강사관리에 등록된 계좌번호의 마지막 숫자 4자리</div>
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">새 비밀번호</label>
+ <input id="reset-pw" type="password" autocomplete="new-password" placeholder="4자리 이상" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ </div>
+ <div style="margin-bottom:20px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">새 비밀번호 확인</label>
+ <input id="reset-pw2" type="password" autocomplete="new-password" placeholder="동일하게 입력" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doResetPw()">
+ </div>
+ <div id="reset-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
+ <button onclick="doResetPw()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">비밀번호 재설정</button>
+ <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
+ <span onclick="switchLoginTab('login')" style="color:#1A7A50;font-weight:600;cursor:pointer;">← 로그인으로 돌아가기</span>
  </div>
  </div>
  </div>
@@ -3529,7 +3558,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.93';
+const SYSTEM_VERSION='v14.94';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10390,6 +10419,9 @@ function switchLoginTab(tab){
  const isLogin = tab==='login';
  document.getElementById('login-form').style.display = isLogin?'block':'none';
  document.getElementById('signup-form').style.display = isLogin?'none':'block';
+ const _rf=document.getElementById('reset-form'); if(_rf) _rf.style.display='none'; // v14.94
+ document.getElementById('tab-login').style.display='';
+ document.getElementById('tab-signup').style.display='';
  document.getElementById('tab-login').style.background = isLogin?'#1A7A50':'transparent';
  document.getElementById('tab-login').style.color = isLogin?'white':'#5a8a6a';
  document.getElementById('tab-signup').style.background = isLogin?'transparent':'#1A7A50';
@@ -10582,6 +10614,63 @@ function _signupClearAndGoLogin(name, msg, pending){
   setTimeout(()=>{ loginErr.style.display='none'; loginErr.style.color='#e53935'; loginErr.style.background='transparent'; loginErr.style.padding='0'; }, pending?7000:4000);
  }
  const loginInput=document.getElementById('login-name'); if(loginInput && !pending){ loginInput.value=name; const lp=document.getElementById('login-pw'); lp&&lp.focus(); }
+}
+
+/* ═══ v14.94: 비밀번호 찾기(재설정) — 이름 + 계좌 끝 4자리 본인확인 후 즉시 재설정 ═══ */
+function showResetForm(){
+ document.getElementById('login-form').style.display='none';
+ document.getElementById('signup-form').style.display='none';
+ const rf=document.getElementById('reset-form'); if(rf) rf.style.display='block';
+ document.getElementById('login-err').style.display='none';
+ document.getElementById('signup-err').style.display='none';
+ const re=document.getElementById('reset-err'); if(re) re.style.display='none';
+ // 탭 비활성 표시(둘 다 회색)
+ const tl=document.getElementById('tab-login'), ts=document.getElementById('tab-signup');
+ if(tl){ tl.style.background='transparent'; tl.style.color='#5a8a6a'; }
+ if(ts){ ts.style.background='transparent'; ts.style.color='#5a8a6a'; }
+}
+
+async function doResetPw(){
+ const name = document.getElementById('reset-name').value.trim();
+ const last4 = (document.getElementById('reset-acc4').value||'').replace(/\D/g,'');
+ const pw = document.getElementById('reset-pw').value;
+ const pw2 = document.getElementById('reset-pw2').value;
+ const err = document.getElementById('reset-err');
+ const showErr=(m,c)=>{ err.textContent=m; err.style.color=c||'#e53935'; err.style.display='block'; };
+ // 누락/오류 시 해당 칸으로 스크롤 + 빨간 강조
+ const need=(id,m)=>{
+  showErr(m);
+  const el=document.getElementById(id);
+  if(el){ el.style.borderColor='#e53935';
+   try{ el.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){ try{ el.scrollIntoView(); }catch(__){} }
+   const clr=()=>{ el.style.borderColor='#E2E0D8'; el.removeEventListener('input',clr); el.removeEventListener('focus',clr); };
+   el.addEventListener('input',clr); el.addEventListener('focus',clr); }
+ };
+ if(!name){ need('reset-name','이름을 입력해주세요'); return; }
+ if(last4.length<4){ need('reset-acc4','계좌번호 끝 4자리를 입력해주세요'); return; }
+ if(pw.length<4){ need('reset-pw','새 비밀번호는 4자리 이상이어야 합니다'); return; }
+ if(pw!==pw2){ need('reset-pw2','비밀번호가 일치하지 않습니다'); return; }
+
+ // 본인확인: 강사관리(DB)에서 이름 찾고 계좌 끝 4자리 매칭
+ const dbT = DB.teachers.find(t=>t.name===name);
+ if(!dbT){ need('reset-name','등록된 강사가 아니에요. 이름을 확인하거나 관리자에게 문의해주세요.'); return; }
+ const accNum = (parseAccount(dbT.account||'').num||'').replace(/\D/g,'');
+ if(accNum.length<4){ showErr('등록된 계좌 정보가 없어 본인확인이 어려워요. 관리자에게 문의해주세요.','#D97706'); return; }
+ if(accNum.slice(-4)!==last4){ need('reset-acc4','계좌번호 끝 4자리가 일치하지 않습니다'); return; }
+
+ // 통과 → 새 비밀번호 설정
+ const btn = document.querySelector('#reset-form button[onclick="doResetPw()"]');
+ if(btn){ btn.disabled=true; btn.textContent='처리 중...'; }
+ err.style.display='none';
+ const newHash = await sha256(pw);
+ gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash })
+  .then(()=>{
+   const accounts=getTeacherAccounts(); accounts[name]=newHash; localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts));
+   ['reset-name','reset-acc4','reset-pw','reset-pw2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+   _signupClearAndGoLogin(name, '✅ 비밀번호가 재설정됐어요. 새 비밀번호로 로그인해주세요', false);
+  })
+  .catch(async()=>{ const accounts=getTeacherAccounts(); accounts[name]=await sha256(pw); localStorage.setItem(TEACHER_ACCOUNTS_KEY, JSON.stringify(accounts)); showErr('⚠️ 서버 저장 실패, 이 기기에만 적용됐어요. 인터넷 확인 후 다시 시도해주세요.','#D97706'); })
+  .finally(()=>{ if(btn){ btn.disabled=false; btn.textContent='비밀번호 재설정'; } });
 }
 
 // ═══ v14.64: 신규 가입 승인 (관리자) ═══
