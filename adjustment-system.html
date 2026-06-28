@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.95">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.96">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.95">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.96">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.95</title>
+<title>수업기록표 정산 시스템 v14.96</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3558,7 +3558,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.95';
+const SYSTEM_VERSION='v14.96';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12344,21 +12344,13 @@ function initTeacherInput(){
  tiUpdateSettleSummary(teacher);
  }
 
- // 임시저장 데이터 확인 (v12.59: 배너 대신 다이얼로그 / v14.68: 매달 10일 만료분은 자동 삭제)
- const draft = _getValidDraft();
- if(draft && draft.teacher === teacher){
-  // 제출 완료 여부 확인 — sessionStorage 없으면 localStorage 히스토리 동기 확인
-  const now2 = new Date();
-  const curYM2 = `${now2.getFullYear()}년 ${now2.getMonth()+1}월`;
-  let isSubmitted = sessionStorage.getItem('ti_submitted_'+teacher) === curYM2;
-  if(!isSubmitted){
-   try{
-    const hist = JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
-    isSubmitted = hist.some(h=>h.yearMonth===curYM2);
-    if(isSubmitted) sessionStorage.setItem('ti_submitted_'+teacher, curYM2);
-   }catch(e){}
-  }
-  _showDraftDialog(teacher, draft.savedAt, isSubmitted, now2.getMonth()+1);
+ // v14.96: 제출완료 안내는 '제출 이력' 기준 + 정산완료(제출월 다음 달 10일) 전까지만 표시.
+ //          미제출 상태에서 유효한 임시저장이 있으면 '이어서 작성' 다이얼로그 유지.
+ const _plan = _entryDialogPlan(teacher, new Date());
+ if(_plan && _plan.type==='submitted'){
+  _showDraftDialog(teacher, null, true, _plan.month);
+ } else if(_plan && _plan.type==='draft'){
+  _showDraftDialog(teacher, _plan.savedAt, false, new Date().getMonth()+1);
  }
 }
 
@@ -12840,6 +12832,38 @@ function _getValidDraft(){
  if(!draft) return null;
  if(_isDraftStale(draft)){ clearTiDraft(); return null; }
  return draft;
+}
+
+/* ═══ v14.96: 강사모드 진입 시 다이얼로그 결정 (제출이력 기준 · 정산완료 전까지만 제출완료 안내) ═══ */
+// "2026년 6월" 두 값 비교: a>b → 양수
+function _cmpYM(a,b){
+ const pa=/(\d+)\s*년\s*(\d+)\s*월/.exec(a||''), pb=/(\d+)\s*년\s*(\d+)\s*월/.exec(b||'');
+ if(!pa||!pb) return 0;
+ return ((+pa[1])*12 + (+pa[2])) - ((+pb[1])*12 + (+pb[2]));
+}
+function _ymMonth(ymStr){ const m=/(\d+)\s*월/.exec(ymStr||''); return m ? (+m[1]) : (new Date().getMonth()+1); }
+// 제출월의 '다음 달 10일 00:00' 전이면 정산 진행중(true), 그 이후면 정산완료(false)
+function _settlementOpen(ymStr, now){
+ const m=/(\d+)\s*년\s*(\d+)\s*월/.exec(ymStr||''); if(!m) return false;
+ const cutoff = new Date((+m[1]), (+m[2]), 10, 0,0,0,0); // 월 인덱스 = 제출월(human)+1 → 다음 달 10일
+ return (now||new Date()) < cutoff;
+}
+// 진입 다이얼로그 계획: {type:'submitted',month} | {type:'draft',savedAt} | null
+function _entryDialogPlan(teacher, now){
+ now = now || new Date();
+ let submittedYM = null;
+ try{
+  const hist = JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
+  if(Array.isArray(hist) && hist.length) submittedYM = hist.map(h=>h.yearMonth).filter(Boolean).sort(_cmpYM).pop() || null;
+ }catch(e){}
+ const sessYM = sessionStorage.getItem('ti_submitted_'+teacher);
+ if(sessYM && (!submittedYM || _cmpYM(sessYM, submittedYM) > 0)) submittedYM = sessYM;
+ // 제출 이력이 있고 정산완료(다음 달 10일) 전이면 → 제출완료 안내 (임시저장 유무 무관)
+ if(submittedYM && _settlementOpen(submittedYM, now)) return { type:'submitted', month:_ymMonth(submittedYM) };
+ // 그 외: 유효한 임시저장이 있으면 이어서 작성
+ const draft = _getValidDraft();
+ if(draft && draft.teacher === teacher) return { type:'draft', savedAt:draft.savedAt };
+ return null;
 }
 
 function loadTiDraft(){
