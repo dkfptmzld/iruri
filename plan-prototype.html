@@ -31,6 +31,17 @@
   td.wk{font-weight:800;color:#7a5a10;background:#fffdf3;}
   td.main{font-weight:800;color:#0f5a37;background:#f2f9ef;}
   .scroll{overflow-x:auto;border-radius:10px;border:1px solid #d9e4d2;}
+  /* 월간 세로형 카드 */
+  .wcard{border:1px solid #d9e4d2;border-radius:10px;margin-bottom:12px;overflow:hidden;background:#fff;}
+  .wcard .wh{display:flex;align-items:center;gap:10px;background:var(--head);padding:8px 12px;}
+  .wcard .wh .wk2{font-weight:800;color:#7a5a10;font-size:13px;}
+  .wcard .wh .dt{font-size:12px;color:#557;}
+  .wcard .wh .mn{margin-left:auto;font-weight:800;color:#0f5a37;font-size:14px;background:#f2f9ef;border:1px solid #cfe6cf;border-radius:20px;padding:2px 14px;}
+  .wcard .wrow{display:grid;grid-template-columns:64px 1fr;border-top:1px solid #eef3ea;}
+  .wcard .wrow .wl{background:#fafcf8;font-size:12px;font-weight:700;color:#5a6a5a;padding:8px 10px;border-right:1px solid #eef3ea;text-align:center;}
+  .wcard .wrow .wv{padding:8px 12px;font-size:13px;line-height:1.55;}
+  .wcard .wrow .wv b{color:#0f5a37;}
+  @media print{ .wcard{break-inside:avoid;} }
   @media print{
     body{padding:0;background:#fff;}
     .noprint{display:none!important;}
@@ -141,22 +152,21 @@ function renderYear(weeks){
 function renderMonth(weeks){
   const ym = document.getElementById('monthPick').value; // 'YYYY-MM'
   const inMonth = weeks.filter(w=>fmtDate(w.date).slice(0,7)===ym);
-  let rows = inMonth.map((w,i)=>{
+  if(!inMonth.length) return `<div style="color:#9B9888;padding:24px;text-align:center;">해당 월에 수업이 없어요</div>`;
+  return inMonth.map((w,i)=>{
     const a=w.act;
-    const prep = [a.name, a.a1, a.a2].filter(Boolean).join(', ');
-    return `<tr>
-      <td class="c wk">${(i+1)}주차</td>
-      <td class="main c">${esc(a.name)}</td>
-      <td style="min-width:230px;">${esc(a.goal)}</td>
-      <td style="min-width:230px;">${esc(a.desc)}</td>
-      <td>${esc(prep)}</td>
-      <td class="c">${fmtDate(w.date)}(${WD[w.date.getDay()]})</td>
-    </tr>`;
+    return `<div class="wcard">
+      <div class="wh">
+        <span class="wk2">${i+1}주차</span>
+        <span class="dt">${fmtDate(w.date)}(${WD[w.date.getDay()]})</span>
+        <span class="mn">${esc(a.name)}</span>
+      </div>
+      <div class="wrow"><div class="wl">목표</div><div class="wv">${esc(a.goal)}</div></div>
+      <div class="wrow"><div class="wl">내용</div><div class="wv">${esc(a.desc)}</div></div>
+      <div class="wrow"><div class="wl">활동1</div><div class="wv"><b>${esc(a.a1)}</b> · 준비물 : ${esc(a.m1)}</div></div>
+      <div class="wrow"><div class="wl">활동2</div><div class="wv"><b>${esc(a.a2)}</b> · 준비물 : ${esc(a.m2)}</div></div>
+    </div>`;
   }).join('');
-  if(!inMonth.length) rows = `<tr><td colspan="6" class="c" style="color:#9B9888;padding:20px;">해당 월에 수업이 없어요</td></tr>`;
-  return `<table><thead><tr>
-    <th class="c">주차</th><th>프로그램명</th><th>목표</th><th>내용</th><th>준비물</th><th class="c">예정일</th>
-   </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function refreshMonthOptions(weeks){
