@@ -99,8 +99,8 @@
   .mini-btn:hover{background:#5f1924}
   .mini-btn:disabled{opacity:.55;cursor:default}
   .list-status{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px}
-  .issued-list{display:flex;flex-direction:column;gap:6px}
-  .issued-item{border:1px solid var(--line);border-radius:9px;background:#fffdf8;overflow:hidden}
+  .issued-list{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;overflow-y:auto;padding-right:2px}
+  .issued-item{border:1px solid var(--line);border-radius:9px;background:#fffdf8;overflow:hidden;flex-shrink:0}
   .ii-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
        background:none;border:0;cursor:pointer;padding:12px 14px;font-family:var(--sans);text-align:left;
        -webkit-tap-highlight-color:transparent}
@@ -145,7 +145,7 @@
   .ly-head .ly-cnt{font-size:11.5px;font-weight:600;color:var(--ink-soft)}
   .ii-more{margin-top:7px;width:100%;font-size:12.5px;font-weight:700;color:var(--accent);
        background:#fff;border:1.5px dashed var(--accent);border-radius:8px;padding:9px;cursor:pointer;
-       -webkit-tap-highlight-color:transparent}
+       flex-shrink:0;-webkit-tap-highlight-color:transparent}
   .ii-more:hover{background:var(--accent-soft)}
   /* 발급현황 버튼 + 모달 */
   .top-btns{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px}
@@ -157,7 +157,15 @@
        align-items:flex-start;justify-content:center;z-index:2147483500;padding:28px 14px;overflow-y:auto}
   #ledgerModal.show{display:flex}
   .lm-box{background:var(--paper);width:100%;max-width:560px;border-radius:14px;
-       padding:20px 20px 22px;box-shadow:0 24px 70px rgba(0,0,0,.3);margin:auto 0}
+       padding:20px 20px 22px;box-shadow:0 24px 70px rgba(0,0,0,.3);margin:auto 0;
+       max-height:88vh;display:flex;flex-direction:column}
+  /* 과목 전환 버튼 (모달 안) */
+  .lc-tabs{display:flex;gap:6px;margin-bottom:10px}
+  .lc-tab{flex:1;font-size:12.5px;font-weight:700;color:var(--ink-soft);background:#fff;
+       border:1.5px solid var(--line);border-radius:9px;padding:8px 6px;cursor:pointer;
+       font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+  .lc-tab:hover{border-color:var(--accent);color:var(--accent)}
+  .lc-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .lm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
   .lm-head h2{font-family:var(--serif);font-weight:600;font-size:18px;margin:0}
   .lm-actions{display:flex;align-items:center;gap:8px}
@@ -329,6 +337,7 @@
       </div>
     </div>
     <div id="list-status" class="list-status">불러오는 중…</div>
+    <div id="ledger-courses" class="lc-tabs"></div>
     <div id="ledger-years" class="ly-tabs"></div>
     <div id="issued-list" class="issued-list"></div>
   </div>
@@ -2730,73 +2739,86 @@ function parseCertNo(name){
   return m ? { year:+m[1], seq:+m[2] } : { year:0, seq:0 };
 }
 
-let ledgerYearFilter = "all";   // 연도 필터 ("all" | 연도숫자)
+let ledgerYearFilter = "all";   // 선택 연도 ("all"=미설정 → 현재 연도로)
 
-// 발급 현황 렌더 — 연도 필터 탭 + 연도별 그룹 + 최신순 + 그룹당 3건 후 더보기
+// 모달 상단 과목 전환 버튼 (실버운동지도사 / 시니어레크레이션지도사)
+function renderCourseTabs(activeCourse){
+  const cont = document.getElementById("ledger-courses");
+  cont.innerHTML = "";
+  const opts = [].slice.call(document.querySelectorAll("#course option")).map(function(o){ return o.value; });
+  opts.forEach(function(cv){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "lc-tab" + (cv === activeCourse ? " on" : "");
+    b.textContent = cv;
+    b.addEventListener("click", function(){
+      if(cv === activeCourse) return;
+      const sel = document.getElementById("course");
+      sel.value = cv;
+      sel.dispatchEvent(new Event("change"));   // 등록번호·다음번호·목록 동기화 + 모달 재렌더
+    });
+    cont.appendChild(b);
+  });
+}
+
+// 발급 현황 렌더 — 과목 전환 + 연도 탭(현재 연도 기본·해마다 자동 추가) + 3건 후 더보기(내부 스크롤)
 function renderIssuedList(list, course){
+  renderCourseTabs(course);
   const box  = document.getElementById("issued-list");
   const tabs = document.getElementById("ledger-years");
   box.innerHTML = ""; tabs.innerHTML = "";
   setListStatus("[" + course + "] 총 " + list.length + "건");
-  if(!list.length){
-    const d = document.createElement("div");
-    d.className = "issued-empty"; d.textContent = "이 과목으로 발급된 자격증이 아직 없습니다.";
-    box.appendChild(d); return;
-  }
-  // 최신순 정렬 (연도 desc, 일련번호 desc)
-  const sorted = list.slice().sort(function(a,b){
-    const pa = parseCertNo(a.name), pb = parseCertNo(b.name);
-    return (pb.year - pa.year) || (pb.seq - pa.seq);
-  });
-  // 연도별 그룹
-  const groups = {};
-  sorted.forEach(function(it){
-    const y = parseCertNo(it.name).year || 0;
-    (groups[y] = groups[y] || []).push(it);
-  });
-  const years = Object.keys(groups).map(Number).sort(function(a,b){ return b - a; });
-  if(ledgerYearFilter !== "all" && years.indexOf(+ledgerYearFilter) < 0) ledgerYearFilter = "all";
 
-  // 연도 필터 탭: [전체] [2026년 (n)] [2025년 (n)] …
-  function mkTab(label, val){
+  // 연도별 분류
+  const byYear = {};
+  list.forEach(function(it){ const y = parseCertNo(it.name).year || 0; (byYear[y] = byYear[y] || []).push(it); });
+  // 탭 연도 = 데이터 연도 ∪ 현재 연도 (해가 바뀌면 새 연도 자동 등장)
+  const curY = new Date().getFullYear();
+  let years = Object.keys(byYear).map(Number).filter(function(y){ return y > 0; });
+  if(years.indexOf(curY) < 0) years.push(curY);
+  years.sort(function(a,b){ return b - a; });
+  const hasEtc = !!(byYear[0] && byYear[0].length);
+
+  // 기본 선택 = 현재 연도 (선택값이 없거나 사라졌으면 현재 연도)
+  const valid = years.concat(hasEtc ? [0] : []);
+  if(ledgerYearFilter === "all" || valid.indexOf(+ledgerYearFilter) < 0) ledgerYearFilter = curY;
+
+  // 연도 탭 (전체 버튼 없음)
+  function mkTab(y){
+    const cnt = (byYear[y] || []).length;
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "ly-tab" + (String(ledgerYearFilter) === String(val) ? " on" : "");
-    b.textContent = label;
-    b.addEventListener("click", function(){ ledgerYearFilter = val; renderIssuedList(list, course); });
+    b.className = "ly-tab" + (String(ledgerYearFilter) === String(y) ? " on" : "");
+    b.textContent = (y ? y + "년" : "기타") + " (" + cnt + ")";
+    b.addEventListener("click", function(){ ledgerYearFilter = y; renderIssuedList(list, course); });
     return b;
   }
-  tabs.appendChild(mkTab("전체 (" + sorted.length + ")", "all"));
-  years.forEach(function(y){ tabs.appendChild(mkTab((y ? y + "년" : "기타") + " (" + groups[y].length + ")", y)); });
+  years.forEach(function(y){ tabs.appendChild(mkTab(y)); });
+  if(hasEtc) tabs.appendChild(mkTab(0));
 
-  // 선택된 연도만(또는 전체) 그룹 렌더
+  // 선택 연도 항목 (최신순)
+  const items = (byYear[+ledgerYearFilter] || []).slice().sort(function(a,b){ return parseCertNo(b.name).seq - parseCertNo(a.name).seq; });
+  if(!items.length){
+    const d = document.createElement("div");
+    d.className = "issued-empty"; d.textContent = "이 연도에 발급된 자격증이 없습니다.";
+    box.appendChild(d); return;
+  }
   const SHOW = 3;
-  const showYears = (ledgerYearFilter === "all") ? years : years.filter(function(y){ return String(y) === String(ledgerYearFilter); });
-  showYears.forEach(function(y){
-    const items = groups[y];
-    const section = document.createElement("div"); section.className = "ledger-year";
-    const yh = document.createElement("div"); yh.className = "ly-head";
-    const yt = document.createElement("span"); yt.textContent = y ? (y + "년") : "기타";
-    const yc = document.createElement("span"); yc.className = "ly-cnt"; yc.textContent = items.length + "건";
-    yh.appendChild(yt); yh.appendChild(yc);
-    section.appendChild(yh);
-    items.forEach(function(item, idx){
-      const el = buildIssuedItem(item);
-      if(idx >= SHOW){ el.style.display = "none"; el.classList.add("ii-hidden"); }
-      section.appendChild(el);
-    });
-    if(items.length > SHOW){
-      const more = document.createElement("button");
-      more.type = "button"; more.className = "ii-more";
-      more.textContent = "더보기 (" + (items.length - SHOW) + "건)";
-      more.addEventListener("click", function(){
-        section.querySelectorAll(".ii-hidden").forEach(function(e){ e.style.display = ""; e.classList.remove("ii-hidden"); });
-        more.remove();
-      });
-      section.appendChild(more);
-    }
-    box.appendChild(section);
+  items.forEach(function(item, idx){
+    const el = buildIssuedItem(item);
+    if(idx >= SHOW){ el.style.display = "none"; el.classList.add("ii-hidden"); }
+    box.appendChild(el);
   });
+  if(items.length > SHOW){
+    const more = document.createElement("button");
+    more.type = "button"; more.className = "ii-more";
+    more.textContent = "더보기 (" + (items.length - SHOW) + "건)";
+    more.addEventListener("click", function(){
+      box.querySelectorAll(".ii-hidden").forEach(function(e){ e.style.display = ""; e.classList.remove("ii-hidden"); });
+      more.remove();
+    });
+    box.appendChild(more);
+  }
 }
 
 // 실패 원인별 안내 문구 (사용자가 바로 조치할 수 있도록)
