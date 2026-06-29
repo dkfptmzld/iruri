@@ -2940,11 +2940,9 @@ function applyListData(list, issue){
 function refreshForCourse(showLoading){
   if(lastList) applyListData(lastList);                          // 캐시 즉시 반영(빠른 체감)
   if(!GAS_URL){ if(showLoading && ledgerOpen) setListStatus(listErrorMsg("no_url")); return; }
-  const btn = document.getElementById("btn-load");
   if(showLoading && ledgerOpen && (!lastList || !lastList.length)) setListStatus("목록 불러오는 중…");
-  if(btn) btn.disabled = true;
+  // 새로고침 버튼은 비활성화하지 않음(불러오는 중에도 항상 누를 수 있게)
   fetchList(function(res){
-    if(btn) btn.disabled = false;
     if(res && res.ok){
       try{ localStorage.setItem(LIST_CACHE_KEY, JSON.stringify({ list:res.list||[], lastIssue:res.lastIssue||"", ts:Date.now() })); }catch(_){}
       applyListData(res.list||[], res.lastIssue||"");
