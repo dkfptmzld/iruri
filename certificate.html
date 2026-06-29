@@ -2714,20 +2714,31 @@ function buildIssuedItem(item){
     if(item.imgId){
       const loading = makeNoImg("이미지 불러오는 중…");   // 로딩 안내
       body.appendChild(loading);
-      const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w400";  // 더 작게=더 빨리
-      const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
+      const id = item.imgId;
+      // 여러 소스를 순서대로 시도(앞쪽이 더 빠른 CDN). 매달리면 타임아웃으로 다음 소스로.
+      const srcs = [
+        "https://lh3.googleusercontent.com/d/" + id + "=w500",
+        "https://drive.google.com/thumbnail?id=" + id + "&sz=w500"
+      ];
+      const big = "https://lh3.googleusercontent.com/d/" + id + "=w1600";
       const img = document.createElement("img");
       // 주의: loading="lazy" + display:none 이면 화면에 없어서 영영 로드 안 됨 → lazy 사용 금지
       img.className = "ii-img"; img.alt = item.name; img.style.display = "none";
-      let settled = false;
-      function ok(){ if(settled) return; settled = true; if(loading.parentNode) loading.remove(); img.style.display = ""; }
-      function fail(){ if(settled) return; settled = true; if(loading.parentNode) loading.replaceWith(makeNoImg("이미지를 불러올 수 없습니다. ([폴더 열기]로 확인하세요)")); if(img.parentNode) img.remove(); }
-      img.addEventListener("load",  ok);
-      img.addEventListener("error", fail);
       img.addEventListener("click", function(){ openLightboxUrl(big); });
-      img.src = small;
-      setTimeout(function(){ if(!settled) fail(); }, 15000);   // 안전장치: 무한 '불러오는 중' 방지
+      let i = 0, settled = false, t = null;
+      function ok(){ if(settled) return; settled = true; clearTimeout(t); if(loading.parentNode) loading.remove(); img.style.display = ""; }
+      function fail(){ if(settled) return; settled = true; clearTimeout(t); if(loading.parentNode) loading.replaceWith(makeNoImg("이미지를 불러올 수 없습니다. ([폴더 열기]로 확인하세요)")); if(img.parentNode) img.remove(); }
+      function attempt(){
+        if(i >= srcs.length){ fail(); return; }      // 모든 소스 실패 → 안내
+        const url = srcs[i++];
+        clearTimeout(t);
+        t = setTimeout(function(){ if(!settled) attempt(); }, 7000);   // 7초 내 응답 없으면 다음 소스
+        img.src = url;
+      }
+      img.addEventListener("load",  ok);
+      img.addEventListener("error", function(){ if(!settled) attempt(); });   // 실패 시 다음 소스
       body.appendChild(img);
+      attempt();
     }else{
       body.appendChild(makeNoImg("이미지가 없습니다."));
     }
