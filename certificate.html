@@ -2717,11 +2717,16 @@ function buildIssuedItem(item){
       const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w400";  // 더 작게=더 빨리
       const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
       const img = document.createElement("img");
-      img.className = "ii-img"; img.loading = "lazy"; img.alt = item.name; img.style.display = "none";
-      img.addEventListener("load",  function(){ if(loading.parentNode) loading.remove(); img.style.display = ""; });
-      img.addEventListener("error", function(){ if(loading.parentNode) loading.remove(); img.replaceWith(makeNoImg("이미지를 불러올 수 없습니다.")); });
+      // 주의: loading="lazy" + display:none 이면 화면에 없어서 영영 로드 안 됨 → lazy 사용 금지
+      img.className = "ii-img"; img.alt = item.name; img.style.display = "none";
+      let settled = false;
+      function ok(){ if(settled) return; settled = true; if(loading.parentNode) loading.remove(); img.style.display = ""; }
+      function fail(){ if(settled) return; settled = true; if(loading.parentNode) loading.replaceWith(makeNoImg("이미지를 불러올 수 없습니다. ([폴더 열기]로 확인하세요)")); if(img.parentNode) img.remove(); }
+      img.addEventListener("load",  ok);
+      img.addEventListener("error", fail);
       img.addEventListener("click", function(){ openLightboxUrl(big); });
       img.src = small;
+      setTimeout(function(){ if(!settled) fail(); }, 15000);   // 안전장치: 무한 '불러오는 중' 방지
       body.appendChild(img);
     }else{
       body.appendChild(makeNoImg("이미지가 없습니다."));
