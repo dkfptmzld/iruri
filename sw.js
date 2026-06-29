@@ -3,7 +3,7 @@
    전략: 네트워크 우선 (항상 최신 버전)
    + Firebase Cloud Messaging 푸시 알림 지원
 ═══════════════════════════════════════════ */
-const CACHE_NAME = 'iruri-v4';
+const CACHE_NAME = 'iruri-v5';
 const STATIC_ASSETS = [
   '/iruri/icon-192.png',
   '/iruri/icon-512.png',
