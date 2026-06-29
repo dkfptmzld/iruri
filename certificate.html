@@ -2698,6 +2698,8 @@ function makeNoImg(text){
   const d = document.createElement("div"); d.className = "ii-noimg"; d.textContent = text; return d;
 }
 
+const expandedNames = new Set();   // 펼쳐둔 항목(재렌더 후에도 펼침 유지)
+
 // 한 건(펼침형 카드) 생성 — 펼치면 스캔 이미지·폴더 열기 (이미지는 지연 로딩)
 function buildIssuedItem(item){
   const wrap = document.createElement("div"); wrap.className = "issued-item";
@@ -2707,29 +2709,36 @@ function buildIssuedItem(item){
   head.appendChild(nm); head.appendChild(caret);
   const body = document.createElement("div"); body.className = "ii-body"; body.hidden = true;
   let built = false;
-  head.addEventListener("click", function(){
-    const willOpen = body.hidden;
-    body.hidden = !willOpen;
-    wrap.classList.toggle("open", willOpen);
-    if(willOpen && !built){          // 처음 펼칠 때만 이미지 로드(지연 로딩)
-      built = true;
-      if(item.imgId){
-        const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w600";
-        const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
-        const img = document.createElement("img");
-        img.className = "ii-img"; img.loading = "lazy"; img.alt = item.name; img.src = small;
-        img.addEventListener("click", function(){ openLightboxUrl(big); });
-        img.addEventListener("error", function(){ img.replaceWith(makeNoImg("이미지를 불러올 수 없습니다.")); });
-        body.appendChild(img);
-      }else{
-        body.appendChild(makeNoImg("이미지가 없습니다."));
-      }
-      const open = document.createElement("a"); open.className = "ii-btn alt";
-      open.href = item.url; open.target = "_blank"; open.rel = "noopener"; open.textContent = "폴더 열기";
-      body.appendChild(open);
+  function buildBody(){
+    if(built) return; built = true;
+    if(item.imgId){
+      const loading = makeNoImg("이미지 불러오는 중…");   // 로딩 안내
+      body.appendChild(loading);
+      const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w400";  // 더 작게=더 빨리
+      const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
+      const img = document.createElement("img");
+      img.className = "ii-img"; img.loading = "lazy"; img.alt = item.name; img.style.display = "none";
+      img.addEventListener("load",  function(){ if(loading.parentNode) loading.remove(); img.style.display = ""; });
+      img.addEventListener("error", function(){ if(loading.parentNode) loading.remove(); img.replaceWith(makeNoImg("이미지를 불러올 수 없습니다.")); });
+      img.addEventListener("click", function(){ openLightboxUrl(big); });
+      img.src = small;
+      body.appendChild(img);
+    }else{
+      body.appendChild(makeNoImg("이미지가 없습니다."));
     }
-  });
+    const open = document.createElement("a"); open.className = "ii-btn alt";
+    open.href = item.url; open.target = "_blank"; open.rel = "noopener"; open.textContent = "폴더 열기";
+    body.appendChild(open);
+  }
+  function setOpen(o){
+    body.hidden = !o;
+    wrap.classList.toggle("open", o);
+    if(o){ buildBody(); expandedNames.add(item.name); }
+    else { expandedNames.delete(item.name); }
+  }
+  head.addEventListener("click", function(){ setOpen(body.hidden); });
   wrap.appendChild(head); wrap.appendChild(body);
+  if(expandedNames.has(item.name)) setOpen(true);   // 재렌더돼도 펼친 상태 복원
   return wrap;
 }
 
@@ -2761,8 +2770,15 @@ function renderCourseTabs(activeCourse){
   });
 }
 
+// 목록 시그니처(내용 동일 여부 판단 — 불필요한 재렌더로 토글이 닫히는 것 방지)
+let lastRenderSig = null;
+function listSig(list, course){
+  return course + "|" + list.map(function(it){ return it.name + ":" + (it.imgId || ""); }).join(",");
+}
+
 // 발급 현황 렌더 — 과목 전환 + 연도 탭(현재 연도 기본·해마다 자동 추가) + 3건 후 더보기(내부 스크롤)
 function renderIssuedList(list, course){
+  lastRenderSig = listSig(list, course);
   renderCourseTabs(course);
   const box  = document.getElementById("issued-list");
   const tabs = document.getElementById("ledger-years");
@@ -2890,7 +2906,8 @@ function applyListData(list, issue){
   const filtered = lastList.filter(function(it){ return it.course === course; });
   setNextCertNo(filtered);                                        // 다음 자격번호
   if(!issueDateLoaded && issue){ setIssueDate(issue); issueDateLoaded = true; }
-  if(ledgerOpen) renderIssuedList(filtered, course);             // 모달 열려 있으면 즉시 렌더
+  // 모달 열려 있으면 렌더 — 단, 내용이 그대로면 다시 그리지 않음(펼친 토글 유지)
+  if(ledgerOpen && listSig(filtered, course) !== lastRenderSig) renderIssuedList(filtered, course);
 }
 
 // 목록 새로고침 (GAS) — 캐시 즉시 반영 후 백그라운드로 최신화
