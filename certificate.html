@@ -130,6 +130,33 @@
     .issued-row{flex-direction:column;align-items:stretch;gap:8px}
     .issued-row .ir-open{text-align:center}
   }
+  /* 연도 그룹 + 더보기 */
+  .ledger-year{margin-bottom:16px}
+  .ledger-year:last-child{margin-bottom:0}
+  .ly-head{font-size:13px;font-weight:800;color:var(--accent);padding:5px 2px;
+       border-bottom:1.5px solid var(--line);margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline}
+  .ly-head .ly-cnt{font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+  .ii-more{margin-top:7px;width:100%;font-size:12.5px;font-weight:700;color:var(--accent);
+       background:#fff;border:1.5px dashed var(--accent);border-radius:8px;padding:9px;cursor:pointer;
+       -webkit-tap-highlight-color:transparent}
+  .ii-more:hover{background:var(--accent-soft)}
+  /* 발급현황 버튼 + 모달 */
+  .top-btns{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px}
+  .top-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;cursor:pointer;
+       background:#fff;border:1.5px solid #e0d3c0;color:#8a2b34;font-size:13px;font-weight:700;
+       padding:8px 14px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);font-family:var(--sans)}
+  .top-btn:hover{background:#fff7ef}
+  #ledgerModal{position:fixed;inset:0;background:rgba(28,24,18,.55);display:none;
+       align-items:flex-start;justify-content:center;z-index:2147483500;padding:28px 14px;overflow-y:auto}
+  #ledgerModal.show{display:flex}
+  .lm-box{background:var(--paper);width:100%;max-width:560px;border-radius:14px;
+       padding:20px 20px 22px;box-shadow:0 24px 70px rgba(0,0,0,.3);margin:auto 0}
+  .lm-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .lm-head h2{font-family:var(--serif);font-weight:600;font-size:18px;margin:0}
+  .lm-actions{display:flex;align-items:center;gap:8px}
+  .lm-close{background:none;border:0;font-size:26px;line-height:1;color:var(--ink-soft);
+       cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent}
+  .lm-close:hover{color:var(--ink)}
 
   /* ===== 모바일 최적화 ===== */
   @media(max-width:640px){
@@ -192,8 +219,9 @@
 })();
 </script>
 <div class="wrap">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-    <a href="adjustment-system.html" title="홈으로 돌아가기" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:#fff;border:1.5px solid #e0d3c0;color:#8a2b34;font-size:13px;font-weight:700;padding:8px 14px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);">🏠 홈으로</a>
+  <div class="top-btns">
+    <button type="button" id="btn-ledger" class="top-btn" title="발급 현황 보기">📋 발급현황</button>
+    <a href="adjustment-system.html" class="top-btn" title="홈으로 돌아가기">🏠 홈으로</a>
   </div>
   <header class="top">
     <h1>자격증 발급기</h1>
@@ -281,16 +309,21 @@
   </div>
 
   <div class="status" id="status"></div>
+</div>
 
-  <!-- ===== 발급 현황 (구글 드라이브 조회) ===== -->
-  <section class="panel ledger">
-    <div class="ledger-head">
+<!-- ===== 발급 현황 모달 (구글 드라이브 조회) ===== -->
+<div id="ledgerModal" role="dialog" aria-modal="true" aria-label="발급 현황">
+  <div class="lm-box">
+    <div class="lm-head">
       <h2>발급 현황</h2>
-      <button id="btn-load" class="mini-btn">목록 불러오기</button>
+      <div class="lm-actions">
+        <button id="btn-load" class="mini-btn">새로고침</button>
+        <button class="lm-close" type="button" aria-label="닫기">&times;</button>
+      </div>
     </div>
-    <div id="list-status" class="list-status">[목록 불러오기]를 누르면 구글 드라이브에 발급된 자격증을 확인합니다.</div>
+    <div id="list-status" class="list-status">불러오는 중…</div>
     <div id="issued-list" class="issued-list"></div>
-  </section>
+  </div>
 </div>
 
 <div id="lightbox" role="dialog" aria-modal="true" aria-label="미리보기 확대">
@@ -2648,52 +2681,94 @@ function makeNoImg(text){
   const d = document.createElement("div"); d.className = "ii-noimg"; d.textContent = text; return d;
 }
 
-function renderIssuedList(res, course){
+// 한 건(펼침형 카드) 생성 — 펼치면 스캔 이미지·폴더 열기 (이미지는 지연 로딩)
+function buildIssuedItem(item){
+  const wrap = document.createElement("div"); wrap.className = "issued-item";
+  const head = document.createElement("button"); head.type = "button"; head.className = "ii-head";
+  const nm   = document.createElement("span"); nm.className = "ii-name"; nm.textContent = item.name;
+  const caret = document.createElement("span"); caret.className = "ii-caret"; caret.textContent = "▾";
+  head.appendChild(nm); head.appendChild(caret);
+  const body = document.createElement("div"); body.className = "ii-body"; body.hidden = true;
+  let built = false;
+  head.addEventListener("click", function(){
+    const willOpen = body.hidden;
+    body.hidden = !willOpen;
+    wrap.classList.toggle("open", willOpen);
+    if(willOpen && !built){          // 처음 펼칠 때만 이미지 로드(지연 로딩)
+      built = true;
+      if(item.imgId){
+        const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w600";
+        const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
+        const img = document.createElement("img");
+        img.className = "ii-img"; img.loading = "lazy"; img.alt = item.name; img.src = small;
+        img.addEventListener("click", function(){ openLightboxUrl(big); });
+        img.addEventListener("error", function(){ img.replaceWith(makeNoImg("이미지를 불러올 수 없습니다.")); });
+        body.appendChild(img);
+      }else{
+        body.appendChild(makeNoImg("이미지가 없습니다."));
+      }
+      const open = document.createElement("a"); open.className = "ii-btn alt";
+      open.href = item.url; open.target = "_blank"; open.rel = "noopener"; open.textContent = "폴더 열기";
+      body.appendChild(open);
+    }
+  });
+  wrap.appendChild(head); wrap.appendChild(body);
+  return wrap;
+}
+
+// 자격번호에서 연도/일련번호 파싱 (예: "2026-005 임준우" → {year:2026, seq:5})
+function parseCertNo(name){
+  const m = String(name).match(/(\d{4})-(\d+)/);
+  return m ? { year:+m[1], seq:+m[2] } : { year:0, seq:0 };
+}
+
+// 발급 현황 렌더 — 연도별 그룹 + 최신순 + 그룹당 3건 후 더보기
+function renderIssuedList(list, course){
   const box = document.getElementById("issued-list");
   box.innerHTML = "";
-  if(!res || !res.ok){
-    setListStatus(listErrorMsg(res && res.error));
-    return;
-  }
-  const head = course ? ("["+course+"] 총 " + res.count + "건") : ("총 " + res.count + "건 발급됨");
-  setListStatus(head);
-  if(!res.list || res.list.length === 0){
+  setListStatus("[" + course + "] 총 " + list.length + "건");
+  if(!list.length){
     const d = document.createElement("div");
     d.className = "issued-empty"; d.textContent = "이 과목으로 발급된 자격증이 아직 없습니다.";
     box.appendChild(d); return;
   }
-  res.list.forEach(item=>{
-    const wrap = document.createElement("div"); wrap.className = "issued-item";
-    const head = document.createElement("button"); head.type = "button"; head.className = "ii-head";
-    const nm   = document.createElement("span"); nm.className = "ii-name"; nm.textContent = item.name;
-    const caret = document.createElement("span"); caret.className = "ii-caret"; caret.textContent = "▾";
-    head.appendChild(nm); head.appendChild(caret);
-    const body = document.createElement("div"); body.className = "ii-body"; body.hidden = true;
-    let built = false;
-    head.addEventListener("click", function(){
-      const willOpen = body.hidden;
-      body.hidden = !willOpen;
-      wrap.classList.toggle("open", willOpen);
-      if(willOpen && !built){          // 처음 펼칠 때만 이미지 로드(지연 로딩)
-        built = true;
-        if(item.imgId){
-          const small = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w600";
-          const big   = "https://drive.google.com/thumbnail?id=" + item.imgId + "&sz=w1200";
-          const img = document.createElement("img");
-          img.className = "ii-img"; img.loading = "lazy"; img.alt = item.name; img.src = small;
-          img.addEventListener("click", function(){ openLightboxUrl(big); });
-          img.addEventListener("error", function(){ img.replaceWith(makeNoImg("이미지를 불러올 수 없습니다.")); });
-          body.appendChild(img);
-        }else{
-          body.appendChild(makeNoImg("이미지가 없습니다."));
-        }
-        const open = document.createElement("a"); open.className = "ii-btn alt";
-        open.href = item.url; open.target = "_blank"; open.rel = "noopener"; open.textContent = "폴더 열기";
-        body.appendChild(open);
-      }
+  // 최신순 정렬 (연도 desc, 일련번호 desc)
+  const sorted = list.slice().sort(function(a,b){
+    const pa = parseCertNo(a.name), pb = parseCertNo(b.name);
+    return (pb.year - pa.year) || (pb.seq - pa.seq);
+  });
+  // 연도별 그룹
+  const groups = {};
+  sorted.forEach(function(it){
+    const y = parseCertNo(it.name).year || 0;
+    (groups[y] = groups[y] || []).push(it);
+  });
+  const years = Object.keys(groups).map(Number).sort(function(a,b){ return b - a; });
+  const SHOW = 3;
+  years.forEach(function(y){
+    const items = groups[y];
+    const section = document.createElement("div"); section.className = "ledger-year";
+    const yh = document.createElement("div"); yh.className = "ly-head";
+    const yt = document.createElement("span"); yt.textContent = y ? (y + "년") : "기타";
+    const yc = document.createElement("span"); yc.className = "ly-cnt"; yc.textContent = items.length + "건";
+    yh.appendChild(yt); yh.appendChild(yc);
+    section.appendChild(yh);
+    items.forEach(function(item, idx){
+      const el = buildIssuedItem(item);
+      if(idx >= SHOW){ el.style.display = "none"; el.classList.add("ii-hidden"); }
+      section.appendChild(el);
     });
-    wrap.appendChild(head); wrap.appendChild(body);
-    box.appendChild(wrap);
+    if(items.length > SHOW){
+      const more = document.createElement("button");
+      more.type = "button"; more.className = "ii-more";
+      more.textContent = "더보기 (" + (items.length - SHOW) + "건)";
+      more.addEventListener("click", function(){
+        section.querySelectorAll(".ii-hidden").forEach(function(e){ e.style.display = ""; e.classList.remove("ii-hidden"); });
+        more.remove();
+      });
+      section.appendChild(more);
+    }
+    box.appendChild(section);
   });
 }
 
@@ -2754,27 +2829,64 @@ function setIssueDate(s){
   }
 }
 
-// 선택된 과목 기준으로 목록을 불러와 (1) 그 과목 발급현황 표시 (2) 다음 자격번호 세팅
-function refreshForCourse(showLoading){
+// ----- 목록 캐시 + 발급현황 모달 -----
+const LIST_CACHE_KEY = "cert_list_cache_v1";
+let lastList = null;       // 전체 목록(모든 과목) — 캐시/최신본
+let ledgerOpen = false;    // 발급현황 모달 열림 여부
+
+// 받아온 목록을 폼(다음 자격번호)·모달에 반영
+function applyListData(list, issue){
+  lastList = list || [];
   const course = document.getElementById("course").value;
-  if(!GAS_URL){ if(showLoading) setListStatus("구글 드라이브 주소(GAS_URL)를 먼저 설정해 주세요."); return; }
+  const filtered = lastList.filter(function(it){ return it.course === course; });
+  setNextCertNo(filtered);                                        // 다음 자격번호
+  if(!issueDateLoaded && issue){ setIssueDate(issue); issueDateLoaded = true; }
+  if(ledgerOpen) renderIssuedList(filtered, course);             // 모달 열려 있으면 즉시 렌더
+}
+
+// 목록 새로고침 (GAS) — 캐시 즉시 반영 후 백그라운드로 최신화
+function refreshForCourse(showLoading){
+  if(lastList) applyListData(lastList);                          // 캐시 즉시 반영(빠른 체감)
+  if(!GAS_URL){ if(showLoading && ledgerOpen) setListStatus(listErrorMsg("no_url")); return; }
   const btn = document.getElementById("btn-load");
-  if(showLoading){ setListStatus("'" + course + "' 목록 불러오는 중…"); }
+  if(showLoading && ledgerOpen && (!lastList || !lastList.length)) setListStatus("목록 불러오는 중…");
   if(btn) btn.disabled = true;
   fetchList(function(res){
     if(btn) btn.disabled = false;
     if(res && res.ok){
-      const filtered = (res.list || []).filter(function(it){ return it.course === course; });
-      renderIssuedList({ ok:true, count:filtered.length, list:filtered }, course);
-      setNextCertNo(filtered);   // 이 과목의 최신 번호 다음으로
-      if(!issueDateLoaded && res.lastIssue){ setIssueDate(res.lastIssue); issueDateLoaded = true; } // 최근 발급일 자동 세팅(1회)
-    }else if(showLoading){
+      try{ localStorage.setItem(LIST_CACHE_KEY, JSON.stringify({ list:res.list||[], lastIssue:res.lastIssue||"", ts:Date.now() })); }catch(_){}
+      applyListData(res.list||[], res.lastIssue||"");
+    }else if(ledgerOpen && (!lastList || !lastList.length)){
       setListStatus(listErrorMsg(res && res.error));
     }
   });
 }
 
-// [목록 불러오기] 버튼 = 현재 선택 과목 목록 새로고침
+// 페이지 로드 시 캐시에서 즉시 표시 (빠른 로딩 체감)
+(function initFromCache(){
+  try{
+    const c = JSON.parse(localStorage.getItem(LIST_CACHE_KEY) || "null");
+    if(c && c.list){ applyListData(c.list, c.lastIssue); }
+  }catch(_){}
+})();
+
+// 발급현황 모달 열기/닫기
+function openLedger(){
+  ledgerOpen = true;
+  document.getElementById("ledgerModal").classList.add("show");
+  if(!lastList) setListStatus("목록 불러오는 중…");
+  refreshForCourse(true);   // 캐시 즉시 표시 + 백그라운드 최신화
+}
+function closeLedger(){
+  ledgerOpen = false;
+  document.getElementById("ledgerModal").classList.remove("show");
+}
+document.getElementById("btn-ledger").addEventListener("click", openLedger);
+document.querySelector("#ledgerModal .lm-close").addEventListener("click", closeLedger);
+document.getElementById("ledgerModal").addEventListener("click", function(e){ if(e.target === this) closeLedger(); });
+document.addEventListener("keydown", function(e){ if(e.key === "Escape" && ledgerOpen) closeLedger(); });
+
+// [새로고침] 버튼 = 현재 선택 과목 목록 새로고침
 document.getElementById("btn-load").addEventListener("click", function(){ refreshForCourse(true); });
 
 // (이미 과목으로 걸러진) 목록에서 최신 자격번호 다음 번호를 자격번호 칸에 채움
@@ -2805,8 +2917,8 @@ function bumpCertNo(){
   if(m){ el.value = m[1] + "-" + String(parseInt(m[2],10)+1).padStart(Math.max(3,m[2].length), "0"); }
 }
 
-// 페이지 열 때: 기본 과목 기준으로 목록·다음 번호 자동 세팅
-refreshForCourse(true);
+// 페이지 열 때: 백그라운드로 목록 로드(다음 자격번호 자동 세팅 + 캐시 최신화)
+refreshForCourse(false);
 
 // ---------- 발급하기 (이 버튼을 눌러야 결과가 나옴) ----------
 const outputsEl  = document.getElementById("outputs");
