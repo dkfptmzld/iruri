@@ -130,6 +130,13 @@
     .issued-row{flex-direction:column;align-items:stretch;gap:8px}
     .issued-row .ir-open{text-align:center}
   }
+  /* 연도 필터 탭 */
+  .ly-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+  .ly-tab{font-size:12.5px;font-weight:700;color:var(--ink-soft);background:#fff;
+       border:1.5px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;
+       font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+  .ly-tab:hover{border-color:var(--accent);color:var(--accent)}
+  .ly-tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
   /* 연도 그룹 + 더보기 */
   .ledger-year{margin-bottom:16px}
   .ledger-year:last-child{margin-bottom:0}
@@ -322,6 +329,7 @@
       </div>
     </div>
     <div id="list-status" class="list-status">불러오는 중…</div>
+    <div id="ledger-years" class="ly-tabs"></div>
     <div id="issued-list" class="issued-list"></div>
   </div>
 </div>
@@ -2722,10 +2730,13 @@ function parseCertNo(name){
   return m ? { year:+m[1], seq:+m[2] } : { year:0, seq:0 };
 }
 
-// 발급 현황 렌더 — 연도별 그룹 + 최신순 + 그룹당 3건 후 더보기
+let ledgerYearFilter = "all";   // 연도 필터 ("all" | 연도숫자)
+
+// 발급 현황 렌더 — 연도 필터 탭 + 연도별 그룹 + 최신순 + 그룹당 3건 후 더보기
 function renderIssuedList(list, course){
-  const box = document.getElementById("issued-list");
-  box.innerHTML = "";
+  const box  = document.getElementById("issued-list");
+  const tabs = document.getElementById("ledger-years");
+  box.innerHTML = ""; tabs.innerHTML = "";
   setListStatus("[" + course + "] 총 " + list.length + "건");
   if(!list.length){
     const d = document.createElement("div");
@@ -2744,8 +2755,24 @@ function renderIssuedList(list, course){
     (groups[y] = groups[y] || []).push(it);
   });
   const years = Object.keys(groups).map(Number).sort(function(a,b){ return b - a; });
+  if(ledgerYearFilter !== "all" && years.indexOf(+ledgerYearFilter) < 0) ledgerYearFilter = "all";
+
+  // 연도 필터 탭: [전체] [2026년 (n)] [2025년 (n)] …
+  function mkTab(label, val){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ly-tab" + (String(ledgerYearFilter) === String(val) ? " on" : "");
+    b.textContent = label;
+    b.addEventListener("click", function(){ ledgerYearFilter = val; renderIssuedList(list, course); });
+    return b;
+  }
+  tabs.appendChild(mkTab("전체 (" + sorted.length + ")", "all"));
+  years.forEach(function(y){ tabs.appendChild(mkTab((y ? y + "년" : "기타") + " (" + groups[y].length + ")", y)); });
+
+  // 선택된 연도만(또는 전체) 그룹 렌더
   const SHOW = 3;
-  years.forEach(function(y){
+  const showYears = (ledgerYearFilter === "all") ? years : years.filter(function(y){ return String(y) === String(ledgerYearFilter); });
+  showYears.forEach(function(y){
     const items = groups[y];
     const section = document.createElement("div"); section.className = "ledger-year";
     const yh = document.createElement("div"); yh.className = "ly-head";
