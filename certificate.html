@@ -155,6 +155,42 @@
 </style>
 </head>
 <body>
+<!-- 관리자 비밀번호 게이트 (관리자 모드와 동일 비번 · 클라이언트 simpleHash 검증) -->
+<div id="certGate" style="position:fixed;inset:0;z-index:2147483600;background:linear-gradient(160deg,#f7fbf4 0%,#e8f5e2 45%,#d4edda 100%);display:flex;align-items:center;justify-content:center;padding:18px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',sans-serif;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(26,122,80,.18);width:100%;max-width:340px;padding:28px 24px;text-align:center;">
+    <div style="font-size:34px;margin-bottom:8px;">🔐</div>
+    <div style="font-size:17px;font-weight:800;color:#1a4a2e;margin-bottom:4px;">자격증 발급 · 관리자 인증</div>
+    <div style="font-size:12px;color:#9B9888;margin-bottom:18px;">관리자 모드와 동일한 비밀번호를 입력하세요</div>
+    <input id="certGatePw" type="password" placeholder="비밀번호" autocomplete="off" style="width:100%;height:44px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:15px;outline:none;box-sizing:border-box;" onkeydown="if(event.key==='Enter')certGateCheck()">
+    <div id="certGateErr" style="color:#e53935;font-size:12px;margin-top:8px;display:none;">비밀번호가 틀렸습니다</div>
+    <button onclick="certGateCheck()" style="width:100%;height:44px;margin-top:16px;border:none;border-radius:10px;background:#1A7A50;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">들어가기</button>
+    <div style="margin-top:14px;"><a href="adjustment-system.html" style="font-size:12px;color:#9B9888;text-decoration:none;">← 홈으로</a></div>
+  </div>
+</div>
+<script>
+(function(){
+  function simpleHash(str){ var h=0; for(var i=0;i<str.length;i++){ h=(Math.imul(31,h)+str.charCodeAt(i))|0; } return h.toString(36); }
+  var ADMIN_PW_HASH='-ecgotm'; // 관리자 모드와 동일
+  window.certGateCheck=function(){
+    var pw=document.getElementById('certGatePw').value;
+    if(simpleHash(pw)!==ADMIN_PW_HASH){
+      document.getElementById('certGateErr').style.display='block';
+      var i=document.getElementById('certGatePw'); if(i.select) i.select();
+      return;
+    }
+    try{ sessionStorage.setItem('iruri_cert_unlocked','1'); }catch(_){}
+    var g=document.getElementById('certGate'); if(g) g.style.display='none';
+  };
+  // 이미 인증된 세션이면(관리자 모드 진입 또는 직전 인증) 게이트 통과
+  try{
+    if(sessionStorage.getItem('iruri_admin_session')==='true' || sessionStorage.getItem('iruri_cert_unlocked')==='1'){
+      var g=document.getElementById('certGate'); if(g) g.style.display='none';
+    } else {
+      var f=document.getElementById('certGatePw'); if(f) setTimeout(function(){ f.focus(); },60);
+    }
+  }catch(_){}
+})();
+</script>
 <div class="wrap">
   <header class="top">
     <h1>자격증 발급기</h1>
