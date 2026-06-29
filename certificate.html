@@ -2557,7 +2557,17 @@ function renderPlain(canvas, d){
 function renderScan(canvas, d){
   const W=canvas.width, H=canvas.height, ctx=canvas.getContext("2d");
   ctx.clearRect(0,0,W,H); ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,W,H);
-  if(blankReady) ctx.drawImage(blankImg, 0, 0, W, H);
+  if(blankReady){
+    ctx.drawImage(blankImg, 0, 0, W, H);
+    // 템플릿에 구워진 '등급' 줄(글씨체·위치가 다름)을 배경색으로 덮고,
+    // 나머지 변수 줄과 동일한 글씨체·정렬·간격으로 다시 그림
+    try{
+      const bg = ctx.getImageData(Math.round(W*0.64), Math.round(H*0.448), 1, 1).data;
+      ctx.fillStyle = "rgb("+bg[0]+","+bg[1]+","+bg[2]+")";
+    }catch(e){ ctx.fillStyle = "#ffffff"; }
+    ctx.fillRect(W*0.10, H*0.426, W*0.58, H*0.047);   // 구워진 등급 줄 영역 덮기
+    txt(ctx, "등    급 : 1 급", 0.145, 0.440, 0.0172, "left", W, H);
+  }
   drawVariables(ctx, d, W, H);
 }
 
