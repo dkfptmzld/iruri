@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v14.96">
+<meta property="og:title" content="수업기록표 정산 시스템 v14.97">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v14.96">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v14.97">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v14.96</title>
+<title>수업기록표 정산 시스템 v14.97</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1229,6 +1229,14 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div style="font-size:16px;font-weight:700;color:white;margin-bottom:8px;">관리자 모드</div>
  <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;">정산 내역을 확인하고<br>강사/센터를 관리합니다</div>
+ </div>
+ <!-- v14.97: 자격증 발급 (별도 페이지 certificate.html 연결) -->
+ <div role="button" tabindex="0" aria-label="자격증 발급 — 협회 자격증 발급" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; location.href='certificate.html'" style="background: white; border: 2px solid #F0D9A8; border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(180,130,20,.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(180,130,20,.22)';this.style.borderColor='#E0A93A';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(180,130,20,.1)';this.style.borderColor='#F0D9A8';">
+ <div style="width:56px;height:56px;background:linear-gradient(135deg,#E8A93A,#D4892A);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+ <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17 10.43V2H7v8.43c0 .35.18.68.49.86l4.18 2.51-.99 2.34-3.41.29 2.59 2.24L9.07 22 12 20.23 14.93 22l-.78-3.33 2.59-2.24-3.41-.29-.99-2.34 4.18-2.51c.31-.18.49-.51.49-.86zM13 12.6l-1 .6-1-.6V3h2v9.6z"></path></svg>
+ </div>
+ <div style="font-size:16px;font-weight:700;color:#8a5a1c;margin-bottom:8px;">자격증 발급</div>
+ <div style="font-size:12px;color:#9B8A60;line-height:1.6;">협회 자격증을 발급하고<br>드라이브에 저장합니다</div>
  </div>
   <!-- 커스텀 앱 카드 동적 렌더 -->
   <div id="landingCustomCards" style="display:contents;"></div>
@@ -3558,7 +3566,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v14.96';
+const SYSTEM_VERSION='v14.97';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
