@@ -2652,7 +2652,7 @@ function renderIssuedList(res, course){
   const box = document.getElementById("issued-list");
   box.innerHTML = "";
   if(!res || !res.ok){
-    setListStatus("불러오기 실패: " + ((res && res.error) || "응답을 확인할 수 없습니다."));
+    setListStatus(listErrorMsg(res && res.error));
     return;
   }
   const head = course ? ("["+course+"] 총 " + res.count + "건") : ("총 " + res.count + "건 발급됨");
@@ -2697,21 +2697,49 @@ function renderIssuedList(res, course){
   });
 }
 
+// 실패 원인별 안내 문구 (사용자가 바로 조치할 수 있도록)
+function listErrorMsg(err){
+  if(err === "not_jsonp"){
+    return "GAS 응답이 JSONP(callback)로 감싸지지 않았습니다. → Apps Script에서 코드 저장 후 [배포 > 배포 관리 > 편집 > 새 버전 > 배포]로 재배포해 주세요. (확인: 주소창에 …/exec?action=list&token="+GAS_TOKEN+"&callback=test 를 열어 test(...)로 시작하면 정상)";
+  }
+  if(err === "timeout"){
+    return "응답이 없습니다(30초 초과). GAS 액세스 권한이 '모든 사용자'인지, 배포 상태와 주소를 확인해 주세요.";
+  }
+  if(err === "network"){
+    return "GAS에 연결하지 못했습니다. 배포 주소(GAS_URL)와 인터넷 연결을 확인해 주세요.";
+  }
+  if(err === "no_url"){
+    return "구글 드라이브 주소(GAS_URL)를 먼저 설정해 주세요.";
+  }
+  return "목록을 불러오지 못했습니다. GAS 주소·배포 상태를 확인해 주세요.";
+}
+
 // 목록을 GAS에서 가져오는 범용 함수 (JSONP). 결과를 onResult(res)로 전달
 function fetchList(onResult){
   if(!GAS_URL){ onResult({ ok:false, error:"no_url" }); return; }
   const cb = "cb_" + Date.now() + "_" + Math.floor(Math.random()*10000);
   const s = document.createElement("script");
-  let done = false;
+  let done = false, loaded = false;
   function cleanup(){
     window[cb] = function(){};          // 늦게 도착하는 콜백이 에러 안 나도록 no-op
     if(s.parentNode) s.parentNode.removeChild(s);
   }
   window[cb] = function(res){ done = true; cleanup(); onResult(res); };
-  s.onerror = function(){ cleanup(); onResult({ ok:false, error:"network" }); };
+  s.onerror = function(){ if(done) return; done = true; cleanup(); onResult({ ok:false, error:"network" }); };
+  // JSONP 콜백은 스크립트 실행 중(=onload 직전)에 불린다.
+  // onload가 떴는데도 done이 false면 = 응답이 callback(...)로 안 감싸짐 → 즉시 not_jsonp 처리(GAS 재배포 필요).
+  s.onload  = function(){
+    loaded = true;
+    if(done) return;
+    done = true; cleanup(); onResult({ ok:false, error:"not_jsonp" });
+  };
   s.src = GAS_URL + "?action=list&token=" + encodeURIComponent(GAS_TOKEN) + "&callback=" + cb + "&_=" + Date.now();
   document.body.appendChild(s);
-  setTimeout(function(){ if(!done){ cleanup(); onResult({ ok:false, error:"timeout" }); } }, 15000);
+  setTimeout(function(){
+    if(done) return;
+    cleanup();
+    onResult({ ok:false, error:"timeout" });   // 응답 자체가 안 옴(권한/주소/콜드스타트)
+  }, 30000);
 }
 
 let issueDateLoaded = false;   // 발급일은 최초 1회만 자동 세팅(이후 사용자 입력 보존)
@@ -2741,7 +2769,7 @@ function refreshForCourse(showLoading){
       setNextCertNo(filtered);   // 이 과목의 최신 번호 다음으로
       if(!issueDateLoaded && res.lastIssue){ setIssueDate(res.lastIssue); issueDateLoaded = true; } // 최근 발급일 자동 세팅(1회)
     }else if(showLoading){
-      setListStatus("목록을 불러오지 못했습니다. GAS 주소·배포 상태를 확인해 주세요.");
+      setListStatus(listErrorMsg(res && res.error));
     }
   });
 }
