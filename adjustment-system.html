@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.01">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.02">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.01">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.02">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.01</title>
+<title>수업기록표 정산 시스템 v15.02</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1659,7 +1659,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  </div>
  <!-- 제출 버튼 -->
- <div id="ti-btn-wrap" style="display:flex;flex-direction:column;gap:10px;">
+ <div id="ti-btn-wrap" style="display:flex;flex-direction:column;gap:10px;max-width:780px;width:100%;margin:0 auto;padding:0 20px;box-sizing:border-box;">
  <div class="ti-draft-btns" style="display:flex;gap:10px;">
  <button onclick="manualSaveDraft()" style="flex:1;height:46px;background:#F0EDE8;color:#3A3A3A;border:1px solid #D8D5CE;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">💾 임시저장</button>
  <button onclick="manualLoadDraft()" style="flex:1;height:46px;background:#FDF3DC;color:#8A6D1F;border:1px solid #E8CC80;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📂 임시저장 불러오기</button>
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.01';
+const SYSTEM_VERSION='v15.02';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13487,13 +13487,16 @@ function renderTiNotes(){
  // ── 멀티 항목 카드 (휴강/보강/모의수업/주차료) ──
  if(multiEntryCats.includes(note.cat) && !isAuto){
   const hasAmt2 = ['신규(모의) 수업','주차료','물품','기타'].includes(note.cat);
+  const noCenter = ['물품','기타'].includes(note.cat);   // 물품·기타는 센터명 칸 없음
   const isEvent2 = note.cat === '대상행사';
   const showAmtTotal = hasAmt2 || isEvent2;
   if(!Array.isArray(note.entries)) note.entries=[{date:note.date||'',center:note.center||'',text:(note.text||note.content||''),amount:note.cat==='대상행사'?50000:(note.amount||0)}];
   // 합계 자동 계산
   const total = note.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
   if(hasAmt2 || isEvent2) tiNotes[i].amount = total;
-  const gridCols = isEvent2 ? '72px 1fr 90px 28px' : (hasAmt2 ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px');
+  const gridCols = isEvent2 ? '72px 1fr 90px 28px'
+    : (noCenter ? '62px 1fr 70px 28px'                      // 날짜 · 내용 · 금액 · ✕ (센터 없음)
+    : (hasAmt2 ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px'));
   const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 수업 교구 구매','기타':'예) 기타 비용 내역'};
   const entryRows = note.entries.map((e,ei)=>{
    const cOpts = monthCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
@@ -13514,7 +13517,7 @@ function renderTiNotes(){
    }
    return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
     <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'date',this.value)">
-    <select class="me-center" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{_updateEntry(${i},${ei},'center',v.trim());});this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>
+    ${noCenter ? '' : `<select class="me-center" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{_updateEntry(${i},${ei},'center',v.trim());});this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>`}
     <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[note.cat]||'내용'}" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'text',this.value)">
     ${hasAmt2 ? `<div class="me-amt">${amtCell}</div>` : ''}
     <button class="me-del" onclick="_removeEntry(${i},${ei})" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
@@ -13522,7 +13525,8 @@ function renderTiNotes(){
   }).join('');
   const headerCols = isEvent2
    ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터명</span><span style="font-size:10px;color:#854F0B;text-align:right;">금액</span><span></span>`
-   : (hasAmt2 ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span style="font-size:10px;color:#B0A080;text-align:right;">금액</span><span></span>` : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span></span>`);
+   : (noCenter ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">내용</span><span style="font-size:10px;color:#B0A080;text-align:right;">금액</span><span></span>`
+   : (hasAmt2 ? `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span style="font-size:10px;color:#B0A080;text-align:right;">금액</span><span></span>` : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span><span></span>`));
   const totalRow = showAmtTotal ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1.5px solid ${s.border};"><span style="font-size:12px;color:${s.color};font-weight:600;">합계</span><span id="me-total-${i}" style="font-size:14px;font-weight:700;color:${s.color};">${total.toLocaleString()}원</span></div>` : '';
   const deleteBtn2 = isAuto ? `<button style="margin-left:auto;width:28px;height:28px;border:none;background:#FEF3C7;color:#BA7517;border-radius:6px;cursor:help;font-size:13px;">🔒</button>` : `<button onclick="tiNotes.splice(${i},1);renderTiNotes();" style="margin-left:auto;width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:6px;cursor:pointer;font-size:13px;">✕</button>`;
   row.innerHTML = `
@@ -13809,6 +13813,25 @@ function tiUpdateSettleSummary(teacher){
  }
 }
 
+// 필수 입력 누락 칸에 빨간 박스 표시(입력 시작하면 해제)
+function _tiMarkInvalid(el){
+ if(!el) return;
+ el.style.outline='2px solid #DC2626';
+ el.style.outlineOffset='1px';
+ el.style.background='#FEF2F2';
+ const clr=()=>{ el.style.outline=''; el.style.outlineOffset=''; el.style.background='';
+  el.removeEventListener('input',clr); el.removeEventListener('change',clr); el.removeEventListener('focus',clr); };
+ el.addEventListener('input',clr); el.addEventListener('change',clr); el.addEventListener('focus',clr);
+}
+// 카드/섹션 자체에 빨간 테두리 강조 후 스크롤
+function _tiFlagSection(el){
+ if(!el) return;
+ const ob=el.style.boxShadow;
+ el.style.boxShadow='0 0 0 3px #DC2626';
+ el.scrollIntoView({behavior:'smooth',block:'center'});
+ setTimeout(()=>{ el.style.boxShadow=ob; }, 4000);
+}
+
 function submitTiData(){
  try{
  const teacher=document.getElementById('ti-teacher').value;
@@ -13843,36 +13866,19 @@ function submitTiData(){
   const list = document.getElementById('ti-note-list');
   let firstEl = null;
   if(list){
-   list.querySelectorAll('input.tn-date:not([readonly]), input[placeholder="날짜"]').forEach(el=>{
-    if(!(el.value||'').trim()){
-     el.style.borderColor='#DC2626';
-     el.style.background='#FEF2F2';
-     if(!firstEl) firstEl=el;
-     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
-    }
+   list.querySelectorAll('input.tn-date:not([readonly]), input.me-date, input[placeholder="날짜"]').forEach(el=>{
+    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
    });
-   list.querySelectorAll('input.tn-content, input[placeholder^="예)"], input[placeholder="내용"]').forEach(el=>{
-    if(!(el.value||'').trim()){
-     el.style.borderColor='#DC2626';
-     el.style.background='#FEF2F2';
-     if(!firstEl) firstEl=el;
-     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
-    }
+   list.querySelectorAll('input.tn-content, input.me-text, input[placeholder^="예)"], input[placeholder="내용"]').forEach(el=>{
+    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
    });
-  }
-  // 대상행사 센터명 빈 칸 하이라이트
-  if(list){
+   // 대상행사 센터명 빈 칸
    list.querySelectorAll('input[placeholder="센터명 직접 입력"]').forEach(el=>{
-    if(!(el.value||'').trim()){
-     el.style.borderColor='#DC2626';
-     el.style.background='#FEF2F2';
-     if(!firstEl) firstEl=el;
-     setTimeout(()=>{ el.style.borderColor=''; el.style.background=''; },3000);
-    }
+    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
    });
   }
-  if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); firstEl.focus(); }
-  showToast('⚠️ 날짜·센터명·내용을 모두 입력해 주세요');
+  if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>{ try{ firstEl.focus(); }catch(_){} }, 350); }
+  showToast('⚠️ 빨간 칸의 날짜·내용을 입력해 주세요');
   return;
  }
 
@@ -13894,10 +13900,9 @@ function submitTiData(){
      const amtInputs = list.querySelectorAll('input[type="number"]');
      for(const r of amtInputs){
       if(!(Number(r.value) > 0)){
+       _tiMarkInvalid(r);
        r.scrollIntoView({behavior:'smooth', block:'center'});
-       r.focus();
-       const wrap = r.closest('div');
-       if(wrap){ wrap.style.borderColor = '#DC2626'; setTimeout(()=>{ wrap.style.borderColor = ''; }, 3000); }
+       setTimeout(()=>{ try{ r.focus(); }catch(_){} }, 350);
        return;
       }
      }
@@ -13907,9 +13912,9 @@ function submitTiData(){
   return;
  }
 
- if(!teacher){ showConfirm({icon:'⚠️',title:'입력 오류',desc:'강사 이름을 선택해주세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
+ if(!teacher){ _tiFlagSection(document.getElementById('ti-step1-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'강사 이름을 선택해주세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
  const validGroups=tiDayGroups.filter(g=>g.day!=='미등록' && g.centers.some(c=>c.name&&c.name!=='__custom__'));
- if(!validGroups.length){ showConfirm({icon:'⚠️',title:'입력 오류',desc:'수업 기록을 최소 1개 이상 입력해주세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
+ if(!validGroups.length){ _tiFlagSection(document.getElementById('ti-step2-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'수업 기록을 최소 1개 이상 입력해주세요.<br><small style="color:var(--text3)">요일·센터를 선택하고 출석(O)을 체크해주세요.</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
 
  // 제출 확인 팝업
  const _totalCount = validGroups.reduce((s,g)=>s+g.centers.filter(c=>c.name&&c.name!=='__custom__').reduce((ss,c)=>ss+c.attend.filter(a=>a==='O'||a==='o').length,0),0);
