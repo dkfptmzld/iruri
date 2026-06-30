@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.03">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.04">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.03">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.04">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.03</title>
+<title>수업기록표 정산 시스템 v15.04</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.03';
+const SYSTEM_VERSION='v15.04';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13463,6 +13463,7 @@ function renderTiNotes(){
  }
 
  const row = document.createElement('div');
+ row.dataset.noteIdx = i;   // v15.04: 제출 검증 시 해당 노트 카드를 정확히 찾기 위함
  // v11.99: 자동/수동 카드 배경 통일 (흰색)
  row.style.cssText = 'background:white;border:1px solid #E2E0D8;border-radius:10px;padding:10px 12px;' + (isAuto ? 'position:relative;' : '');
 
@@ -13866,20 +13867,32 @@ function submitTiData(){
  if(emptyContent.length > 0 || emptyDate.length > 0 || emptyCenter.length > 0){
   const list = document.getElementById('ti-note-list');
   let firstEl = null;
-  if(list){
-   list.querySelectorAll('input.tn-date:not([readonly]), input.me-date, input[placeholder="날짜"]').forEach(el=>{
-    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
+  // 문제 있는 노트들(중복 제거)을 카드 단위로 찾아 빈 칸을 칠함. 입력칸을 못 찾으면 카드 전체를 빨갛게.
+  const invalidNotes = [];
+  [...emptyContent, ...emptyDate, ...emptyCenter].forEach(n=>{ if(invalidNotes.indexOf(n)<0) invalidNotes.push(n); });
+  invalidNotes.forEach(note=>{
+   const idx = tiNotes.indexOf(note);
+   const card = list ? list.querySelector('[data-note-idx="'+idx+'"]') : null;
+   if(!card) return;
+   let markedInCard = false;
+   card.querySelectorAll('input.tn-date:not([readonly]), input.me-date, input[placeholder="날짜"], input.tn-content, input.me-text, input[placeholder^="예)"], input[placeholder="내용"], input[placeholder="센터명 직접 입력"]').forEach(el=>{
+    if(!(el.value||'').trim()){ _tiMarkInvalid(el); markedInCard=true; if(!firstEl) firstEl=el; }
    });
-   list.querySelectorAll('input.tn-content, input.me-text, input[placeholder^="예)"], input[placeholder="내용"]').forEach(el=>{
-    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
-   });
-   // 대상행사 센터명 빈 칸
-   list.querySelectorAll('input[placeholder="센터명 직접 입력"]').forEach(el=>{
-    if(!(el.value||'').trim()){ _tiMarkInvalid(el); if(!firstEl) firstEl=el; }
-   });
+   if(!markedInCard){   // 데이터는 비었다는데 빈 입력칸을 못 찾음 → 카드 전체 강조(절대 토스트만 뜨지 않게)
+    card.style.boxShadow='0 0 0 3px #DC2626';
+    setTimeout(()=>{ card.style.boxShadow=''; }, 5000);
+    if(!firstEl) firstEl=card;
+   }
+  });
+  // 그래도 못 찾으면 특이사항 영역 전체를 강조
+  if(!firstEl){
+   const sec = document.getElementById('ti-note-section') || list;
+   if(sec) _tiFlagSection(sec);
+   firstEl = sec;
   }
-  if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>{ try{ firstEl.focus(); }catch(_){} }, 350); }
-  showToast('⚠️ 빨간 칸의 날짜·내용을 입력해 주세요');
+  if(firstEl){ firstEl.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>{ try{ firstEl.focus && firstEl.focus(); }catch(_){} }, 350); }
+  const _cats=[...new Set(invalidNotes.map(n=>n.cat))].filter(Boolean).join(', ');
+  showToast('⚠️ '+(_cats?_cats+' 항목의 ':'')+'날짜·내용·금액을 확인해 주세요');
   return;
  }
 
