@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.04">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.05">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.04">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.05">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.04</title>
+<title>수업기록표 정산 시스템 v15.05</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1664,6 +1664,10 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button onclick="manualSaveDraft()" style="flex:1;height:46px;background:#F0EDE8;color:#3A3A3A;border:1px solid #D8D5CE;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">💾 임시저장</button>
  <button onclick="manualLoadDraft()" style="flex:1;height:46px;background:#FDF3DC;color:#8A6D1F;border:1px solid #E8CC80;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📂 임시저장 불러오기</button>
  </div>
+ <label style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:#5A5A5A;cursor:pointer;user-select:none;padding:4px 0 2px;">
+  <input type="checkbox" id="ti-require-check" checked style="width:16px;height:16px;accent-color:#1A7A50;cursor:pointer;flex-shrink:0;">
+  <span>필수값 검사 <span style="color:#A0998C;font-size:12px;">· 해제하면 필수값 없이 임시 제출</span></span>
+ </label>
  <button onclick="submitTiData()" style="width:100%;height:52px;background:#1A7A50;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:-.3px;">
  <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
  관리자에게 제출
@@ -3587,7 +3591,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.04';
+const SYSTEM_VERSION='v15.05';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13840,6 +13844,10 @@ function submitTiData(){
  const month=document.getElementById('ti-month').value;
  const account=document.getElementById('ti-account').value;
 
+ // v15.05: '필수값 검사' 체크 해제 시 → 필수값 없이 임시 제출 허용
+ const _reqEl = document.getElementById('ti-require-check');
+ const _enforceRequired = _reqEl ? _reqEl.checked : true;
+
  // v14.07: 특이사항 카드 전체 카테고리 필수 입력 검증
  // v15.03: 물품·기타도 entries(여러 항목) 기반이므로 포함(미포함 시 채워도 note.text가 비어 오검출 → 빨간칸 안 보이는 문제)
  const _MULTI_ALL = ['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사']; // entries 기반 카테고리
@@ -13864,7 +13872,7 @@ function submitTiData(){
   }
   return false;
  });
- if(emptyContent.length > 0 || emptyDate.length > 0 || emptyCenter.length > 0){
+ if(_enforceRequired && (emptyContent.length > 0 || emptyDate.length > 0 || emptyCenter.length > 0)){
   const list = document.getElementById('ti-note-list');
   let firstEl = null;
   // 문제 있는 노트들(중복 제거)을 카드 단위로 찾아 빈 칸을 칠함. 입력칸을 못 찾으면 카드 전체를 빨갛게.
@@ -13899,7 +13907,7 @@ function submitTiData(){
  // v12.48: 금액 필수 검증 — 금액칸 있는 카테고리(모의/주차/물품/기타)는 금액 0/미입력 시 제출 차단
  const AMT_CATS = ['신규(모의) 수업', '주차료', '물품', '기타', '대상행사'];
  const emptyAmount = tiNotes.filter(n => AMT_CATS.includes(n.cat) && !(Number(n.amount) > 0));
- if(emptyAmount.length > 0){
+ if(_enforceRequired && emptyAmount.length > 0){
   const uniqueCats = [...new Set(emptyAmount.map(n => n.cat))];
   showConfirm({
    icon:'⚠️',
@@ -13928,7 +13936,7 @@ function submitTiData(){
 
  if(!teacher){ _tiFlagSection(document.getElementById('ti-step1-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'강사 이름을 선택해주세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
  const validGroups=tiDayGroups.filter(g=>g.day!=='미등록' && g.centers.some(c=>c.name&&c.name!=='__custom__'));
- if(!validGroups.length){ _tiFlagSection(document.getElementById('ti-step2-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'수업 기록을 최소 1개 이상 입력해주세요.<br><small style="color:var(--text3)">요일·센터를 선택하고 출석(O)을 체크해주세요.</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
+ if(_enforceRequired && !validGroups.length){ _tiFlagSection(document.getElementById('ti-step2-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'수업 기록을 최소 1개 이상 입력해주세요.<br><small style="color:var(--text3)">요일·센터를 선택하고 출석(O)을 체크해주세요.</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
 
  // 제출 확인 팝업
  const _totalCount = validGroups.reduce((s,g)=>s+g.centers.filter(c=>c.name&&c.name!=='__custom__').reduce((ss,c)=>ss+c.attend.filter(a=>a==='O'||a==='o').length,0),0);
@@ -13939,6 +13947,7 @@ function submitTiData(){
   title:'수업기록표 제출',
   desc:`<b>${teacher}</b> 강사님의 <b>${year}년 ${month}월</b> 수업기록표를 제출할까요?<br><br>` +
        `· 센터 <b>${_centerCount}곳</b> · 수업 <b>${_totalCount}회</b>${_hasNote ? ` · 특이사항 <b>${tiNotes.length}건</b>` : ''}<br><br>` +
+       (_enforceRequired ? '' : `<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:#92660A;">⚠️ <b>필수값 검사 해제됨</b> — 필수값 없이 임시 제출합니다.</div>`) +
        `<small style="color:var(--text3);">제출 후에는 관리자에게 전달됩니다.</small>`,
   okText:'제출하기',
   cancelText:'취소',
