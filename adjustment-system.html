@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.08">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.09">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.08">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.09">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.08</title>
+<title>수업기록표 정산 시스템 v15.09</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.08';
+const SYSTEM_VERSION='v15.09';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9262,7 +9262,9 @@ function pushErrorLog(desc, detail='', snapshot=null){
 
 function pushChangelog(entry){
  const log = getChangelog();
- log.unshift({ ...entry, id: Date.now(), at: new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) });
+ // v15.09: 누가 변경했는지 기록 — 시스템 감지는 '시스템', 그 외는 로그인한 이름
+ const actor = entry.actor || (entry.type==='error_log' ? '시스템' : (window._loggedInTeacher || '관리자'));
+ log.unshift({ ...entry, actor, id: Date.now(), at: new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) });
  if(log.length > CHANGELOG_MAX) log.length = CHANGELOG_MAX;
  saveChangelog(log);
 }
@@ -9568,12 +9570,16 @@ function renderChangelog(){
  el.innerHTML = log.map(e=>{
   const hasBulkDetail = e.type==='bulk_edit' && Array.isArray(e.changes) && e.changes.length>0;
   const bulkId = 'bulk-detail-'+e.id;
+  const _actor = e.actor || (e.type==='error_log' ? '시스템' : '');   // 누가 변경했는지
+  const _isSys = e.type==='error_log' || _actor==='시스템';
+  const _actorHtml = _actor ? `<span style="font-size:11px;font-weight:600;color:${_isSys?'#DC2626':'var(--green)'};background:${_isSys?'#FEF2F2':'var(--green-bg)'};padding:2px 8px;border-radius:20px;">${_isSys?'⚙️':'👤'} ${esc(_actor)}</span>` : '';
   return `
   <div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:white;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;">
    <div style="width:36px;height:36px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${typeIcon[e.type]||'📝'}</div>
    <div style="flex:1;min-width:0;">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;">
      <span style="font-size:12px;font-weight:600;background:${e.type==='error_log'?'#FEE2E2':'var(--green-bg)'};color:${e.type==='error_log'?'#DC2626':'var(--green)'};padding:2px 8px;border-radius:20px;">${typeLabel[e.type]||'변경'}</span>
+     ${_actorHtml}
      <span style="font-size:11px;color:var(--text3);">${e.at}</span>
     </div>
     <div style="font-size:13px;font-weight:500;color:var(--text);">${e.desc}</div>
