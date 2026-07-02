@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.07">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.08">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.07">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.08">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.07</title>
+<title>수업기록표 정산 시스템 v15.08</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.07';
+const SYSTEM_VERSION='v15.08';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4020,8 +4020,9 @@ window.addEventListener('load', ()=>{
     // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
     const _prevCnt1 = DB.centers.length;
     if(_prevCnt1 > 0 && dedupedCenters1.length < _prevCnt1){
-     const _missing1 = DB.centers.filter(c=>!dedupedCenters1.find(d=>d.name===c.name&&d.region===c.region)).map(c=>`${c.name}(${c.region||'지역미상'})`);
-     try{ pushErrorLog(`센터 감소 감지 (앱 시작)`, `${_prevCnt1}개 → ${dedupedCenters1.length}개 | 없어진 센터: ${_missing1.join(', ')}`); }catch{}
+     const _missingC1 = DB.centers.filter(c=>!dedupedCenters1.find(d=>d.name===c.name&&d.region===c.region));
+     const _missing1 = _missingC1.map(c=>`${c.name}(${c.region||'지역미상'})`);
+     try{ pushErrorLog(`센터 감소 감지 (앱 시작)`, `${_prevCnt1}개 → ${dedupedCenters1.length}개 | 없어진 센터: ${_missing1.join(', ')}`, { centers: JSON.parse(JSON.stringify(_missingC1)) }); }catch{}
     }
     if(!_acceptDbPull('centers', dedupedCenters1)) return;   // v14.54 L1: 센터 급감이면 거부
     DB.centers = dedupedCenters1;
@@ -4194,8 +4195,9 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
     const _prevCnt2 = DB.centers.length;
     if(_prevCnt2 > 0 && dedupedCenters2.length < _prevCnt2){
-     const _missing2 = DB.centers.filter(c=>!dedupedCenters2.find(d=>d.name===c.name&&d.region===c.region)).map(c=>`${c.name}(${c.region||'지역미상'})`);
-     try{ pushErrorLog(`센터 감소 감지 (센터탭)`, `${_prevCnt2}개 → ${dedupedCenters2.length}개 | 없어진 센터: ${_missing2.join(', ')}`); }catch{}
+     const _missingC2 = DB.centers.filter(c=>!dedupedCenters2.find(d=>d.name===c.name&&d.region===c.region));
+     const _missing2 = _missingC2.map(c=>`${c.name}(${c.region||'지역미상'})`);
+     try{ pushErrorLog(`센터 감소 감지 (센터탭)`, `${_prevCnt2}개 → ${dedupedCenters2.length}개 | 없어진 센터: ${_missing2.join(', ')}`, { centers: JSON.parse(JSON.stringify(_missingC2)) }); }catch{}
     }
     DB.centers = dedupedCenters2;
     // v11.30 fix: LS_C_SHEETS(구버전 키, 매 로드 삭제됨) 대신 LS_C에 저장
@@ -9253,8 +9255,9 @@ function saveChangelog(log){
  updateChangelogBadge();
 }
 /* ═══ 에러 로그 ═══ */
-function pushErrorLog(desc, detail=''){
- pushChangelog({ type:'error_log', desc, detail });
+// v15.08: snapshot(없어진 센터 데이터)을 함께 저장하면 '되돌리기'로 복원 가능
+function pushErrorLog(desc, detail='', snapshot=null){
+ pushChangelog(snapshot ? { type:'error_log', desc, detail, snapshot } : { type:'error_log', desc, detail });
 }
 
 function pushChangelog(entry){
@@ -9577,15 +9580,16 @@ function renderChangelog(){
     ${e.detail?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">${e.detail}</div>`:''}
     ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▶ 상세 보기</button><div id="${bulkId}" style="display:none;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${c}`).join('<br>')}</div>`:''}
    </div>
-   ${e.snapshot?`<button onclick="restoreChangelog(${e.id})" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
+   ${(e.snapshot || e.type==='error_log')?`<button onclick="restoreChangelog(${e.id})" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
   </div>`;
   }).join('');;
 }
 function restoreChangelog(id){
  const log = getChangelog();
  const entry = log.find(e=>e.id===id);
- if(!entry||!entry.snapshot) return;
- showConfirm({icon:'↩️',title:'변경 이력 되돌리기',desc:`<b>「${entry.desc}」</b>을(를) 되돌릴까요?`,okText:'되돌리기',okStyle:'primary',onOk:()=>_doRestoreChangelog(entry)});
+ if(!entry || (!entry.snapshot && entry.type!=='error_log')) return;
+ const _extra = entry.type==='error_log' ? `<br><small style="color:var(--text3)">없어진 센터를 다시 추가합니다.</small>` : '';
+ showConfirm({icon:'↩️',title:'변경 이력 되돌리기',desc:`<b>「${entry.desc}」</b>을(를) 되돌릴까요?${_extra}`,okText:'되돌리기',okStyle:'primary',onOk:()=>_doRestoreChangelog(entry)});
 }
 function _restoreChangelog_UNUSED(id){
  const log = getChangelog();
@@ -10051,6 +10055,26 @@ async function _doRejectOneSub(s){
 function _doRestoreChangelog(entry){
  const snap = entry.snapshot;
  try{
+  if(entry.type==='error_log'){
+   // 없어진 센터 복원: snapshot이 있으면 그 데이터로, 없으면(구버전 로그) detail에서 이름·지역 파싱
+   let restore = (snap && Array.isArray(snap.centers)) ? snap.centers.slice() : [];
+   if(!restore.length){
+    const m = String(entry.detail||'').match(/없어진 센터:\s*(.+)$/);
+    if(m){ (m[1].match(/([^(,]+)\(([^)]*)\)/g)||[]).forEach(tok=>{
+     const mm = tok.match(/([^(]+)\(([^)]*)\)/);
+     if(mm){ const nm=mm[1].trim(); let rg=mm[2].trim(); if(rg==='지역미상') rg=''; if(nm) restore.push({name:nm, region:rg, fee:0, schedule:[]}); }
+    }); }
+   }
+   let added=0;
+   restore.forEach(sc=>{ if(!DB.centers.find(c=>c.name===sc.name && (c.region||'')===(sc.region||''))){ DB.centers.push(JSON.parse(JSON.stringify(sc))); added++; } });
+   lsSave();
+   try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+   try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+   gasPost({action:'syncCenters', centers:DB.centers}).catch(()=>{});
+   try{ if(document.getElementById('centersView')?.style.display==='block'){ renderRegionStats(); renderCenterTreeView(); } }catch(_){}
+   showToast(added>0 ? `없어진 센터 ${added}곳 복원됨 ✅` : '이미 복원되어 있어요');
+   return;
+  }
   if(entry.type==='teacher_delete'||entry.type==='teacher_edit'){ DB.teachers=JSON.parse(JSON.stringify(snap.teachers)); lsSave(); renderTeacherMgr(); }
   else if(entry.type==='center_delete'||entry.type==='center_edit'){ DB.centers=JSON.parse(JSON.stringify(snap.centers)); lsSave(); renderCenterMgr(); }
   else if(snap.ym&&snap.data){
