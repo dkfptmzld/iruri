@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.10">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.11">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.10">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.11">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.10</title>
+<title>수업기록표 정산 시스템 v15.11</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1619,7 +1619,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;" class="ti-summary-grid">
  <div class="ti-summary-cell" style="padding:16px 20px;border-right:1px solid #E2E0D8;">
- <div style="font-size:11px;color:#9B9888;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">수업료%</div>
+ <div style="font-size:11px;color:#9B9888;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">강사료</div>
  <div id="ti-s-feepct" style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:#333;">—</div>
  </div>
  <div class="ti-summary-cell" style="padding:16px 20px;border-right:1px solid #E2E0D8;">
@@ -2176,7 +2176,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <tfoot>
  <tr class="ledger-foot">
  <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협은행 156-02-226505 김유천</td>
- <td style="font-size:11px;font-weight:600;">수업료%</td>
+ <td style="font-size:11px;font-weight:600;">강사료</td>
  <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
  <td style="font-size:11px;font-weight:600;">세전</td>
  </tr>
@@ -2194,7 +2194,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <table class="settle-summary-table">
  <thead>
  <tr>
- <th>수업료%</th>
+ <th>강사료</th>
  <th>수업료 합계</th>
  <th>세전</th>
  <th>영업이익</th>
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.10';
+const SYSTEM_VERSION='v15.11';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5824,7 +5824,7 @@ function renderLedger(ti){
  <tfoot>
  <tr class="ledger-foot">
  <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">${(()=>{const {bank,num,name}=parseAccount(t.account);return[bank,num,name].filter(Boolean).join(' ');})()}</td>
- <td style="font-size:11px;font-weight:600;">수업료%</td>
+ <td style="font-size:11px;font-weight:600;">강사료</td>
  <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
  <td style="font-size:11px;font-weight:600;">세전</td>
  </tr>
@@ -5842,7 +5842,7 @@ function renderLedger(ti){
  <table class="settle-summary-table">
  <thead>
  <tr>
- <th>수업료%</th>
+ <th>강사료</th>
  <th>수업료 합계</th>
  <th>세전</th>
  <th>영업이익</th>
@@ -14005,7 +14005,7 @@ function submitTiData(){
  const desc = `<div style="text-align:left;">`
   + `<div style="font-size:12px;color:#8A8676;text-align:center;margin-bottom:10px;"><b>${esc(teacher)}</b> 강사님 · ${esc(year)}년 ${esc(month)}월 · 센터 ${_centerCount}곳 · 수업 <b>${S.count}회</b></div>`
   + secLabel('수업료 정산')
-  + `<div style="${rowStyle}"><span style="color:#5C574D;">강사 수업료율</span><span style="color:#9B9888;font-weight:600;">${esc(S.feeLabel)}</span></div>`
+  + `<div style="${rowStyle}"><span style="color:#5C574D;">강사료</span><span style="color:#9B9888;font-weight:600;">${esc(S.feeLabel)}</span></div>`
   + `<div style="${rowStyle}"><span style="color:#5C574D;">세전 강사료</span><span style="font-weight:600;color:#23211C;">${won(S.pretax)}</span></div>`
   + `<div style="${rowStyle}"><span style="color:#5C574D;">원천징수 3.3%</span><span style="color:#C0392B;font-weight:600;">− ${won(S.tax)}</span></div>`
   + `<div style="height:1px;background:#EFEDE6;margin:7px 0;"></div>`
