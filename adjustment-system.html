@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.09">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.10">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.09">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.10">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.09</title>
+<title>수업기록표 정산 시스템 v15.10</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.09';
+const SYSTEM_VERSION='v15.10';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5044,7 +5044,9 @@ function _buildTeacherPdfPage(t){
  });
  const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
  const {bank:accBank,num:accNum,name:accName}=parseAccount(t.account);
- const accStr=[accBank,accNum,accName].filter(Boolean).join(' ')||'계좌 미등록';
+ let accStr=[accBank,accNum,accName].filter(Boolean).join(' ');
+ if(!accStr){ const _dbT=DB.teachers.find(x=>x.name===t.name); if(_dbT&&_dbT.account) accStr=_dbT.account; }  // v15.10: 스냅샷에 계좌 없으면 강사관리(DB) 계좌로 폴백
+ accStr=accStr||'계좌 미등록';
  const centerCount=[...new Set(t.lessons.map(l=>l.center))].length;
  const totalLessons=t.lessons.reduce((s,l)=>s+(l.count||0),0);
  const summaryRows=[];
@@ -5201,7 +5203,9 @@ function dlPDF(){
  const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
 
  const {bank:accBank,num:accNum,name:accName}=parseAccount(t.account);
- const accStr=[accBank,accNum,accName].filter(Boolean).join(' ')||'계좌 미등록';
+ let accStr=[accBank,accNum,accName].filter(Boolean).join(' ');
+ if(!accStr){ const _dbT=DB.teachers.find(x=>x.name===t.name); if(_dbT&&_dbT.account) accStr=_dbT.account; }  // v15.10: 스냅샷에 계좌 없으면 강사관리(DB) 계좌로 폴백
+ accStr=accStr||'계좌 미등록';
  const centerCount=[...new Set(t.lessons.map(l=>l.center))].length;
  const totalLessons=t.lessons.reduce((s,l)=>s+(l.count||0),0);
 
