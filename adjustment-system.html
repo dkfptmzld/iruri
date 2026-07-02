@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.11">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.12">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.11">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.12">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.11</title>
+<title>수업기록표 정산 시스템 v15.12</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3587,7 +3587,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.11';
+const SYSTEM_VERSION='v15.12';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4634,6 +4634,23 @@ function getSavedMonths(){
  });
 }
 
+// v15.12: 2026년 4월 강사료율 맵 (name → feePct). 5월 보정용.
+let _apr2026Cache = null;
+function _apr2026RateMap(){
+ if(_apr2026Cache && Object.keys(_apr2026Cache).length) return _apr2026Cache;
+ const m = {};
+ ['2026년_4월','2026년_04월'].forEach(k=>{
+  if(Object.keys(m).length) return;
+  try{
+   const raw = localStorage.getItem(MONTHLY_KEY_PREFIX + k);
+   const snap = raw ? JSON.parse(raw) : null;
+   ((snap && snap.data && snap.data.teachers) || []).forEach(t=>{ if(typeof t.feePct==='number' && t.feePct>0) m[t.name]=t.feePct; });
+  }catch(_){}
+ });
+ if(Object.keys(m).length) _apr2026Cache = m;
+ return m;
+}
+
 let _normRepairCount = 0; // 마지막 _normFeePct 호출에서 복구된 건수
 function _normFeePct(teachers){
  // v13.86: 구버전 과거 통합 비용 필드 자동 제거 (costExtra/otherCost → 현재는 parkingCost/supplyCost/etcCost로 분리)
@@ -4660,6 +4677,16 @@ function _normFeePct(teachers){
     console.warn(`[feePct 자동복구] ${t.name}: ${t.feePct} → ${correct} (DB: ${dbT.feeVal}%)`);
     t.feePct = correct;
     _normRepairCount++;
+   }
+  }
+  // v15.12: 2026년 5월에만 강사료율이 잘못 저장된 케이스 → 4월 값으로 보정(표시·계산 일치)
+  if(/2026년\s*0?5월/.test(t.yearMonth||'')){
+   const _apr = _apr2026RateMap()[t.name];
+   if(_apr!=null && _apr!==t.feePct){
+    t.feePct = _apr;
+    t.pretax = calcPretax(t.totalSum, _apr, t.lessons);
+    t.finalPay = Math.round((t.pretax||0)*0.967);
+    t.profit = (t.totalSum||0) - (t.pretax||0);
    }
   }
   return t;
