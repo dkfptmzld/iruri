@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.05">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.06">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.05">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.06">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.05</title>
+<title>수업기록표 정산 시스템 v15.06</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3591,7 +3591,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.05';
+const SYSTEM_VERSION='v15.06';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13837,6 +13837,36 @@ function _tiFlagSection(el){
  setTimeout(()=>{ el.style.boxShadow=ob; }, 4000);
 }
 
+// v15.06: 제출 전 정산 내역 계산 (_doSubmitTiData와 동일 로직 — 표시용)
+function _calcTiSettlement(teacher, validGroups){
+ const dbT = DB.teachers.find(t=>t.name===teacher);
+ let count=0, totalSum=0;
+ const lessons=[];
+ validGroups.forEach(g=>g.centers.filter(c=>c.name&&c.name!=='__custom__').forEach(c=>{
+  const fee = DB.centerFees[`${c.name}|${teacher}`] || DB.centers.find(ct=>ct.name===c.name && (!c.region || ct.region===c.region))?.fee || 0;
+  const cnt = c.attend.filter(a=>a==='O'||a==='o').length;
+  count += cnt; totalSum += fee*cnt; lessons.push({count:cnt, fee});
+ }));
+ let feePct=0, pretax=0; const isPct = dbT?.feeType==='pct';
+ if(isPct){ feePct=dbT.feeVal/100; pretax=Math.round(totalSum*feePct); }
+ else { const fv=dbT?.feeVal||0; pretax=lessons.reduce((s,l)=>s+fv*l.count,0); }
+ const feeLabel = isPct ? ('× '+dbT.feeVal+'%') : ('회당 '+((dbT?.feeVal)||0).toLocaleString()+'원');
+ const tax = Math.round(pretax*0.033);
+ const afterTax = pretax - tax;               // = finalPay(세후 수업료)
+ const sumCat = cat => tiNotes.filter(n=>n.cat===cat).reduce((s,n)=>s+(Number(n.amount)||0),0);
+ const eventGross = tiNotes.filter(n=>n.cat==='대상행사').reduce((s,n)=>s+(Array.isArray(n.entries)?n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0):(Number(n.amount)||0)),0);
+ const eventNet = eventGross ? (eventGross - Math.round(eventGross*0.033)) : 0;
+ const extras=[];
+ const _mock=sumCat('신규(모의) 수업'), _park=sumCat('주차료'), _sup=sumCat('물품'), _etc=sumCat('기타');
+ if(_mock) extras.push({label:'모의수업', amount:_mock});
+ if(_park) extras.push({label:'주차료', amount:_park});
+ if(_sup)  extras.push({label:'물품', amount:_sup});
+ if(_etc)  extras.push({label:'기타', amount:_etc});
+ if(eventNet) extras.push({label:'대상행사 (3.3% 공제 후)', amount:eventNet});
+ const extrasTotal = extras.reduce((s,e)=>s+e.amount,0);
+ return { count, isPct, feeLabel, pretax, tax, afterTax, extras, extrasTotal, finalTotal: afterTax + extrasTotal };
+}
+
 function submitTiData(){
  try{
  const teacher=document.getElementById('ti-teacher').value;
@@ -13938,18 +13968,35 @@ function submitTiData(){
  const validGroups=tiDayGroups.filter(g=>g.day!=='미등록' && g.centers.some(c=>c.name&&c.name!=='__custom__'));
  if(_enforceRequired && !validGroups.length){ _tiFlagSection(document.getElementById('ti-step2-card')); showConfirm({icon:'⚠️',title:'입력 오류',desc:'수업 기록을 최소 1개 이상 입력해주세요.<br><small style="color:var(--text3)">요일·센터를 선택하고 출석(O)을 체크해주세요.</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null}); return; }
 
- // 제출 확인 팝업
- const _totalCount = validGroups.reduce((s,g)=>s+g.centers.filter(c=>c.name&&c.name!=='__custom__').reduce((ss,c)=>ss+c.attend.filter(a=>a==='O'||a==='o').length,0),0);
+ // 제출 확인 팝업 — 본인 정산 내역 확인 후 한 번 더 제출 (v15.06)
  const _centerCount = validGroups.reduce((s,g)=>s+g.centers.filter(c=>c.name&&c.name!=='__custom__').length,0);
- const _hasNote = tiNotes.length > 0;
+ const S = _calcTiSettlement(teacher, validGroups);
+ const won = n => Number(n||0).toLocaleString()+'원';
+ const rowStyle = 'display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;';
+ const secLabel = t => `<div style="font-size:11px;font-weight:800;color:#1A7A50;letter-spacing:.3px;margin:12px 0 5px;">${t}</div>`;
+ const extraRows = S.extras.map(e=>`<div style="${rowStyle}"><span style="color:#5C574D;">${esc(e.label)}</span><span style="color:#1A7A50;font-weight:700;">+ ${won(e.amount)}</span></div>`).join('');
+ const extraSec = S.extras.length ? (secLabel('추가 지급 (비용 처리)') + extraRows) : '';
+ const warn = _enforceRequired ? '' : `<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:7px 10px;margin-top:10px;font-size:12px;color:#92660A;">⚠️ <b>필수값 검사 해제됨</b> — 필수값 없이 임시 제출합니다.</div>`;
+ const desc = `<div style="text-align:left;">`
+  + `<div style="font-size:12px;color:#8A8676;text-align:center;margin-bottom:10px;"><b>${esc(teacher)}</b> 강사님 · ${esc(year)}년 ${esc(month)}월 · 센터 ${_centerCount}곳 · 수업 <b>${S.count}회</b></div>`
+  + secLabel('수업료 정산')
+  + `<div style="${rowStyle}"><span style="color:#5C574D;">강사 수업료율</span><span style="color:#9B9888;font-weight:600;">${esc(S.feeLabel)}</span></div>`
+  + `<div style="${rowStyle}"><span style="color:#5C574D;">세전 강사료</span><span style="font-weight:600;color:#23211C;">${won(S.pretax)}</span></div>`
+  + `<div style="${rowStyle}"><span style="color:#5C574D;">원천징수 3.3%</span><span style="color:#C0392B;font-weight:600;">− ${won(S.tax)}</span></div>`
+  + `<div style="height:1px;background:#EFEDE6;margin:7px 0;"></div>`
+  + `<div style="${rowStyle};font-size:14px;"><span style="color:#3A3A3A;font-weight:700;">세후 강사료</span><span style="font-weight:800;color:#23211C;">${won(S.afterTax)}</span></div>`
+  + extraSec
+  + `<div style="margin:13px 0 2px;background:linear-gradient(135deg,#E8F5EE,#F1FAF4);border:1.5px solid #B8E0CC;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;">`
+  +  `<span style="font-size:13px;color:#1A7A50;font-weight:700;line-height:1.3;">최종 실지급액<span style="display:block;font-size:10px;color:#6B9A7A;font-weight:500;margin-top:2px;">세금·비용 반영 후 계좌 입금액</span></span>`
+  +  `<span style="font-size:22px;font-weight:900;color:#1A7A50;letter-spacing:-.5px;white-space:nowrap;">${won(S.finalTotal)}</span></div>`
+  + (account ? `<div style="text-align:center;font-size:11px;color:#A0998C;margin-top:8px;">💳 ${esc(account)}</div>` : '')
+  + warn
+  + `</div>`;
  showConfirm({
-  icon:'📋',
-  title:'수업기록표 제출',
-  desc:`<b>${teacher}</b> 강사님의 <b>${year}년 ${month}월</b> 수업기록표를 제출할까요?<br><br>` +
-       `· 센터 <b>${_centerCount}곳</b> · 수업 <b>${_totalCount}회</b>${_hasNote ? ` · 특이사항 <b>${tiNotes.length}건</b>` : ''}<br><br>` +
-       (_enforceRequired ? '' : `<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:#92660A;">⚠️ <b>필수값 검사 해제됨</b> — 필수값 없이 임시 제출합니다.</div>`) +
-       `<small style="color:var(--text3);">제출 후에는 관리자에게 전달됩니다.</small>`,
-  okText:'제출하기',
+  icon:'🧾',
+  title:'제출 전 정산 내역 확인',
+  desc,
+  okText:'✔ 이대로 제출하기',
   cancelText:'취소',
   okStyle:'primary',
   onOk: ()=>_doSubmitTiData(teacher, year, month, account, validGroups)
