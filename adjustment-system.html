@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.13">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.14">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.13">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.14">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.13</title>
+<title>수업기록표 정산 시스템 v15.14</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.13';
+const SYSTEM_VERSION='v15.14';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5071,10 +5071,8 @@ function _buildTeacherPdfPage(t){
   });
  });
  const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
- const {bank:accBank,num:accNum,name:accName}=parseAccount(t.account);
- let accStr=[accBank,accNum,accName].filter(Boolean).join(' ');
- if(!accStr){ const _dbT=DB.teachers.find(x=>x.name===t.name); if(_dbT&&_dbT.account) accStr=_dbT.account; }  // v15.10: 스냅샷에 계좌 없으면 강사관리(DB) 계좌로 폴백
- accStr=accStr||'계좌 미등록';
+ const {bank:accBank,num:accNum,name:accName}=parseAccount(_resolveAccount(t));
+ let accStr=[accBank,accNum,accName].filter(Boolean).join(" ")||"계좌 미등록";
  const centerCount=[...new Set(t.lessons.map(l=>l.center))].length;
  const totalLessons=t.lessons.reduce((s,l)=>s+(l.count||0),0);
  const summaryRows=[];
@@ -5230,10 +5228,8 @@ function dlPDF(){
  // 주차 헤더 동적 생성
  const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
 
- const {bank:accBank,num:accNum,name:accName}=parseAccount(t.account);
- let accStr=[accBank,accNum,accName].filter(Boolean).join(' ');
- if(!accStr){ const _dbT=DB.teachers.find(x=>x.name===t.name); if(_dbT&&_dbT.account) accStr=_dbT.account; }  // v15.10: 스냅샷에 계좌 없으면 강사관리(DB) 계좌로 폴백
- accStr=accStr||'계좌 미등록';
+ const {bank:accBank,num:accNum,name:accName}=parseAccount(_resolveAccount(t));
+ let accStr=[accBank,accNum,accName].filter(Boolean).join(" ")||"계좌 미등록";
  const centerCount=[...new Set(t.lessons.map(l=>l.center))].length;
  const totalLessons=t.lessons.reduce((s,l)=>s+(l.count||0),0);
 
@@ -5528,7 +5524,7 @@ function renderTeacher(i){
  <div class="profile-avatar">${t.name[0]}</div>
  <div><div class="profile-name">${t.name} 강사</div><div class="profile-sub">${t.yearMonth} · 강사료 ${feePctStr(t.feePct)}</div></div>
  <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
-   ${(()=>{const {bank,num,name}=parseAccount(t.account);return bank||num||name?`<span style='color:var(--text3);font-size:11px;'>${bank}</span><br><span style='font-family:"DM Mono",monospace;font-size:13px;color:var(--text);'>${num}</span><br><span>${name}</span>`:'계좌번호 미등록';})()}
+   ${(()=>{const {bank,num,name}=parseAccount(_resolveAccount(t));return bank||num||name?`<span style='color:var(--text3);font-size:11px;'>${bank}</span><br><span style='font-family:"DM Mono",monospace;font-size:13px;color:var(--text);'>${num}</span><br><span>${name}</span>`:'계좌번호 미등록';})()}
  </div>
  </div>
  <div class="metrics">
@@ -5851,7 +5847,7 @@ function renderLedger(ti){
  <tbody>${bodyRows||'<tr><td colspan="11" style="padding:20px;text-align:center;color:#999;">수업 데이터가 없습니다</td></tr>'}</tbody>
  <tfoot>
  <tr class="ledger-foot">
- <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">${(()=>{const {bank,num,name}=parseAccount(t.account);return[bank,num,name].filter(Boolean).join(' ');})()}</td>
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">${(()=>{const {bank,num,name}=parseAccount(_resolveAccount(t));return[bank,num,name].filter(Boolean).join(' ');})()}</td>
  <td style="font-size:11px;font-weight:600;">강사료</td>
  <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
  <td style="font-size:11px;font-weight:600;">세전</td>
@@ -7327,6 +7323,17 @@ function parseAccount(raw){
  const m = s.match(/^(.*?)\s+([\d\-]+)\s*(.*)$/);
  if(m) return { bank: m[1].trim(), num: m[2].trim(), name: m[3].trim() };
  return { bank: s, num: '', name: '' };
+}
+// v15.14: 정산 레코드의 계좌가 비면 강사관리(DB) 계좌로 폴백 (모든 계좌 표시 공통)
+function _resolveAccount(t){
+ const rec = (t && t.account) || '';
+ const p = parseAccount(rec);
+ if(p.bank || p.num || p.name) return rec;
+ try{
+  const db = DB.teachers.find(x=>x.name===(t&&t.name));
+  if(db && db.account) return db.account;
+ }catch(_){}
+ return rec;
 }
 function formatAccount(raw){
  if(!raw) return '';
