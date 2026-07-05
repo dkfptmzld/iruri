@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.14">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.15">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.14">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.15">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.14</title>
+<title>수업기록표 정산 시스템 v15.15</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.14';
+const SYSTEM_VERSION='v15.15';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3992,9 +3992,9 @@ window.addEventListener('load', ()=>{
   .then(r => {
    if(r.ok && r.data && r.data.length > 0){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
-    // Sheets 데이터로 DB 업데이트
-    DB.teachers = r.data;
-    localStorage.setItem(LS_T_SHEETS, JSON.stringify(r.data));
+    // Sheets 데이터로 DB 업데이트 (v15.15: 계좌는 로컬 값 보존)
+    DB.teachers = _mergeTeacherAccounts(r.data);
+    localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     // 강사 관리 화면 열려있으면 갱신
     if(document.getElementById('teachersView')?.style.display === 'block'){
      renderTeacherStats(); renderTeacherMgr();
@@ -4170,7 +4170,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    // 변경 있을 때만 업데이트
    if(JSON.stringify(r.data) !== JSON.stringify(DB.teachers)){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
-    DB.teachers = r.data;
+    DB.teachers = _mergeTeacherAccounts(r.data);   // v15.15: 계좌 보존
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     renderFn(); // 최신 데이터로 다시 렌더
     
@@ -7334,6 +7334,17 @@ function _resolveAccount(t){
   if(db && db.account) return db.account;
  }catch(_){}
  return rec;
+}
+// v15.15: GAS 강사 응답에 계좌가 비어 있으면(비관리자 권한 응답 등) 기존 로컬 계좌를 유지해 덮어쓰기 방지
+function _mergeTeacherAccounts(incoming){
+ const prev = Array.isArray(DB.teachers) ? DB.teachers : [];
+ return (incoming||[]).map(nt=>{
+  if(nt && !((nt.account||'').trim())){
+   const old = prev.find(o=>o.name===nt.name);
+   if(old && (old.account||'').trim()) return { ...nt, account: old.account };
+  }
+  return nt;
+ });
 }
 function formatAccount(raw){
  if(!raw) return '';
