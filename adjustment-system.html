@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.16">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.17">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.16">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.17">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.16</title>
+<title>수업기록표 정산 시스템 v15.17</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.16';
+const SYSTEM_VERSION='v15.17';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13962,6 +13962,25 @@ function submitTiData(){
  const month=document.getElementById('ti-month').value;
  const account=document.getElementById('ti-account').value;
 
+ // v15.17: 보강 체크 시 '누구 보강인지' 필수 선택 검증 (미선택이면 제출 차단 + 해당 드롭다운 강조)
+ {
+  let firstBadSel=null;
+  tiDayGroups.forEach((g,gi)=>{
+   (g.centers||[]).forEach((c,ci)=>{
+    if(c.isSubstitute && !((c.substituteFor||'').trim())){
+     const sel=document.querySelector(`.ti-subst-sel[data-gi="${gi}"][data-ci="${ci}"]`);
+     if(sel){ _tiMarkInvalid(sel); if(!firstBadSel) firstBadSel=sel; }
+    }
+   });
+  });
+  if(firstBadSel){
+   firstBadSel.scrollIntoView({behavior:'smooth',block:'center'});
+   setTimeout(()=>{ try{ firstBadSel.focus(); }catch(_){} }, 350);
+   showToast('⚠️ 보강은 누구 보강인지 반드시 선택해 주세요');
+   return;
+  }
+ }
+
  // v14.07: 특이사항 카드 전체 카테고리 필수 입력 검증
  // v15.03: 물품·기타도 entries(여러 항목) 기반이므로 포함(미포함 시 채워도 note.text가 비어 오검출 → 빨간칸 안 보이는 문제)
  const _MULTI_ALL = ['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사']; // entries 기반 카테고리
@@ -15375,6 +15394,8 @@ function renderMobileLedger(){
 
    // 보강 강사 선택 드롭다운 (보강 체크 시 표시)
    const substSel = document.createElement('select');
+   substSel.className='ti-subst-sel'; // v15.17: 제출 시 필수값(누구 보강) 검증용
+   substSel.dataset.gi=gi; substSel.dataset.ci=ci;
    substSel.style.cssText=`display:${isSubst?'block':'none'};flex:1;min-width:0;height:20px;border:1px solid #E2E0D8;border-radius:4px;padding:0 2px;font-size:10px;background:#FDF3DC;outline:none;`;
    substSel.innerHTML='<option value="">누구?</option>';
    // v15.16: 본인 보강(수업 날짜 변경)도 선택 가능하도록 본인 포함 (PC 버전과 동일)
