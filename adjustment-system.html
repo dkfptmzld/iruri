@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.19">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.20">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.19">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.20">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.19</title>
+<title>수업기록표 정산 시스템 v15.20</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.19';
+const SYSTEM_VERSION='v15.20';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4840,7 +4840,23 @@ function loadMonthlySnapshot(ym){
   if(dm.some(d=>d.ym===ym)){ showToast(`${ym}은 삭제된 데이터예요`); return; }
  }catch{}
 
- const localSnap = raw ? (() => { try{ return JSON.parse(raw); }catch{ return null; } })() : null;
+ let localSnap = raw ? (() => { try{ return JSON.parse(raw); }catch{ return null; } })() : null;
+ // v15.20: 메인 스냅샷이 없거나 비어 있으면 덮어쓰기 직전 백업(_bak)에서 자동 복구
+ //  (서버가 빈 스냅샷을 반환해 정상 로컬이 덮어써진 경우의 복구 경로 — '6월 기록 없음' 문제)
+ if(!localSnap?.data?.teachers?.length){
+  try{
+   const _bak = JSON.parse(localStorage.getItem(key+'_bak')||'null');
+   if(_bak?.data?.teachers?.length){
+    localSnap = {ym, savedAt:_bak.savedAt||_bak.backedUpAt||new Date().toISOString(), data:_bak.data};
+    localStorage.setItem(key, JSON.stringify(localSnap));
+    showToast(`♻️ ${ym} 백업에서 기록 ${_bak.data.teachers.length}명 자동 복구됨`);
+    try{
+     const _bakAt = _bak.backedUpAt ? new Date(_bak.backedUpAt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '시각 미상';
+     pushErrorLog(`${ym} 기록을 백업에서 자동 복구`, `메인 기록이 비어 있어 백업본(강사 <b>${_bak.data.teachers.length}명</b>, ${_bakAt} 백업)으로 복구했어요.`);
+    }catch{}
+   }
+  }catch{}
+ }
  const localSavedAt = localSnap?.savedAt && localSnap.savedAt !== 'GAS'
    ? new Date(localSnap.savedAt).getTime() : 0;
 
@@ -4945,8 +4961,37 @@ function loadMonthlySnapshot(ym){
    if(gasSavedAt > localSavedAt || !localSnap?.data?.teachers || gasTeacherCount > localTeacherCount){
     const data = r.data;
     if(data.teachers) data.teachers = _normFeePct(data.teachers);
-  // v15.19: 데이터 손상 감지 (상세 이력은 복구 결과까지 확인 후 아래에서 기록)
-  const _gasCorrupt = (!Array.isArray(data.teachers) || data.teachers.length === 0);
+    // v15.20: 손상(빈) 서버 데이터는 절대 로컬 위에 덮어쓰지 않음
+    //  (기존: 감지·기록만 하고 그대로 덮어써서 정상 로컬 기록이 '기록 없음'이 되던 원인)
+    const _gasCorrupt = (!Array.isArray(data.teachers) || data.teachers.length === 0);
+    if(_gasCorrupt){
+     const _savedStr = r.savedAt ? new Date(r.savedAt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '알 수 없음';
+     if(localTeacherCount > 0){
+      // 정상 로컬 유지 + 로컬 데이터로 서버 복구 업로드
+      try{ pushErrorLog(
+       `${ym} 서버 정산 데이터 이상 감지 (강사 ${gasTeacherCount}명 수신)`,
+       `서버가 ${ym} 스냅샷을 강사 <b>${gasTeacherCount}명</b>으로 반환했어요(정상 아님). 정상 로컬 기록 <b>${localTeacherCount}명</b>을 그대로 유지하고, 로컬 데이터로 서버 복구 업로드를 시도했어요. · 서버 저장시각 ${_savedStr}`
+      ); }catch{}
+      showToast(`⚠️ ${ym} 서버 데이터 이상 — 로컬 기록 ${localTeacherCount}명을 유지합니다`);
+      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:localSnap.data}).catch(()=>{});
+      return;
+     }
+     // 로컬·백업에도 데이터 없음 → 빈 서버 데이터를 저장하지 않고 안내만
+     try{ pushErrorLog(
+      `${ym} 서버 정산 데이터 이상 감지 (강사 ${gasTeacherCount}명 수신)`,
+      `서버가 ${ym} 스냅샷을 비어 있는 상태로 반환했고, 로컬·백업에도 복구할 데이터가 없어요. 해당 월 저장이 정상 완료됐었는지 확인이 필요해요. · 서버 저장시각 ${_savedStr}`
+     ); }catch{}
+     STATE.data = null; STATE.regionFilter = null;
+     _renderSidebarYM(ym);
+     _renderNewTeacherList();
+     document.getElementById('mainContent').innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:260px;gap:12px;">
+       <div style="font-size:36px;">📭</div>
+       <div style="font-size:15px;font-weight:500;color:var(--text2);">${ym} 서버 기록이 비어 있어요</div>
+       <div style="font-size:13px;color:var(--text3);">로컬·백업에도 복구할 데이터가 없어요. 변경 이력에서 상세를 확인하세요.</div>
+      </div>`;
+     return;
+    }
     // v14.52: 덮어쓰기 직전 로컬 스냅샷 백업 (복구용 — 최근 1개 롤링)
     if(localSnap?.data?.teachers?.length){
      try{ localStorage.setItem(key+'_bak', JSON.stringify({ym, savedAt:localSnap.savedAt||'', backedUpAt:new Date().toISOString(), data:localSnap.data})); }catch{}
@@ -4964,22 +5009,6 @@ function loadMonthlySnapshot(ym){
      localSnap.data.teachers.forEach(lt=>{
       if(lt.settleStatus==='done' && !gasNames.has(lt.name?.trim())){ data.teachers.push(lt); _restoredDone++; }
      });
-    }
-    // v15.19: 손상 감지 시 무엇이/어떻게 됐는지 상세 이력 (월·수신 강사수·서버 저장시각·취한 조치)
-    if(_gasCorrupt){
-     try{
-      const _savedStr = r.savedAt ? new Date(r.savedAt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '알 수 없음';
-      let _action;
-      if(localTeacherCount>0){
-       _action = `이전 로컬 데이터 ${localTeacherCount}명은 백업에 보관` + (_restoredDone>0 ? `, 정산완료 강사 ${_restoredDone}명은 자동 복구했어요.` : `했어요.`);
-      } else {
-       _action = `이전 로컬 데이터도 없어 복구할 값이 없어요. 서버 저장이 정상 완료됐는지 확인이 필요해요.`;
-      }
-      pushErrorLog(
-       `${ym} 서버 정산 데이터 이상 감지 (강사 ${gasTeacherCount}명 수신)`,
-       `서버가 ${ym} 정산 스냅샷을 강사 <b>${gasTeacherCount}명</b>으로 반환했어요(정상 아님). ${_action} · 서버 저장시각 ${_savedStr}`
-      );
-     }catch{}
     }
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
     localStorage.setItem(key, JSON.stringify(snap));   // ← 복원된 settleStatus 포함해 영속화
