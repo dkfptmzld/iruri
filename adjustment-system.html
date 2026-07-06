@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.17">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.18">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.17">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.18">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.17</title>
+<title>수업기록표 정산 시스템 v15.18</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.17';
+const SYSTEM_VERSION='v15.18';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9852,13 +9852,30 @@ async function syncSnapshotsToGAS(){
  if(btn){ btn.innerHTML = ICON_SVG + '📋 기록표 업로드'; btn.disabled=false; }
 }
 
+// v15.18: 동기화 버튼이 응답 지연/백그라운드 탭 타이머 지연으로 계속 도는 문제 방지
+//  - 재진입 가드(_syncInFlight): 이미 도는 중이면 중복 실행 차단
+//  - 워치독(_SYNC_BTN_HARD_MS): 어떤 경우에도 일정 시간 뒤 버튼을 강제 복구(새로고침 불필요)
+let _syncInFlight = false;
+const _SYNC_BTN_ORIG = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화';
+const _SYNC_BTN_HARD_MS = 50000;
 async function syncAllToDB(force){
  const btn = document.getElementById('syncDBBtn');
  const chip = document.getElementById('syncStatusChip');
- const orig = btn?.innerHTML || '';
+ // 버튼 원본은 알려진 정상 HTML로 복구(이전에 스피너 상태로 끊긴 경우에도 안전)
+ const orig = _SYNC_BTN_ORIG;
+ if(_syncInFlight){ showToast('⏳ 이미 동기화 중이에요. 잠시만 기다려 주세요'); return false; }
+ _syncInFlight = true;
+ let _done = false;
+ const _restore = ()=>{ const b=document.getElementById('syncDBBtn'); if(b){ b.innerHTML=orig; b.disabled=false; } };
+ // 워치독: 네트워크 응답이 없어도 버튼이 영구히 도는 것을 방지
+ const _watchdog = setTimeout(()=>{
+  if(_done) return; _done=true; _syncInFlight=false; _restore();
+  showToast('⚠️ 네트워크 응답이 없어 동기화를 완료하지 못했어요. 잠시 후 다시 시도해 주세요');
+ }, _SYNC_BTN_HARD_MS);
  if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> 동기화 중...'; btn.disabled=true; }
  if(chip){ chip.style.display='none'; }
  try{
+  if(_done) return false; // 워치독이 이미 처리
   // v11.30: 월별 스냅샷도 함께 동기화
   const localMonths = getSavedMonths();
   const snapPromises = localMonths.map(ym => {
@@ -9876,6 +9893,7 @@ async function syncAllToDB(force){
    gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })(), force: force||undefined}),
    ...snapPromises
   ]);
+  if(_done) return false; // 워치독이 이미 버튼을 복구함 → 뒤늦게 도착한 응답은 조용히 무시
   const now = new Date().toISOString();
   // v14.55: 서버가 '급감 차단'(blocked)하면 → 확인 후 force로 재시도 (정상적 대량변경 허용 / 실수 방지)
   if(!force && ((tr&&tr.blocked) || (cr&&cr.blocked))){
@@ -9907,10 +9925,11 @@ async function syncAllToDB(force){
    return false;
   }
  } catch(e){
-  showToast('❌ 동기화 오류: ' + e.message);
+  if(!_done) showToast('❌ 동기화 오류: ' + e.message);
   return false;
  } finally {
-  if(btn){ btn.innerHTML=orig; btn.disabled=false; }
+  clearTimeout(_watchdog);
+  if(!_done){ _done=true; _syncInFlight=false; _restore(); }
  }
 }
 
