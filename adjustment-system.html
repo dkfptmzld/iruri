@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.18">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.19">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.18">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.19">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.18</title>
+<title>수업기록표 정산 시스템 v15.19</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.18';
+const SYSTEM_VERSION='v15.19';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4945,10 +4945,8 @@ function loadMonthlySnapshot(ym){
    if(gasSavedAt > localSavedAt || !localSnap?.data?.teachers || gasTeacherCount > localTeacherCount){
     const data = r.data;
     if(data.teachers) data.teachers = _normFeePct(data.teachers);
-  // 데이터 손상 감지
-  if(!Array.isArray(data.teachers) || data.teachers.length === 0){
-   try{ pushErrorLog('스냅샷 데이터 손상 감지', `강사 배열이 비어있거나 손상됨`); }catch{}
-  }
+  // v15.19: 데이터 손상 감지 (상세 이력은 복구 결과까지 확인 후 아래에서 기록)
+  const _gasCorrupt = (!Array.isArray(data.teachers) || data.teachers.length === 0);
     // v14.52: 덮어쓰기 직전 로컬 스냅샷 백업 (복구용 — 최근 1개 롤링)
     if(localSnap?.data?.teachers?.length){
      try{ localStorage.setItem(key+'_bak', JSON.stringify({ym, savedAt:localSnap.savedAt||'', backedUpAt:new Date().toISOString(), data:localSnap.data})); }catch{}
@@ -4966,6 +4964,22 @@ function loadMonthlySnapshot(ym){
      localSnap.data.teachers.forEach(lt=>{
       if(lt.settleStatus==='done' && !gasNames.has(lt.name?.trim())){ data.teachers.push(lt); _restoredDone++; }
      });
+    }
+    // v15.19: 손상 감지 시 무엇이/어떻게 됐는지 상세 이력 (월·수신 강사수·서버 저장시각·취한 조치)
+    if(_gasCorrupt){
+     try{
+      const _savedStr = r.savedAt ? new Date(r.savedAt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '알 수 없음';
+      let _action;
+      if(localTeacherCount>0){
+       _action = `이전 로컬 데이터 ${localTeacherCount}명은 백업에 보관` + (_restoredDone>0 ? `, 정산완료 강사 ${_restoredDone}명은 자동 복구했어요.` : `했어요.`);
+      } else {
+       _action = `이전 로컬 데이터도 없어 복구할 값이 없어요. 서버 저장이 정상 완료됐는지 확인이 필요해요.`;
+      }
+      pushErrorLog(
+       `${ym} 서버 정산 데이터 이상 감지 (강사 ${gasTeacherCount}명 수신)`,
+       `서버가 ${ym} 정산 스냅샷을 강사 <b>${gasTeacherCount}명</b>으로 반환했어요(정상 아님). ${_action} · 서버 저장시각 ${_savedStr}`
+      );
+     }catch{}
     }
     const snap = {ym, savedAt: r.savedAt || new Date().toISOString(), data};
     localStorage.setItem(key, JSON.stringify(snap));   // ← 복원된 settleStatus 포함해 영속화
@@ -9319,6 +9333,13 @@ function saveChangelog(log){
 /* ═══ 에러 로그 ═══ */
 // v15.08: snapshot(없어진 센터 데이터)을 함께 저장하면 '되돌리기'로 복원 가능
 function pushErrorLog(desc, detail='', snapshot=null){
+ // v15.19: 같은 오류가 짧은 시간에 반복 감지되면(새로고침·탭 전환 등) 이력이 도배되던 문제 방지
+ //  → 최근 10분 내 동일 내용(desc+detail)의 오류가 이미 있으면 건너뜀
+ try{
+  const _log = getChangelog();
+  const _recent = _log.find(e=>e.type==='error_log');
+  if(_recent && _recent.desc===desc && (_recent.detail||'')===(detail||'') && (Date.now()-(_recent.id||0)) < 10*60*1000) return;
+ }catch(_){}
  pushChangelog(snapshot ? { type:'error_log', desc, detail, snapshot } : { type:'error_log', desc, detail });
 }
 
