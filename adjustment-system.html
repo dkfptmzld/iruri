@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.15">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.16">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.15">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.16">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.15</title>
+<title>수업기록표 정산 시스템 v15.16</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.15';
+const SYSTEM_VERSION='v15.16';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15377,9 +15377,10 @@ function renderMobileLedger(){
    const substSel = document.createElement('select');
    substSel.style.cssText=`display:${isSubst?'block':'none'};flex:1;min-width:0;height:20px;border:1px solid #E2E0D8;border-radius:4px;padding:0 2px;font-size:10px;background:#FDF3DC;outline:none;`;
    substSel.innerHTML='<option value="">누구?</option>';
-   DB.teachers.filter(t=>t.name!==teacherName).sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(t=>{
+   // v15.16: 본인 보강(수업 날짜 변경)도 선택 가능하도록 본인 포함 (PC 버전과 동일)
+   DB.teachers.slice().sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(t=>{
     const o=document.createElement('option');
-    o.value=t.name; o.textContent=t.name;
+    o.value=t.name; o.textContent=(t.name===teacherName)?`${t.name} (나)`:t.name;
     if(t.name===c.substituteFor) o.selected=true;
     substSel.appendChild(o);
    });
@@ -15426,11 +15427,13 @@ function renderMobileLedger(){
     substSel.style.display=this.checked?'block':'none';
     if(!this.checked){ c.substituteFor=''; substSel.value=''; }
     mUpdateCenterOptions();
+    _syncAutoMakeupNotes(); // v15.16: 특이사항 보강 카드 자동 동기화
    };
    // 보강 강사 선택 이벤트
    substSel.onchange=function(){
     c.substituteFor=this.value;
     mUpdateCenterOptions();
+    _syncAutoMakeupNotes(); // v15.16: 특이사항 보강 카드 자동 동기화
    };
    // 센터 선택 이벤트
    centerSel.onchange=function(){
@@ -15477,6 +15480,9 @@ function renderMobileLedger(){
       this.textContent=next;
       const teacher=document.getElementById('ti-teacher').value;
       if(teacher) tiUpdateSettleSummary(teacher);
+      // v15.16: 출석일 변경 시 모의수업(△)·보강 특이사항 카드 자동 동기화 (PC 버전과 동일)
+      _syncAutoMockNotes();
+      _syncAutoMakeupNotes();
       renderTiLedger();
      };
     }
