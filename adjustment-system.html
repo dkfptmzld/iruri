@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.21">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.22">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.21">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.22">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.21</title>
+<title>수업기록표 정산 시스템 v15.22</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.21';
+const SYSTEM_VERSION='v15.22';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4046,6 +4046,7 @@ window.addEventListener('load', ()=>{
   .then(r => {
    if(!r.ok || !r.data) return;
    r.data.forEach(item => {
+    if(!_isRealMonthYM(item.yearMonth)) return; // v15.22: 서버의 백업 파일(...bak.json)이 월로 잡히는 것 방지
     // v14.59: 삭제된 달은 GAS에서 다시 받지 않음 (예: 제거한 3월 더미)
     try{ const _dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); if(_dm.some(d=>d.ym===item.yearMonth)) return; }catch(e){}
     const key = MONTHLY_KEY_PREFIX + item.yearMonth.replace(/\s/g,'_');
@@ -4618,12 +4619,16 @@ function renderEditModeUI(){
  updateEditCounter();
 }
 
+// v15.22: 진짜 월 이름('YYYY년 M월')만 인정 — 백업 키(iruri_monthly_..._bak)나
+//  서버의 백업 파일(..._bak.json / ...bak)이 '2026년 6월 bak' 같은 유령 월로 잡히던 문제 차단
+function _isRealMonthYM(ym){ return /^\d{4}년\s*\d{1,2}월$/.test(String(ym||'').trim()); }
 function getSavedMonths(){
  const months = [];
  for(let i=0; i<localStorage.length; i++){
  const k = localStorage.key(i);
  if(k && k.startsWith(MONTHLY_KEY_PREFIX)){
- months.push(k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' '));
+ const ym = k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
+ if(_isRealMonthYM(ym)) months.push(ym); // 백업(_bak 등) 키 제외
  }
  }
  // 최신순 정렬
@@ -11418,6 +11423,7 @@ async function _syncMonthListFromGAS(){
   deletedMonths=deletedMonths.filter(d=>(now-d.deletedAt)<NINETY);
   let added = 0;
   r.data.forEach(({yearMonth:ym})=>{
+   if(!_isRealMonthYM(ym)) return; // v15.22: 서버의 백업 파일(...bak.json)이 유령 월로 잡히는 것 방지
    // 삭제된 월이면 스킵 + GAS에서도 재삭제 시도
    if(deletedMonths.some(d=>d.ym===ym)){
     gasPost({action:'deleteMonthlySnapshot',yearMonth:ym}).catch(()=>{});
