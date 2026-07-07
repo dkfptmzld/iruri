@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.22">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.23">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.22">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.23">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.22</title>
+<title>수업기록표 정산 시스템 v15.23</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.22';
+const SYSTEM_VERSION='v15.23';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5982,20 +5982,31 @@ function renderLedger(ti){
   // notesData 있으면 구조화 뷰, 없으면 t.note 텍스트 파싱
   let rows = '';
   if(nd && nd.length){
-   rows = nd.map((n,ni)=>{
-    const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
-    const tags = (n.centers||[]).map(c=>`<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:white;color:#555;border:0.5px solid #D8D5CE;">${c}</span>`).join('');
-    const entriesHtml = n.entries?.length ? n.entries.filter(e=>e.date||e.center||e.text).map(e=>`<span style="font-size:11px;color:#666;">${[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')}</span>`).join('<span style="color:#ccc;"> / </span>') : '';
-    const amtHtml = '';
-    const total = n.entries?.length ? n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0) : (Number(n.amount)||0);
-    const totalHtml = total > 0 ? `<span style="font-size:11px;font-weight:500;color:${col};white-space:nowrap;">합계 ${total.toLocaleString()}원</span>` : '';
-    return `<div class="note-view-row" onclick="_startNoteEdit(${ti},${ni})" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
-     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${n.cat}</span>
-     ${n.date?`<span style="font-size:11px;color:#9B9888;flex-shrink:0;">${n.date}</span>`:''}
-     ${tags?`<div style="display:flex;flex-wrap:wrap;gap:3px;">${tags}</div>`:''}
-     ${entriesHtml?`<div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${entriesHtml}</div>`:`<span style="font-size:12px;color:#333;flex:1;">${n.text}${amtHtml}</span>`}
+   // v15.23: 같은 카테고리끼리 묶어 가로로 나열. 보강처럼 개별 노트(자동 생성)로 세로로
+   //  길게 늘어지던 항목도 한 줄에 가로로 표시. 편집은 원본 노트 인덱스(ni) 유지.
+   const groups = {};
+   nd.forEach((n,ni)=>{ (groups[n.cat] = groups[n.cat]||[]).push({n,ni}); });
+   rows = CAT_KEYS.filter(cat=>groups[cat]).map(cat=>{
+    const [bg,col] = (catColor[cat]||'#F8F7F2|#555').split('|');
+    const chips = groups[cat].map(({n,ni})=>{
+     const labels = [];
+     if(n.entries?.length){
+      n.entries.filter(e=>e.date||e.center||e.text||e.amount).forEach(e=>{
+       labels.push([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '));
+      });
+     } else {
+      const ctr = (n.centers&&n.centers.length)?n.centers.join(','):(n.center||''); // 보강 자동노트는 center(단수)
+      const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
+      labels.push([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '));
+     }
+     return labels.map(lb=>`<span onclick="_startNoteEdit(${ti},${ni})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${lb||'(내용 없음)'}</span>`).join('');
+    }).join('');
+    const catTotal = groups[cat].reduce((s,{n})=> s + (n.entries?.length ? n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0) : (Number(n.amount)||0)), 0);
+    const totalHtml = catTotal>0 ? `<span style="font-size:11px;font-weight:600;color:${col};white-space:nowrap;flex-shrink:0;margin-left:auto;">합계 ${catTotal.toLocaleString()}원</span>` : '';
+    return `<div style="display:flex;align-items:flex-start;gap:6px;padding:5px 6px;flex-wrap:wrap;">
+     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span>
+     <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0;">${chips}</div>
      ${totalHtml}
-     <span style="font-size:11px;color:#C8A020;margin-left:auto;flex-shrink:0;">✏️</span>
     </div>`;
    }).join('');
   } else if(t.note){
