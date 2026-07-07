@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.23">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.24">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.23">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.24">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.23</title>
+<title>수업기록표 정산 시스템 v15.24</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.23';
+const SYSTEM_VERSION='v15.24';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5084,6 +5084,30 @@ function getFilteredTeachers(){
  });
 }
 
+/* v15.24: PDF/인쇄 특이사항도 같은 카테고리끼리 묶어 가로로 나열 (보강이 세로로 길게 나오던 문제) */
+function _pdfGroupedNotes(notesData, catColor){
+ const g={}, order=[];
+ (notesData||[]).forEach(n=>{ if(!g[n.cat]){g[n.cat]=[];order.push(n.cat);} g[n.cat].push(n); });
+ return order.map(cat=>{
+  const [bg,col]=(catColor[cat]||'#F8F7F2|#555').split('|');
+  const badge=`<span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">${cat}</span>`;
+  const items=[]; let total=0;
+  g[cat].forEach(n=>{
+   if(n.entries&&n.entries.length){
+    n.entries.filter(e=>e.date||e.center||e.text||e.amount).forEach(e=>items.push([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' ')));
+    total+=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
+   }else{
+    const ctr=(n.centers&&n.centers.length)?n.centers.join(','):(n.center||'');
+    items.push([n.date,ctr,n.text||n.content,(Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '));
+    total+=Number(n.amount)||0;
+   }
+  });
+  const entries=items.filter(Boolean).join(' / ');
+  const totalHtml=total>0?`<span style="font-size:8.5px;font-weight:700;color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">합계 ${total.toLocaleString()}원</span>`:'';
+  return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;">${badge}<span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span>${totalHtml}</div>`;
+ }).join('');
+}
+
 /* ═══ PDF 페이지 빌드 (내 제출 내역에서도 재사용) ═══ */
 function _buildTeacherPdfPage(t){
  const feePctDisp=t.feePct?(t.feePct<10?Math.round(t.feePct*100)+'%':Math.round(t.feePct).toLocaleString()+'원/회'):'-';
@@ -5142,20 +5166,7 @@ function _buildTeacherPdfPage(t){
  const catColor={'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
  let noteHtml='';
  if(t.notesData&&t.notesData.length){
-  noteHtml=t.notesData.map(n=>{
-   const [bg,col]=(catColor[n.cat]||'#F8F7F2|#555').split('|');
-   const badge=`<span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">${n.cat}</span>`;
-   let entries='',total=0;
-   if(n.entries?.length){
-    entries=n.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
-    total=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
-   }else{
-    entries=[n.date,n.text||n.content].filter(Boolean).join(' ');
-    total=Number(n.amount)||0;
-   }
-   const totalHtml=total>0?`<span style="font-size:8.5px;font-weight:700;color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">합계 ${total.toLocaleString()}원</span>`:'';
-   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;">${badge}<span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span>${totalHtml}</div>`;
-  }).join('');
+  noteHtml=_pdfGroupedNotes(t.notesData, catColor);
  }
  // t.note 폴백 (구버전 데이터)
  if(!noteHtml && t.note){
@@ -5308,20 +5319,7 @@ function dlPDF(){
  const catColor={'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
  let noteHtml='';
  if(t.notesData && t.notesData.length){
-  noteHtml = t.notesData.map(n=>{
-   const [bg,col]=(catColor[n.cat]||'#F8F7F2|#555').split('|');
-   const badge=`<span style="font-size:7.5px;font-weight:700;padding:1.5px 5px;border-radius:10px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">${n.cat}</span>`;
-   let entries='', total=0;
-   if(n.entries?.length){
-    entries = n.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
-    total = n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
-   } else {
-    entries = [n.date,n.text||n.content].filter(Boolean).join(' ');
-    total = Number(n.amount)||0;
-   }
-   const totalHtml = total>0 ? `<span style="font-size:8.5px;font-weight:700;color:${col};white-space:nowrap;flex-shrink:0;margin-top:1px;">합계 ${total.toLocaleString()}원</span>` : '';
-   return `<div style="display:flex;align-items:flex-start;gap:4px;padding:2.5px 0;border-bottom:0.5px solid #F5EDD0;flex-wrap:wrap;">${badge}<span style="font-size:8.5px;color:#555;flex:1;line-height:1.6;">${entries}</span>${totalHtml}</div>`;
-  }).join('');
+  noteHtml = _pdfGroupedNotes(t.notesData, catColor);
  } else if(t.note){
   const CAT_KEYS=Object.keys(catColor);
   // 카테고리별로 그룹화
