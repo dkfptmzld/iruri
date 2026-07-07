@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.24">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.25">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.24">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.25">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.24</title>
+<title>수업기록표 정산 시스템 v15.25</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2175,7 +2175,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   </tr></tbody>
  <tfoot>
  <tr class="ledger-foot">
- <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협은행 156-02-226505 김유천</td>
+ <td colspan="7" style="text-align:left;padding:6px 8px;font-size:11px;color:#555;">농협은행 ○○○-○○-○○○○○○ 김유천</td>
  <td style="font-size:11px;font-weight:600;">강사료</td>
  <td colspan="2" style="font-size:11px;font-weight:600;">수업료 합계</td>
  <td style="font-size:11px;font-weight:600;">세전</td>
@@ -2597,7 +2597,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ═══ DEFAULT MASTER DATA (엑셀에서 추출) ═══ */
-const DEFAULT_TEACHERS = [{"name":"김은영","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2026-02-10","raiseDate":"2026-08-20","account":"농협 352-1704-2930-23 김은영"},{"name":"장호준","region":"인천","feeType":"pct","feeVal":80,"account":"국민은행 16450104356440 장호준"},{"name":"최정안","region":"수원","feeType":"pct","feeVal":85,"account":"하나은행 336-910040-19707 최정안"},{"name":"오건","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2026-02-10","raiseDate":"2026-08-20","account":"카카오뱅크 3333111275417 오건"},{"name":"김유천","region":"인천","feeType":"pct","feeVal":80,"account":"농협은행 156-02-226505 김유천"},{"name":"안지훈","region":"수원","feeType":"pct","feeVal":85,"account":"신한은행 110-230-562050 안지훈"},{"name":"구명훈","region":"서울","feeType":"pct","feeVal":80,"account":"국민은행 233-21-0417-550 구명훈"},{"name":"한수희","region":"인천","feeType":"pct","feeVal":85,"account":"농협은행 302-1298-3302-01 한수희"},{"name":"오수정","region":"수원","feeType":"fixed","feeVal":40000,"hireDate":"2025-10-10","raiseDate":"2026-04-20","account":"농협 352-1138-0638-83 오수정"},{"name":"송준기","region":"서울","feeType":"pct","feeVal":80,"account":"국민은행 694702-01-433455 송준기"},{"name":"박기남","region":"인천","feeType":"pct","feeVal":85,"account":"국민은행 597302-04-146046 박기남"},{"name":"원보영","region":"수원","feeType":"fixed","feeVal":42000,"account":"국민은행 422402-01-267662 원보영"},{"name":"정상준","region":"서울","feeType":"pct","feeVal":85,"account":"농협은행 351-0826-7304-73 정상준"},{"name":"김효민","region":"인천","feeType":"pct","feeVal":95,"account":"카카오뱅크 3333-02-495-8181 김효민"},{"name":"김수도","region":"수원","feeType":"fixed","feeVal":42000,"account":"새마을금고 9003-2394-3083-6 김수도"},{"name":"양성모","region":"서울","feeType":"fixed","feeVal":42000,"account":"신협 132085004607 양성모"},{"name":"길범준","region":"인천","feeType":"fixed","feeVal":42000,"account":"하나은행 586-910338-68007 길범준"},{"name":"이인경","region":"서울","feeType":"fixed","feeVal":42000,"account":"수협 1010-1165-5453 이인경"},{"name":"방진수","region":"인천","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":"기업은행 124-091094-01-015 방진수"},{"name":"조영미","region":"서울","feeType":"fixed","feeVal":42000,"account":"부산은행 098-12-029209-7 조영미"},{"name":"김수민","region":"인천","feeType":"fixed","feeVal":42000,"account":"카카오뱅크 3333122404956 김수민"},{"name":"윤혜미","region":"서울","feeType":"fixed","feeVal":42000,"account":"국민은행 055210790429 윤혜미"},{"name":"장성기","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":"신한은행 110-322-112402 장성기"},{"name":"홍예은","region":"인천","feeType":"fixed","feeVal":42000,"account":"농협은행 302-0482-2740-21 홍예은"},{"name":"변동","region":"서울","feeType":"fixed","feeVal":42000,"account":"신한은행 110532315670 변동"},{"name":"박종일","region":"인천","feeType":"fixed","feeVal":42000,"account":"농협 351-0685-6911-73 박종일"},{"name":"박준형","region":"서울","feeType":"fixed","feeVal":42000,"account":"국민은행 814301-04-024952 박준형"},{"name":"이재윤","region":"인천","feeType":"fixed","feeVal":40000,"hireDate":"2026-01-10","raiseDate":"2026-07-20","account":"농협 302-1446-8065-81 이재윤"},{"name":"양재원","region":"서울","feeType":"fixed","feeVal":42000,"account":"국민은행 497802-01-645215 양재원"},{"name":"신기윤","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":"농협 302-0525-3101-11 신기윤"}];
+const DEFAULT_TEACHERS = [{"name":"김은영","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2026-02-10","raiseDate":"2026-08-20","account":""},{"name":"장호준","region":"인천","feeType":"pct","feeVal":80,"account":""},{"name":"최정안","region":"수원","feeType":"pct","feeVal":85,"account":""},{"name":"오건","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2026-02-10","raiseDate":"2026-08-20","account":""},{"name":"김유천","region":"인천","feeType":"pct","feeVal":80,"account":""},{"name":"안지훈","region":"수원","feeType":"pct","feeVal":85,"account":""},{"name":"구명훈","region":"서울","feeType":"pct","feeVal":80,"account":""},{"name":"한수희","region":"인천","feeType":"pct","feeVal":85,"account":""},{"name":"오수정","region":"수원","feeType":"fixed","feeVal":40000,"hireDate":"2025-10-10","raiseDate":"2026-04-20","account":""},{"name":"송준기","region":"서울","feeType":"pct","feeVal":80,"account":""},{"name":"박기남","region":"인천","feeType":"pct","feeVal":85,"account":""},{"name":"원보영","region":"수원","feeType":"fixed","feeVal":42000,"account":""},{"name":"정상준","region":"서울","feeType":"pct","feeVal":85,"account":""},{"name":"김효민","region":"인천","feeType":"pct","feeVal":95,"account":""},{"name":"김수도","region":"수원","feeType":"fixed","feeVal":42000,"account":""},{"name":"양성모","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"길범준","region":"인천","feeType":"fixed","feeVal":42000,"account":""},{"name":"이인경","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"방진수","region":"인천","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":""},{"name":"조영미","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"김수민","region":"인천","feeType":"fixed","feeVal":42000,"account":""},{"name":"윤혜미","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"장성기","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":""},{"name":"홍예은","region":"인천","feeType":"fixed","feeVal":42000,"account":""},{"name":"변동","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"박종일","region":"인천","feeType":"fixed","feeVal":42000,"account":""},{"name":"박준형","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"이재윤","region":"인천","feeType":"fixed","feeVal":40000,"hireDate":"2026-01-10","raiseDate":"2026-07-20","account":""},{"name":"양재원","region":"서울","feeType":"fixed","feeVal":42000,"account":""},{"name":"신기윤","region":"서울","feeType":"fixed","feeVal":40000,"hireDate":"2025-11-10","raiseDate":"2026-05-20","account":""}];
 const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["화"], "order": 1}]}, {"name": "88등촌", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 2}]}, {"name": "A+우리", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "이인경"], "source": "자동"}, {"name": "A+하남행복", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "가가호호봉천", "region": "인천", "fee": 50000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 2}, {"teacher": "박종일", "days": ["월"], "order": 2}]}, {"name": "가가호호시흥", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["수"], "order": 2}]}, {"name": "가나안", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 1}]}, {"name": "가람", "region": "서울", "fee": 55000, "teachers": ["송준기"], "source": "자동"}, {"name": "가로등", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 1}]}, {"name": "가온1", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가온2", "region": "서울", "fee": 45000, "teachers": ["박준형"], "source": "자동"}, {"name": "가은", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 1}]}, {"name": "가족데이케어", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["금"], "order": 2}]}, {"name": "가족사랑", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "가평A+", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가평길누리", "region": "서울", "fee": 60000, "teachers": ["정상준"], "source": "자동"}, {"name": "가현산요양", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 2}]}, {"name": "간석3층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 1}]}, {"name": "간석4층", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 2}]}, {"name": "갈산", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 2}]}, {"name": "강동데이케어", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "강북희망", "region": "서울", "fee": 55000, "teachers": ["송준기", "신기윤"], "source": "자동"}, {"name": "강서힐링", "region": "인천", "fee": 50000, "teachers": ["김수민", "방진수"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 2}, {"teacher": "방진수", "days": ["화"], "order": 2}]}, {"name": "강일데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "검암", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["목"], "order": 3}]}, {"name": "경인", "region": "인천", "fee": 55000, "teachers": ["방진수", "한수희"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["금"], "order": 2}, {"teacher": "한수희", "days": ["수"], "order": 2}]}, {"name": "고양1호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 3}]}, {"name": "고양2호점", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 3}]}, {"name": "골든케어", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 3}]}, {"name": "골든케어1", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "골든케어2", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "광교빌리지3층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "광교빌리지4층", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "구리온케어발달", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "구리온케어주간", "region": "서울", "fee": 55000, "teachers": ["신기윤", "장성기"], "source": "자동"}, {"name": "구립우면", "region": "수원", "fee": 55000, "teachers": ["오수정", "최정안"], "source": "자동"}, {"name": "굿모닝", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "굿모닝", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 1}]}, {"name": "그라시아요양", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 3}]}, {"name": "금오사랑", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "금천노인", "region": "인천", "fee": 50000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 1}, {"teacher": "홍예은", "days": ["월"], "order": 1}]}, {"name": "금호", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "기쁜우리", "region": "서울", "fee": 55000, "teachers": ["구명훈", "변동"], "source": "자동"}, {"name": "김간호사1호점", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 2}]}, {"name": "김간호사2호점", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 1}]}, {"name": "김진성데이케어", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "김포다사랑", "region": "인천", "fee": 60000, "teachers": ["박종일", "홍예은"], "source": "자동"}, {"name": "김포스마일", "region": "인천", "fee": 60000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 1}]}, {"name": "김포엘림", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 1}]}, {"name": "김포한강", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 1}]}, {"name": "나날", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동"}, {"name": "나눔요양", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "나눔주간", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "남구", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 1}]}, {"name": "남동", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["화"], "order": 3}]}, {"name": "너른뜰", "region": "서울", "fee": 55000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "노아", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "누네", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "누리요양", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "누리요양원", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["수"], "order": 3}]}, {"name": "누리주간", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "늘봄", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "늘푸른", "region": "인천", "fee": 55000, "teachers": ["김유천", "박기남", "한수희"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 1}, {"teacher": "김유천", "days": ["목"], "order": 2}, {"teacher": "한수희", "days": ["화"], "order": 2}]}, {"name": "늘푸른", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "다사랑", "region": "인천", "fee": 55000, "teachers": ["김수민", "방진수", "박종일"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["화"], "order": 2}, {"teacher": "방진수", "days": ["금"], "order": 1}]}, {"name": "다시봄", "region": "수원", "fee": 50000, "teachers": ["원보영"], "source": "자동"}, {"name": "다시봄", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["화"], "order": 1}]}, {"name": "다시봄날", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["월"], "order": 2}]}, {"name": "다지기", "region": "서울", "fee": 55000, "teachers": ["구명훈", "윤혜미"], "source": "자동"}, {"name": "다지기1", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다지기2", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "다효", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["수"], "order": 2}]}, {"name": "대교", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "대교남양주", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "대교분당", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "대교성남", "region": "수원", "fee": 65000, "teachers": ["최정안"], "source": "자동"}, {"name": "대교성북", "region": "서울", "fee": 60000, "teachers": ["구명훈"], "source": "자동"}, {"name": "더드림", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "더사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "더사랑", "region": "인천", "fee": 55000, "teachers": ["길범준", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 1}, {"teacher": "길범준", "days": ["목"], "order": 3}]}, {"name": "더쉼", "region": "수원", "fee": 50000, "teachers": ["오수정"], "source": "자동"}, {"name": "더조은", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "더조은", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "더케어", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "더편한", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "데이지", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈", "원보영"], "source": "자동"}, {"name": "도봉실버웨이", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동소문", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "동안사랑", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "동탄", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "동행", "region": "서울", "fee": 55000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "동행", "region": "인천", "fee": 55000, "teachers": ["김효민", "장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["월"], "order": 2}]}, {"name": "두꺼비", "region": "서울", "fee": 55000, "teachers": ["박준형", "양성모", "오건"], "source": "자동"}, {"name": "두드림", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 3}]}, {"name": "둥지요양원", "region": "인천", "fee": 50000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 3}]}, {"name": "마석굿데이", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "마실1", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마실2", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "마음과마음", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기", "조영미"], "source": "자동"}, {"name": "마음다함", "region": "인천", "fee": 50000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["월"], "order": 2}]}, {"name": "마주봄", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 1}]}, {"name": "매일동행", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "명품", "region": "인천", "fee": 50000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["금"], "order": 1}, {"teacher": "박종일", "days": ["화"], "order": 3}]}, {"name": "명화", "region": "서울", "fee": 50000, "teachers": ["박준형", "양재원", "조영미"], "source": "자동"}, {"name": "목동데이", "region": "인천", "fee": 50000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["화"], "order": 3}]}, {"name": "목동연세", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 3}]}, {"name": "무지개", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 3}]}, {"name": "문정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "미르", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "미추홀", "region": "인천", "fee": 55000, "teachers": ["김효민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 2}, {"teacher": "김효민", "days": ["수"], "order": 1}]}, {"name": "바른", "region": "서울", "fee": 55000, "teachers": ["양성모", "이인경"], "source": "자동"}, {"name": "배곧프리미엄", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동"}, {"name": "백세", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["금"], "order": 1}]}, {"name": "백세만세", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "베들레", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "벨포레스트", "region": "서울", "fee": 65000, "teachers": ["양재원", "정상준"], "source": "자동"}, {"name": "보노요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "보담", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["수"], "order": 3}]}, {"name": "보람찬1", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보람찬2", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "보리수", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 3}]}, {"name": "보아스", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "보훈케어", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "복지콜", "region": "인천", "fee": 55000, "teachers": ["김효민", "박종일"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["토"], "order": 1}, {"teacher": "박종일", "days": ["목"], "order": 2}]}, {"name": "봄날한강", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "봄봄", "region": "서울", "fee": 55000, "teachers": ["변동", "정상준"], "source": "자동"}, {"name": "봄봄", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["월"], "order": 2}]}, {"name": "부천남부", "region": "인천", "fee": 55000, "teachers": ["김유천"], "source": "자동", "schedule": [{"teacher": "김유천", "days": ["월"], "order": 2}]}, {"name": "북부노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "북수원", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "브니엘2", "region": "수원", "fee": 60000, "teachers": ["최정안"], "source": "자동"}, {"name": "비타재활", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "사랑365", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑노인", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 1}]}, {"name": "사랑마루", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "사랑방1", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "사랑방2", "region": "수원", "fee": 45000, "teachers": ["최정안"], "source": "자동"}, {"name": "삼선1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "삼선2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "상계", "region": "서울", "fee": 50000, "teachers": ["구명훈"], "source": "자동"}, {"name": "상계데이케어", "region": "서울", "fee": 50000, "teachers": ["변동"], "source": "자동"}, {"name": "새봄", "region": "서울", "fee": 55000, "teachers": ["장성기", "조영미"], "source": "자동"}, {"name": "생명나무", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "서구재활", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["화"], "order": 1}]}, {"name": "서부어르신", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동"}, {"name": "서울 데이케어", "region": "서울", "fee": 55000, "teachers": ["박준형", "윤혜미"], "source": "자동"}, {"name": "서은요양원", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "선암", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "섬김", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 1}]}, {"name": "성동", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "성동데이케어", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성북복지관", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "성북희망", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "성심", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "성심", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "세심정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "세심정", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "소나무", "region": "인천", "fee": 55000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["월"], "order": 3}]}, {"name": "소래", "region": "인천", "fee": 55000, "teachers": ["김수민", "박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["수"], "order": 3}, {"teacher": "김수민", "days": ["월"], "order": 1}]}, {"name": "소새울", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 3}]}, {"name": "수석", "region": "서울", "fee": 55000, "teachers": ["구명훈", "이인경"], "source": "자동"}, {"name": "수원성감리교회", "region": "수원", "fee": 100000, "teachers": ["안지훈"], "source": "자동"}, {"name": "수원중부", "region": "수원", "fee": 50000, "teachers": ["김수도"], "source": "자동"}, {"name": "수지실버", "region": "수원", "fee": 60000, "teachers": ["김수도"], "source": "자동"}, {"name": "순애", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 2}]}, {"name": "스마일", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "스마일 데이케어", "region": "서울", "fee": 60000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "시니어학교 성내", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시니어학교 천호", "region": "서울", "fee": 60000, "teachers": ["양재원"], "source": "자동"}, {"name": "시온", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "시온성", "region": "서울", "fee": 50000, "teachers": ["이인경"], "source": "자동"}, {"name": "시흥동행", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동"}, {"name": "실버빌", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "실버웨이강북", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "실버웨이성북", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "아름", "region": "인천", "fee": 55000, "teachers": ["한수희", "이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["화"], "order": 2}, {"teacher": "한수희", "days": ["목"], "order": 2}]}, {"name": "아름다운", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["목"], "order": 2}]}, {"name": "아현장로교회", "region": "서울", "fee": 50000, "teachers": ["양성모"], "source": "자동"}, {"name": "양주실버타운", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "양천힐링", "region": "인천", "fee": 55000, "teachers": ["방진수"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["월"], "order": 2}]}, {"name": "어르신사랑요양", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어르신사랑주간", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "어울림서창", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["화"], "order": 1}]}, {"name": "에녹", "region": "인천", "fee": 50000, "teachers": ["방진수", "홍예은"], "source": "자동", "schedule": [{"teacher": "방진수", "days": ["목"], "order": 2}, {"teacher": "홍예은", "days": ["월"], "order": 3}]}, {"name": "에이원", "region": "수원", "fee": 55000, "teachers": ["원보영"], "source": "자동"}, {"name": "엔젤재활", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["월"], "order": 3}]}, {"name": "연세", "region": "서울", "fee": 55000, "teachers": ["구명훈", "장성기"], "source": "자동"}, {"name": "연지곤지", "region": "서울", "fee": 60000, "teachers": ["오건", "정상준"], "source": "자동"}, {"name": "염리데이케어", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "영등포치매", "region": "인천", "fee": 50000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["수"], "order": 1}]}, {"name": "예다인", "region": "인천", "fee": 55000, "teachers": ["박종일", "한수희"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["목"], "order": 3}, {"teacher": "한수희", "days": ["월"], "order": 3}]}, {"name": "예반", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "예사랑", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "예스케어", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "옥련뜰", "region": "인천", "fee": 50000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["수"], "order": 3}]}, {"name": "온누리", "region": "인천", "fee": 50000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["수"], "order": 2}]}, {"name": "온정", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 2}]}, {"name": "온하루", "region": "인천", "fee": 55000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["금"], "order": 3}]}, {"name": "우리들", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "우리들 남양주", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "우리들 의정부", "region": "서울", "fee": 50000, "teachers": ["송준기"], "source": "자동"}, {"name": "우리복지", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "웰케어", "region": "서울", "fee": 50000, "teachers": ["변동", "윤혜미"], "source": "자동"}, {"name": "은나라", "region": "서울", "fee": 55000, "teachers": ["오건"], "source": "자동"}, {"name": "은빛정원", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "이팔청춘", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이팔청춘본점", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "이화", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "인천365", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 1}]}, {"name": "인천나눔요양원", "region": "인천", "fee": 60000, "teachers": ["김효민"], "source": "자동"}, {"name": "인천중구", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 1}]}, {"name": "일산노인", "region": "인천", "fee": 60000, "teachers": ["이재윤"], "source": "자동", "schedule": [{"teacher": "이재윤", "days": ["월"], "order": 1}]}, {"name": "자광원", "region": "수원", "fee": 55000, "teachers": ["오수정"], "source": "자동"}, {"name": "장안데이케어", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "장안참사랑", "region": "서울", "fee": 55000, "teachers": ["이인경"], "source": "자동"}, {"name": "장위데이케어", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "정가원", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정다운", "region": "인천", "fee": 55000, "teachers": ["박기남", "박종일"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["화"], "order": 2}, {"teacher": "박종일", "days": ["목"], "order": 1}]}, {"name": "정드림", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "정릉복지관", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "정성", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 3}]}, {"name": "제일사랑", "region": "서울", "fee": 55000, "teachers": ["신기윤"], "source": "자동"}, {"name": "좋은날", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "주은", "region": "인천", "fee": 55000, "teachers": ["박기남", "홍예은"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["금"], "order": 1}, {"teacher": "홍예은", "days": ["화"], "order": 1}]}, {"name": "중랑사랑방", "region": "서울", "fee": 55000, "teachers": ["양재원", "이인경"], "source": "자동"}, {"name": "중랑스마일", "region": "서울", "fee": 55000, "teachers": ["양재원"], "source": "자동"}, {"name": "중랑제일", "region": "서울", "fee": 60000, "teachers": ["박준형"], "source": "자동"}, {"name": "중부1", "region": "인천", "fee": 50000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["금"], "order": 1}]}, {"name": "중부3", "region": "인천", "fee": 50000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["목"], "order": 2}]}, {"name": "진접굿데이", "region": "서울", "fee": 55000, "teachers": ["변동"], "source": "자동"}, {"name": "참사랑동대문", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "참조은", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "처음처럼", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 2}]}, {"name": "천마산", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "천사노인", "region": "인천", "fee": 55000, "teachers": ["박종일"], "source": "자동", "schedule": [{"teacher": "박종일", "days": ["금"], "order": 2}]}, {"name": "청담하늘채", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "청솔", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["월"], "order": 2}]}, {"name": "청춘", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}, {"name": "청평", "region": "서울", "fee": 55000, "teachers": ["정상준"], "source": "자동"}, {"name": "파라다이스", "region": "서울", "fee": 55000, "teachers": ["변동", "이인경"], "source": "자동"}, {"name": "파랑새", "region": "인천", "fee": 55000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["목"], "order": 3}]}, {"name": "파마", "region": "서울", "fee": 55000, "teachers": ["구명훈", "정상준"], "source": "자동"}, {"name": "파마노인", "region": "서울", "fee": 55000, "teachers": ["조영미"], "source": "자동"}, {"name": "파인", "region": "인천", "fee": 70000, "teachers": ["김효민"], "source": "자동", "schedule": [{"teacher": "김효민", "days": ["화"], "order": 3}]}, {"name": "포레스트", "region": "수원", "fee": 55000, "teachers": ["김수도"], "source": "자동"}, {"name": "프라임", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["목"], "order": 2}]}, {"name": "하남 참사랑", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "하남경복궁", "region": "서울", "fee": 55000, "teachers": ["장성기"], "source": "자동"}, {"name": "하남참사랑", "region": "서울", "fee": 50000, "teachers": ["장성기"], "source": "자동"}, {"name": "학수정", "region": "서울", "fee": 55000, "teachers": ["박준형"], "source": "자동"}, {"name": "한결", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["목"], "order": 1}]}, {"name": "한빛", "region": "인천", "fee": 55000, "teachers": ["홍예은"], "source": "자동", "schedule": [{"teacher": "홍예은", "days": ["금"], "order": 1}]}, {"name": "해드림요양", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해드림주간", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동"}, {"name": "해피실버", "region": "서울", "fee": 50000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "해피홈", "region": "수원", "fee": 60000, "teachers": ["안지훈"], "source": "자동"}, {"name": "햇빛", "region": "서울", "fee": 55000, "teachers": ["윤혜미", "장성기"], "source": "자동"}, {"name": "행복", "region": "서울", "fee": 55000, "teachers": ["구명훈"], "source": "자동"}, {"name": "행복재활", "region": "서울", "fee": 55000, "teachers": ["윤혜미"], "source": "자동"}, {"name": "행복플러스", "region": "인천", "fee": 55000, "teachers": ["길범준"], "source": "자동", "schedule": [{"teacher": "길범준", "days": ["월"], "order": 2}]}, {"name": "행복한", "region": "서울", "fee": 50000, "teachers": ["양재원"], "source": "자동"}, {"name": "호매실", "region": "수원", "fee": 55000, "teachers": ["김수도", "안지훈"], "source": "자동"}, {"name": "홍은1", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "홍은2", "region": "서울", "fee": 55000, "teachers": ["양성모"], "source": "자동"}, {"name": "황송", "region": "인천", "fee": 55000, "teachers": ["한수희"], "source": "자동", "schedule": [{"teacher": "한수희", "days": ["목"], "order": 3}]}, {"name": "효녀심청", "region": "수원", "fee": 55000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효누리", "region": "서울", "fee": 55000, "teachers": ["신기윤", "정상준"], "source": "자동"}, {"name": "효담채", "region": "인천", "fee": 55000, "teachers": ["김수민"], "source": "자동", "schedule": [{"teacher": "김수민", "days": ["금"], "order": 1}]}, {"name": "효드림", "region": "서울", "fee": 55000, "teachers": ["이인경", "정상준"], "source": "자동"}, {"name": "효명", "region": "인천", "fee": 55000, "teachers": ["박기남"], "source": "자동", "schedule": [{"teacher": "박기남", "days": ["월"], "order": 1}]}, {"name": "효벤트", "region": "수원", "fee": 50000, "teachers": ["안지훈"], "source": "자동"}, {"name": "효실버", "region": "서울", "fee": 50000, "teachers": ["박준형"], "source": "자동"}, {"name": "효실버센터", "region": "서울", "fee": 55000, "teachers": ["김은영"], "source": "자동"}, {"name": "휘경사랑", "region": "서울", "fee": 55000, "teachers": ["이인경", "조영미"], "source": "자동"}, {"name": "희망", "region": "인천", "fee": 65000, "teachers": ["장호준"], "source": "자동", "schedule": [{"teacher": "장호준", "days": ["수"], "order": 1}]}, {"name": "힘찬", "region": "수원", "fee": 55000, "teachers": ["최정안"], "source": "자동"}];
 
 /* ═══ STATE & STORAGE ═══ */
@@ -3588,7 +3588,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.24';
+const SYSTEM_VERSION='v15.25';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15777,7 +15777,7 @@ function seed2026March(){
   // 파싱 실패 또는 데이터 없으면 재저장
  }
  const teachers = [
- {name:'박기남',yearMonth:'2026년 3월',account:'국민은행 597302-04-146046 박기남',feePct:0.85,feeType:'pct',feeVal:85,totalSum:2820000,pretax:2397000,profit:423000,finalPay:2317899,
+ {name:'박기남',yearMonth:'2026년 3월',account:'',feePct:0.85,feeType:'pct',feeVal:85,totalSum:2820000,pretax:2397000,profit:423000,finalPay:2317899,
  note:'1. 3/2 [효명, 서부어르신] 5주차 휴강\n2. 3/3 [더사랑, 정다운, 소새울] 5주차 휴강\n3. 3/10 [더사랑] 교통사고 보강대체(이재윤)\n4. 3/17 [소새울] 센터 내 생일잔치 휴강\n5. 3/31 [정다운] 대상웰라이프 미팅 보강(홍예은) / [소새울] 자체수업\n비용처리: 40,435원 / 대상 웰라이프 미팅 수업료 지원(2개): 90,420원',
  lessons:[
  {day:'월',center:'효명',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15795,7 +15795,7 @@ function seed2026March(){
  {day:'금',center:'가가호호봉천',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'금',center:'두드림',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'홍예은',yearMonth:'2026년 3월',account:'농협은행 302-0482-2740-21 홍예은',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2115000,pretax:1680000,profit:435000,finalPay:1624560,
+ {name:'홍예은',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2115000,pretax:1680000,profit:435000,finalPay:1624560,
  note:'휴강: 2일 - 마음다함(5주차), 에녹(5주차) / 31일 - 주은(5주차)\n보강: 24일 - 다사랑(박종일), 명품(박종일) / 31일 - 정다운(박기남)',
  lessons:[
  {day:'월',center:'금천노인',attend:['O','O','O','O','O'],count:5,feePer:50000,total:250000},
@@ -15811,7 +15811,7 @@ function seed2026March(){
  {day:'금',center:'한빛',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'88등촌',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  ]},
- {name:'이재윤',yearMonth:'2026년 3월',account:'농협은행 302-1446-8065-81 이재윤',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1930000,pretax:1400000,profit:530000,finalPay:1353800,
+ {name:'이재윤',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1930000,pretax:1400000,profit:530000,finalPay:1353800,
  note:'휴강: 16일 - 둥지요양원(5주차)\n보강: 4일 다효(지부장) / 13일 더사랑(박기남) / 16일 행복플러스(길범준)·보리수 / 17일 프리미엄(길범준) / 24일 153(박종일) / 25일 정다운·가가호호(박종일) / 31일 다시봄(한수희)·인천나눔(지부장)\n비용처리: 1,530원(주차료)',
  lessons:[
  {day:'월',center:'일산노인',attend:['O','O','O','O','O'],count:5,feePer:60000,total:300000},
@@ -15831,7 +15831,7 @@ function seed2026March(){
  {day:'금',center:'온하루',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'더사랑',attend:['X','O','X','X',''],count:1,feePer:55000,total:55000,isSubstitute:true,substituteFor:'박기남'},
  ]},
- {name:'박종일',yearMonth:'2026년 3월',account:'지역 농협 351-0685-6911-73 박종일',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2565000,pretax:1974000,profit:591000,finalPay:1908858,
+ {name:'박종일',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2565000,pretax:1974000,profit:591000,finalPay:1908858,
  note:'휴강: 2일 - 가가호호봉천·엔젤재활(대체휴일, 31일 보강) / 23일(5주차) - 김간호사2·가가호호봉천·엔젤재활 / 24일(부고) - 153·다사랑·명품 / 25일(부고) - 정다운·가가호호\n보강: 31일 - 가가호호봉천·엔젤재활(2일 대체)\n비용처리: 2,500원(주차료)',
  lessons:[
  {day:'월',center:'김간호사2호점',attend:['O','O','O','X','O'],count:4,feePer:55000,total:220000},
@@ -15850,7 +15850,7 @@ function seed2026March(){
  {day:'금',center:'인천중구',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'천사노인',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'길범준',yearMonth:'2026년 3월',account:'하나은행 586-910338-68007 길범준',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2070000,pretax:1596000,profit:474000,finalPay:1543332,
+ {name:'길범준',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2070000,pretax:1596000,profit:474000,finalPay:1543332,
  note:'휴강: 2일 보리수(대체휴일) / 16일(결혼) 행복플러스·보리수(이재윤) / 17일(결혼) 서구재활(5주차)·프리미엄(이재윤) / 31일 프리미엄(5주차)',
  lessons:[
  {day:'월',center:'행복플러스',attend:['O','O','X','O','O'],count:4,feePer:55000,total:220000},
@@ -15864,7 +15864,7 @@ function seed2026March(){
  {day:'금',center:'가은',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'가족데이케어',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'방진수',yearMonth:'2026년 3월',account:'기업은행 124-091094-01-015 방진수',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1990000,pretax:1480000,profit:510000,finalPay:1431160,
+ {name:'방진수',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1990000,pretax:1480000,profit:510000,finalPay:1431160,
  note:'휴강: 10일·17일 - 강서힐링, 목동데이\n보강: 3일 백세(한수희) / 4일 명품(박종일) / 9일 강서힐링 / 23일 간석실버(한수희)',
  lessons:[
  {day:'월',center:'동행',attend:['X','O','O','O','O'],count:4,feePer:60000,total:240000},
@@ -15877,7 +15877,7 @@ function seed2026March(){
  {day:'금',center:'다사랑',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'경인',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'한수희',yearMonth:'2026년 3월',account:'농협은행 302-1298-3302-01 한수희',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3025000,pretax:2571250,profit:453750,finalPay:2486399,
+ {name:'한수희',yearMonth:'2026년 3월',account:'',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3025000,pretax:2571250,profit:453750,finalPay:2486399,
  note:'휴강: 2일 간석(대체휴일) / 27일 간석(센터일정) / 30일 봄봄·예다인(5주차) / 31일 다시봄(이재윤 보강)·해드림주간·해드림요양(5주차)\n비용처리: 69,240원(주차료 13,840 / 물품 2,550 / 강사면담 51,300)',
  lessons:[
  {day:'월',center:'간석4층',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15895,7 +15895,7 @@ function seed2026March(){
  {day:'금',center:'백세',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'간석3층',attend:['O','O','O','X',''],count:3,feePer:55000,total:165000},
  ]},
- {name:'김수민',yearMonth:'2026년 3월',account:'카카오뱅크 3333122404956 김수민',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2600000,pretax:2016000,profit:584000,finalPay:1949472,
+ {name:'김수민',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2600000,pretax:2016000,profit:584000,finalPay:1949472,
  note:'휴강: 2일(5주차) - 소래, 다시봄날, 그라시아요양 / 3일(5주차) - 어울림, 다사랑',
  lessons:[
  {day:'월',center:'소래',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15911,7 +15911,7 @@ function seed2026March(){
  {day:'금',center:'효담채',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'온정',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'김효민',yearMonth:'2026년 3월',account:'카카오뱅크 3333-02-4958181 김효민',feePct:0.95,feeType:'pct',feeVal:95,totalSum:3470000,pretax:3296500,profit:173500,finalPay:3187716,
+ {name:'김효민',yearMonth:'2026년 3월',account:'',feePct:0.95,feeType:'pct',feeVal:95,totalSum:3470000,pretax:3296500,profit:173500,finalPay:3187716,
  note:'휴강: 2일(5주차) 섬김·동행·소나무 / 3일(5주차) 엘림·순애·파인 / 4일 다효(이재윤 보강) / 28일 복지콜(보강X)·인천나눔(이재윤 31일 보강)\n비용처리: 173,450원(코팅기·오링·A4·코팅지·목공톱·재단기·교구정리함)',
  lessons:[
  {day:'월',center:'섬김',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15931,7 +15931,7 @@ function seed2026March(){
  {day:'토',center:'복지콜',attend:['O','O','O','X',''],count:3,feePer:55000,total:165000},
  {day:'토',center:'인천나눔요양원',attend:['O','O','O','X',''],count:3,feePer:60000,total:180000},
  ]},
- {name:'장호준',yearMonth:'2026년 3월',account:'국민은행 16450104356440 장호준',feePct:0.8,feeType:'pct',feeVal:80,totalSum:2695000,pretax:2156000,profit:539000,finalPay:2084852,
+ {name:'장호준',yearMonth:'2026년 3월',account:'',feePct:0.8,feeType:'pct',feeVal:80,totalSum:2695000,pretax:2156000,profit:539000,finalPay:2084852,
  note:'휴강: 2일(5주차) 365·청솔·정성 / 17일 남동(20일 보강) / 31일 굿모닝·남동(5주차)\n보강: 20일 남동(17일 보강)',
  lessons:[
  {day:'월',center:'인천365',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15948,13 +15948,13 @@ function seed2026March(){
  {day:'금',center:'중부1',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'금',center:'남동',attend:['X','X','O','X',''],count:1,feePer:55000,total:55000},
  ]},
- {name:'김유천',yearMonth:'2026년 3월',account:'농협 156-02-226505 김유천',feePct:0.8,feeType:'pct',feeVal:80,totalSum:275000,pretax:220000,profit:55000,finalPay:212740,
+ {name:'김유천',yearMonth:'2026년 3월',account:'',feePct:0.8,feeType:'pct',feeVal:80,totalSum:275000,pretax:220000,profit:55000,finalPay:212740,
  note:'모의수업: 24일 늘푸른(인지), 24일 가현산(인지), 26일 온하루(인지)\n휴강: 2일 부천남부(5주차) / 보강: 30일 늘푸른(스포츠)\n비용처리: 7,200원 / 모의수업: 60,000원',
  lessons:[
  {day:'월',center:'부천남부',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
  {day:'월',center:'늘푸른',attend:['X','X','X','X','O'],count:1,feePer:55000,total:55000},
  ]},
- {name:'구명훈',yearMonth:'2026년 3월',account:'국민은행 233-21-0417-550 구명훈',feePct:0.8,feeType:'pct',feeVal:80,totalSum:2945000,pretax:2356000,profit:589000,finalPay:2278252,
+ {name:'구명훈',yearMonth:'2026년 3월',account:'',feePct:0.8,feeType:'pct',feeVal:80,totalSum:2945000,pretax:2356000,profit:589000,finalPay:2278252,
  note:'신입강사(오건) 교육 식대: 24,000원\n비용처리: 24,000원',
  lessons:[
  {day:'월',center:'우리복지',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -15973,7 +15973,7 @@ function seed2026March(){
  {day:'금',center:'다지기',attend:['X','O','O','O',''],count:3,feePer:55000,total:165000},
  {day:'금',center:'금오사랑',attend:['X','O','O','O',''],count:3,feePer:50000,total:150000},
  ]},
- {name:'변동',yearMonth:'2026년 3월',account:'신한은행 110532315670 변동',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3260000,pretax:2520000,profit:740000,finalPay:2436840,
+ {name:'변동',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3260000,pretax:2520000,profit:740000,finalPay:2436840,
  lessons:[
  {day:'월',center:'웰케어',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'월',center:'기쁜우리',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -15991,7 +15991,7 @@ function seed2026March(){
  {day:'금',center:'다지기1',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'다지기2',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'김은영',yearMonth:'2026년 3월',account:'농협은행 352-1704-2930-23 김은영',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:495000,pretax:360000,profit:135000,finalPay:348120,
+ {name:'김은영',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:495000,pretax:360000,profit:135000,finalPay:348120,
  note:'보노요양원 모의수업비용 5.5협회에서 받고 진행',
  lessons:[
  {day:'월',center:'봄날한강',attend:['O','O','O','',''],count:3,feePer:55000,total:165000},
@@ -15999,8 +15999,8 @@ function seed2026March(){
  {day:'수',center:'효실버센터',attend:['O','O','','',''],count:2,feePer:55000,total:110000},
  {day:'금',center:'보노요양원',attend:['O','','','',''],count:1,feePer:55000,total:55000},
  ]},
- {name:'양재원',yearMonth:'2026년 3월',account:'국민은행 497802-01-645215 양재원',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2990000,pretax:2268000,profit:722000,finalPay:2193156,
- note:'계좌번호 변경: 국민은행 497802-01-645215 양재원',
+ {name:'양재원',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2990000,pretax:2268000,profit:722000,finalPay:2193156,
+ note:'계좌번호 변경',
  lessons:[
  {day:'월',center:'벨포레스트',attend:['X','O','O','O',''],count:3,feePer:60000,total:180000},
  {day:'월',center:'벨포레스트',attend:['X','O','O','O',''],count:3,feePer:60000,total:180000},
@@ -16017,7 +16017,7 @@ function seed2026March(){
  {day:'금',center:'좋은날',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'행복한',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  ]},
- {name:'양성모',yearMonth:'2026년 3월',account:'신협은행 132085004607 양성모',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2250000,pretax:1722000,profit:528000,finalPay:1665174,
+ {name:'양성모',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2250000,pretax:1722000,profit:528000,finalPay:1665174,
  note:'아현장로교회 1회 수업비 5만원 지급 (대표님·부장님 보고 완료)',
  lessons:[
  {day:'월',center:'성동',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -16032,7 +16032,7 @@ function seed2026March(){
  {day:'금',center:'실버웨이성북',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'염리데이케어',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'장성기',yearMonth:'2026년 3월',account:'신한은행 110-322-112402 장성기',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:2565000,pretax:1880000,profit:685000,finalPay:1817960,
+ {name:'장성기',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:2565000,pretax:1880000,profit:685000,finalPay:1817960,
  note:'보강: 3/5 연세·마음과마음 - 구명훈 강사 수업\n미르: 신규 센터(협회 소속), 단가 미확인',
  lessons:[
  {day:'월',center:'구리온케어주간',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -16049,7 +16049,7 @@ function seed2026March(){
  {day:'금',center:'새봄',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'성심',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'이인경',yearMonth:'2026년 3월',account:'수협은행 1010-1165-5453 이인경',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3005000,pretax:2310000,profit:695000,finalPay:2233770,
+ {name:'이인경',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3005000,pretax:2310000,profit:695000,finalPay:2233770,
  note:'보강: 효드림(정상준 강사 수업 보강)',
  lessons:[
  {day:'월',center:'바른',attend:['O','O','O','O','O'],count:5,feePer:55000,total:275000},
@@ -16067,7 +16067,7 @@ function seed2026March(){
  {day:'금',center:'매일동행',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'장안참사랑',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'조영미',yearMonth:'2026년 3월',account:'부산은행 098-12-029209-7 조영미',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:1740000,pretax:1344000,profit:396000,finalPay:1299648,
+ {name:'조영미',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:1740000,pretax:1344000,profit:396000,finalPay:1299648,
  lessons:[
  {day:'월',center:'참사랑동대문',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'월',center:'휘경사랑',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -16078,7 +16078,7 @@ function seed2026March(){
  {day:'목',center:'명화',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'목',center:'새봄',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'윤혜미',yearMonth:'2026년 3월',account:'국민은행 055210790429 윤혜미',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3280000,pretax:2520000,profit:760000,finalPay:2436840,
+ {name:'윤혜미',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3280000,pretax:2520000,profit:760000,finalPay:2436840,
  lessons:[
  {day:'월',center:'서울 데이케어',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'월',center:'스마일 데이케어',attend:['O','O','O','O',''],count:4,feePer:60000,total:240000},
@@ -16096,7 +16096,7 @@ function seed2026March(){
  {day:'금',center:'성심',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'백세만세',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'오건',yearMonth:'2026년 3월',account:'카카오뱅크 3333111275417 오건',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:505000,pretax:360000,profit:145000,finalPay:348120,
+ {name:'오건',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:505000,pretax:360000,profit:145000,finalPay:348120,
  note:'20일 효정원 모의수업 / 30일 너른뜰 정상준 수업 / 31일 두꺼비 양성모 수업\n효정원 4월부터 신규(영업료 6만원)\n모의수업: 20,000원',
  lessons:[
  {day:'월',center:'너른뜰',attend:['O','','','',''],count:1,feePer:55000,total:55000,isSubstitute:true,substituteFor:'정상준'},
@@ -16105,7 +16105,7 @@ function seed2026March(){
  {day:'목',center:'김진성데이케어',attend:['O','O','','',''],count:2,feePer:55000,total:110000},
  {day:'목',center:'연지곤지',attend:['O','O','','',''],count:2,feePer:60000,total:120000},
  ]},
- {name:'신기윤',yearMonth:'2026년 3월',account:'농협 302-0525-3101-11 신기윤',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1870000,pretax:1360000,profit:510000,finalPay:1315120,
+ {name:'신기윤',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1870000,pretax:1360000,profit:510000,finalPay:1315120,
  lessons:[
  {day:'월',center:'제일사랑',attend:['O','O','O','O','O'],count:5,feePer:55000,total:275000},
  {day:'월',center:'강북희망',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -16117,7 +16117,7 @@ function seed2026March(){
  {day:'금',center:'효누리',attend:['O','O','O','',''],count:3,feePer:55000,total:165000},
  {day:'금',center:'보아스',attend:['O','O','O','',''],count:3,feePer:55000,total:165000},
  ]},
- {name:'박준형',yearMonth:'2026년 3월',account:'국민은행 814301-04-024952 박준형',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3180000,pretax:2520000,profit:660000,finalPay:2436840,
+ {name:'박준형',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:3180000,pretax:2520000,profit:660000,finalPay:2436840,
  lessons:[
  {day:'월',center:'중랑제일',attend:['O','O','O','O',''],count:4,feePer:60000,total:240000},
  {day:'월',center:'마석굿데이',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
@@ -16135,7 +16135,7 @@ function seed2026March(){
  {day:'금',center:'천마산',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'효실버',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  ]},
- {name:'송준기',yearMonth:'2026년 3월',account:'국민 694702-01-433455 송준기',feePct:0.8,feeType:'pct',feeVal:80,totalSum:1040000,pretax:832000,profit:208000,finalPay:804544,
+ {name:'송준기',yearMonth:'2026년 3월',account:'',feePct:0.8,feeType:'pct',feeVal:80,totalSum:1040000,pretax:832000,profit:208000,finalPay:804544,
  note:'27일 가람 센터사정 휴강 → 4월1일 보강(수업 진행)\n기록표 계산 전 대표님 입금 확인 후 박팀장님 연락 요청',
  lessons:[
  {day:'화',center:'스마일',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
@@ -16144,7 +16144,7 @@ function seed2026March(){
  {day:'금',center:'생명나무',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'금',center:'가람',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'정상준',yearMonth:'2026년 3월',account:'농협 351-0826-7304-73 정상준',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3535000,pretax:3018750,profit:516250,finalPay:2919131,
+ {name:'정상준',yearMonth:'2026년 3월',account:'',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3535000,pretax:3018750,profit:516250,finalPay:2919131,
  note:'보강: 파마(구명훈 수업 7일), 효누리·보아스(신기윤 수업 7일)\n양주실버타운 대상미팅 31일 수업료 보전: 45,210원\n벨포레스트: 양재원 60,000원 / 정상준 65,000원\n비용처리: 325,110원 / 대상 웰라이프 미팅 수업료 지원(1개): 45,210원',
  lessons:[
  {day:'월',center:'너른뜰',attend:['O','X','O','O','X'],count:3,feePer:55000,total:165000},
@@ -16167,7 +16167,7 @@ function seed2026March(){
  {day:'토',center:'효누리',attend:['O','','','',''],count:1,feePer:55000,total:55000,isSubstitute:true,substituteFor:'신기윤'},
  {day:'토',center:'보아스',attend:['O','','','',''],count:1,feePer:55000,total:55000,isSubstitute:true,substituteFor:'신기윤'},
  ]},
- {name:'김수도',yearMonth:'2026년 3월',account:'새마을금고 9003-2394-3083-6 김수도',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2325000,pretax:1806000,profit:519000,finalPay:1746402,
+ {name:'김수도',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:2325000,pretax:1806000,profit:519000,finalPay:1746402,
  lessons:[
  {day:'월',center:'이팔청춘',attend:['O','O','O','O','O'],count:5,feePer:55000,total:275000},
  {day:'화',center:'예반',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -16181,7 +16181,7 @@ function seed2026March(){
  {day:'금',center:'보람찬1',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'금',center:'보람찬2',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  ]},
- {name:'안지훈',yearMonth:'2026년 3월',account:'신한은행 110-230-562050 안지훈',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3670000,pretax:3119500,profit:550500,finalPay:3016557,
+ {name:'안지훈',yearMonth:'2026년 3월',account:'',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3670000,pretax:3119500,profit:550500,finalPay:3016557,
  note:'비용처리: 54,970원(축구골대 33,900 / 우편영업 21,070)',
  lessons:[
  {day:'월',center:'동탄',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -16202,7 +16202,7 @@ function seed2026March(){
  {day:'금',center:'효벤트',attend:['O','O','O','O',''],count:4,feePer:50000,total:200000},
  {day:'토',center:'사랑방',attend:['X','O','X','O',''],count:2,feePer:55000,total:110000},
  ]},
- {name:'원보영',yearMonth:'2026년 3월',account:'국민은행 422402-01-267662 원보영',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:1445000,pretax:1134000,profit:311000,finalPay:1096578,
+ {name:'원보영',yearMonth:'2026년 3월',account:'',feePct:42000,feeType:'fixed',feeVal:42000,totalSum:1445000,pretax:1134000,profit:311000,finalPay:1096578,
  note:'6일 더케어 시연수업 / 9일 더케어 감기로 휴강\n모의수업: 20,000원',
  lessons:[
  {day:'월',center:'데이지',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
@@ -16213,7 +16213,7 @@ function seed2026March(){
  {day:'목',center:'누네',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  {day:'금',center:'에이원',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
  ]},
- {name:'최정안',yearMonth:'2026년 3월',account:'하나은행 336-910040-19707 최정안',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3685000,pretax:3146250,profit:538750,finalPay:3042424,
+ {name:'최정안',yearMonth:'2026년 3월',account:'',feePct:0.85,feeType:'pct',feeVal:85,totalSum:3685000,pretax:3146250,profit:538750,finalPay:3042424,
  note:'사랑방1·2: 85% 제외하고 3.3%만 공제 / 4월부터 5.0 인상',
  lessons:[
  {day:'월',center:'가족사랑',attend:['X','O','O','O','O'],count:4,feePer:55000,total:220000},
@@ -16233,7 +16233,7 @@ function seed2026March(){
  {day:'금',center:'브니엘',attend:['O','O','O','O',''],count:4,feePer:60000,total:240000},
  {day:'금',center:'브니엘2',attend:['O','O','O','O',''],count:4,feePer:60000,total:240000},
  ]},
- {name:'오수정',yearMonth:'2026년 3월',account:'농협 352-1138-0638-83 오수정',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1740000,pretax:1280000,profit:460000,finalPay:1237760,
+ {name:'오수정',yearMonth:'2026년 3월',account:'',feePct:40000,feeType:'fixed',feeVal:40000,totalSum:1740000,pretax:1280000,profit:460000,finalPay:1237760,
  note:'더쉼 18일 수업을 20일에 진행 / 10·11일 최정안 보충수업 진행',
  lessons:[
  {day:'월',center:'굿모닝',attend:['O','O','O','O',''],count:4,feePer:55000,total:220000},
