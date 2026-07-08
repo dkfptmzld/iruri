@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.39">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.40">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.39">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.40">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.39</title>
+<title>수업기록표 정산 시스템 v15.40</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1264,11 +1264,14 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
 
  <!-- 홈 편집 버튼 (PC 전용, 편집모드 시 표시) -->
- <div id="landingEditBtn" style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
-  <button id="landingPermBtn" onclick="_openPermMgr()" style="display:none;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid #C7B8E8;border-radius:20px;background:#F3EFFB;font-size:12px;color:#5B3FA0;cursor:pointer;font-family:inherit;font-weight:600;">
+ <!-- v15.40: 권한 관리(마스터 전용) — #landingEditBtn 은 v14.99에서 display:none!important 로 숨겨져 있어 별도 컨테이너로 분리 -->
+ <div id="landingPermRow" style="margin-top:16px;display:none;justify-content:center;">
+  <button id="landingPermBtn" onclick="_openPermMgr()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border:0.5px solid #C7B8E8;border-radius:20px;background:#F3EFFB;font-size:12.5px;color:#5B3FA0;cursor:pointer;font-family:inherit;font-weight:700;">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.7L12 16l-5.5 3 1-6.7L3 7.9 9 7z"></path></svg>
    권한 관리
   </button>
+ </div>
+ <div id="landingEditBtn" style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
   <button onclick="_toggleLandingEdit()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid #E2E0D8;border-radius:20px;background:white;font-size:12px;color:#888;cursor:pointer;font-family:inherit;">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
    홈 편집
@@ -3606,7 +3609,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.39';
+const SYSTEM_VERSION='v15.40';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11753,8 +11756,7 @@ function _applyLandingPerms(){
   const master=_isMaster();
   const ca=document.getElementById('card-admin'); if(ca) ca.style.display=_hasCap('admin')?'':'none';
   const cc=document.getElementById('card-cert');  if(cc) cc.style.display=_hasCap('cert')?'':'none';
-  const pb=document.getElementById('landingPermBtn'); if(pb) pb.style.display=master?'inline-flex':'none';
-  const eb=document.getElementById('landingEditBtn'); if(eb) eb.style.display=(master && window.innerWidth>768)?'flex':'none';
+  const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=master?'flex':'none'; // v15.40: 권한관리 버튼 행(마스터 전용, 별도 컨테이너)
  }catch(_){}
 }
 // v15.38: 권한 관리 화면 (마스터 전용) — 이름×카드 체크박스, 즉시 저장·공유
