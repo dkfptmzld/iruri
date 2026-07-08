@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.38">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.39">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.38">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.39">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.38</title>
+<title>수업기록표 정산 시스템 v15.39</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3606,7 +3606,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.38';
+const SYSTEM_VERSION='v15.39';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5181,7 +5181,7 @@ function _buildTeacherPdfPage(t){
     const cls=isO?'att-o':isX?'att-x':raw?'att-tri':'';
     return`<td class="att-td ${cls}">${lab}</td>`;
    }).join('');
-   bodyRows+=`<tr><td class="center-td">${l.center}${l.isSubstitute?` <span class="sub-badge">보강${l.substituteFor?` (${l.substituteFor})`:''}</span>`:''}</td>${attendCells}<td>${l.count}</td><td class="amt">${l.feePer?l.feePer.toLocaleString():''}</td><td class="amt">${l.total?l.total.toLocaleString():''}</td></tr>`;
+   bodyRows+=`<tr><td class="center-td">${escH(l.center)}${l.isSubstitute?` <span class="sub-badge">보강${l.substituteFor?` (${escH(l.substituteFor)})`:''}</span>`:''}</td>${attendCells}<td>${l.count}</td><td class="amt">${l.feePer?l.feePer.toLocaleString():''}</td><td class="amt">${l.total?l.total.toLocaleString():''}</td></tr>`;
   });
  });
  const weekHeaders=Array.from({length:maxWeeks},(_,i)=>`<th>${i+1}주</th>`).join('');
@@ -5316,7 +5316,7 @@ function dlPDF(){
  return`<td class="att-td ${cls}">${lab}</td>`;
  }).join('');
  bodyRows+=`<tr>
- <td class="center-td">${l.center}${l.isSubstitute?` <span class="sub-badge">보강${l.substituteFor?` (${l.substituteFor})`:''}</span>`:''}
+ <td class="center-td">${escH(l.center)}${l.isSubstitute?` <span class="sub-badge">보강${l.substituteFor?` (${escH(l.substituteFor)})`:''}</span>`:''}
  </td>
  ${attendCells}
  <td>${l.count}</td>
@@ -5389,9 +5389,9 @@ function dlPDF(){
  <!-- 상단: 강사명 + 정보 + 강사료 + 최종 지급액 (한 줄) -->
  <div class="top-bar">
   <div class="top-info">
-   <span class="t-name">${t.name} 강사</span>
-   <span class="t-meta">${t.yearMonth} · 수업 ${totalLessons}회 · 센터 ${centerCount}곳</span>
-   <span class="t-meta">계좌: ${accStr}</span>
+   <span class="t-name">${escH(t.name)} 강사</span>
+   <span class="t-meta">${escH(t.yearMonth)} · 수업 ${totalLessons}회 · 센터 ${centerCount}곳</span>
+   <span class="t-meta">계좌: ${escH(accStr)}</span>
   </div>
   <div class="top-right">
    <div class="top-fee">
@@ -5568,12 +5568,12 @@ function buildTeacherListHtml(teachers, curIdx){
     ? `<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${i})" title="클릭하면 완료로 변경">미정산</span>`
     : '';
  html+=`<div class="t-item ${i===curIdx?'active':''}" id="ti-${i}" onclick="selT(${i})" style="position:relative;">
- <div class="t-avatar">${t.name[0]}</div>
+ <div class="t-avatar">${escH(String(t.name||'').slice(0,1))}</div>
  <div class="t-info">
-  <div class="t-name">${t.name}${badgeHtml}</div>
+  <div class="t-name">${escH(t.name)}${badgeHtml}</div>
   <div class="t-pay">${t.finalPay?Math.round(t.finalPay).toLocaleString()+' 원':'-'}</div>
  </div>
- <span onclick="event.stopPropagation();deleteTeacherRecord(${i})" class="t-del-btn" title="${t.name} 기록 삭제">✕</span>
+ <span onclick="event.stopPropagation();deleteTeacherRecord(${i})" class="t-del-btn" title="${escH(t.name)} 기록 삭제">✕</span>
  </div>`;
  });
  });
@@ -5600,7 +5600,7 @@ function deleteTeacherRecord(i){
  const t=STATE.data.teachers[i];
  if(!t) return;
  const ym=t.yearMonth||STATE.data.teachers[0]?.yearMonth||'';
- showConfirm({icon:'🗑',title:'수업기록 삭제',desc:`<b>${t.name}</b> 강사의 <b>${ym}</b> 수업기록을 삭제할까요?<br><small style='color:var(--red)'>삭제 후에는 되돌릴 수 없어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>_doDeleteTeacherRecord(i)});
+ showConfirm({icon:'🗑',title:'수업기록 삭제',desc:`<b>${escH(t.name)}</b> 강사의 <b>${escH(ym)}</b> 수업기록을 삭제할까요?<br><small style='color:var(--red)'>삭제 후에는 되돌릴 수 없어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>_doDeleteTeacherRecord(i)});
 }
 
 function renderTeacher(i){
@@ -5609,10 +5609,10 @@ function renderTeacher(i){
  const cnt=t.lessons.reduce((s,l)=>s+l.count,0);
  document.getElementById('mainContent').innerHTML=`
  <div class="profile-row">
- <div class="profile-avatar">${t.name[0]}</div>
- <div><div class="profile-name">${t.name} 강사</div><div class="profile-sub">${t.yearMonth} · 강사료 ${feePctStr(t.feePct)}</div></div>
+ <div class="profile-avatar">${escH(String(t.name||'').slice(0,1))}</div>
+ <div><div class="profile-name">${escH(t.name)} 강사</div><div class="profile-sub">${escH(t.yearMonth)} · 강사료 ${feePctStr(t.feePct)}</div></div>
  <div style="margin-left:auto;text-align:right;font-size:12px;line-height:1.8;color:var(--text2);">
-   ${(()=>{const {bank,num,name}=parseAccount(_resolveAccount(t));return bank||num||name?`<span style='color:var(--text3);font-size:11px;'>${bank}</span><br><span style='font-family:"DM Mono",monospace;font-size:13px;color:var(--text);'>${num}</span><br><span>${name}</span>`:'계좌번호 미등록';})()}
+   ${(()=>{const {bank,num,name}=parseAccount(_resolveAccount(t));return bank||num||name?`<span style='color:var(--text3);font-size:11px;'>${escH(bank)}</span><br><span style='font-family:"DM Mono",monospace;font-size:13px;color:var(--text);'>${escH(num)}</span><br><span>${escH(name)}</span>`:'계좌번호 미등록';})()}
  </div>
  </div>
  <div class="metrics">
@@ -5656,7 +5656,7 @@ function renderTeacherReceiptsTab(ti){
  <div style="display:flex;gap:6px;align-items:center;">
  <button onclick="document.getElementById('admin-receipt-file-${ti}').click()" class="btn sm" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;gap:4px;">＋ 영수증 추가</button>
  <button onclick="renderTeacherReceiptsTab(${ti})" class="btn sm">🔄 새로고침</button>
- <input id="admin-receipt-file-${ti}" type="file" accept="image/*,application/pdf" multiple style="display:none;" onchange="adminUploadReceipts(this.files, '${teacher.replace(/'/g,"\\'")}', '${ym.replace(/'/g,"\\'")}', ${ti})">
+ <input id="admin-receipt-file-${ti}" type="file" accept="image/*,application/pdf" multiple style="display:none;" onchange="adminUploadReceipts(this.files, '${escAttrJS(teacher)}', '${escAttrJS(ym)}', ${ti})">
  </div>
  </div>
  <div id="admin-receipt-upload-status" style="display:none;font-size:12px;color:#1A7A50;padding:8px 12px;background:#F0FAF4;border-radius:8px;margin-bottom:10px;"></div>
@@ -5859,10 +5859,10 @@ function renderLedger(ti){
  }).join('');
 
  bodyRows+=`<tr>
- <td class="center-cell" title="${l.center}" onclick="openCenterPicker(${ti},${lessonIdx},this)">
- <span class="${l.feePer?'':'center-missing'}">${l.center||'(미설정)'}</span>
- ${l.isSubstitute?`<span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강${l.substituteFor?` (${l.substituteFor})`:''}</span>`:''}
- <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(${ti},${lessonIdx})" title="${l.center||'수업'} 삭제">✕</button>
+ <td class="center-cell" title="${escH(l.center)}" onclick="openCenterPicker(${ti},${lessonIdx},this)">
+ <span class="${l.feePer?'':'center-missing'}">${escH(l.center||'(미설정)')}</span>
+ ${l.isSubstitute?`<span style="display:inline-block;margin-left:4px;font-size:10px;background:#FDF3DC;color:#8A6010;border:1px solid #E8CC80;border-radius:4px;padding:1px 5px;white-space:nowrap;">보강${l.substituteFor?` (${escH(l.substituteFor)})`:''}</span>`:''}
+ <button class="del-lesson-btn" onclick="event.stopPropagation();deleteLesson(${ti},${lessonIdx})" title="${escH(l.center||'수업')} 삭제">✕</button>
  </td>
  ${attendCells}
  <td class="count-cell">${l.count}</td>
@@ -5912,7 +5912,7 @@ function renderLedger(ti){
 
  return`<div class="ledger-wrap">
  <div class="ledger-title-row" style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;">
-  <div class="ledger-title" style="margin:0;">${t.yearMonth} 수업 기록표 ( ${t.name} ) 강사</div>
+  <div class="ledger-title" style="margin:0;">${escH(t.yearMonth)} 수업 기록표 ( ${escH(t.name)} ) 강사</div>
   ${_isAdminMode() ? `<div class="edit-controls" style="display:flex;gap:6px;">${
    _isEditMode
     ? `<button onclick="saveEdits()" class="edit-mode-action-btn" style="padding:6px 14px;border-radius:8px;border:1px solid #1A7A50;background:#1A7A50;color:white;font-weight:600;cursor:pointer;font-size:13px;">💾 저장 (<span class="edit-count-num">${_editChangeCount}</span>)</button>
@@ -6039,7 +6039,7 @@ function renderLedger(ti){
       const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
       labels.push([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '));
      }
-     return labels.map(lb=>`<span onclick="_startNoteEdit(${ti},${ni})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${lb||'(내용 없음)'}</span>`).join('');
+     return labels.map(lb=>`<span onclick="_startNoteEdit(${ti},${ni})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${escH(lb||'(내용 없음)')}</span>`).join('');
     }).join('');
     const catTotal = groups[cat].reduce((s,{n})=> s + (n.entries?.length ? n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0) : (Number(n.amount)||0)), 0);
     const totalHtml = catTotal>0 ? `<span style="font-size:11px;font-weight:600;color:${col};white-space:nowrap;flex-shrink:0;margin-left:auto;">합계 ${catTotal.toLocaleString()}원</span>` : '';
@@ -6052,7 +6052,7 @@ function renderLedger(ti){
   } else if(t.note){
    rows = t.note.split('\n').filter(l=>l.trim()).map(line=>{
     const cat = CAT_KEYS.find(k=>line.startsWith(k));
-    if(!cat) return `<div style="padding:4px 0;font-size:12px;color:#333;">${line}</div>`;
+    if(!cat) return `<div style="padding:4px 0;font-size:12px;color:#333;">${escH(line)}</div>`;
     const [bg,col] = catColor[cat].split('|');
     const rest = line.slice(cat.length).trim();
     const dateM = rest.match(/^\[([^\]]*)\]\s*[:(]?/);
@@ -6060,8 +6060,8 @@ function renderLedger(ti){
     const text = (dateM ? rest.slice(dateM[0].length) : rest).replace(/^[:\s]+/,'');
     return `<div onclick="_editOldNote(${ti})" style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;flex-wrap:wrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='transparent'">
      <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};white-space:nowrap;flex-shrink:0;">${cat}</span>
-     ${date?`<span style="font-size:11px;color:#9B9888;">${date}</span>`:''}
-     <span style="font-size:12px;color:#333;flex:1;">${text}</span>
+     ${date?`<span style="font-size:11px;color:#9B9888;">${escH(date)}</span>`:''}
+     <span style="font-size:12px;color:#333;flex:1;">${escH(text)}</span>
      <span style="font-size:11px;color:#C8A020;margin-left:auto;">✏️</span>
     </div>`;
    }).join('');
@@ -6234,8 +6234,8 @@ function renderCenterPickerList(q, teacherName, cur){
  html+=`<div class="cpicker-section">📌 담당센터 <span class="cpicker-count">${lessonCenters.length}개</span></div>`;
  lessonCenters.forEach(name=>{
  const fee=DB.centerFees[`${name}|${teacherName}`]||(DB.centers.find(c=>c.name===name&&(c.teachers||[]).includes(teacherName))?.fee)||(DB.centers.find(c=>c.name===name)?.fee)||0;
- html+=`<div class="cpicker-item${name===cur?' selected':''}" onclick="selectCenter('${name.replace(/'/g,"\\'")}',${fee})">
- <span>${name}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
+ html+=`<div class="cpicker-item${name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(name)}',${fee})">
+ <span>${escH(name)}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  });
  }
  // 2. DB에서 이 강사 관련 센터
@@ -6244,8 +6244,8 @@ function renderCenterPickerList(q, teacherName, cur){
  html+=`<div class="cpicker-section">📋 DB 연결 센터 <span class="cpicker-count">${dbRelated.length}개</span></div>`;
  dbRelated.slice(0,20).forEach(c=>{
  const fee=DB.centerFees[`${c.name}|${teacherName}`]||c.fee||0;
- html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${c.name.replace(/'/g,"\\'")}',${fee})">
- <span>${c.name}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
+ html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(c.name)}',${fee})">
+ <span>${escH(c.name)}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  });
  }
  // 3. 전체 센터 (지역 필터 적용)
@@ -6253,14 +6253,14 @@ function renderCenterPickerList(q, teacherName, cur){
  html+=`<div class="cpicker-section">🏢 전체 센터${pickerRegion!=='전체'?' ('+pickerRegion+')':''} <span class="cpicker-count">${restCenters.length}개</span></div>`;
  restCenters.slice(0,50).forEach(c=>{
  const fee=DB.centerFees[`${c.name}|${teacherName}`]||c.fee||0;
- html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${c.name.replace(/'/g,"\\'")}',${fee})">
- <span>${c.name}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
+ html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(c.name)}',${fee})">
+ <span>${escH(c.name)}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  });
  } else {
  allCenters.slice(0,80).forEach(c=>{
  const fee=DB.centerFees[`${c.name}|${teacherName}`]||c.fee||0;
- html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${c.name.replace(/'/g,"\\'")}',${fee})">
- <span>${c.name}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
+ html+=`<div class="cpicker-item${c.name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(c.name)}',${fee})">
+ <span>${escH(c.name)}</span><span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  });
  if(!allCenters.length) html='<div style="padding:20px;text-align:center;color:#999;font-size:13px;">검색 결과 없음</div>';
  }
@@ -6496,7 +6496,7 @@ function toggleSettleStatus(ti){
   showConfirm({
    icon:'↩️',
    title:'완료 취소',
-   desc:`<b>${t.name}</b> 강사의 정산 상태를 <b style="color:var(--amber)">미정산</b>으로 변경할까요?`,
+   desc:`<b>${escH(t.name)}</b> 강사의 정산 상태를 <b style="color:var(--amber)">미정산</b>으로 변경할까요?`,
    okText:'변경',
    okStyle:'default',
    onOk:()=>{
@@ -6504,7 +6504,7 @@ function toggleSettleStatus(ti){
     lsSave();
     saveMonthlySnapshot(STATE.data.teachers[0]?.yearMonth||'', STATE.data);
     const li = document.getElementById(`ti-${ti}`);
-    if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 완료로 변경">미정산</span>`; }
+    if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = escH(t.name) + `<span class="t-pending-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 완료로 변경">미정산</span>`; }
     showToast(`${t.name} — 미정산으로 변경됨`);
    }
   });
@@ -6512,7 +6512,7 @@ function toggleSettleStatus(ti){
   showConfirm({
    icon:'✅',
    title:'정산 완료 처리',
-   desc:`<b>${t.name}</b> 강사를 <b style="color:var(--green)">정산 완료</b>로 표시할까요?`,
+   desc:`<b>${escH(t.name)}</b> 강사를 <b style="color:var(--green)">정산 완료</b>로 표시할까요?`,
    okText:'완료 처리',
    okStyle:'primary',
    onOk:()=>{
@@ -6526,7 +6526,7 @@ function toggleSettleStatus(ti){
      .then(()=>{ hideLoader(); showToast(`✅ ${t.name} — 정산 완료 처리됨`); })
      .catch(()=>{ hideLoader(); showToast(`✅ ${t.name} — 정산 완료 처리됨`); });
     const li = document.getElementById(`ti-${ti}`);
-    if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = t.name + `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 미완료로 변경">✓ 완료</span>`; }
+    if(li){ const nb=li.querySelector('.t-name'); if(nb) nb.innerHTML = escH(t.name) + `<span class="t-done-badge" onclick="event.stopPropagation();toggleSettleStatus(${ti})" title="클릭하면 미완료로 변경">✓ 완료</span>`; }
    }
   });
  }
@@ -6585,7 +6585,7 @@ function deleteLesson(ti, lessonIdx){
 
 function renderDetail(i){
  const t=STATE.data.teachers[i];
- const rows=t.lessons.map(l=>`<tr><td>${l.center}</td><td><div class="attend-row">${l.attend.map(dotH).join('')}</div></td><td class="num">${l.count}</td><td class="num">${l.feePer?l.feePer.toLocaleString():'-'}</td><td class="num" style="font-weight:600;">${l.total?l.total.toLocaleString():'-'}</td></tr>`).join('');
+ const rows=t.lessons.map(l=>`<tr><td>${escH(l.center)}</td><td><div class="attend-row">${l.attend.map(dotH).join('')}</div></td><td class="num">${l.count}</td><td class="num">${l.feePer?l.feePer.toLocaleString():'-'}</td><td class="num" style="font-weight:600;">${l.total?l.total.toLocaleString():'-'}</td></tr>`).join('');
  return`<div class="panel no-top-radius"><div class="table-wrap"><table><thead><tr><th>센터명</th><th>출석 (1~5주)</th><th class="num">횟수</th><th class="num">수업료</th><th class="num">소계</th></tr></thead><tbody>${rows}<tr class="tfoot-row"><td colspan="2" style="color:var(--text3);font-size:12px;">합계</td><td class="num">${t.lessons.reduce((s,l)=>s+l.count,0)}회</td><td></td><td class="num" style="color:var(--green);">${W2(t.totalSum)}</td></tr></tbody></table></div>${t.note?`<div style="padding:12px 16px;"><div class="note-box">${t.note.replace(/</g,'&lt;')}</div></div>`:''}</div>`;
 }
 function openAddLessonModal(ti, day){
@@ -6832,7 +6832,7 @@ async function saveAndNotify(ti){
    toast.innerHTML = `
     <div style="font-size:28px;margin-bottom:8px;">✅</div>
     <div style="font-size:15px;font-weight:700;color:#1A7A50;margin-bottom:4px;">수정이 완료되었습니다</div>
-    <div style="font-size:12px;color:#888;">${t.name} 강사 ${t.yearMonth}</div>`;
+    <div style="font-size:12px;color:#888;">${escH(t.name)} 강사 ${escH(t.yearMonth)}</div>`;
    document.body.appendChild(toast);
    setTimeout(()=>toast.remove(), 2000);
   } else {
@@ -7251,7 +7251,7 @@ function renderSettlePane(i){
 function renderAllPane(){
  const ts=[...STATE.data.teachers].sort((a,b)=>(b.finalPay||0)-(a.finalPay||0));
  const tP=ts.reduce((s,t)=>s+(t.finalPay||0),0),tR=ts.reduce((s,t)=>s+(t.totalSum||0),0),tPr=ts.reduce((s,t)=>s+(t.profit||0),0);
- const rows=ts.map(t=>`<tr class="all-tr" onclick="gotoT('${t.name.replace(/'/g,"\\'")}')"><td style="font-weight:500;">${t.name}</td><td class="num">${t.lessons.reduce((s,l)=>s+l.count,0)}</td><td class="num">${W2(t.totalSum)}</td><td class="num">${feePctStr(t.feePct)}</td><td class="num">${W2(t.pretax)}</td><td class="num" style="color:var(--red);">-${W2(Math.round((t.pretax||0)*0.033))}</td><td class="num" style="color:var(--green);font-weight:600;">${W2(t.finalPay)}</td><td class="num" style="color:var(--blue);">${W2(t.profit)}</td></tr>`).join('');
+ const rows=ts.map(t=>`<tr class="all-tr" onclick="gotoT('${escAttrJS(t.name)}')"><td style="font-weight:500;">${escH(t.name)}</td><td class="num">${t.lessons.reduce((s,l)=>s+l.count,0)}</td><td class="num">${W2(t.totalSum)}</td><td class="num">${feePctStr(t.feePct)}</td><td class="num">${W2(t.pretax)}</td><td class="num" style="color:var(--red);">-${W2(Math.round((t.pretax||0)*0.033))}</td><td class="num" style="color:var(--green);font-weight:600;">${W2(t.finalPay)}</td><td class="num" style="color:var(--blue);">${W2(t.profit)}</td></tr>`).join('');
  return`<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px;"><div class="metric"><div class="metric-label">총 수업료</div><div class="metric-value" style="font-size:16px;">${W2(tR)}<span style="font-size:11px;color:var(--text3);margin-left:2px;">원</span></div></div><div class="metric"><div class="metric-label">총 지급 월급</div><div class="metric-value green" style="font-size:16px;">${W2(tP)}<span style="font-size:11px;color:var(--text3);margin-left:2px;">원</span></div></div><div class="metric"><div class="metric-label">총 영업 이익</div><div class="metric-value blue" style="font-size:16px;">${W2(tPr)}<span style="font-size:11px;color:var(--text3);margin-left:2px;">원</span></div></div></div><div class="panel" style="border-radius:var(--radius-lg);"><div class="table-wrap"><table><thead><tr><th>강사명</th><th class="num">총 횟수</th><th class="num">수업료 합계</th><th class="num">강사료 기준</th><th class="num">세전</th><th class="num">세금(3.3%)</th><th class="num">확정 월급</th><th class="num">영업 이익</th></tr></thead><tbody>${rows}<tr class="tfoot-row"><td>합계 (${ts.length}명)</td><td class="num">${ts.reduce((s,t)=>s+t.lessons.reduce((a,l)=>a+l.count,0),0)}</td><td class="num">${W2(tR)}</td><td></td><td class="num">${W2(ts.reduce((s,t)=>s+(t.pretax||0),0))}</td><td class="num" style="color:var(--red);">-${W2(ts.reduce((s,t)=>s+Math.round((t.pretax||0)*0.033),0))}</td><td class="num" style="color:var(--green);font-weight:700;">${W2(tP)}</td><td class="num" style="color:var(--blue);">${W2(tPr)}</td></tr></tbody></table></div><div style="padding:10px 16px;font-size:12px;color:var(--text3);">강사 행을 클릭하면 상세로 이동합니다.</div></div>`;
 }
 function gotoT(name){const i=STATE.data.teachers.findIndex(t=>t.name===name);if(i>=0)selT(i);}
@@ -7307,7 +7307,7 @@ function renderRaiseAlert(){
    const rc=t.region==='서울'?'blue':t.region==='인천'?'teal':'purple';
    return `<div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-     <span style="font-size:14px;font-weight:700;color:var(--red);white-space:nowrap;">⚠ ${t.name}</span>
+     <span style="font-size:14px;font-weight:700;color:var(--red);white-space:nowrap;">⚠ ${escH(t.name)}</span>
      <span class="badge ${rc}" style="flex-shrink:0;">${t.region}</span>
      <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--red);white-space:nowrap;">${diff}일 지남</span>
     </div>
@@ -7319,7 +7319,7 @@ function renderRaiseAlert(){
    const rc=t.region==='서울'?'blue':t.region==='인천'?'teal':'purple';
    return `<div style="padding:8px 0;border-bottom:1px solid #E8CC80;">
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 ${t.name}</span>
+     <span style="font-size:14px;font-weight:700;color:var(--amber);white-space:nowrap;">🔔 ${escH(t.name)}</span>
      <span class="badge ${rc}" style="flex-shrink:0;">${t.region}</span>
      <span style="margin-left:auto;font-size:12px;font-weight:600;color:var(--amber);white-space:nowrap;">${diff}일 후</span>
     </div>
@@ -7401,7 +7401,7 @@ function renderTeacherMgr(){
  else raiseBadge=`<span style="font-size:11px;color:var(--text2);">${fmtDate(t.raiseDate)}<br><span style="color:var(--text3);">D-${diff}</span></span>`;
  }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
- <div class="mgr-cell" style="font-weight:500;">${t.name}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${t.subject}</div>`:''}</div>
+ <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}</div>
  <div class="mgr-cell" style="font-size:12px;line-height:1.6;">${formatAccountHtml(t.account)}</div>
  <div class="mgr-cell"><span class="badge ${regionColor}">${t.region||'-'}</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">${t.feeType==='pct'?t.feeVal+'%':Number(t.feeVal).toLocaleString()+'원/회'}</span></div>
@@ -7464,7 +7464,7 @@ function populateTeacherFilter(){
  if(!sel)return;
  const cur=sel.value;
  const tnames=DB.teachers.map(t=>t.name).sort();
- sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${n}" ${n===cur?'selected':''}>${n}</option>`).join('')}`;
+ sel.innerHTML=`<option value="">전체 강사</option>${tnames.map(n=>`<option value="${escH(n)}" ${n===cur?'selected':''}>${escH(n)}</option>`).join('')}`;
 }
 
 /* ═══ 센터 관리 뷰 탭 ═══ */
@@ -7790,7 +7790,7 @@ function renderCenterTreeView(searchQ='', regionFilter=''){
  const dupNames = new Set(Object.keys(nameCount).filter(k=>nameCount[k]>1));
 
  // 센터 표시명 (중복이면 "(지역)" 붙임)
- window._centerDisplayName = (c) => dupNames.has(c.name) ? `${c.name}(${c.region})` : c.name;
+ window._centerDisplayName = (c) => dupNames.has(c.name) ? `${escH(c.name)}(${escH(c.region)})` : escH(c.name);
 
  const ALL_REGIONS = ['서울','인천','수원'];
  const REGIONS = regionFilter ? [regionFilter] : ALL_REGIONS;
@@ -7858,7 +7858,7 @@ function renderCenterTreeView(searchQ='', regionFilter=''){
    } else {
     const rows = matched.map(c => {
      const ci = centerIdx(c);
-     const displayName = dupAll.has(c.name) ? `${c.name} <span style="font-size:10px;color:var(--text3);">(${c.region})</span>` : c.name;
+     const displayName = dupAll.has(c.name) ? `${escH(c.name)} <span style="font-size:10px;color:var(--text3);">(${escH(c.region)})</span>` : escH(c.name);
      const baseFee = c.fee || 0;
      const teacherBadges = (c.teachers||[]).map(t=>{
       const schedFee = (c.schedule||[]).find(s=>s.teacher===t)?.fee || 0;
@@ -7934,7 +7934,7 @@ function selectTreeRegion(region){
  const nameCount = {};
  DB.centers.forEach(c=>{ nameCount[c.name]=(nameCount[c.name]||0)+1; });
  const dupNames = new Set(Object.keys(nameCount).filter(k=>nameCount[k]>1));
- const dispName = (c) => dupNames.has(c.name) ? `${c.name}<span style="font-size:10px;color:var(--text3);margin-left:2px;">(${c.region})</span>` : c.name;
+ const dispName = (c) => dupNames.has(c.name) ? `${escH(c.name)}<span style="font-size:10px;color:var(--text3);margin-left:2px;">(${escH(c.region)})</span>` : escH(c.name);
 
  const regionCenters = DB.centers
   .filter(c=>c.region===region)
@@ -8009,7 +8009,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const nameCount = {};
  DB.centers.forEach(c=>{ nameCount[c.name]=(nameCount[c.name]||0)+1; });
  const dupNames = new Set(Object.keys(nameCount).filter(k=>nameCount[k]>1));
- const dispName = (c) => dupNames.has(c.name) ? `${c.name} <span style="font-size:10px;color:var(--text3);">(${c.region})</span>` : c.name;
+ const dispName = (c) => dupNames.has(c.name) ? `${escH(c.name)} <span style="font-size:10px;color:var(--text3);">(${escH(c.region)})</span>` : escH(c.name);
  const cols = window._teacherCols;
 
  // 체크박스 필터 바
@@ -8485,7 +8485,7 @@ function _renderCleanupView(){
    const teachers = (c.teachers||[]).length ? (c.teachers||[]).join(', ') : '담당 없음';
    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 24px;">
     <div style="display:flex;align-items:center;gap:8px;">
-     <span style="font-weight:500;font-size:13px;">${c.name}</span>
+     <span style="font-weight:500;font-size:13px;">${escH(c.name)}</span>
      ${regBadge(c.region)}
      <span style="color:var(--text3);font-size:11px;">담당: ${teachers} · ${Number(c.fee||0).toLocaleString()}원</span>
     </div>
@@ -8625,7 +8625,7 @@ function renderCenterMgr(){
  <div class="mgr-cell" style="font-weight:500;display:flex;align-items:center;gap:6px;">
  <span style="cursor:pointer;color:var(--green);" onclick="openModal('center',${i})">
  ${hasMultiFee?'<span style="font-size:10px;background:var(--amber-bg);color:var(--amber);padding:1px 5px;border-radius:10px;margin-right:4px;">다른금액</span>':''}
- ${c.name}
+ ${escH(c.name)}
  </span>
  ${(c.teachers||[]).length?`<button class="btn sm" onclick="toggleCenterDetail('cd-${i}')" style="padding:1px 6px;font-size:11px;flex-shrink:0;" title="강사별 수업료">▾</button>`:''}
  </div>
@@ -8772,7 +8772,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    if(!teachers.length) return '';
    const st = _regionStyle[region]||{bg:'#F1F1EE',color:'#5F5E5A'};
    return `<optgroup label="${region}" style="background:${st.bg};color:${st.color};font-weight:600;">` +
-    teachers.map(t=>`<option value="${t.name}" style="background:white;color:#333;font-weight:400;">${t.name}</option>`).join('') +
+    teachers.map(t=>`<option value="${escH(t.name)}" style="background:white;color:#333;font-weight:400;">${escH(t.name)}</option>`).join('') +
     '</optgroup>';
   }).join('');
  document.getElementById('modalBody').innerHTML=`
@@ -8975,12 +8975,12 @@ function _checkCenterDup(){
   // 완전 동일 (이름+지역) → 경고 + 기존 강사 표시
   const teachers = (sameRegion.teachers||[]).join(', ') || '없음';
   hint.style.cssText = 'display:block;margin:-6px 0 8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6;background:#FFF3CD;border:1px solid #FFD54F;color:#6D4C00;';
-  hint.innerHTML = `⚠️ <b>${region} ${name}</b> 센터가 이미 등록되어 있어요.<br>담당 강사: ${teachers}<br><span style="color:#8a6000;">저장 시 기존 센터에 강사를 추가하는 옵션이 제공됩니다.</span>`;
+  hint.innerHTML = `⚠️ <b>${escH(region)} ${escH(name)}</b> 센터가 이미 등록되어 있어요.<br>담당 강사: ${escH(teachers)}<br><span style="color:#8a6000;">저장 시 기존 센터에 강사를 추가하는 옵션이 제공됩니다.</span>`;
  } else {
   // 이름만 같고 지역 다름 → 참고 정보
-  const regionList = matches.map(c=>`${c.region}(${(c.teachers||[]).join('·')||'강사없음'})`).join(', ');
+  const regionList = matches.map(c=>`${escH(c.region)}(${escH((c.teachers||[]).join('·')||'강사없음')})`).join(', ');
   hint.style.cssText = 'display:block;margin:-6px 0 8px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.6;background:#E8F5EE;border:1px solid #B8E0CC;color:#1A5A35;';
-  hint.innerHTML = `ℹ️ <b>${name}</b>과 같은 이름의 센터가 있어요: ${regionList}<br><span style="opacity:.8;">지역이 다르면 별개 센터로 등록 가능합니다.</span>`;
+  hint.innerHTML = `ℹ️ <b>${escH(name)}</b>과 같은 이름의 센터가 있어요: ${regionList}<br><span style="opacity:.8;">지역이 다르면 별개 센터로 등록 가능합니다.</span>`;
  }
 }
 function saveModal(){
@@ -9547,8 +9547,8 @@ function renderYearAll(){
  const rd=new Date(t.raiseDate); const diff=Math.floor((rd-today)/(1000*60*60*24));
  const status=diff<0?`<span style="color:var(--red);font-weight:600;">⚠ ${Math.abs(diff)}일 지남</span>`:diff<=30?`<span style="color:var(--amber);font-weight:600;">🔔 D-${diff}</span>`:`<span style="color:var(--text3);">D-${diff}</span>`;
  return`<tr>
- <td style="font-weight:500;">${t.name}</td>
- <td><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${t.region}</span></td>
+ <td style="font-weight:500;">${escH(t.name)}</td>
+ <td><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${escH(t.region)}</span></td>
  <td style="font-size:12px;">${fmtDate(t.hireDate)||'-'}</td>
  <td style="font-size:12px;">${t.raiseDate}</td>
  <td>${status}</td>
@@ -9591,8 +9591,8 @@ function buildDiffHTML(A, B, kA, kB){
  const tRemoved=A.teachers.filter(a=>!B.teachers.find(b=>b.name===a.name));
  if(tAdded.length||tRemoved.length){
  const rows=[
- ...tAdded.map(t=>`<div class="diff-row added" style="grid-template-columns:1fr 80px 1fr;"><div class="diff-cell">${t.name}</div><div class="diff-cell"><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${t.region||'-'}</span></div><div class="diff-cell"><span class="val-new">${t.feeType==='pct'?t.feeVal+'%':Number(t.feeVal).toLocaleString()+'원/회'} 신규등록</span></div></div>`),
- ...tRemoved.map(t=>`<div class="diff-row removed" style="grid-template-columns:1fr 80px 1fr;"><div class="diff-cell">${t.name}</div><div class="diff-cell"><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${t.region||'-'}</span></div><div class="diff-cell"><span class="val-old">삭제됨</span></div></div>`)
+ ...tAdded.map(t=>`<div class="diff-row added" style="grid-template-columns:1fr 80px 1fr;"><div class="diff-cell">${escH(t.name)}</div><div class="diff-cell"><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${escH(t.region||'-')}</span></div><div class="diff-cell"><span class="val-new">${t.feeType==='pct'?t.feeVal+'%':Number(t.feeVal).toLocaleString()+'원/회'} 신규등록</span></div></div>`),
+ ...tRemoved.map(t=>`<div class="diff-row removed" style="grid-template-columns:1fr 80px 1fr;"><div class="diff-cell">${escH(t.name)}</div><div class="diff-cell"><span class="badge ${t.region==='서울'?'blue':t.region==='인천'?'teal':'purple'}">${escH(t.region||'-')}</span></div><div class="diff-cell"><span class="val-old">삭제됨</span></div></div>`)
  ].join('');
  sections.push(diffSection(`👤 강사 변동`,tAdded.length,tRemoved.length,0,rows,['이름','지역','비고']));
  }
@@ -9612,8 +9612,8 @@ function buildDiffHTML(A, B, kA, kB){
  const cRemoved=A.centers.filter(a=>!B.centers.find(b=>b.name===a.name&&b.region===a.region));
  if(cAdded.length||cRemoved.length){
  const rows=[
- ...cAdded.map(c=>`<div class="diff-row added" style="grid-template-columns:1fr 70px 100px 1fr;"><div class="diff-cell">${c.name}</div><div class="diff-cell"><span class="badge ${c.region==='서울'?'blue':c.region==='인천'?'teal':'purple'}">${c.region||'-'}</span></div><div class="diff-cell"><span class="val-new">${Number(c.fee||0).toLocaleString()}원</span></div><div class="diff-cell">${(c.teachers||[]).join(', ')||'-'}</div></div>`),
- ...cRemoved.map(c=>`<div class="diff-row removed" style="grid-template-columns:1fr 70px 100px 1fr;"><div class="diff-cell">${c.name}</div><div class="diff-cell"><span class="badge ${c.region==='서울'?'blue':c.region==='인천'?'teal':'purple'}">${c.region||'-'}</span></div><div class="diff-cell"><span class="val-old">${Number(c.fee||0).toLocaleString()}원 삭제</span></div><div class="diff-cell">${(c.teachers||[]).join(', ')||'-'}</div></div>`)
+ ...cAdded.map(c=>`<div class="diff-row added" style="grid-template-columns:1fr 70px 100px 1fr;"><div class="diff-cell">${escH(c.name)}</div><div class="diff-cell"><span class="badge ${c.region==='서울'?'blue':c.region==='인천'?'teal':'purple'}">${escH(c.region||'-')}</span></div><div class="diff-cell"><span class="val-new">${Number(c.fee||0).toLocaleString()}원</span></div><div class="diff-cell">${escH((c.teachers||[]).join(', ')||'-')}</div></div>`),
+ ...cRemoved.map(c=>`<div class="diff-row removed" style="grid-template-columns:1fr 70px 100px 1fr;"><div class="diff-cell">${escH(c.name)}</div><div class="diff-cell"><span class="badge ${c.region==='서울'?'blue':c.region==='인천'?'teal':'purple'}">${escH(c.region||'-')}</span></div><div class="diff-cell"><span class="val-old">${Number(c.fee||0).toLocaleString()}원 삭제</span></div><div class="diff-cell">${escH((c.teachers||[]).join(', ')||'-')}</div></div>`)
  ].join('');
  sections.push(diffSection(`🏢 센터 추가/삭제`,cAdded.length,cRemoved.length,0,rows,['센터명','지역','수업료','담당 강사']));
  }
@@ -9702,6 +9702,10 @@ function showAddrHint(msg) {
 }
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+// v15.39: XSS 방어 — HTML 텍스트/속성(작은·큰따옴표 모두) 안전. 사용자 입력(이름·센터명·계좌 등) 출력에 사용.
+function escH(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+// v15.39: 인라인 onclick="fn('${...}')" 처럼 (HTML속성 → JS문자열) 이중 컨텍스트에 안전. JS이스케이프 후 HTML인코딩.
+function escAttrJS(s){ return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 /* ═══ TOAST ═══ */
 
@@ -10052,9 +10056,9 @@ function renderChangelog(){
      ${_actorHtml}
      <span style="font-size:11px;color:var(--text3);">${e.at}</span>
     </div>
-    <div style="font-size:13px;font-weight:500;color:var(--text);">${e.desc}</div>
-    ${e.detail?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">${e.detail}</div>`:''}
-    ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▶ 상세 보기</button><div id="${bulkId}" style="display:none;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${c}`).join('<br>')}</div>`:''}
+    <div style="font-size:13px;font-weight:500;color:var(--text);">${escH(e.desc)}</div>
+    ${e.detail?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">${escH(e.detail)}</div>`:''}
+    ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▶ 상세 보기</button><div id="${bulkId}" style="display:none;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${escH(c)}`).join('<br>')}</div>`:''}
    </div>
    ${(e.snapshot || e.type==='error_log')?`<button onclick="restoreChangelog(${e.id})" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
   </div>`;
@@ -10065,7 +10069,7 @@ function restoreChangelog(id){
  const entry = log.find(e=>e.id===id);
  if(!entry || (!entry.snapshot && entry.type!=='error_log')) return;
  const _extra = entry.type==='error_log' ? `<br><small style="color:var(--text3)">없어진 센터를 다시 추가합니다.</small>` : '';
- showConfirm({icon:'↩️',title:'변경 이력 되돌리기',desc:`<b>「${entry.desc}」</b>을(를) 되돌릴까요?${_extra}`,okText:'되돌리기',okStyle:'primary',onOk:()=>_doRestoreChangelog(entry)});
+ showConfirm({icon:'↩️',title:'변경 이력 되돌리기',desc:`<b>「${escH(entry.desc)}」</b>을(를) 되돌릴까요?${_extra}`,okText:'되돌리기',okStyle:'primary',onOk:()=>_doRestoreChangelog(entry)});
 }
 function _restoreChangelog_UNUSED(id){
  const log = getChangelog();
@@ -16771,13 +16775,16 @@ function getGrowthData(){
  const GROWTH_START_YM = '2026년 6월';
  const _ymNum = (ym)=>{ const m=(ym||'').match(/(\d{4})\D+?(\d{1,2})/); return m?(parseInt(m[1])*100+parseInt(m[2])):0; };
  const months=[];
+ const seenYM=new Set(); // v15.39: 같은 달 중복 집계 방지 (백업키 _bak 등)
  for(let i=0;i<localStorage.length;i++){
   const k=localStorage.key(i);
   if(!k||!k.startsWith(MONTHLY_KEY_PREFIX)) continue;
+  if(/_bak\d*$/.test(k)) continue; // v15.39: 백업 키(_bak) 제외 — 한 달이 2배로 잡히던 문제
   try{
    const raw=JSON.parse(localStorage.getItem(k));
    const snap=raw.data||raw;
    const ym=raw.ym||k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
+   if(seenYM.has(ym)) continue; seenYM.add(ym); // v15.39: 동일 월 한 번만
    // v14.59: 삭제된 달(예: 제거한 3월 더미)은 성장추이 집계에서 제외
    try{ const _dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); if(_dm.some(d=>d.ym===ym)) continue; }catch(e){}
    // v14.62: 성장추이 시작월(6월) 이전(부정확한 4·5월 등)은 집계 제외
@@ -18208,7 +18215,7 @@ function _growthExpandMatrix(parentTargetId, region, subject){
     <button onclick="_growthExpandMatrix('${parentTargetId}','${region}','${subject.replace(/'/g,"\\'")}')" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:4px 8px;">✕ 닫기</button>
    </div>
    <div style="display:flex;flex-wrap:wrap;gap:6px;">
-    ${teachers.map(t=>`<span style="background:${c.chip};color:${c.chipText};padding:4px 10px;border-radius:14px;font-size:12px;font-weight:500;">${t.name}</span>`).join('')}
+    ${teachers.map(t=>`<span style="background:${c.chip};color:${c.chipText};padding:4px 10px;border-radius:14px;font-size:12px;font-weight:500;">${escH(t.name)}</span>`).join('')}
    </div>
   </div>
  `;
