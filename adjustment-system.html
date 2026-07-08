@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.35">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.36">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.35">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.36">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.35</title>
+<title>수업기록표 정산 시스템 v15.36</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2364,7 +2364,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
    <span style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;">📅 월 보기</span>
    <select id="cMonthSelect" onchange="_onCenterMonthChange()" style="height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white;cursor:pointer;"></select>
-   <button id="cResvBtn" onclick="_toggleResvEditor()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:#4F46E5;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(79,70,229,.25);">📅 센터 수정 예약</button>
+   <button id="cResvBtn" onclick="_toggleResvEditor()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:#4F46E5;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(79,70,229,.25);display:inline-flex;align-items:center;gap:7px;"><span id="cResvLamp" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .2s;"></span>📅 센터 수정 예약</button>
   </div>
   <div id="cMemoSection" style="margin-bottom:14px;border:1.5px dashed #E0C878;background:#FFFDF4;border-radius:12px;padding:10px 12px;">
    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -3602,7 +3602,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.35';
+const SYSTEM_VERSION='v15.36';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7540,11 +7540,13 @@ function _renderCenterView(){
  if(cleanup && !isCurrent) cleanup.style.display='none';
  if(tree) tree.style.display=isCurrent?'block':'none';
  if(panel) panel.style.display=isCurrent?'none':'block';
- // v15.35: 예약 버튼 토글 상태 갱신 (켜짐=센터 관리로 돌아가기)
+ // v15.36: 예약 버튼 — 라벨 고정, 켜지면 불(램프)이 들어오고 테두리가 빛남
  const rbtn=document.getElementById('cResvBtn');
  if(rbtn){ const on=(_centerViewYM==='__resv__');
-  rbtn.innerHTML = on ? '✕ 센터 관리로 돌아가기' : '📅 센터 수정 예약';
-  rbtn.style.background = on ? '#312E81' : '#4F46E5';
+  const lamp=document.getElementById('cResvLamp');
+  if(lamp){ lamp.style.background = on ? '#FCD34D' : 'rgba(255,255,255,.35)'; lamp.style.boxShadow = on ? '0 0 7px 2px #FCD34D' : 'none'; }
+  rbtn.style.background = on ? '#4338CA' : '#4F46E5';
+  rbtn.style.boxShadow = on ? '0 0 0 2px #FCD34D, 0 2px 8px rgba(79,70,229,.35)' : '0 2px 6px rgba(79,70,229,.25)';
  }
  try{ _renderResvSummary(); }catch(_){}
  if(isCurrent){ if(panel) panel.innerHTML=''; renderCenterTreeView(); return; }
