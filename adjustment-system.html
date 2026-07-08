@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.32">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.33">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.32">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.33">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.32</title>
+<title>수업기록표 정산 시스템 v15.33</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3600,7 +3600,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.32';
+const SYSTEM_VERSION='v15.33';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7575,6 +7575,7 @@ function _renderCenterPastSnap(ym){
  *  DB.centers(=센터 목록)는 '롤오버 반영' 시에만 변경. saveMonthlySnapshot 등 정산 함수는 절대 호출 안 함. */
 const CENTERRESV_PREFIX='iruri_centerresv_';
 let _resvEditYM='';
+let _resvSearch=''; // v15.33: 예약 편집기 센터 검색어
 function _resvKey(ym){ return CENTERRESV_PREFIX+ym.replace(/\s/g,'_'); }
 function _getResv(ym){ try{ const o=JSON.parse(localStorage.getItem(_resvKey(ym))||'null'); return (o&&Array.isArray(o.ops))?o:{ym,ops:[]}; }catch(_){ return {ym,ops:[]}; } }
 function _saveResv(r){ try{ if(r.ops&&r.ops.length) localStorage.setItem(_resvKey(r.ym), JSON.stringify(r)); else localStorage.removeItem(_resvKey(r.ym)); }catch(_){} }
@@ -7586,7 +7587,7 @@ function _resvActor(){ return (window._loggedInTeacher)||'관리자'; }
 function _resvOp(r,key,type){ return (r.ops||[]).find(o=>o.t===type && (o.name+'||'+(o.region||''))===key); }
 
 /* 예약 편집기 */
-function _openResvEditor(){ if(!_resvEditYM || _ymNum(_resvEditYM)<=_ymNum(_curCenterMonth())) _resvEditYM=_futureMonths(1)[0]; _centerViewYM='__resv__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
+function _openResvEditor(){ if(!_resvEditYM || _ymNum(_resvEditYM)<=_ymNum(_curCenterMonth())) _resvEditYM=_futureMonths(1)[0]; _resvSearch=''; _centerViewYM='__resv__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
 function _openResvHistory(){ if(!_resvEditYM) _resvEditYM=_futureMonths(1)[0]; _centerViewYM='__resvhist__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
 function _resvSetMonth(ym){ _resvEditYM=ym; _renderCenterView(); }
 function _resvMonthPicker(){ return _futureMonths(4).map(m=>`<button onclick="_resvSetMonth('${m}')" style="font-size:12px;padding:4px 11px;border-radius:16px;cursor:pointer;border:1px solid ${m===_resvEditYM?'#4F46E5':'#D8D5CE'};background:${m===_resvEditYM?'#4F46E5':'#fff'};color:${m===_resvEditYM?'#fff':'#5C574D'};font-weight:${m===_resvEditYM?'700':'400'};">${m}</button>`).join(' '); }
@@ -7594,18 +7595,8 @@ function _resvMonthPicker(){ return _futureMonths(4).map(m=>`<button onclick="_r
 function _renderResvEditor(){
  const panel=document.getElementById('cMonthPanel'); if(!panel) return;
  const ym=_resvEditYM; const r=_getResv(ym);
- const rows=_centerRegionList(DB.centers||[],{row:c=>{ const idx=DB.centers.indexOf(c); const key=_centerKey(c);
-  const del=_resvOp(r,key,'del'), ed=_resvOp(r,key,'edit');
-  const fee=ed?ed.fee:c.fee, tch=ed?(ed.teachers||[]):(c.teachers||[]);
-  const strike=del?'opacity:.5;text-decoration:line-through;':'';
-  const editedBadge=ed?` <span style="font-size:10px;color:#2563EB;background:#EFF6FF;border-radius:5px;padding:0 5px;">수정예정</span>`:'';
-  const btns=del
-   ? `<button onclick="_resvToggleDel(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #A7F3D0;background:#ECFDF5;color:#059669;cursor:pointer;">복구</button>`
-   : `<button onclick="_resvEdit(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;">수정</button> <button onclick="_resvToggleDel(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;">제외</button>`;
-  return `<div style="display:flex;gap:8px;align-items:center;padding:4px 6px;font-size:12px;border-bottom:0.5px solid var(--border);${strike}"><span style="flex:1;">${esc(c.name)}${editedBadge}</span><span style="color:var(--text3);width:110px;">${tch.map(esc).join(', ')}</span><span style="color:var(--text3);width:70px;text-align:right;">${(Number(fee)||0).toLocaleString()}</span><span style="flex-shrink:0;white-space:nowrap;">${btns}</span></div>`;
- }});
  const adds=(r.ops||[]).filter(o=>o.t==='add');
- const addsHtml=adds.length?`<div style="margin-top:10px;"><div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:4px;">➕ ${ym} 신규 추가 예정 (${adds.length})</div>${adds.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 6px;font-size:12px;border-bottom:0.5px solid var(--border);background:#F0FDF4;"><span style="flex:1;">${esc(o.name)} <span style="color:var(--text3);">(${esc(o.region)})</span></span><span style="color:var(--text3);width:110px;">${(o.teachers||[]).map(esc).join(', ')}</span><span style="color:var(--text3);width:70px;text-align:right;">${(Number(o.fee)||0).toLocaleString()}</span><button onclick="_resvDelAdd(${i})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;">취소</button></div>`).join('')}</div>`:'';
+ const addsHtml=adds.length?`<div style="margin-top:10px;"><div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:4px;">➕ ${esc(ym)} 신규 추가 예정 (${adds.length})</div>${adds.map((o,i)=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 6px;font-size:12px;border-bottom:0.5px solid var(--border);background:#F0FDF4;"><span style="flex:1;">${esc(o.name)} <span style="color:var(--text3);">(${esc(o.region)})</span></span><span style="color:var(--text3);width:110px;">${(o.teachers||[]).map(esc).join(', ')}</span><span style="color:var(--text3);width:70px;text-align:right;">${(Number(o.fee)||0).toLocaleString()}</span><button onclick="_resvDelAdd(${i})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;">취소</button></div>`).join('')}</div>`:'';
  const opN={add:adds.length, del:(r.ops||[]).filter(o=>o.t==='del').length, edit:(r.ops||[]).filter(o=>o.t==='edit').length};
  panel.innerHTML=`
   <div style="background:linear-gradient(135deg,#EEF2FF,#F5F3FF);border:1px solid #C7D2FE;border-radius:10px;padding:10px 14px;margin-bottom:12px;">
@@ -7618,24 +7609,52 @@ function _renderResvEditor(){
   </div>
   <button onclick="_resvAdd()" style="width:100%;height:38px;border:1.5px dashed #4F46E5;border-radius:9px;background:#EEF2FF;color:#4F46E5;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:10px;">➕ ${esc(_resvEditYM)}에 새로 시작하는 센터 추가</button>
   ${addsHtml}
-  <div style="border:1px solid var(--border);border-radius:10px;padding:10px;background:white;max-height:460px;overflow:auto;margin-top:${adds.length?'10px':'0'};">${rows||'<div style="color:var(--text3);text-align:center;padding:20px;">센터 없음</div>'}</div>`;
+  <div style="margin-top:${adds.length?'12px':'2px'};margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+   <input id="cResvSearch" type="search" value="${esc(_resvSearch)}" oninput="_resvSearch=this.value;_resvRenderList();" placeholder="센터명·강사 검색" autocomplete="off" style="flex:1;min-width:0;height:32px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;font-family:inherit;outline:none;">
+   <span style="font-size:11px;color:var(--text3);white-space:nowrap;">지역별 정렬</span>
+  </div>
+  <div id="cResvList" style="border:1px solid var(--border);border-radius:10px;padding:10px;background:white;max-height:460px;overflow:auto;"></div>`;
+ _resvRenderList();
+}
+/* v15.33: 예약 편집기 센터 목록 — 검색어 필터 + 지역별 구분 (검색 입력 포커스 유지 위해 이 영역만 갱신) */
+function _resvRenderList(){
+ const box=document.getElementById('cResvList'); if(!box) return;
+ const r=_getResv(_resvEditYM);
+ const q=(_resvSearch||'').toLowerCase().trim();
+ let list=(DB.centers||[]);
+ if(q) list=list.filter(c=>String(c.name||'').toLowerCase().includes(q)||(c.teachers||[]).some(t=>String(t||'').toLowerCase().includes(q)));
+ const rows=_centerRegionList(list,{row:c=>{ const idx=DB.centers.indexOf(c); const key=_centerKey(c);
+  const del=_resvOp(r,key,'del'), ed=_resvOp(r,key,'edit');
+  const fee=ed?ed.fee:c.fee, tch=ed?(ed.teachers||[]):(c.teachers||[]);
+  const strike=del?'opacity:.5;text-decoration:line-through;':'';
+  const editedBadge=ed?` <span style="font-size:10px;color:#2563EB;background:#EFF6FF;border-radius:5px;padding:0 5px;">수정예정</span>`:'';
+  const btns=del
+   ? `<button onclick="_resvToggleDel(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #A7F3D0;background:#ECFDF5;color:#059669;cursor:pointer;">복구</button>`
+   : `<button onclick="_resvEdit(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;">수정</button> <button onclick="_resvToggleDel(${idx})" style="font-size:11px;padding:2px 9px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;">제외</button>`;
+  return `<div style="display:flex;gap:8px;align-items:center;padding:4px 6px;font-size:12px;border-bottom:0.5px solid var(--border);${strike}"><span style="flex:1;">${esc(c.name)}${editedBadge}</span><span style="color:var(--text3);width:110px;">${tch.map(esc).join(', ')}</span><span style="color:var(--text3);width:70px;text-align:right;">${(Number(fee)||0).toLocaleString()}</span><span style="flex-shrink:0;white-space:nowrap;">${btns}</span></div>`;
+ }});
+ box.innerHTML=rows||`<div style="color:var(--text3);text-align:center;padding:20px;">${q?'검색 결과가 없어요':'센터 없음'}</div>`;
 }
 function _resvToggleDel(idx){ const c=(DB.centers||[])[idx]; if(!c) return; const ym=_resvEditYM; const r=_getResv(ym); const key=_centerKey(c);
  const i=(r.ops||[]).findIndex(o=>o.t==='del'&&(o.name+'||'+(o.region||''))===key);
  if(i>=0){ r.ops.splice(i,1); } else { r.ops=r.ops.filter(o=>!(o.t==='edit'&&(o.name+'||'+(o.region||''))===key)); r.ops.push({t:'del',name:c.name,region:c.region||'',at:_nowStr(),by:_resvActor()}); }
  _saveResv(r); _renderResvEditor(); }
+/* v15.33: 예약 수정 — 실제 센터 관리 수정 UI(강사별 수업료·요일 포함)를 재사용. 저장은 예약 op으로만. */
 function _resvEdit(idx){ const c=(DB.centers||[])[idx]; if(!c) return; const ym=_resvEditYM; const r=_getResv(ym); const key=_centerKey(c);
- const ed=_resvOp(r,key,'edit'); const curFee=ed?ed.fee:(c.fee||0); const curT=ed?(ed.teachers||[]).join(', '):(c.teachers||[]).join(', ');
- const feeS=prompt(c.name+' 수업료(원) — '+ym+' 적용', String(curFee)); if(feeS==null) return; const fee=parseInt(String(feeS).replace(/[^\d]/g,''))||0;
- const tS=prompt(c.name+' 담당 강사(쉼표로 구분) — '+ym+' 적용', curT); if(tS==null) return; const teachers=tS.split(',').map(s=>s.trim()).filter(Boolean);
- r.ops=r.ops.filter(o=>!((o.t==='edit'||o.t==='del')&&(o.name+'||'+(o.region||''))===key));
- if(fee!==(c.fee||0) || teachers.join(',')!==(c.teachers||[]).join(',')) r.ops.push({t:'edit',name:c.name,region:c.region||'',fee,teachers,at:_nowStr(),by:_resvActor()});
- _saveResv(r); _renderResvEditor(); }
-function _resvAdd(){ const ym=_resvEditYM; const name=prompt(ym+'에 추가할 센터명'); if(name==null) return; const nm=name.trim(); if(!nm) return;
- let rg=prompt('지역 (서울/인천/수원)','서울'); if(rg==null) return; rg=rg.trim();
- const feeS=prompt('수업료(원)','55000'); if(feeS==null) return; const fee=parseInt(String(feeS).replace(/[^\d]/g,''))||0;
- const tS=prompt('담당 강사(쉼표로 구분)',''); const teachers=(tS||'').split(',').map(s=>s.trim()).filter(Boolean);
- const r=_getResv(ym); r.ops.push({t:'add',name:nm,region:rg,fee,teachers,at:_nowStr(),by:_resvActor()}); _saveResv(r); _renderResvEditor(); }
+ const ed=_resvOp(r,key,'edit'); // 이미 예약된 수정이 있으면 그 내용으로 채워서 계속 편집
+ const override=(ed&&ed.center)?ed.center:null;
+ openModal('center',idx,'','',override);
+ STATE.resvMode=ym; STATE.resvOrig={name:c.name,region:c.region||''};
+ const t=document.getElementById('modalTitle'); if(t) t.textContent=ym+' 예약 · 센터 수정';
+ const d=document.getElementById('modalDesc'); if(d) d.textContent='이 수정은 '+ym+' 1일에 반영돼요. 지금 목록·정산엔 영향 없어요. (강사별 수업료·요일까지 저장)';
+}
+/* v15.33: 예약 신규 추가 — 실제 신규 센터 추가 UI 전체(주소·연락처·강사·요일·강사별 수업료) 사용 */
+function _resvAdd(){ const ym=_resvEditYM;
+ openModal('center',null);
+ STATE.resvMode=ym; STATE.resvOrig=null;
+ const t=document.getElementById('modalTitle'); if(t) t.textContent=ym+' 예약 · 새 센터 추가';
+ const d=document.getElementById('modalDesc'); if(d) d.textContent=ym+'부터 새로 시작하는 센터예요. '+ym+' 1일에 목록에 추가돼요. 지금 목록·정산엔 영향 없어요.';
+}
 function _resvDelAdd(i){ const r=_getResv(_resvEditYM); const adds=(r.ops||[]).filter(o=>o.t==='add'); const target=adds[i]; if(!target) return; const gi=r.ops.indexOf(target); if(gi>=0) r.ops.splice(gi,1); _saveResv(r); _renderResvEditor(); }
 
 /* 수정 예약 내역 */
@@ -7661,10 +7680,13 @@ function _renderResvHistory(){
 function _applyResv(ym){ const r=_getResv(ym); if(!r.ops||!r.ops.length) return; const memoAdd={};
  r.ops.forEach(op=>{
   if(op.t==='del'){ const idx=(DB.centers||[]).findIndex(c=>c.name===op.name && (c.region||'')===(op.region||'')); if(idx>=0) DB.centers.splice(idx,1); (memoAdd[op.region]=memoAdd[op.region]||[]).push('제외: '+op.name); }
-  else if(op.t==='edit'){ const c=(DB.centers||[]).find(c=>c.name===op.name && (c.region||'')===(op.region||'')); if(c){ c.fee=op.fee; c.teachers=op.teachers; } (memoAdd[op.region]=memoAdd[op.region]||[]).push('수정: '+op.name); }
-  else if(op.t==='add'){ if(!(DB.centers||[]).some(c=>c.name===op.name && (c.region||'')===(op.region||''))) DB.centers.push({name:op.name,region:op.region,fee:op.fee,teachers:op.teachers,source:'수동',schedule:[]}); (memoAdd[op.region]=memoAdd[op.region]||[]).push('추가: '+op.name); }
+  else if(op.t==='edit'){ const on=(op.oname!=null?op.oname:op.name), org=(op.oregion!=null?op.oregion:(op.region||'')); const idx=(DB.centers||[]).findIndex(c=>c.name===on && (c.region||'')===org);
+   if(idx>=0){ if(op.center){ DB.centers[idx]=JSON.parse(JSON.stringify(op.center)); } else { DB.centers[idx].fee=op.fee; DB.centers[idx].teachers=op.teachers; } }
+   (memoAdd[op.region]=memoAdd[op.region]||[]).push('수정: '+op.name); }
+  else if(op.t==='add'){ if(!(DB.centers||[]).some(c=>c.name===op.name && (c.region||'')===(op.region||''))) DB.centers.push(op.center?JSON.parse(JSON.stringify(op.center)):{name:op.name,region:op.region,fee:op.fee,teachers:op.teachers,source:'수동',schedule:[]}); (memoAdd[op.region]=memoAdd[op.region]||[]).push('추가: '+op.name); }
  });
  try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+ try{ _rebuildCenterFeesFromCenters(); }catch(_){} // v15.33: 강사별 수업료(schedule.fee) → centerFees 반영
  const m=_getCenterMemo(); Object.keys(memoAdd).forEach(rg=>{ if(!rg) return; (m[rg]=m[rg]||[]).unshift('📌 '+ym+' 반영: '+memoAdd[rg].join(' · ')); }); _saveCenterMemo(m);
  try{ localStorage.removeItem(_resvKey(ym)); }catch(_){}
 }
@@ -8534,10 +8556,11 @@ function renderCenterMgr(){
 }
 
 /* ═══ MODAL ═══ */
-function openModal(type,idx=null,prefillName='',prefillTeacher=''){
+function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=null){
+ STATE.resvMode=null; STATE.resvOrig=null; // v15.33: 일반 열기는 예약모드 아님 (예약 열기는 openModal 호출 후 설정)
  STATE.modalType=type;STATE.editIdx=idx;
  const isEdit=idx!==null;
- const item=isEdit?(type==='teacher'?DB.teachers[idx]:DB.centers[idx]):null;
+ const item=resvOverride||(isEdit?(type==='teacher'?DB.teachers[idx]:DB.centers[idx]):null);
  document.getElementById('modalTitle').textContent=isEdit?(type==='teacher'?'강사 정보 수정':'센터 정보 수정'):(type==='teacher'?'신규 강사 추가':'신규 센터 추가');
  document.getElementById('modalOk').textContent=isEdit?'저장':'추가';
 
@@ -8797,7 +8820,7 @@ function updateFeeHint(){
  document.getElementById('fi_feeLabel').textContent=t==='pct'?'비율 (%)':'회당 금액 (원)';
  document.getElementById('fi_feeHint').textContent=t==='pct'?'예) 85 → 수업료 합계의 85%':'예) 42000 → 수업 1회당 42,000원';
 }
-function closeModal(){document.getElementById('modalOverlay').style.display='none';}
+function closeModal(){document.getElementById('modalOverlay').style.display='none'; STATE.resvMode=null; STATE.resvOrig=null;/* v15.33 */}
 
 // v11.30: 동명+동일지역 센터 발견 시 → 강사 추가 안내 플로우
 function _openDupCenterFlow(existingCenter, newChips, newSchedule){
@@ -8934,6 +8957,25 @@ function saveModal(){
  const contactName = document.getElementById('fi_contact_name')?.value.trim()||'';
  const memo = document.getElementById('fi_memo')?.value.trim()||''; // v12.46: 특이사항 메모
  const obj={name,region,fee,address,phone,email,contactName,memo,teachers:[...STATE.modalChips],schedule,source:STATE.editIdx!==null?DB.centers[STATE.editIdx].source:'수동'};
+ // v15.33: 센터 수정 예약 모드 — DB.centers/GAS/정산은 절대 건드리지 않고 예약 op으로만 저장
+ if(STATE.resvMode){
+  const ym=STATE.resvMode; const r=_getResv(ym);
+  const isEditOp=!!STATE.resvOrig;
+  const origKey=isEditOp?(STATE.resvOrig.name+'||'+STATE.resvOrig.region):(obj.name+'||'+obj.region);
+  r.ops=(r.ops||[]).filter(o=>{
+   if(o.t==='del') return true;
+   const k=(o.oname!=null?o.oname:o.name)+'||'+(o.oregion!=null?o.oregion:(o.region||''));
+   return k!==origKey;
+  });
+  const op={t:isEditOp?'edit':'add', name:obj.name, region:obj.region, fee:obj.fee, teachers:[...(obj.teachers||[])], center:JSON.parse(JSON.stringify(obj)), at:_nowStr(), by:_resvActor()};
+  if(isEditOp){ op.oname=STATE.resvOrig.name; op.oregion=STATE.resvOrig.region; }
+  r.ops.push(op);
+  _saveResv(r);
+  STATE.resvMode=null; STATE.resvOrig=null;
+  closeModal(); showToast('예약에 반영했어요 — '+ym+' 1일 적용');
+  _renderResvEditor();
+  return;
+ }
  if(STATE.editIdx!==null){
   // 수정
   const prev=JSON.parse(JSON.stringify(DB.centers));
