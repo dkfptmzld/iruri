@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.26">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.27">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.26">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.27">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.26</title>
+<title>수업기록표 정산 시스템 v15.27</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2362,7 +2362,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 
   <!-- 지역별 검색창 -->
   <!-- 검색 + 필터 바: 모바일은 2줄 -->
-  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+  <div id="cEditToolbar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
    <!-- 1줄: 검색창 (전체 너비) -->
    <div style="position:relative;">
     <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
@@ -2380,6 +2380,13 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
     </select>
    </div>
   </div>
+
+  <!-- v15.27: 월별 센터 보기 선택 (정산과 분리된 별도 저장소) -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+   <span style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;">📅 월 보기</span>
+   <select id="cMonthSelect" onchange="_onCenterMonthChange()" style="height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white;cursor:pointer;"></select>
+  </div>
+  <div id="cMonthPanel" style="display:none;"></div>
 
   <!-- v12.40: 정리 필요 센터 영역 (기본 숨김) -->
   <div id="cCleanupView" style="display:none;margin-bottom:14px;"></div>
@@ -3588,7 +3595,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.26';
+const SYSTEM_VERSION='v15.27';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4148,7 +4155,8 @@ function switchView(v){
    if(_tv){ _tv.style.display='block'; }
   }catch{}
   // v11.30: 탭 전환 시 GAS에서 최신 센터 DB 자동 로드
-  _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); renderCenterTreeView(); });
+  // v15.27: 진입 시 현재 목록을 이번 달로 자동 freeze + 월 드롭다운 갱신 (정산 무관, 별도 저장소)
+  _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); _autoFreezeCenters(); _centerViewYM=''; _renderCenterView(); _populateCenterMonthSelect(); });
  }
  if(v==='history') populateHistorySelects();
  if(v==='changelog') renderChangelog();
@@ -7462,6 +7470,100 @@ function _cTreeSearchClear(){
  filterCenterTree();
  if(el) el.focus();
 }
+
+/* ═══ v15.27: 센터 월별 기록 (정산 스냅샷과 100% 분리된 별도 저장소) ═══
+ *  - 저장 prefix 'iruri_centersnap_' : 정산 'iruri_monthly_'·DB.centers 동기화 어디에도 안 닿음
+ *  - saveMonthlySnapshot 등 정산 함수는 절대 호출하지 않음 → 정산이 바뀔 경로 없음
+ *  - 현재 달=편집(기존 그대로) / 과거 달=읽기전용 / 다음 달=예약 초안 */
+const CENTERSNAP_PREFIX = 'iruri_centersnap_';
+const CENTERDRAFT_KEY   = 'iruri_centerdraft';
+let _centerViewYM = ''; // '' 현재 · 'YYYY년 M월' 과거 · '__next__' 다음달 예약
+
+function _curCenterMonth(){ const d=new Date(); return d.getFullYear()+'년 '+(d.getMonth()+1)+'월'; }
+function _nextCenterMonth(){ const d=new Date(); const m=d.getMonth()+1; const ny=m===12?d.getFullYear()+1:d.getFullYear(); const nm=m===12?1:m+1; return ny+'년 '+nm+'월'; }
+function _centerKey(c){ return (c.name||'')+'||'+(c.region||''); }
+
+function _saveCenterSnap(ym, centers){ try{ localStorage.setItem(CENTERSNAP_PREFIX+ym.replace(/\s/g,'_'), JSON.stringify({ym, savedAt:new Date().toISOString(), centers})); }catch(_){} }
+function _getCenterSnap(ym){ try{ const r=localStorage.getItem(CENTERSNAP_PREFIX+ym.replace(/\s/g,'_')); return r?JSON.parse(r):null; }catch(_){ return null; } }
+function _listCenterSnapMonths(){
+ const out=[];
+ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i);
+  if(k && k.startsWith(CENTERSNAP_PREFIX)){ const ym=k.slice(CENTERSNAP_PREFIX.length).replace(/_/g,' '); if(/^\d{4}년\s*\d{1,2}월$/.test(ym)) out.push(ym); } }
+ return out.sort((a,b)=>{ const pa=a.match(/(\d{4})년\s*(\d+)월/), pb=b.match(/(\d{4})년\s*(\d+)월/); return (parseInt(pb[1])*100+parseInt(pb[2]))-(parseInt(pa[1])*100+parseInt(pa[2])); });
+}
+// 센터 관리 열 때 현재 목록을 이번 달로 자동 freeze (이월·기록 자동화). DB.centers만 읽고 복사.
+function _autoFreezeCenters(){ if(Array.isArray(DB.centers) && DB.centers.length) _saveCenterSnap(_curCenterMonth(), DB.centers); }
+
+function _populateCenterMonthSelect(){
+ const sel=document.getElementById('cMonthSelect'); if(!sel) return;
+ const cur=_curCenterMonth();
+ const months=_listCenterSnapMonths().filter(m=>m!==cur);
+ let html=`<option value="">🟢 현재 (${cur}) · 편집</option>`;
+ months.forEach(m=>{ html+=`<option value="${m}">📖 ${m} · 기록(읽기전용)</option>`; });
+ html+=`<option value="__next__">➕ 다음 달 예약 (${_nextCenterMonth()})</option>`;
+ sel.innerHTML=html; sel.value=_centerViewYM;
+}
+function _onCenterMonthChange(){ const sel=document.getElementById('cMonthSelect'); _centerViewYM=sel?sel.value:''; _renderCenterView(); }
+
+function _renderCenterView(){
+ const tree=document.getElementById('cview-tree');
+ const panel=document.getElementById('cMonthPanel');
+ const bar=document.getElementById('cEditToolbar');
+ const cleanup=document.getElementById('cCleanupView');
+ const isCurrent=(_centerViewYM==='');
+ if(bar) bar.style.display=isCurrent?'':'none';
+ if(cleanup && !isCurrent) cleanup.style.display='none';
+ if(tree) tree.style.display=isCurrent?'block':'none';
+ if(panel) panel.style.display=isCurrent?'none':'block';
+ if(isCurrent){ if(panel) panel.innerHTML=''; renderCenterTreeView(); return; }
+ if(_centerViewYM==='__next__') _renderCenterNextDraft(); else _renderCenterPastSnap(_centerViewYM);
+}
+
+function _centerRegionList(centers, opts){
+ const REGIONS=['서울','인천','수원'];
+ return REGIONS.map(rg=>{
+  const rc=centers.filter(c=>c.region===rg).sort((a,b)=>String(a.name).localeCompare(String(b.name),'ko'));
+  if(!rc.length) return '';
+  const rows=rc.map(c=>opts.row(c)).join('');
+  return `<div style="margin-bottom:10px;"><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px;">${rg} · ${rc.length}개</div>${rows}</div>`;
+ }).join('');
+}
+
+function _renderCenterPastSnap(ym){
+ const panel=document.getElementById('cMonthPanel'); if(!panel) return;
+ const snap=_getCenterSnap(ym);
+ if(!snap || !Array.isArray(snap.centers)){ panel.innerHTML=`<div style="padding:30px;text-align:center;color:var(--text3);">${esc(ym)} 센터 기록이 없어요</div>`; return; }
+ const past=snap.centers, cur=DB.centers||[];
+ const curKeys=new Set(cur.map(_centerKey)), pastKeys=new Set(past.map(_centerKey));
+ const removed=past.filter(c=>!curKeys.has(_centerKey(c)));
+ const added=cur.filter(c=>!pastKeys.has(_centerKey(c)));
+ const listHtml=_centerRegionList(past,{row:c=>`<div style="display:flex;gap:8px;padding:3px 6px;font-size:12px;border-bottom:0.5px solid var(--border);"><span style="flex:1;">${esc(c.name)}</span><span style="color:var(--text3);flex:1;">${(c.teachers||[]).map(esc).join(', ')}</span><span style="color:var(--text3);width:74px;text-align:right;">${(Number(c.fee)||0).toLocaleString()}원</span></div>`});
+ panel.innerHTML=`
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#92400E;">📖 <b>${esc(ym)}</b> 센터 기록 · <b>읽기 전용</b> (${past.length}개) — 이 달 명단은 수정 불가. 수정은 '현재'에서.</div>
+  <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+   <div style="flex:1;min-width:180px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:8px 10px;"><div style="font-size:11px;font-weight:700;color:#DC2626;">그 달엔 있었는데 지금 없음 (${removed.length})</div><div style="font-size:11px;color:#7F1D1D;margin-top:3px;line-height:1.6;">${removed.length?removed.map(c=>esc(c.name)).join(', '):'—'}</div></div>
+   <div style="flex:1;min-width:180px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:8px 10px;"><div style="font-size:11px;font-weight:700;color:#059669;">그 뒤 새로 생김 (${added.length})</div><div style="font-size:11px;color:#065F46;margin-top:3px;line-height:1.6;">${added.length?added.map(c=>esc(c.name)).join(', '):'—'}</div></div>
+  </div>
+  <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:white;max-height:520px;overflow:auto;">${listHtml||'<div style="color:var(--text3);text-align:center;padding:20px;">센터 없음</div>'}</div>`;
+}
+
+function _getCenterDraft(){ try{ const r=localStorage.getItem(CENTERDRAFT_KEY); return r?JSON.parse(r):null; }catch(_){ return null; } }
+function _saveCenterDraft(d){ try{ localStorage.setItem(CENTERDRAFT_KEY, JSON.stringify(d)); }catch(_){} }
+function _renderCenterNextDraft(){
+ const panel=document.getElementById('cMonthPanel'); if(!panel) return;
+ const nextYm=_nextCenterMonth();
+ let draft=_getCenterDraft();
+ if(!draft || draft.ym!==nextYm){ draft={ym:nextYm, removed:[], memo:''}; _saveCenterDraft(draft); }
+ const removedSet=new Set(draft.removed||[]);
+ const listHtml=_centerRegionList(DB.centers||[],{row:c=>{ const idx=DB.centers.indexOf(c); const rm=removedSet.has(_centerKey(c));
+  return `<div style="display:flex;gap:8px;align-items:center;padding:3px 6px;font-size:12px;border-bottom:0.5px solid var(--border);${rm?'opacity:.5;text-decoration:line-through;':''}"><span style="flex:1;">${esc(c.name)}</span><button onclick="_toggleDraftRemove(${idx})" style="font-size:11px;padding:1px 8px;border-radius:6px;border:1px solid ${rm?'#A7F3D0':'#FECACA'};background:${rm?'#ECFDF5':'#FEF2F2'};color:${rm?'#059669':'#DC2626'};cursor:pointer;white-space:nowrap;">${rm?'복구':'다음 달 제외'}</button></div>`; }});
+ panel.innerHTML=`
+  <div style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:#3730A3;">➕ <b>${esc(nextYm)} 예약</b> — 현재 명단 복사본. <b>제외</b> 표시한 센터는 다음 달 시작 시 빠질 예정. (현재 달·정산엔 영향 없음)</div>
+  <textarea id="cDraftMemo" oninput="_saveDraftMemo()" placeholder="다음 달 추가 예정 센터 등 메모..." style="width:100%;min-height:52px;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;box-sizing:border-box;margin-bottom:10px;">${esc(draft.memo||'')}</textarea>
+  <div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:white;max-height:480px;overflow:auto;">${listHtml}</div>`;
+}
+function _toggleDraftRemove(idx){ const c=(DB.centers||[])[idx]; if(!c) return; const d=_getCenterDraft(); if(!d) return; d.removed=d.removed||[]; const k=_centerKey(c); const i=d.removed.indexOf(k); if(i>=0) d.removed.splice(i,1); else d.removed.push(k); _saveCenterDraft(d); _renderCenterNextDraft(); }
+function _saveDraftMemo(){ const d=_getCenterDraft(); if(!d) return; const t=document.getElementById('cDraftMemo'); if(t){ d.memo=t.value; _saveCenterDraft(d); } }
 
 function renderCenterTreeView(searchQ='', regionFilter=''){
  // 검색어/필터가 없으면 기본
