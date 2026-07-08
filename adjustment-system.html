@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.37">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.38">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.37">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.38">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.37</title>
+<title>수업기록표 정산 시스템 v15.38</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1244,7 +1244,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <div style="font-size:12px;color:#6B9A7A;line-height:1.6;">수업 기록표를 작성하고<br>관리자에게 제출합니다</div>
  </div>
 
- <div role="button" tabindex="0" aria-label="관리자 모드 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
+ <div role="button" tabindex="0" id="card-admin" aria-label="관리자 모드 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
  <div style="width:56px;height:56px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"></path></svg>
  </div>
@@ -1252,7 +1252,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;">정산 내역을 확인하고<br>강사/센터를 관리합니다</div>
  </div>
  <!-- v14.97: 자격증 발급 (별도 페이지 certificate.html 연결) -->
- <div role="button" tabindex="0" aria-label="자격증 발급 — 협회 자격증 발급" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; location.href='certificate.html'" style="background: white; border: 2px solid #F0D9A8; border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(180,130,20,.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(180,130,20,.22)';this.style.borderColor='#E0A93A';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(180,130,20,.1)';this.style.borderColor='#F0D9A8';">
+ <div role="button" tabindex="0" id="card-cert" aria-label="자격증 발급 — 협회 자격증 발급" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; _goCert()" style="background: white; border: 2px solid #F0D9A8; border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(180,130,20,.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(180,130,20,.22)';this.style.borderColor='#E0A93A';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(180,130,20,.1)';this.style.borderColor='#F0D9A8';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#E8A93A,#D4892A);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17 10.43V2H7v8.43c0 .35.18.68.49.86l4.18 2.51-.99 2.34-3.41.29 2.59 2.24L9.07 22 12 20.23 14.93 22l-.78-3.33 2.59-2.24-3.41-.29-.99-2.34 4.18-2.51c.31-.18.49-.51.49-.86zM13 12.6l-1 .6-1-.6V3h2v9.6z"></path></svg>
  </div>
@@ -1265,6 +1265,10 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 
  <!-- 홈 편집 버튼 (PC 전용, 편집모드 시 표시) -->
  <div id="landingEditBtn" style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+  <button id="landingPermBtn" onclick="_openPermMgr()" style="display:none;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid #C7B8E8;border-radius:20px;background:#F3EFFB;font-size:12px;color:#5B3FA0;cursor:pointer;font-family:inherit;font-weight:600;">
+   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1l3 6 6 .9-4.5 4.4 1 6.7L12 16l-5.5 3 1-6.7L3 7.9 9 7z"></path></svg>
+   권한 관리
+  </button>
   <button onclick="_toggleLandingEdit()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border:0.5px solid #E2E0D8;border-radius:20px;background:white;font-size:12px;color:#888;cursor:pointer;font-family:inherit;">
    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
    홈 편집
@@ -3602,7 +3606,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.37';
+const SYSTEM_VERSION='v15.38';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3951,6 +3955,29 @@ let _editChangeCount = 0;      // 변경 카운터 (UI 표시용)
 function _isAdminMode(){
  return sessionStorage.getItem('iruri_admin_session') === 'true';
 }
+
+/* ═══ v15.38: 역할·권한 (마스터=박기남 · 카드별 부여) ═══
+ *  - 화면 제어(클라이언트). 명단은 기존 GAS 공용설정(saveSystemSettings/getSystemSettings)으로 전 기기 공유 → 새 GAS 코드 불필요.
+ *  - 안전망: 박기남은 권한 데이터가 비어있거나 GAS가 죽어도 '항상 마스터' → 절대 잠기지 않음. */
+const PERMS_LS = 'iruri_perms';
+const MASTER_NAME = '박기남';
+function _getPerms(){ try{ return JSON.parse(localStorage.getItem(PERMS_LS)||'{}')||{}; }catch(_){ return {}; } }
+function _savePerms(map){
+ try{ localStorage.setItem(PERMS_LS, JSON.stringify(map)); }catch(_){}
+ gasPost({ action:'saveSystemSettings', settings:{ permissions: JSON.stringify(map) } }).catch(()=>{});
+}
+function _currentUser(){ return window._loggedInTeacher || sessionStorage.getItem('iruri_session') || ''; }
+function _capsOf(name){
+ const map=_getPerms();
+ const s=new Set(Array.isArray(map[name])?map[name]:[]);
+ if(name===MASTER_NAME) s.add('master');              // 안전망: 박기남은 언제나 마스터
+ if(s.has('master')){ s.add('admin'); s.add('cert'); } // 마스터는 기본 카드(관리자·자격증) 전부
+ return s;
+}
+function _hasCap(cap, name){ name=(name!==undefined)?name:_currentUser(); return _capsOf(name).has(cap); }
+function _isMaster(name){ return _hasCap('master', name); }
+// 커스텀 홈카드는 url을 키로 사용: 'app:<url>'
+function _hasCardCap(app, name){ name=(name!==undefined)?name:_currentUser(); return _isMaster(name) || _capsOf(name).has('app:'+(app&&app.url||'')); }
 
 // v11.44: 편집 모드 가드 - 변경 함수들 시작에서 호출
 // 관리자 모드 + 읽기 모드(편집 시작 안 누름) → 변경 차단
@@ -11309,6 +11336,7 @@ function _showLandingUI(){
  // 커스텀 앱 카드 렌더
  setTimeout(()=>{
     if(typeof _renderLandingCustomCards==='function') _renderLandingCustomCards();
+    if(typeof _applyLandingPerms==='function') _applyLandingPerms();   // v15.38: 카드 권한 반영
     if(typeof _loadCustomAppsFromGAS==='function') _loadCustomAppsFromGAS();
   }, 50);
 
@@ -11388,6 +11416,11 @@ async function _loadCustomAppsFromGAS(){
       localStorage.setItem(_LS_CUSTOM_APPS, JSON.stringify(apps));
       _renderLandingCustomCards();
     }
+    // v15.38: 권한 명단도 같은 공용설정에서 캐시 → 다른 사람 기기에 권한 전달
+    if(res.ok && res.data?.permissions){
+      try{ localStorage.setItem(PERMS_LS, res.data.permissions); }catch(_){}
+      if(typeof _applyLandingPerms==='function') _applyLandingPerms();
+    }
   }catch{}
 }
 
@@ -11397,10 +11430,11 @@ function _renderLandingCustomCards(){
   const apps = _getCustomApps();
   const editBtn = document.getElementById('landingEditBtn');
   const isMobile = window.innerWidth <= 768;
-  if(editBtn) editBtn.style.display = isMobile ? 'none' : 'flex';
+  if(editBtn) editBtn.style.display = (!isMobile && (typeof _isMaster!=='function' || _isMaster())) ? 'flex' : 'none'; // v15.38: 홈 편집은 마스터 전용
   if(!apps.length){ wrap.innerHTML=''; if(typeof _cardFlowRefresh==='function') _cardFlowRefresh(); return; }
   let html = '';
   apps.forEach((app, idx) => {
+    if(!_landingEditMode && typeof _hasCardCap==='function' && !_hasCardCap(app)) return; // v15.38: 권한 없는 홈카드 숨김 (마스터·편집모드는 전체)
     const c = _COLOR_MAP[app.color||'blue'];
     const iconSvg = _ICON_MAP[app.icon||'ti-link'] || _ICON_MAP['ti-link'];
     const delBtn = _landingEditMode ? `<button onclick="event.stopPropagation();_deleteCustomApp(${idx})" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:50%;cursor:pointer;font-size:13px;color:#A32D2D;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10;line-height:1;">×</button>` : '';
@@ -11691,12 +11725,75 @@ function adminLogout(){
 }
 
 function showAdminLogin(){
- const m = document.getElementById('adminLoginModal');
- m.style.display = 'flex';
- m.style.zIndex = '10001'; // loginScreen 위에
- setTimeout(()=>document.getElementById('adminPwInput').focus(), 50);
- document.getElementById('adminPwError').style.display = 'none';
- document.getElementById('adminPwInput').value = '';
+ // v15.38: 공용 관리자 비밀번호 폐지 — 본인 로그인 + '관리자' 권한(박기남이 부여)으로 진입
+ if(!_hasCap('admin')){
+  showConfirm({icon:'🔒',title:'접근 권한이 없어요',desc:'관리자 모드 권한이 없습니다.<br><small style="color:var(--text3)">박기남 관리자에게 권한을 요청하세요.</small>',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});
+  const cc=document.getElementById('confirmCancelBtn'); if(cc) cc.style.display='none';
+  return;
+ }
+ sessionStorage.setItem('iruri_admin_session','true');
+ _enterAdminMode();
+}
+function _goCert(){
+ // v15.38: 자격증 발급 카드 — '자격증' 권한 필요
+ if(!_hasCap('cert')){
+  showConfirm({icon:'🔒',title:'접근 권한이 없어요',desc:'자격증 발급 권한이 없습니다.<br><small style="color:var(--text3)">박기남 관리자에게 권한을 요청하세요.</small>',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});
+  const cc=document.getElementById('confirmCancelBtn'); if(cc) cc.style.display='none';
+  return;
+ }
+ location.href='certificate.html';
+}
+// v15.38: 랜딩 카드 권한 반영 (권한 없는 카드 숨김, 마스터에게만 권한관리/홈편집 노출)
+function _applyLandingPerms(){
+ try{
+  const master=_isMaster();
+  const ca=document.getElementById('card-admin'); if(ca) ca.style.display=_hasCap('admin')?'':'none';
+  const cc=document.getElementById('card-cert');  if(cc) cc.style.display=_hasCap('cert')?'':'none';
+  const pb=document.getElementById('landingPermBtn'); if(pb) pb.style.display=master?'inline-flex':'none';
+  const eb=document.getElementById('landingEditBtn'); if(eb) eb.style.display=(master && window.innerWidth>768)?'flex':'none';
+ }catch(_){}
+}
+// v15.38: 권한 관리 화면 (마스터 전용) — 이름×카드 체크박스, 즉시 저장·공유
+function _openPermMgr(){
+ if(!_isMaster()){ showToast('마스터(박기남)만 권한을 관리할 수 있어요.'); return; }
+ document.getElementById('permMgrModal')?.remove();
+ const caps=[{key:'admin',label:'관리자 모드'},{key:'cert',label:'자격증 발급'}]
+   .concat(_getCustomApps().map(a=>({key:'app:'+(a.url||''),label:a.name||a.url||'앱'})));
+ const map=_getPerms();
+ const teachers=(DB.teachers||[]).map(t=>t.name).filter(Boolean).sort((a,b)=>String(a).localeCompare(String(b),'ko'));
+ window._permMgrNames=teachers; window._permMgrCaps=caps;
+ const rows=teachers.map((nm,ti)=>{
+  if(nm===MASTER_NAME) return `<tr><td style="padding:8px 10px;font-weight:700;white-space:nowrap;">${esc(nm)} <span style="font-size:10px;color:#5B3FA0;background:#F3EFFB;border-radius:10px;padding:1px 7px;">마스터</span></td><td colspan="${caps.length}" style="padding:8px 10px;color:var(--text3);font-size:12px;">모든 권한 (변경 불가)</td></tr>`;
+  const has=new Set(Array.isArray(map[nm])?map[nm]:[]);
+  const cells=caps.map((cap,ci)=>`<td style="text-align:center;padding:8px 10px;"><input type="checkbox" ${has.has(cap.key)?'checked':''} onchange="_togglePerm(${ti},${ci},this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#5B3FA0;"></td>`).join('');
+  return `<tr style="border-bottom:1px solid #F0EFE9;"><td style="padding:8px 10px;white-space:nowrap;">${esc(nm)}</td>${cells}</tr>`;
+ }).join('');
+ const head=`<th style="text-align:left;padding:8px 10px;font-size:12px;color:var(--text2);">이름</th>`+caps.map(c=>`<th style="padding:8px 10px;font-size:12px;color:var(--text2);white-space:nowrap;">${esc(c.label)}</th>`).join('');
+ const ov=document.createElement('div');
+ ov.id='permMgrModal';
+ ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:10002;padding:20px;';
+ ov.innerHTML=`<div style="background:white;border-radius:16px;max-width:760px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.25);">
+   <div style="position:sticky;top:0;background:white;padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div><div style="font-size:16px;font-weight:800;color:#312E81;">🔑 권한 관리</div><div style="font-size:12px;color:var(--text3);margin-top:2px;">체크하면 그 사람에게 카드가 열려요 · 즉시 저장되고 다른 기기에도 공유돼요</div></div>
+    <button onclick="document.getElementById('permMgrModal').remove()" style="width:30px;height:30px;border:none;background:#F1F0EC;border-radius:8px;cursor:pointer;font-size:15px;flex-shrink:0;">✕</button>
+   </div>
+   <div style="padding:8px 12px 16px;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:420px;"><thead><tr style="border-bottom:2px solid var(--border);">${head}</tr></thead><tbody>${rows||'<tr><td style="padding:16px;color:var(--text3);">등록된 강사가 없어요</td></tr>'}</tbody></table>
+   </div>
+  </div>`;
+ ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+ document.body.appendChild(ov);
+}
+function _togglePerm(ti, ci, on){
+ const name=(window._permMgrNames||[])[ti]; const cap=(window._permMgrCaps||[])[ci];
+ if(!name||!cap) return;
+ const map=_getPerms();
+ const cur=new Set(Array.isArray(map[name])?map[name]:[]);
+ if(on) cur.add(cap.key); else cur.delete(cap.key);
+ if(cur.size) map[name]=Array.from(cur); else delete map[name];
+ _savePerms(map);
+ showToast(on?`✅ ${name} · ${cap.label} 부여`:`${name} · ${cap.label} 해제`);
+ if(typeof _applyLandingPerms==='function') _applyLandingPerms();
 }
 
 function checkAdminPw(){
