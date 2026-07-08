@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.34">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.35">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.34">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.35">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.34</title>
+<title>수업기록표 정산 시스템 v15.35</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2364,8 +2364,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
    <span style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;">📅 월 보기</span>
    <select id="cMonthSelect" onchange="_onCenterMonthChange()" style="height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white;cursor:pointer;"></select>
-   <button onclick="_openResvEditor()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:#4F46E5;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(79,70,229,.25);">📅 센터 수정 예약</button>
-   <button onclick="_openResvHistory()" style="height:34px;padding:0 12px;border:1px solid #C7D2FE;border-radius:8px;background:#EEF2FF;color:#3730A3;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">🧾 수정 예약 내역</button>
+   <button id="cResvBtn" onclick="_toggleResvEditor()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:#4F46E5;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(79,70,229,.25);">📅 센터 수정 예약</button>
   </div>
   <div id="cMemoSection" style="margin-bottom:14px;border:1.5px dashed #E0C878;background:#FFFDF4;border-radius:12px;padding:10px 12px;">
    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
@@ -2374,6 +2373,9 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    </div>
    <div id="cMemoWrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;"></div>
   </div>
+
+  <!-- v15.35: 예약된 센터 변경 내역 (센터 메모 하단 · 지역별) -->
+  <div id="cResvSummary" style="display:none;margin-bottom:14px;border:1.5px dashed #C7D2FE;background:#F8F8FF;border-radius:12px;padding:10px 12px;"></div>
 
   <!-- 지역별 검색창 -->
   <!-- 검색 + 필터 바: 모바일은 2줄 -->
@@ -3600,7 +3602,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.34';
+const SYSTEM_VERSION='v15.35';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7538,6 +7540,13 @@ function _renderCenterView(){
  if(cleanup && !isCurrent) cleanup.style.display='none';
  if(tree) tree.style.display=isCurrent?'block':'none';
  if(panel) panel.style.display=isCurrent?'none':'block';
+ // v15.35: 예약 버튼 토글 상태 갱신 (켜짐=센터 관리로 돌아가기)
+ const rbtn=document.getElementById('cResvBtn');
+ if(rbtn){ const on=(_centerViewYM==='__resv__');
+  rbtn.innerHTML = on ? '✕ 센터 관리로 돌아가기' : '📅 센터 수정 예약';
+  rbtn.style.background = on ? '#312E81' : '#4F46E5';
+ }
+ try{ _renderResvSummary(); }catch(_){}
  if(isCurrent){ if(panel) panel.innerHTML=''; renderCenterTreeView(); return; }
  if(_centerViewYM==='__resv__') _renderResvEditor(); else if(_centerViewYM==='__resvhist__') _renderResvHistory(); else _renderCenterPastSnap(_centerViewYM);
 }
@@ -7589,7 +7598,38 @@ function _resvOp(r,key,type){ return (r.ops||[]).find(o=>o.t===type && (o.name+'
 
 /* 예약 편집기 */
 function _openResvEditor(){ if(!_resvEditYM || _ymNum(_resvEditYM)<=_ymNum(_curCenterMonth())) _resvEditYM=_futureMonths(1)[0]; _resvSearch=''; _resvRegion=''; _centerViewYM='__resv__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
+/* v15.35: 켜고 끄는 토글 — 예약 편집 중이면 센터 관리 홈으로 복귀 */
+function _toggleResvEditor(){ if(_centerViewYM==='__resv__'){ _centerViewYM=''; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); } else { _openResvEditor(); } }
+function _resvJump(ym){ _resvEditYM=ym; _resvSearch=''; _resvRegion=''; _centerViewYM='__resv__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
 function _openResvHistory(){ if(!_resvEditYM) _resvEditYM=_futureMonths(1)[0]; _centerViewYM='__resvhist__'; const sel=document.getElementById('cMonthSelect'); if(sel) sel.value=''; _renderCenterView(); }
+/* v15.35: 예약된 센터 변경 내역 — 센터 메모 하단에 지역별로 표시 (모든 예약 월 집계) */
+function _renderResvSummary(){
+ const box=document.getElementById('cResvSummary'); if(!box) return;
+ const REGIONS=[['서울','#2563EB'],['인천','#0D9488'],['수원','#7C3AED']];
+ const byRegion={'서울':[],'인천':[],'수원':[]}; let total=0;
+ _listResvMonths().forEach(ym=>{ (_getResv(ym).ops||[]).forEach(o=>{ const rg=o.region||''; if(!byRegion[rg]) return; byRegion[rg].push({ym,o}); total++; }); });
+ if(!total){ box.style.display='none'; box.innerHTML=''; return; }
+ box.style.display='block';
+ const tag={add:['추가','#059669','#ECFDF5'],del:['제외','#DC2626','#FEF2F2'],edit:['수정','#2563EB','#EFF6FF']};
+ const cols=REGIONS.map(([rg,col])=>{
+  const items=byRegion[rg].sort((a,b)=>_ymNum(a.ym)-_ymNum(b.ym));
+  const rows=items.length?items.map(({ym,o})=>{ const [lbl,c,bg]=tag[o.t]||['변경','#555','#eee'];
+   const mLabel=String(ym).replace(/^\d+년\s*/,'');
+   const extra=(o.t==='edit'||o.t==='add')?` <span style="color:var(--text3);">${(Number(o.fee)||0).toLocaleString()}원</span>`:'';
+   return `<div onclick="_resvJump('${ym}')" title="클릭해서 ${esc(ym)} 예약 편집" style="display:flex;align-items:center;gap:5px;font-size:11.5px;padding:4px 6px;border-radius:6px;background:#fff;border:1px solid #E5E9F7;margin-bottom:4px;cursor:pointer;">
+    <span style="font-size:10px;font-weight:800;color:#fff;background:#4F46E5;border-radius:5px;padding:1px 6px;flex-shrink:0;">${esc(mLabel)}</span>
+    <span style="font-size:10px;font-weight:700;color:${c};background:${bg};border-radius:5px;padding:1px 6px;flex-shrink:0;">${lbl}</span>
+    <span style="flex:1;word-break:break-word;color:#4A4536;">${esc(o.name)}${extra}</span></div>`;
+  }).join(''):`<div style="font-size:11px;color:var(--text3);padding:4px 2px;">예약 없음</div>`;
+  return `<div style="background:#fff;border:1px solid #D7DEF5;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${rows}</div></div>`;
+ }).join('');
+ box.innerHTML=`
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+   <span style="font-size:13px;font-weight:800;color:#312E81;">📅 예약된 센터 변경</span>
+   <span style="font-size:11px;font-weight:600;color:#6366F1;">지역별 · 총 ${total}건 · 해당 월 1일 자동 반영</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">${cols}</div>`;
+}
 function _resvSetMonth(ym){ _resvEditYM=ym; _renderCenterView(); }
 function _resvMonthPicker(){ return _futureMonths(4).map(m=>`<button onclick="_resvSetMonth('${m}')" style="font-size:12px;padding:4px 11px;border-radius:16px;cursor:pointer;border:1px solid ${m===_resvEditYM?'#4F46E5':'#D8D5CE'};background:${m===_resvEditYM?'#4F46E5':'#fff'};color:${m===_resvEditYM?'#fff':'#5C574D'};font-weight:${m===_resvEditYM?'700':'400'};">${m}</button>`).join(' '); }
 
@@ -7616,6 +7656,7 @@ function _renderResvEditor(){
   <div style="margin-bottom:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">${_resvRegionBtns()}</div>
   <div id="cResvList" style="border:1px solid var(--border);border-radius:10px;padding:10px;background:white;max-height:460px;overflow:auto;"></div>`;
  _resvRenderList();
+ try{ _renderResvSummary(); }catch(_){} // v15.35: 하단 지역별 내역 동기화
 }
 /* v15.34: 예약 편집기 지역 필터 버튼 (전체/서울/인천/수원) */
 function _resvRegionBtns(){
