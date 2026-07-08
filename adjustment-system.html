@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.28">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.29">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.28">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.29">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.28</title>
+<title>수업기록표 정산 시스템 v15.29</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2375,23 +2375,18 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 
   <!-- 지역별 검색창 -->
   <!-- 검색 + 필터 바: 모바일은 2줄 -->
-  <div id="cEditToolbar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
-   <!-- 1줄: 검색창 (전체 너비) -->
-   <div style="position:relative;">
+  <!-- v15.29: 검색창 + 정리필요 한 줄 (지역 버튼 제거 — 좌측 트리에서 지역별 조회) -->
+  <div id="cEditToolbar" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+   <div style="position:relative;flex:1;min-width:220px;">
     <svg viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;fill:var(--text3);pointer-events:none;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
     <input id="cTreeSearch" placeholder="센터명 검색..." oninput="filterCenterTree();_cTreeSearchClearToggle()" style="width:100%;height:40px;padding:0 40px 0 36px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
     <button id="cTreeSearchClear" type="button" onclick="_cTreeSearchClear()" title="검색 초기화" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;width:24px;height:24px;border:none;background:#EDEBE4;color:#7A756A;border-radius:50%;cursor:pointer;font-size:13px;line-height:1;align-items:center;justify-content:center;padding:0;">✕</button>
    </div>
-   <!-- 2줄: 정리필요 버튼 + 지역 선택 -->
-   <div style="display:flex;gap:8px;align-items:center;">
-    <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:36px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;">⚠️ 정리 필요 <span id="cCleanupCount">0</span></button>
-    <div id="cRegionTabsMobile"><button class="c-rgn-tab active" data-val="" onclick="_setCenterRegion(this,'')">전체</button><button class="c-rgn-tab" data-val="서울" onclick="_setCenterRegion(this,'서울')">서울</button><button class="c-rgn-tab" data-val="인천" onclick="_setCenterRegion(this,'인천')">인천</button><button class="c-rgn-tab" data-val="수원" onclick="_setCenterRegion(this,'수원')">수원</button></div><select id="cTreeRegionFilter" onchange="filterCenterTree()" style="display:none;flex:1;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:white;color:var(--text);">
-     <option value="">전체 지역</option>
-     <option value="서울">서울</option>
-     <option value="인천">인천</option>
-     <option value="수원">수원</option>
-    </select>
-   </div>
+   <button id="cCleanupBtn" onclick="toggleCleanupView()" style="height:40px;padding:0 14px;border:1px solid #FCA5A5;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:#FEE2E2;color:#DC2626;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;">⚠️ 정리 필요 <span id="cCleanupCount">0</span></button>
+   <!-- 숨김 유지: renderCenterTreeView/filterCenterTree가 값을 읽음 -->
+   <select id="cTreeRegionFilter" onchange="filterCenterTree()" style="display:none;">
+    <option value="">전체 지역</option><option value="서울">서울</option><option value="인천">인천</option><option value="수원">수원</option>
+   </select>
   </div>
 
   <div id="cMonthPanel" style="display:none;"></div>
@@ -3603,7 +3598,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.28';
+const SYSTEM_VERSION='v15.29';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11755,6 +11750,7 @@ function _closeSidebarOverlay(){
 
 /* 센터 관리 지역 탭 삽입 */
 function _injectCenterRegionTabs(){
+ return; // v15.29: 지역 버튼 제거 — 좌측 트리에서 지역별 조회하므로 재생성 안 함
  if(document.getElementById('cRegionTabsMobile')) return;
  const sel = document.getElementById('cTreeRegionFilter');
  if(!sel || !sel.parentNode) return;
