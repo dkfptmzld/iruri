@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.27">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.28">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.27">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.28">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.27</title>
+<title>수업기록표 정산 시스템 v15.28</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2360,6 +2360,19 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    <div class="region-card suwon"><div class="region-label">수원</div><div class="region-num" id="rs-suwon">—</div><div class="region-sub" id="rs-suwon-t">—</div></div>
   </div>
 
+  <!-- v15.28: 월 보기 + 지역별 센터 메모 (검색창 위) -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+   <span style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;">📅 월 보기</span>
+   <select id="cMonthSelect" onchange="_onCenterMonthChange()" style="height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white;cursor:pointer;"></select>
+  </div>
+  <div id="cMemoSection" style="margin-bottom:14px;border:1.5px dashed #E0C878;background:#FFFDF4;border-radius:12px;padding:10px 12px;">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <span style="font-size:13px;font-weight:800;color:#8A6010;">📝 센터 메모 <span style="font-size:11px;font-weight:600;color:#B0863A;">지역별 · 계속 유지 · 개별 추가/삭제</span></span>
+    <button onclick="_toggleMemoVisible()" style="font-size:11px;border:1px solid #E0C878;background:#fff;color:#8A6010;border-radius:6px;padding:3px 9px;cursor:pointer;">접기/펼치기</button>
+   </div>
+   <div id="cMemoWrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;"></div>
+  </div>
+
   <!-- 지역별 검색창 -->
   <!-- 검색 + 필터 바: 모바일은 2줄 -->
   <div id="cEditToolbar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
@@ -2381,11 +2394,6 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    </div>
   </div>
 
-  <!-- v15.27: 월별 센터 보기 선택 (정산과 분리된 별도 저장소) -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-   <span style="font-size:12px;color:var(--text2);font-weight:600;white-space:nowrap;">📅 월 보기</span>
-   <select id="cMonthSelect" onchange="_onCenterMonthChange()" style="height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white;cursor:pointer;"></select>
-  </div>
   <div id="cMonthPanel" style="display:none;"></div>
 
   <!-- v12.40: 정리 필요 센터 영역 (기본 숨김) -->
@@ -3595,7 +3603,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.27';
+const SYSTEM_VERSION='v15.28';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4156,7 +4164,7 @@ function switchView(v){
   }catch{}
   // v11.30: 탭 전환 시 GAS에서 최신 센터 DB 자동 로드
   // v15.27: 진입 시 현재 목록을 이번 달로 자동 freeze + 월 드롭다운 갱신 (정산 무관, 별도 저장소)
-  _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); _autoFreezeCenters(); _centerViewYM=''; _renderCenterView(); _populateCenterMonthSelect(); });
+  _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); _autoFreezeCenters(); _centerViewYM=''; _renderCenterView(); _populateCenterMonthSelect(); _renderCenterMemo(); });
  }
  if(v==='history') populateHistorySelects();
  if(v==='changelog') renderChangelog();
@@ -7493,6 +7501,25 @@ function _listCenterSnapMonths(){
 }
 // 센터 관리 열 때 현재 목록을 이번 달로 자동 freeze (이월·기록 자동화). DB.centers만 읽고 복사.
 function _autoFreezeCenters(){ if(Array.isArray(DB.centers) && DB.centers.length) _saveCenterSnap(_curCenterMonth(), DB.centers); }
+
+/* v15.28: 지역별 센터 메모 — 월과 무관하게 계속 유지. 지역마다 여러 개 추가/삭제. 정산과 무관(별도 키). */
+const CENTERMEMO_KEY = 'iruri_centermemo';
+function _getCenterMemo(){ try{ return JSON.parse(localStorage.getItem(CENTERMEMO_KEY)||'{}')||{}; }catch(_){ return {}; } }
+function _saveCenterMemo(m){ try{ localStorage.setItem(CENTERMEMO_KEY, JSON.stringify(m)); }catch(_){} }
+function _renderCenterMemo(){
+ const wrap=document.getElementById('cMemoWrap'); if(!wrap) return;
+ const m=_getCenterMemo();
+ const REGIONS=[['서울','#2563EB'],['인천','#0D9488'],['수원','#7C3AED']];
+ wrap.innerHTML=REGIONS.map(([rg,col])=>{
+  const items=Array.isArray(m[rg])?m[rg]:[];
+  const rows=items.map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;background:#FFFDF4;border:1px solid #EFE3BF;border-radius:6px;padding:5px 8px;margin-bottom:4px;color:#4A4536;"><span style="flex:1;cursor:pointer;word-break:break-word;" onclick="_editMemo('${rg}',${i})" title="클릭해서 수정">${esc(it)}</span><span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;" onclick="_delMemo('${rg}',${i})" title="삭제">✕</span></div>`).join('');
+  return `<div style="background:#fff;border:1px solid #EFE3BF;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${rows}<div onclick="_addMemo('${rg}')" style="font-size:12px;font-weight:700;color:#8A6010;border:1.5px dashed #E0C878;border-radius:7px;padding:6px;text-align:center;cursor:pointer;background:#fff;">＋ 메모 추가</div></div></div>`;
+ }).join('');
+}
+function _addMemo(rg){ const t=prompt(rg+' 메모 추가',''); if(t==null) return; const s=t.trim(); if(!s) return; const m=_getCenterMemo(); (m[rg]=m[rg]||[]).push(s); _saveCenterMemo(m); _renderCenterMemo(); }
+function _editMemo(rg,i){ const m=_getCenterMemo(); if(!(m[rg]&&m[rg][i]!=null)) return; const t=prompt(rg+' 메모 수정 (비우면 삭제)', m[rg][i]); if(t==null) return; const s=t.trim(); if(!s) m[rg].splice(i,1); else m[rg][i]=s; _saveCenterMemo(m); _renderCenterMemo(); }
+function _delMemo(rg,i){ const m=_getCenterMemo(); if(m[rg]&&m[rg][i]!=null){ m[rg].splice(i,1); _saveCenterMemo(m); _renderCenterMemo(); } }
+function _toggleMemoVisible(){ const w=document.getElementById('cMemoWrap'); if(w) w.style.display=(w.style.display==='none')?'grid':'none'; }
 
 function _populateCenterMonthSelect(){
  const sel=document.getElementById('cMonthSelect'); if(!sel) return;
