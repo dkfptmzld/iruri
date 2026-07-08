@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.36">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.37">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.36">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.37">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.36</title>
+<title>수업기록표 정산 시스템 v15.37</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3602,7 +3602,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.36';
+const SYSTEM_VERSION='v15.37';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7788,12 +7788,12 @@ function renderCenterTreeView(searchQ='', regionFilter=''){
   const regionId = 'cnav-' + region;
 
   return `<div>
-   <div id="${regionId}-btn" onclick="toggleNavRegion('${region}')"
+   <div id="${regionId}-btn" onclick="selectNavRegion('${region}')"
     style="display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);user-select:none;"
-    onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+    onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=this.dataset.sel==='1'?'var(--green-bg)':''">
     <span class="badge ${REGION_COLOR[region]}" style="font-size:11px;padding:2px 8px;">${region}</span>
     <span style="flex:1;font-size:12px;color:var(--text2);">${regionCenters.length}개</span>
-    <span id="${regionId}-arrow" style="font-size:12px;color:var(--text3);transform:rotate(-90deg);display:inline-block;transition:transform .2s;">▾</span>
+    <span id="${regionId}-arrow" onclick="event.stopPropagation();toggleNavRegionList('${region}')" title="목록 접기/펼치기" style="font-size:13px;color:var(--text3);transform:rotate(-90deg);display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;transition:transform .2s;cursor:pointer;" onmouseover="event.stopPropagation();this.style.background='var(--border)'" onmouseout="this.style.background=''">▾</span>
    </div>
    <div id="${regionId}-list" style="display:none;">
     ${teachers.map(t=>`
@@ -7872,15 +7872,25 @@ function renderCenterTreeView(searchQ='', regionFilter=''){
  }
 }
 
-function toggleNavRegion(region){
+// v15.37: 지역 이름 클릭 = 항상 지역 센터 표시 + 목록 펼침 (재클릭해도 접히지 않음)
+function selectNavRegion(region){
+ const list = document.getElementById('cnav-'+region+'-list');
+ const arrow = document.getElementById('cnav-'+region+'-arrow');
+ if(list) list.style.display = 'block';
+ if(arrow) arrow.style.transform = 'rotate(0deg)';
+ selectTreeRegion(region);
+}
+// v15.37: 화살표(▾)만 목록 접기/펼치기 — 지역 상세 표시와 독립
+function toggleNavRegionList(region){
  const list = document.getElementById('cnav-'+region+'-list');
  const arrow = document.getElementById('cnav-'+region+'-arrow');
  if(!list) return;
  const isOpen = list.style.display !== 'none';
  list.style.display = isOpen ? 'none' : 'block';
  if(arrow) arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
- if(!isOpen) selectTreeRegion(region); // 펼칠 때 지역 상세 표시
 }
+// 하위호환 (이전 호출부 대비)
+function toggleNavRegion(region){ selectNavRegion(region); }
 
 function selectTreeRegion(region){
  window._lastTreeSel = {type:'region', region}; // 마지막 선택 기억
