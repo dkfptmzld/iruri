@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.40">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.41">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.40">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.41">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.40</title>
+<title>수업기록표 정산 시스템 v15.41</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3609,7 +3609,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.40';
+const SYSTEM_VERSION='v15.41';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11441,19 +11441,19 @@ function _renderLandingCustomCards(){
   if(!apps.length){ wrap.innerHTML=''; if(typeof _cardFlowRefresh==='function') _cardFlowRefresh(); return; }
   let html = '';
   apps.forEach((app, idx) => {
-    if(!_landingEditMode && typeof _hasCardCap==='function' && !_hasCardCap(app)) return; // v15.38: 권한 없는 홈카드 숨김 (마스터·편집모드는 전체)
+    // v15.41: 홈카드도 항상 표시. 권한 없으면 클릭 시 _clickCustomCard가 안내 팝업으로 차단.
     const c = _COLOR_MAP[app.color||'blue'];
     const iconSvg = _ICON_MAP[app.icon||'ti-link'] || _ICON_MAP['ti-link'];
     const delBtn = _landingEditMode ? `<button onclick="event.stopPropagation();_deleteCustomApp(${idx})" style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#FCEBEB;border:0.5px solid #F09595;border-radius:50%;cursor:pointer;font-size:13px;color:#A32D2D;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:10;line-height:1;">×</button>` : '';
     const editStyle = _landingEditMode ? 'outline:2px dashed #EF9F27;outline-offset:2px;border-radius:22px;' : '';
     html += `<div style="position:relative;${editStyle}">
       ${delBtn}
-      <div onclick="${_landingEditMode ? 'void 0' : `openLink('${app.url}')`}" style="background:white;border:1.5px solid ${c.stroke}33;border-radius:20px;padding:24px 20px;width:160px;cursor:${_landingEditMode?'default':'pointer'};transition:0.2s;box-shadow:0 4px 16px ${c.stroke}15;text-align:center;" onmouseover="if(!_landingEditMode)this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
+      <div onclick="${_landingEditMode ? 'void 0' : `_clickCustomCard(${idx})`}" style="background:white;border:1.5px solid ${c.stroke}33;border-radius:20px;padding:24px 20px;width:160px;cursor:${_landingEditMode?'default':'pointer'};transition:0.2s;box-shadow:0 4px 16px ${c.stroke}15;text-align:center;" onmouseover="if(!_landingEditMode)this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
         <div style="width:50px;height:50px;background:${c.bg};border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:${c.stroke};">
           ${iconSvg}
         </div>
-        <div style="font-size:14px;font-weight:700;color:#1a4a2e;margin-bottom:6px;">${app.name}</div>
-        <div style="font-size:11px;color:#9B9888;line-height:1.5;">${app.desc||''}</div>
+        <div style="font-size:14px;font-weight:700;color:#1a4a2e;margin-bottom:6px;">${escH(app.name)}</div>
+        <div style="font-size:11px;color:#9B9888;line-height:1.5;">${escH(app.desc||'')}</div>
       </div>
     </div>`;
   });
@@ -11467,9 +11467,10 @@ function _cfGetItems(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return [];
   const skip={cfArrowL:1,cfArrowR:1,cfSpotEl:1};
   const items=[];
+  const _shown=(el)=>{ try{ return getComputedStyle(el).display!=='none'; }catch(_){ return true; } }; // v15.41: 권한없어 숨긴 카드는 캐러셀에서 제외 (빈 슬롯/점 방지)
   [...wrap.children].forEach(ch=>{
-    if(ch.id==='landingCustomCards'){ [...ch.children].forEach(cc=>items.push(cc)); }
-    else if(!skip[ch.id]){ items.push(ch); }
+    if(ch.id==='landingCustomCards'){ [...ch.children].forEach(cc=>{ if(_shown(cc)) items.push(cc); }); }
+    else if(!skip[ch.id]){ if(_shown(ch)) items.push(ch); }
   });
   return items;
 }
@@ -11750,13 +11751,23 @@ function _goCert(){
  }
  location.href='certificate.html';
 }
-// v15.38: 랜딩 카드 권한 반영 (권한 없는 카드 숨김, 마스터에게만 권한관리/홈편집 노출)
+// v15.41: 홈카드 클릭 — 권한 없으면 안내 팝업, 있으면 링크 열기
+function _clickCustomCard(idx){
+ const apps=(typeof _getCustomApps==='function')?_getCustomApps():[];
+ const app=apps[idx]; if(!app) return;
+ if(typeof _hasCardCap==='function' && !_hasCardCap(app)){
+  showConfirm({icon:'🔒',title:'접근 권한이 없어요',desc:'이 서비스 권한이 없습니다.<br><small style="color:var(--text3)">박기남 관리자에게 권한을 요청하세요.</small>',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});
+  const cc=document.getElementById('confirmCancelBtn'); if(cc) cc.style.display='none';
+  return;
+ }
+ if(typeof openLink==='function') openLink(app.url); else location.href=app.url;
+}
+// v15.41: 랜딩 카드는 항상 표시. 권한 없는 서비스는 클릭 시 안내 팝업으로 차단(showAdminLogin/_goCert/_clickCustomCard).
+//         카드 숨김을 없애 캐러셀 빈 슬롯/점 문제도 제거. 마스터에게만 권한관리 버튼 노출.
 function _applyLandingPerms(){
  try{
   const master=_isMaster();
-  const ca=document.getElementById('card-admin'); if(ca) ca.style.display=_hasCap('admin')?'':'none';
-  const cc=document.getElementById('card-cert');  if(cc) cc.style.display=_hasCap('cert')?'':'none';
-  const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=master?'flex':'none'; // v15.40: 권한관리 버튼 행(마스터 전용, 별도 컨테이너)
+  const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=master?'flex':'none';
  }catch(_){}
 }
 // v15.38: 권한 관리 화면 (마스터 전용) — 이름×카드 체크박스, 즉시 저장·공유
