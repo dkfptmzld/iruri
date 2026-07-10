@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.41">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.42">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.41">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.42">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.41</title>
+<title>수업기록표 정산 시스템 v15.42</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2612,6 +2612,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   <div class="loader-spinner"></div>
   <div class="loader-text" id="loaderText">GitHub에 업로드하는 중...</div>
   <div class="loader-sub" id="loaderSub">완료까지 잠시 기다려주세요</div>
+  <div id="loaderElapsed" style="margin-top:6px;font-size:12px;font-weight:600;color:#1A7A50;letter-spacing:.2px;"></div>
  </div>
 </div>
 
@@ -3609,7 +3610,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.41';
+const SYSTEM_VERSION='v15.42';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10781,6 +10782,7 @@ function _confirmCancel(){
 
 /* ═══ 로딩 오버레이 ═══ */
 let _loaderTimer = null;
+let _loaderTick = null; // v15.42: 경과 초 카운터 인터벌
 /** 특이사항 textarea 자동 높이 조절 */
 function _autoResizeNote(el){
  el.style.height = 'auto';
@@ -10804,12 +10806,24 @@ function showLoader(msg='불러오는 중...', sub='', ms=15000){
   el.classList.add('show');
   if(_loaderTimer) clearTimeout(_loaderTimer);
   if(ms > 0) _loaderTimer = setTimeout(()=>hideLoader(), ms);
+  // v15.42: 경과 초 표시 — 멈춘 건지 진행 중인지 바로 알 수 있게 0.1초 단위로 카운트업
+  const elp = document.getElementById('loaderElapsed');
+  if(_loaderTick){ clearInterval(_loaderTick); _loaderTick=null; }
+  if(elp){
+    const t0 = (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
+    const _now = ()=> (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
+    const render = ()=>{ const s=(_now()-t0)/1000; elp.textContent = s.toFixed(1)+'초 경과' + (s>=15?' · 시간이 걸리고 있어요…':''); };
+    render();
+    _loaderTick = setInterval(render, 100);
+  }
 }
 function hideLoader(){
   const el = document.getElementById('globalLoader');
   if(!el) return;
   el.classList.remove('show');
   if(_loaderTimer){ clearTimeout(_loaderTimer); _loaderTimer=null; }
+  if(_loaderTick){ clearInterval(_loaderTick); _loaderTick=null; } // v15.42
+  const elp = document.getElementById('loaderElapsed'); if(elp) elp.textContent='';
 }
 
 /* 사이드바 스켈레톤 렌더 */
