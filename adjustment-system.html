@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.42">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.43">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.42">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.43">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.42</title>
+<title>수업기록표 정산 시스템 v15.43</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3610,7 +3610,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.42';
+const SYSTEM_VERSION='v15.43';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4747,6 +4747,18 @@ function _normFeePct(teachers){
 
 // 세션 캐시: 이번 접속에서 이미 GAS에서 확인한 월 목록
 const _sessionLoadedMonths = new Set();
+// v15.43: 마감월 고정(freeze) — 익월 10일이 지나 '마감된 과거 달'은 로컬 스냅샷을 잠그고 GAS 재확인을 건너뜀.
+//   · GAS로 한 번 확정된 뒤 잠금 → 이후 열 때 로딩 없음 + GAS 오류가 정산값을 덮어쓸 위험 없음
+//   · 정정이 필요한 예외 상황엔 _refreshMonth(수동 새로고침)로 잠금 해제 후 재확인
+const _LOCKED_MONTHS_KEY = 'iruri_locked_months';
+function _getLockedMonths(){ try{ const a=JSON.parse(localStorage.getItem(_LOCKED_MONTHS_KEY)||'[]'); return new Set(Array.isArray(a)?a:[]); }catch(_){ return new Set(); } }
+function _isMonthLocked(ym){ return _getLockedMonths().has(ym); }
+function _lockMonth(ym){ try{ const s=_getLockedMonths(); if(!s.has(ym)){ s.add(ym); localStorage.setItem(_LOCKED_MONTHS_KEY, JSON.stringify([...s])); } }catch(_){} }
+function _unlockMonth(ym){ try{ const s=_getLockedMonths(); if(s.delete(ym)) localStorage.setItem(_LOCKED_MONTHS_KEY, JSON.stringify([...s])); }catch(_){} }
+// 마감월 = 정산 사이클 기준월보다 이전 달(진행 중인 달·직전 마감월은 계속 실시간 동기화)
+function _isClosedMonth(ym){ try{ return _ymNum(ym) > 0 && _ymNum(ym) < _ymNum(_getSettlementCycleYm()); }catch(_){ return false; } }
+// 수동 새로고침: 잠금·세션캐시 해제 후 재로드(→ GAS 재확인 후 다시 잠금)
+function _refreshMonth(ym){ _unlockMonth(ym); _sessionLoadedMonths.delete(ym); showToast(`🔄 ${ym} 최신 데이터 확인 중...`); loadMonthlySnapshot(ym); }
 
 /**
  * v14.73: 연월 문자열을 "YYYY년 M월"로 정규화 (오염 감지 오판 방지).
@@ -4941,6 +4953,14 @@ function loadMonthlySnapshot(ym){
   showToast(`${ym} GAS에서 불러오는 중...`);
  }
 
+ // v15.43: 마감월이고 이미 잠금(GAS로 한 번 확정)됐고 로컬 데이터가 있으면 → GAS 재확인 건너뜀(고정)
+ //   로딩 없음 + GAS가 정산값을 덮어쓸 위험 없음. 정정 필요 시 사이드바 '🔄 새로고침'으로 해제.
+ if(_isClosedMonth(ym) && _isMonthLocked(ym) && localSnap?.data?.teachers?.length){
+  hideLoader();
+  try{ _renderSidebarYM(ym); }catch(_){}
+  return;
+ }
+
  // 세션 캐시: 이미 이번 접속에서 GAS 확인했고 로컬 데이터가 충분히 있으면 스킵
  // 단, 강사가 0명이거나 데이터가 비어있으면 무조건 GAS 재확인
  const localCount = localSnap?.data?.teachers?.length || 0;
@@ -5076,6 +5096,8 @@ function loadMonthlySnapshot(ym){
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
    }
+   // v15.43: 마감월은 GAS로 한 번 정상 확정했으니 잠금 → 이후엔 고정(재확인 없음)
+   if(_isClosedMonth(ym)){ _lockMonth(ym); try{ _renderSidebarYM(ym); }catch(_){} }
   })
   .catch(()=>{
    hideLoader();
@@ -9197,6 +9219,10 @@ function _renderSidebarYM(ym){
    <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${yOpts}</select>
    <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${mOpts}</select>
   </div>
+  ${(typeof _isClosedMonth==='function' && _isClosedMonth(loadedYm) && _isMonthLocked(loadedYm)) ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin:-6px 0 12px;padding:5px 9px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;font-size:10.5px;color:#64748B;" title="마감된 달이라 서버 재확인 없이 저장된 값을 고정 표시합니다">
+   <span>🔒 마감 · 고정본</span>
+   <span onclick="_refreshMonth('${String(loadedYm).replace(/'/g,"\\'")}')" style="color:#2563EB;cursor:pointer;font-weight:700;">🔄 새로고침</span>
+  </div>` : ''}
   <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;">
    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
     <span style="font-size:12px;font-weight:600;color:var(--green);">${submitted}명 제출</span>
