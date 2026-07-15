@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.43">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.44">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.43">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.44">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.43</title>
+<title>수업기록표 정산 시스템 v15.44</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1662,6 +1662,17 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    </div>
    <div id="ti-s-event-val" style="font-size:14px;font-weight:700;color:#854F0B;font-family:'DM Mono',monospace;"></div>
   </div>
+  <!-- v15.44: 자격증 발급비용 50% (읽기전용 · 관리자 지정) -->
+  <div id="ti-s-cert-row" style="display:none;justify-content:space-between;align-items:center;padding:8px 12px;background:#FFFBF2;border:1px solid #E8CC80;border-radius:8px;">
+   <div style="display:flex;align-items:center;gap:7px;">
+    <span style="font-size:15px;">🎓</span>
+    <div>
+     <div style="font-size:12px;font-weight:600;color:#8a5a1c;">자격증 발급비용 50% <span style="font-size:9px;font-weight:800;color:#8a6010;background:#FDF3DC;border:1px solid #E8CC80;border-radius:8px;padding:1px 6px;">🔒 자동·수정불가</span></div>
+     <div style="font-size:11px;color:#A98A4A;margin-top:2px;">관리자 지정 · '기타'에 합산됩니다</div>
+    </div>
+   </div>
+   <div id="ti-s-cert-val" style="font-size:14px;font-weight:700;color:#8a5a1c;font-family:'DM Mono',monospace;"></div>
+  </div>
  </div>
  </div>
  </div>
@@ -1735,7 +1746,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 <div id="mgr-teacher-bar" style="display: flex;">
   <span id="mgr-teacher-bar-label">강사 선택</span>
   <button id="mgr-teacher-bar-pill" onclick="_openSidebarOverlay()">김유천 · 1,129,456원 ▾</button>
-  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div class="layout" id="settleView" style="display: none;">
+  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div id="settleAlertPanel" style="display:none;padding:12px 16px 0;"></div><div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
  <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
   <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
@@ -3610,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.43';
+const SYSTEM_VERSION='v15.44';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4170,6 +4181,7 @@ function switchView(v){
  const _bar = document.getElementById('mgr-teacher-bar');
  if(_bar) _bar.style.display = v==='settle' ? 'flex' : 'none';
  document.getElementById('settleView').style.display=v==='settle'?'flex':'none';
+ try{ _renderSettleAlerts(); }catch(_){}
  document.getElementById('teachersView').style.display=v==='teachers'?'block':'none';
  document.getElementById('centersView').style.display=v==='centers'?'block':'none';
  document.getElementById('historyView').style.display=v==='history'?'block':'none';
@@ -4373,6 +4385,53 @@ function _fillSettleFields(rec){
  return rec;
 }
 
+/* ═══ v15.44: 자격증 발급비용 반환 (발급비용의 50%를 반환월 정산 '기타'에 반영) ═══
+ *  - 규칙 고정: 반환일 = 입사일 + 2개월 20일, 반영 비율 = 50%
+ *  - 반영은 관리자 DB(DB.teachers.certFee)에서 파생 → 강사 제출과 무관하게 항상 계산됨
+ *  - etcCost 이중합산 방지: rec._certApplied 에 현재 반영된 금액을 기록(멱등) */
+const CERT_PCT = 0.5, CERT_RETURN_MONTHS = 2, CERT_RETURN_DAYS = 20;
+const CERT_LABEL = '자격증 발급비용 반환(50%)';
+function _certHalf(fee){ const f=Number(fee)||0; return f>0?Math.round(f*CERT_PCT):0; }
+function _calcCertReturnDate(hireDate){
+ if(!hireDate) return '';
+ const d=new Date(hireDate); if(isNaN(d)) return '';
+ d.setMonth(d.getMonth()+CERT_RETURN_MONTHS);
+ d.setDate(d.getDate()+CERT_RETURN_DAYS);
+ return d.toISOString().slice(0,10);
+}
+function _certReturnYm(dateStr){ // 'YYYY-MM-DD' → 'YYYY년 M월'
+ const m=String(dateStr||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
+ return m ? `${+m[1]}년 ${+m[2]}월` : '';
+}
+/* 강사(name)의 자격증 반환이 해당 월(ym='YYYY년 M월')이면 {half,date,fee} 반환, 아니면 null */
+function _certForMonth(name, ym){
+ if(!ym) return null;
+ const t=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===name):null;
+ if(!t || !t.certFee) return null;
+ const rd = t.certReturnDate || _calcCertReturnDate(t.hireDate);
+ if(!rd || _certReturnYm(rd)!==ym) return null;
+ const half=_certHalf(t.certFee);
+ return half>0 ? { half, date: rd, fee: Number(t.certFee)||0 } : null;
+}
+/* 관리자 레코드에 자격증 반환을 반영(멱등). 마감월은 건드리지 않음. */
+function _ensureCertOnRecord(rec){
+ if(!rec || !rec.name || !rec.yearMonth) return rec;
+ try{ if(typeof _isClosedMonth==='function' && _isClosedMonth(rec.yearMonth)) return rec; }catch(_){}
+ const cert=_certForMonth(rec.name, rec.yearMonth);
+ const applied=Number(rec._certApplied)||0;
+ const want=cert?cert.half:0;
+ if(want!==applied){ rec.etcCost=(Number(rec.etcCost)||0)-applied+want; rec._certApplied=want; }
+ rec.notesData=Array.isArray(rec.notesData)?rec.notesData:[];
+ const idx=rec.notesData.findIndex(n=>n&&n.auto==='cert');
+ if(cert){
+  const noteObj={cat:'기타',auto:'cert',date:cert.date,centers:[CERT_LABEL],center:CERT_LABEL,
+   text:`자격증 발급비용 ${cert.fee.toLocaleString()}원의 50% 반환`,amount:cert.half,
+   entries:[{date:cert.date,center:CERT_LABEL,text:'',amount:cert.half}]};
+  if(idx>=0) rec.notesData[idx]=noteObj; else rec.notesData.push(noteObj);
+ } else if(idx>=0){ rec.notesData.splice(idx,1); }
+ return rec;
+}
+
 function guessRegion(){ return ''; }
 
 
@@ -4407,7 +4466,7 @@ function renderSettle(){
  const{teachers,fileName}=STATE.data;
  // v14.84: 강사료(feePct)·합계가 빠진 레코드(제출이력 복구분 등)는 렌더 시 DB 강사료로 자동 보강.
  //         (빠진 값만 채움 — 이미 값이 있으면 보존. 이미 반영된 기록도 즉시 정상 표시되게.)
- if(Array.isArray(teachers)) teachers.forEach(t=>{ try{ _fillSettleFields(t); }catch(e){} });
+ if(Array.isArray(teachers)) teachers.forEach(t=>{ try{ _fillSettleFields(t); }catch(e){} try{ _ensureCertOnRecord(t); }catch(e){} });
  const ym=teachers[0]?.yearMonth||'';
  // 모바일 강사 선택 바 재초기화
  setTimeout(()=>{
@@ -4446,6 +4505,7 @@ function renderSettle(){
  STATE.tab = 'ledger';
  _renderNewTeacherList();
  renderTeacher(0);
+ try{ _renderSettleAlerts(); }catch(_){}
 }
 
 /* ═══ 월별 스냅샷 저장/불러오기 ═══ */
@@ -7317,6 +7377,10 @@ function renderTeacherStats(){
 }
 
 function renderRaiseAlert(){
+ // v15.44: 강사료 인상 알림은 정산 탭 알림 패널로 이전 → 강사 관리 탭에서는 숨김
+ const _el0 = document.getElementById('raiseAlert');
+ if(_el0) _el0.style.display='none';
+ return;
  const today = new Date(); today.setHours(0,0,0,0);
  const soon30 = new Date(today); soon30.setDate(soon30.getDate()+30);
 
@@ -7365,6 +7429,98 @@ function renderRaiseAlert(){
  ${rows}
  </div>`;
 }
+
+/* ═══ v15.44: 정산 탭 상단 알림 패널 (강사 메모: 인상/자격증 · 센터 알림: 수정예약) ═══ */
+let _settleAlertMode = 'this';   // 'this' 이번 정산 알림 · 'all' 전체 보기
+let _settleAlertOpen = true;     // 접기/펼치기
+function _ymOfDate(d){ return _certReturnYm(fmtDate(d)); }
+function _settleAlertData(loadedYm, mode){
+ const memo=[], center=[];
+ const teachers=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers:[];
+ const ly=(typeof _ymNum==='function'&&loadedYm)?_ymNum(loadedYm):0;
+ // ── 강사료 인상 ──
+ teachers.forEach(t=>{
+  if(!t.raiseDate) return;
+  const rym=_ymOfDate(t.raiseDate); const rn=(typeof _ymNum==='function')?_ymNum(rym):0;
+  const need=(Number(t.feeVal)||0)<42000;
+  const isThis = ly && rn && rn<=ly && need; // 이번 정산까지 인상 필요/예정
+  if(mode==='this'){ if(!isThis) return; }
+  else { /* all: raiseDate 있는 전원 */ }
+  const overdue = isThis;
+  memo.push({kind:'raise', name:t.name, region:t.region||'', ym:rym,
+   sub:`${Number(t.feeVal||0).toLocaleString()}원 → 42,000원 ${overdue?'인상 필요':'인상 예정'}`, overdue});
+ });
+ // ── 자격증 50% ──
+ teachers.forEach(t=>{
+  if(!t.certFee) return;
+  const rd=t.certReturnDate||_calcCertReturnDate(t.hireDate); if(!rd) return;
+  const cym=_certReturnYm(rd); const half=_certHalf(t.certFee);
+  if(half<=0) return;
+  if(mode==='this'){ if(cym!==loadedYm) return; }
+  memo.push({kind:'cert', name:t.name, region:t.region||'', ym:cym,
+   sub:`${half.toLocaleString()}원 · ${cym} '기타' 반영`});
+ });
+ // ── 센터 수정 예약 ──
+ try{
+  const months = mode==='this' ? (loadedYm?[loadedYm]:[]) : (typeof _listResvMonths==='function'?_listResvMonths():[]);
+  months.forEach(m=>{
+   const r=(typeof _getResv==='function')?_getResv(m):{ops:[]};
+   (r.ops||[]).forEach(op=>{
+    const label=op.t==='add'?'추가':op.t==='edit'?'수정':op.t==='del'?'삭제':op.t;
+    center.push({op:op.t, label, name:op.name||'', region:op.region||'', ym:m});
+   });
+  });
+ }catch(_){}
+ return {memo, center, count: memo.length+center.length};
+}
+function _renderSettleAlerts(){
+ const host=document.getElementById('settleAlertPanel'); if(!host) return;
+ if(STATE.view!=='settle'){ host.style.display='none'; return; }
+ host.style.display='block';
+ const loadedYm = STATE.data?.teachers?.[0]?.yearMonth || (typeof _getSettlementCycleYm==='function'?_getSettlementCycleYm():'');
+ const d=_settleAlertData(loadedYm, _settleAlertMode);
+ const modeTitle = _settleAlertMode==='this' ? `📌 이번 정산 알림${loadedYm?' · '+escH(loadedYm):''}` : '📋 전체 보기';
+ const tab=(m,txt)=>`<span onclick="_setSettleAlertMode('${m}')" style="cursor:pointer;font-size:11px;font-weight:${_settleAlertMode===m?'800':'600'};color:${_settleAlertMode===m?'#1a4a2e':'#94a3b8'};padding:2px 8px;border-radius:8px;background:${_settleAlertMode===m?'#E7F3EC':'transparent'};">${txt}</span>`;
+ const pill=(bg,fg,txt)=>`<span style="font-size:9px;font-weight:800;border-radius:7px;padding:1px 6px;white-space:nowrap;flex-shrink:0;background:${bg};color:${fg};">${txt}</span>`;
+ const badgeRegion=r=>r?`<span class="badge ${r==='서울'?'blue':r==='인천'?'teal':'purple'}" style="flex-shrink:0;">${escH(r)}</span>`:'';
+ // 강사 메모 항목
+ const memoRows=d.memo.map(m=>{
+  const p = m.kind==='raise'
+    ? pill('#FEF3C7','#92400E', m.overdue?'인상':'인상예정')
+    : pill('#FDF3DC','#8a5a1c','자격증50%');
+  return `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 9px;border-radius:8px;margin-bottom:5px;font-size:11.5px;line-height:1.45;background:#F3FAF5;border:1px solid #D6EEDD;">
+   ${p}<div><b style="color:#1a3a26;">${escH(m.name)}</b> ${badgeRegion(m.region)} <span style="color:#4b6b57;">${escH(m.sub)}</span></div></div>`;
+ }).join('');
+ // 센터 알림 항목
+ const centerRows=d.center.map(c=>{
+  const p = c.op==='add'?pill('#DCFCE7','#166534','추가'):c.op==='edit'?pill('#DBEAFE','#1d4ed8','수정'):pill('#FEE2E2','#B42318','삭제');
+  return `<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 9px;border-radius:8px;margin-bottom:5px;font-size:11.5px;line-height:1.45;background:#EFF4FF;border:1px solid #D6E1FB;">
+   ${p}<div><b style="color:#1a3a26;">${escH(c.name)}</b> ${badgeRegion(c.region)} <span style="color:#5a6b8a;">${_settleAlertMode==='all'?escH(c.ym):''}</span></div></div>`;
+ }).join('');
+ let body='';
+ if(_settleAlertOpen){
+  if(d.count===0){
+   body=`<div style="padding:12px;font-size:12px;color:#94a3b8;">${_settleAlertMode==='this'?'이번 정산에 해당하는 알림이 없어요.':'예정된 알림이 없어요.'}</div>`;
+  } else {
+   body=`<div style="padding:10px 12px;">
+    ${d.memo.length?`<div style="font-size:11px;font-weight:800;color:#166534;margin:2px 0 6px;">👤 강사 메모</div>${memoRows}`:''}
+    ${d.center.length?`<div style="font-size:11px;font-weight:800;color:#1d4ed8;margin:${d.memo.length?'9px':'2px'} 0 6px;">🏢 센터 알림</div>${centerRows}`:''}
+   </div>`;
+  }
+ }
+ host.innerHTML=`<div style="border:1px solid #E4E7EC;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(20,60,40,.05);">
+  <div style="display:flex;justify-content:space-between;align-items:center;background:#F6FBF7;padding:8px 12px;">
+   <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;font-weight:800;color:#1a4a2e;">${modeTitle} · ${d.count}건</span>
+    <span style="display:inline-flex;gap:2px;">${tab('this','이번 정산')}${tab('all','전체 보기')}</span>
+   </div>
+   <span onclick="_toggleSettleAlertOpen()" style="cursor:pointer;font-size:11px;color:#64748B;font-weight:600;">${_settleAlertOpen?'▲ 접기':'▼ 펼치기'}</span>
+  </div>
+  ${body}
+ </div>`;
+}
+function _setSettleAlertMode(m){ _settleAlertMode=m; _settleAlertOpen=true; _renderSettleAlerts(); }
+function _toggleSettleAlertOpen(){ _settleAlertOpen=!_settleAlertOpen; _renderSettleAlerts(); }
 
 /* ═══ TEACHER MGR ═══ */
 function applyRaisesManual(){
@@ -8710,17 +8866,34 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
  <input class="form-input" id="fi_feeVal" value="${item?.feeVal||''}" placeholder="85 또는 42000">
  <div class="form-hint" id="fi_feeHint"></div>
  </div>
- <div class="form-row-2">
+ <div class="form-row-2" style="align-items:start;">
  <div>
- <label class="form-label">입사일</label>
+ <label class="form-label" style="min-height:16px;">입사일</label>
  <input class="form-input" id="fi_hireDate" type="date" value="${item?.hireDate||''}">
- <div class="form-hint">입력 시 인상예정일 자동 계산</div>
+ <div class="form-hint">입력 시 인상예정일·자격증 반환일 자동 계산</div>
  </div>
  <div>
- <label class="form-label">인상예정일 (입사 5개월 후 20일 · 인상월 미리표시)</label>
+ <label class="form-label" style="min-height:16px;">인상예정일</label>
  <input class="form-input" id="fi_raiseDate" type="date" value="${item?.raiseDate||''}">
- <div class="form-hint">실제 인상월보다 한 달 먼저 표시돼요 (수업기록표 반영용) · 자동 입력, 수동 수정 가능</div>
+ <div class="form-hint">입사 5개월 후 20일 · 실제 인상월보다 한 달 먼저 표시 · 자동입력·수정가능</div>
  </div>
+ </div>
+ <!-- v15.44: 자격증 발급비용 (반환월 정산 '기타'에 50% 자동 반영) -->
+ <div style="margin:2px 0 14px;border:1.5px solid #F0D9A8;background:#FFFBF2;border-radius:12px;padding:12px 13px;">
+ <div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#8a5a1c;margin-bottom:10px;">
+  <span style="width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#E8A93A,#D4892A);display:flex;align-items:center;justify-content:center;font-size:12px;">🎓</span> 자격증 발급비용</div>
+ <div class="form-row-2" style="align-items:start;margin-bottom:8px;">
+  <div>
+   <label class="form-label" style="min-height:16px;color:#9a7b3a;">발급비용 (원)</label>
+   <input class="form-input" id="fi_certFee" type="number" min="0" value="${item?.certFee||''}" placeholder="예: 150000" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
+  </div>
+  <div>
+   <label class="form-label" style="min-height:16px;color:#9a7b3a;">발급 비용 반환일</label>
+   <input class="form-input" id="fi_certReturnDate" type="date" value="${item?.certReturnDate||''}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
+  </div>
+ </div>
+ <div class="form-hint">반환일 = <b>입사일 + 2개월 20일</b> 자동 계산 · 수동 수정 가능</div>
+ <div id="fi_certPreview" style="display:none;margin-top:8px;background:#F3FAF5;border:1px solid #CDEBD8;border-radius:8px;padding:9px 11px;font-size:12px;color:#166534;line-height:1.5;"></div>
  </div>
  <div class="form-row">
  <label class="form-label">계좌번호</label>
@@ -8731,17 +8904,22 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
  </div>
  <div class="form-hint">강사 모드에서 이름 선택 시 자동으로 채워집니다</div>
  </div>`;
- // 입사일 변경 시 인상예정일 자동 계산
+ // 입사일 변경 시 인상예정일 + 자격증 반환일 자동 계산
  setTimeout(()=>{
  const hd=document.getElementById('fi_hireDate');
  const rd=document.getElementById('fi_raiseDate');
+ const cr=document.getElementById('fi_certReturnDate');
  if(hd&&rd) hd.addEventListener('change',()=>{
  if(!hd.value)return;
  const d=new Date(hd.value);
  d.setMonth(d.getMonth()+5);
  d.setDate(20);
  rd.value=d.toISOString().slice(0,10);
+ // 자격증 반환일: 비어있을 때만 자동 채움(수동 수정 보존)
+ if(cr && !cr.value){ cr.value=_calcCertReturnDate(hd.value); }
+ _certPreviewUpdate();
  });
+ _certPreviewUpdate();
  },50);
  updateFeeHint();
  } else {
@@ -8937,6 +9115,19 @@ function updateFeeHint(){
  document.getElementById('fi_feeLabel').textContent=t==='pct'?'비율 (%)':'회당 금액 (원)';
  document.getElementById('fi_feeHint').textContent=t==='pct'?'예) 85 → 수업료 합계의 85%':'예) 42000 → 수업 1회당 42,000원';
 }
+// v15.44: 자격증 발급비용 반영 미리보기
+function _certPreviewUpdate(){
+ const pv=document.getElementById('fi_certPreview'); if(!pv) return;
+ const fee=Number(document.getElementById('fi_certFee')?.value)||0;
+ const rd=document.getElementById('fi_certReturnDate')?.value||'';
+ if(fee<=0){ pv.style.display='none'; return; }
+ const half=_certHalf(fee);
+ const ym=_certReturnYm(rd);
+ pv.style.display='block';
+ pv.innerHTML=ym
+  ? `📌 <b>${ym}</b> 정산 '기타'에 발급비용의 <b>50% (${half.toLocaleString()}원)</b>가 자동 반영됩니다.`
+  : `발급비용의 <b>50% (${half.toLocaleString()}원)</b>가 반환일이 속한 달 정산 '기타'에 반영됩니다. <span style="color:#B45309;">반환일을 입력하세요.</span>`;
+}
 function closeModal(){document.getElementById('modalOverlay').style.display='none'; STATE.resvMode=null; STATE.resvOrig=null;/* v15.33 */}
 
 // v11.30: 동명+동일지역 센터 발견 시 → 강사 추가 안내 플로우
@@ -9020,13 +9211,17 @@ function saveModal(){
  if(isNaN(feeVal)||feeVal<=0){showConfirm({icon:'⚠️',title:'입력 오류',desc:'강사료 값을 입력하세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null});document.getElementById('confirmCancelBtn').style.display='none'; return;}
  const hireDate=document.getElementById('fi_hireDate')?.value||'';
  const raiseDate=document.getElementById('fi_raiseDate')?.value||'';
+ // v15.44: 자격증 발급비용 + 반환일(비면 입사일+2개월20일 자동)
+ const certFee=Number(document.getElementById('fi_certFee')?.value)||0;
+ let certReturnDate=document.getElementById('fi_certReturnDate')?.value||'';
+ if(certFee>0 && !certReturnDate && hireDate) certReturnDate=_calcCertReturnDate(hireDate);
  const bank=document.getElementById('fi_bank')?.value.trim()||'';
  const accnum=document.getElementById('fi_accnum')?.value.trim()||'';
  const accname=document.getElementById('fi_accname')?.value.trim()||'';
  const account=[bank,accnum,accname].filter(Boolean).join(' ');
  // v12.11: 과목 추가
  const subject=document.getElementById('fi_subject')?.value||'';
- const obj={name,region,feeType,feeVal,hireDate,raiseDate,account,subject};
+ const obj={name,region,feeType,feeVal,hireDate,raiseDate,certFee,certReturnDate,account,subject};
  if(STATE.editIdx!==null){
   const prev=JSON.parse(JSON.stringify(DB.teachers));
   const old=DB.teachers[STATE.editIdx];
@@ -14474,6 +14669,17 @@ function tiUpdateSettleSummary(teacher){
   const extrasEl2 = document.getElementById('ti-s-extras');
   if(extrasEl2 && eventTotal2 > 0) extrasEl2.style.display = 'flex';
  }
+ // v15.44: 자격증 발급비용 50% (읽기전용) — 관리자 DB에서 파생, 반환월이면 표시
+ try{
+  const _y=document.getElementById('ti-year')?.value, _m=document.getElementById('ti-month')?.value;
+  const cert = (_y&&_m) ? _certForMonth(teacher, `${_y}년 ${_m}월`) : null;
+  const certRow=document.getElementById('ti-s-cert-row');
+  if(certRow){
+   certRow.style.display = cert ? 'flex' : 'none';
+   const cv=document.getElementById('ti-s-cert-val'); if(cv&&cert) cv.textContent='+'+cert.half.toLocaleString()+'원';
+   if(cert){ const ex=document.getElementById('ti-s-extras'); if(ex) ex.style.display='flex'; }
+  }
+ }catch(_){}
 }
 
 // 필수 입력 누락 칸에 빨간 박스 표시(입력 시작하면 해제)
