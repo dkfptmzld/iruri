@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.47">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.48">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.47">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.48">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.47</title>
+<title>수업기록표 정산 시스템 v15.48</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -359,7 +359,7 @@ body.edit-mode-active .ledger-wrap textarea {
 .mgr-cell{padding:9px 14px;font-size:13px;}
 .mgr-head-row{background:var(--surface2)!important;}
 .mgr-head-row .mgr-cell{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
-.t-mgr-row{grid-template-columns:1fr 1fr 200px 200px 200px 200px 200px 56px;}
+.t-mgr-row{grid-template-columns:1fr 1fr 200px 200px 200px 200px 200px 200px 56px;}
 .c-mgr-row{grid-template-columns:160px 70px 100px 180px 1fr 56px;}
 .addr-text{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
 /* 주소 검색 자동완성 */
@@ -2345,7 +2345,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button onclick="recoverAccountsUI()" class="btn" title="저장된 정산 기록에서 비어있는 계좌번호를 채웁니다" style="font-size:12px;white-space:nowrap;background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">📋 정산기록에서 계좌 복구</button>
  </div>
  <div class="mgr-head-row mgr-row t-mgr-row">
- <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">첫 수업 예정일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell"></div>
+ <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">첫 수업 예정일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell">자격증 발급비용</div><div class="mgr-cell"></div>
  </div>
  <div id="tRows"></div>
  </div>
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.47';
+const SYSTEM_VERSION='v15.48';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7587,6 +7587,14 @@ function renderTeacherMgr(){
  else if(diff<=30) raiseBadge=`<span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 ${fmtDate(t.raiseDate)}<br>D-${diff}</span>`;
  else raiseBadge=`<span style="font-size:11px;color:var(--text2);">${fmtDate(t.raiseDate)}<br><span style="color:var(--text3);">D-${diff}</span></span>`;
  }
+ // v15.48: 자격증 발급비용 표시 (금액 + 반영월·50%)
+ const _certAmt=Number(t.certFee)||0;
+ let certCell='<span style="color:var(--text3);font-size:12px;">-</span>';
+ if(_certAmt>0){
+  const _half=_certHalf(_certAmt);
+  const _cym=_certReturnYm(t.certReturnDate||_calcCertReturnDate(t.hireDate));
+  certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span><div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} · 50% ${_half.toLocaleString()}</div>`;
+ }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
  <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}</div>
  <div class="mgr-cell" style="font-size:12px;line-height:1.6;">${formatAccountHtml(t.account)}</div>
@@ -7595,6 +7603,7 @@ function renderTeacherMgr(){
  <div class="mgr-cell"><span class="badge ${t.feeType==='pct'?'blue':'green'}">${t.feeType==='pct'?'비율':'회당고정'}</span></div>
  <div class="mgr-cell" style="font-size:12px;color:var(--text2);">${fmtDate(t.hireDate)||'-'}</div>
  <div class="mgr-cell">${raiseBadge}</div>
+ <div class="mgr-cell">${certCell}</div>
  <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
  <button class="btn sm danger" onclick="delItem('teacher',${i})"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
  </div>
