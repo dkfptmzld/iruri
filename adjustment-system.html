@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.48">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.49">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.48">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.49">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.48</title>
+<title>수업기록표 정산 시스템 v15.49</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.48';
+const SYSTEM_VERSION='v15.49';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4606,6 +4606,28 @@ function saveMonthlySnapshot(ym, data, pushGAS=true){
   if (typeof updateEditCounter === 'function') updateEditCounter();
   return; // localStorage도 안 건드림 (취소 시 깨끗하게 복원되도록)
  }
+ // v15.49: 월경계 오염 방지 안전장치 — 저장 대상 월(ym)과 '다른 달'로 태그된 강사 차단.
+ //   (예: 7월 파일에 6월 강사 데이터가 들어오려 하면 막거나 걸러냄 → 새 달이 이전 달로 덮이는 사고 원천 차단)
+ try{
+  const _want = (typeof _normYM==='function') ? _normYM(ym) : ym;
+  if(_want && data && Array.isArray(data.teachers) && data.teachers.length){
+   const _tagged = data.teachers.filter(t=>t && t.yearMonth && _normYM(t.yearMonth));
+   const _mism = _tagged.filter(t=>_normYM(t.yearMonth)!==_want);
+   if(_tagged.length && _mism.length===_tagged.length){
+    // (A) 전부 다른 달 → 통째로 잘못된 저장 → 거부(기존 파일 보호, 데이터 삭제 아님)
+    const _other=_normYM(_tagged[0].yearMonth);
+    console.warn(`[안전장치] ${ym} 저장 거부 — 데이터 전체가 ${_other} 태그`);
+    try{ pushErrorLog(`${ym} 저장 차단(안전장치)`, `저장하려던 데이터가 전부 <b>${_other}</b>로 태그돼 있어 ${ym} 저장을 막았어요. (다른 달 데이터가 ${ym}에 덮이는 것을 방지)`); }catch(_){}
+    try{ showToast(`⚠️ ${ym}에 다른 달(${_other}) 데이터가 들어오려 해서 저장을 막았어요`); }catch(_){}
+    return;
+   }
+   if(_mism.length){
+    // (B) 일부만 다른 달 → 그 강사만 제외하고 저장
+    data = { ...data, teachers: data.teachers.filter(t=>!(t && t.yearMonth && _normYM(t.yearMonth) && _normYM(t.yearMonth)!==_want)) };
+    try{ pushErrorLog(`${ym} 타 월 강사 ${_mism.length}명 제외 저장`, `${ym} 저장 시 다른 달로 태그된 강사 <b>${_mism.length}명</b>을 제외했어요. (월경계 오염 방지)`); }catch(_){}
+   }
+  }
+ }catch(_){}
  try{
   const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
   const now = new Date().toISOString();
