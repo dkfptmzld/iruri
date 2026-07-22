@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.46">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.47">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.46">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.47">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.46</title>
+<title>수업기록표 정산 시스템 v15.47</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.46';
+const SYSTEM_VERSION='v15.47';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12859,8 +12859,16 @@ function _applySubmissions(subs){
    showToast(`${allSubs.length}명의 수업기록표가 반영됐어요`);
   }
   // 반영 후 GAS Drive에도 저장
+  // v15.47 FIX: 현재 보고 있는 달만 STATE.data로 저장한다.
+  //   기존 버그: ymList(반영된 모든 달)에 STATE.data(=현재 보는 달)를 그대로 저장 →
+  //   새 달(다른 달) 스냅샷이 '보고 있던 이전 달' 데이터로 덮어써지는 월경계 오염.
+  //   다른 달(신규 제출)은 위 _saveDifferentMonth가 이미 그 달 고유 데이터로 저장했으므로 건드리지 않음.
+  const _viewYm = STATE.data?.teachers?.[0]?.yearMonth || null;
   ymList.forEach(ym => {
-   if(STATE.data) saveMonthlySnapshot(ym, STATE.data);
+   if(!STATE.data?.teachers?.length) return;
+   // 현재 보는 달만 저장. _viewYm 판별 불가한 예외 상황이면 달이 하나일 때만 저장(오염 방지).
+   if(_viewYm ? (ym !== _viewYm) : (ymList.length > 1)) return;
+   saveMonthlySnapshot(ym, STATE.data);
   });
  };
 
