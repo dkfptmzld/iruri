@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.50">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.51">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.50">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.51">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.50</title>
+<title>수업기록표 정산 시스템 v15.51</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.50';
+const SYSTEM_VERSION='v15.51';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4675,6 +4675,8 @@ function saveEdits(){
  try {
   const _adminSess = sessionStorage.getItem('iruri_admin_session')==='true';
   const _editor = _adminSess ? '관리자' : (window._loggedInTeacher || sessionStorage.getItem('iruri_session') || '관리자');
+  // v15.51: 상세가 하나도 안 잡혔으면 최소한 개수라도 남겨 '뭘 바꿨는지 모름' 방지
+  if(_editChangeLogs.length===0 && _editChangeCount>0) _editChangeLogs.push(`${_editChangeCount}건 변경됨 (비용·특이사항·상태 등)`);
   const _logSummary = _editChangeLogs.slice(0,20).map(l=>`• ${l}`).join('<br>') + (_editChangeLogs.length>20?`<br>… 외 ${_editChangeLogs.length-20}건`:'');
   pushChangelog({
    type: 'bulk_edit',
@@ -6500,7 +6502,12 @@ function updateExtraCost(ti, field, val){
  document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
  document.getElementById(`ti-${ti}`)?.classList.add('active');
  const t=STATE.data.teachers[ti];
+ const _prevCost=Number(t[field])||0;   // v15.51: 변경 이력 상세 기록용
  t[field]=parseInt(val)||0;
+ if(_isEditMode && _prevCost!==(Number(t[field])||0)){
+  const _lbl={parkingCost:'주차료',supplyCost:'물품',etcCost:'기타',mockLesson:'모의수업',costExtra:'비용처리',otherCost:'기타비용'}[field]||field;
+  _editChangeLogs.push(`${t.name} · ${_lbl}: ${_prevCost.toLocaleString()}원 → ${(Number(t[field])||0).toLocaleString()}원`);
+ }
  lsSave();
  // v12.01: 4개 분리 필드 display 셀 실시간 업데이트
  const mockVal=t.mockLesson!==undefined?t.mockLesson:(t.mockLessonAuto||0)*20000;
