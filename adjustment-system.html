@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.53">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.54">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.53">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.54">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.53</title>
+<title>수업기록표 정산 시스템 v15.54</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.53';
+const SYSTEM_VERSION='v15.54';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7717,7 +7717,8 @@ function _removeCenterTomb(n,r){ const k=_tombKey(n,r); const t=_getCenterTombs(
 /* GAS 재시도 래퍼 (실패 시 지수 백오프로 최대 tries회) */
 async function _gasPostRetry(body, tries=3){
  for(let i=0;i<tries;i++){
-  try{ const r=await gasPost(body); if(!r || r.ok!==false) return true; }catch(_){}
+  // v15.54: blocked(서버 급증/대량변경 차단)은 성공이 아님 — 성공으로 착각해 넘어가면 반영이 안 된 채 미동기화 유지
+  try{ const r=await gasPost(body); if(r && r.blocked) return false; if(!r || r.ok!==false) return true; }catch(_){}
   await new Promise(s=>setTimeout(s, 400*(i+1)));
  }
  return false;
@@ -7738,20 +7739,23 @@ function _mergeCenters(gasCenters){
  return { merged, localOnly, tombedOnGas };
 }
 
-/* 로컬 전용 센터를 서버에 확실히 저장(한 번의 syncCenters + 재시도) + 삭제분은 서버 삭제 재시도 */
+/* 로컬 전용 센터를 서버에 확실히 저장(한 번의 syncCenters + 재시도) + 삭제분은 서버 삭제 재시도
+ *  v15.54: force:true — 병합 결과는 로컬을 지켜낸 '전체 목록(union)'이라 서버 급증 차단에 막히면
+ *          영영 반영이 안 됨. 사람 확인 없이 정상 로컬 목록을 그대로 밀어넣어 미동기화 해소. */
 function _persistCentersAfterMerge(localOnly, tombedOnGas){
  try{
   if(localOnly && localOnly.length){
    const _snapshot = JSON.parse(JSON.stringify(DB.centers));
-   _gasPostRetry({action:'syncCenters', centers:_snapshot}).then(ok=>{
+   _gasPostRetry({action:'syncCenters', centers:_snapshot, force:true}).then(ok=>{
     if(!ok){ try{ pushErrorLog('센터 서버 재저장 실패', `서버에 없던 로컬 센터 ${localOnly.length}곳 저장을 3회 시도했으나 실패 — 로컬엔 안전 보관, 다음 접속 때 재시도됩니다.`); }catch(_){} }
    });
   }
   (tombedOnGas||[]).forEach(c=>{ _gasPostRetry({action:'deleteCenter', name:c.name}); });
  }catch(_){}
 }
-/* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도) */
-function _saveAllCentersToGas(){ try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers))}); }catch(_){} }
+/* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도)
+ *  v15.54: force:true — 사용자 조작(드래그 등) 후의 '현재 전체 목록'을 확실히 저장(막힘 방지). */
+function _saveAllCentersToGas(){ try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers)), force:true}); }catch(_){} }
 
 function switchCenterView(view){
  _centerView = 'tree';
