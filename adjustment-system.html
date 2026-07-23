@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.59">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.60">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.59">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.60">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.59</title>
+<title>수업기록표 정산 시스템 v15.60</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.59';
+const SYSTEM_VERSION='v15.60';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7543,11 +7543,12 @@ function _settleAlertData(loadedYm, mode){
   memo.push({kind:'raise', name:t.name, region:t.region||'', ym:rym,
    sub:`${Number(t.feeVal||0).toLocaleString()}원 → 42,000원 ${overdue?'인상 필요':'인상 예정'}`, overdue});
  });
- // ── 자격증 50% ──
+ // ── 자격증 50% ── (v15.60: 개별값 없이 기본 발급비용 쓰는 강사도 포함 — _effectiveCertFee 사용)
  teachers.forEach(t=>{
-  if(!t.certFee) return;
+  const _fee=_effectiveCertFee(t);
+  if(_fee<=0) return;
   const rd=t.certReturnDate||_calcCertReturnDate(t.hireDate); if(!rd) return;
-  const cym=_certReturnYm(rd); const half=_certHalf(t.certFee);
+  const cym=_certReturnYm(rd); const half=_certHalf(_fee);
   if(half<=0) return;
   if(mode==='this'){ if(cym!==loadedYm) return; }
   memo.push({kind:'cert', name:t.name, region:t.region||'', ym:cym,
