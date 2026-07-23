@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.56">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.57">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.56">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.57">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.56</title>
+<title>수업기록표 정산 시스템 v15.57</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.56';
+const SYSTEM_VERSION='v15.57';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7678,7 +7678,15 @@ function renderTeacherMgr(){
   const _half=_certHalf(_certAmt);
   const _cym=_certReturnYm(t.certReturnDate||_calcCertReturnDate(t.hireDate));
   const _tag=_certOwn>0?'':' <span style="font-size:9px;color:#8a6010;background:#FDF3DC;border:1px solid #E8CC80;border-radius:7px;padding:0 4px;">기본값</span>';
-  certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span>${_tag}<div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} · 50% ${_half.toLocaleString()}</div>`;
+  // v15.57: 지급 시기 지남 / 지급 예정 구분 (반환월이 이번 정산월보다 과거면 '지남')
+  let _payBadge='';
+  if(_cym){
+   const _passed=(typeof _isClosedMonth==='function') && _isClosedMonth(_cym);
+   _payBadge = _passed
+    ? `<span style="font-size:9px;font-weight:800;color:#B42318;background:#FEE2E2;border:1px solid #F5B5AE;border-radius:7px;padding:1px 5px;">⚠ 지급일 지남</span>`
+    : `<span style="font-size:9px;font-weight:800;color:#166534;background:#DCFCE7;border:1px solid #A7E0BC;border-radius:7px;padding:1px 5px;">⏳ 지급 예정</span>`;
+  }
+  certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span>${_tag} ${_payBadge}<div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} · 50% ${_half.toLocaleString()}</div>`;
  }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
  <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}</div>
