@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.58">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.59">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.58">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.59">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.58</title>
+<title>수업기록표 정산 시스템 v15.59</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.58';
+const SYSTEM_VERSION='v15.59';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9123,7 +9123,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
   </div>
   <div>
    <label class="form-label" style="min-height:16px;color:#9a7b3a;">발급 비용 반환일</label>
-   <input class="form-input" id="fi_certReturnDate" type="date" value="${item?.certReturnDate||''}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
+   <input class="form-input" id="fi_certReturnDate" type="date" value="${item?.certReturnDate || (item?.hireDate ? _calcCertReturnDate(item.hireDate) : '')}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
   </div>
  </div>
  <div class="form-hint">반영 월 = <b>첫 수업월 + 2개월</b> (예: 3월 첫 수업 → <b>5월 수업기록표</b>, 6월 지급) · <b>비워두면 기본 발급비용 자동 적용</b> (강사 관리 상단에서 설정)</div>
@@ -9354,13 +9354,21 @@ function _certPreviewUpdate(){
  const pv=document.getElementById('fi_certPreview'); if(!pv) return;
  const own=Number(document.getElementById('fi_certFee')?.value)||0;
  const hd=document.getElementById('fi_hireDate')?.value||'';
- // v15.56: 비워두면 기본 발급비용 적용(첫 수업 예정일이 있을 때)
- const fee = own>0 ? own : (hd ? _getCertDefaultFee() : 0);
- const usingDefault = own<=0 && fee>0;
  const rd=document.getElementById('fi_certReturnDate')?.value||'';
- if(fee<=0){ pv.style.display='none'; return; }
+ const ym=_certReturnYm(rd || (hd?_calcCertReturnDate(hd):''));  // 반환일 비어도 첫 수업 예정일로 계산
+ const passed = ym && typeof _isClosedMonth==='function' && _isClosedMonth(ym);
+ // v15.56/v15.59: 개별 지정 우선. 기본값은 반환월이 안 지난(신규) 강사에게만 자동 적용.
+ let fee=0, usingDefault=false;
+ if(own>0) fee=own;
+ else if(hd && !passed){ fee=_getCertDefaultFee(); usingDefault=fee>0; }
+ if(fee<=0){
+  if(own<=0 && hd && passed && _getCertDefaultFee()>0){
+   pv.style.display='block';
+   pv.innerHTML=`반환월(<b>${ym}</b>)이 이미 지나 <b>기본 발급비용 자동 적용 대상이 아니에요.</b> 지급이 필요하면 발급비용을 직접 입력하세요.`;
+  } else { pv.style.display='none'; }
+  return;
+ }
  const half=_certHalf(fee);
- const ym=_certReturnYm(rd);
  const _pre = usingDefault ? `기본 발급비용 <b>${fee.toLocaleString()}원</b> 적용 · ` : '';
  pv.style.display='block';
  pv.innerHTML=ym
