@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.57">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.58">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.57">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.58">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.57</title>
+<title>수업기록표 정산 시스템 v15.58</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.57';
+const SYSTEM_VERSION='v15.58';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4400,13 +4400,20 @@ function _certReturnYm(dateStr){ // 'YYYY-MM-DD' → 'YYYY년 M월'
 const CERT_DEFAULT_FEE_KEY='iruri_cert_default_fee';
 function _getCertDefaultFee(){ try{ return Number(localStorage.getItem(CERT_DEFAULT_FEE_KEY))||0; }catch(_){ return 0; } }
 function _setCertDefaultFee(v){ try{ localStorage.setItem(CERT_DEFAULT_FEE_KEY, String(Number(v)||0)); }catch(_){} }
-/* 강사의 실제 적용 발급비용: 개별 지정값이 있으면 그 값, 없고 '첫 수업 예정일'이 있으면 기본값 */
+/* 강사의 실제 적용 발급비용:
+ *  - 개별 지정값(certFee)이 있으면 항상 그 값 (관리자 명시적 선택)
+ *  - 없고 '첫 수업 예정일'이 있으면 기본값. 단 v15.58: 반환월이 이미 지난(마감된) 기존 강사는
+ *    자동 적용 대상 아님 → 신규 강사(반환월이 이번달/미래)에게만 기본값 자동 적용 */
 function _effectiveCertFee(t){
  if(!t) return 0;
  const own=Number(t.certFee)||0;
  if(own>0) return own;
- if(t.hireDate) return _getCertDefaultFee();
- return 0;
+ if(!t.hireDate) return 0;
+ const def=_getCertDefaultFee();
+ if(def<=0) return 0;
+ const cym=_certReturnYm(t.certReturnDate||_calcCertReturnDate(t.hireDate));
+ if(cym && typeof _isClosedMonth==='function' && _isClosedMonth(cym)) return 0; // 반환월 지남 → 대상 아님
+ return def;
 }
 /* 강사(name)의 자격증 반영이 해당 월(ym='YYYY년 M월')이면 {half,date,fee} 반환, 아니면 null.
  *  대상 월 = certReturnDate(수동지정)의 달, 없으면 입사월 + 2개월. 금액 = 개별값 or 기본값. */
