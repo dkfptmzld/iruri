@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.55">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.56">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.55">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.56">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.55</title>
+<title>수업기록표 정산 시스템 v15.56</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2342,6 +2342,11 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button class="rgn-tab" data-r="수원" onclick="setTRegion(this,'수원')">수원</button>
  </div>
  <input class="search-input" id="tSearch" placeholder="강사 이름 검색..." oninput="renderTeacherMgr()" style="flex:1;min-width:120px;">
+ <div style="display:inline-flex;align-items:center;gap:6px;background:#FFFBF2;border:1px solid #E8CC80;border-radius:8px;padding:4px 10px;white-space:nowrap;" title="첫 수업 예정일이 있는 강사에게 자동 적용되는 기본 발급비용">
+  <span style="font-size:12px;font-weight:700;color:#8a5a1c;">🎓 기본 발급비용</span>
+  <input id="certDefaultFeeInput" type="number" min="0" placeholder="예: 150000" onchange="_onCertDefaultFeeChange(this.value)" style="width:110px;height:30px;border:1px solid #EAD6A6;border-radius:6px;padding:0 8px;font-size:13px;font-family:'DM Mono',monospace;outline:none;">
+  <span style="font-size:11px;color:#a98a4a;">원</span>
+ </div>
  <button onclick="recoverAccountsUI()" class="btn" title="저장된 정산 기록에서 비어있는 계좌번호를 채웁니다" style="font-size:12px;white-space:nowrap;background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">📋 정산기록에서 계좌 복구</button>
  </div>
  <div class="mgr-head-row mgr-row t-mgr-row">
@@ -3621,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.55';
+const SYSTEM_VERSION='v15.56';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4391,16 +4396,30 @@ function _certReturnYm(dateStr){ // 'YYYY-MM-DD' → 'YYYY년 M월'
  const m=String(dateStr||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
  return m ? `${+m[1]}년 ${+m[2]}월` : '';
 }
+/* v15.56: 기본 발급비용(전역) — 한 번만 정해두면 첫 수업 예정일 있는 강사 전원 자동 적용 */
+const CERT_DEFAULT_FEE_KEY='iruri_cert_default_fee';
+function _getCertDefaultFee(){ try{ return Number(localStorage.getItem(CERT_DEFAULT_FEE_KEY))||0; }catch(_){ return 0; } }
+function _setCertDefaultFee(v){ try{ localStorage.setItem(CERT_DEFAULT_FEE_KEY, String(Number(v)||0)); }catch(_){} }
+/* 강사의 실제 적용 발급비용: 개별 지정값이 있으면 그 값, 없고 '첫 수업 예정일'이 있으면 기본값 */
+function _effectiveCertFee(t){
+ if(!t) return 0;
+ const own=Number(t.certFee)||0;
+ if(own>0) return own;
+ if(t.hireDate) return _getCertDefaultFee();
+ return 0;
+}
 /* 강사(name)의 자격증 반영이 해당 월(ym='YYYY년 M월')이면 {half,date,fee} 반환, 아니면 null.
- *  대상 월 = certReturnDate(수동지정)의 달, 없으면 입사월 + 2개월 */
+ *  대상 월 = certReturnDate(수동지정)의 달, 없으면 입사월 + 2개월. 금액 = 개별값 or 기본값. */
 function _certForMonth(name, ym){
  if(!ym) return null;
  const t=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===name):null;
- if(!t || !t.certFee) return null;
+ if(!t) return null;
+ const fee=_effectiveCertFee(t);
+ if(!fee) return null;
  const rd = t.certReturnDate || _calcCertReturnDate(t.hireDate);
  if(!rd || _certReturnYm(rd)!==ym) return null;
- const half=_certHalf(t.certFee);
- return half>0 ? { half, date: rd, fee: Number(t.certFee)||0 } : null;
+ const half=_certHalf(fee);
+ return half>0 ? { half, date: rd, fee } : null;
 }
 /* 관리자 레코드에 자격증 반환을 반영(멱등). 마감월은 건드리지 않음. */
 function _ensureCertOnRecord(rec){
@@ -7619,6 +7638,8 @@ function setTRegion(el, r){
  renderTeacherMgr();
 }
 function renderTeacherMgr(){
+ // v15.56: 기본 발급비용 입력칸 값 채우기(편집 중이 아닐 때만)
+ try{ const _cdf=document.getElementById('certDefaultFeeInput'); if(_cdf && document.activeElement!==_cdf){ const _d=_getCertDefaultFee(); _cdf.value=_d>0?_d:''; } }catch(_){}
  const q=document.getElementById('tSearch')?.value.toLowerCase()||'';
  const today=new Date(); today.setHours(0,0,0,0);
  const REGION_ORDER={'서울':0,'인천':1,'수원':2};
@@ -7649,13 +7670,15 @@ function renderTeacherMgr(){
  else if(diff<=30) raiseBadge=`<span style="font-size:11px;background:var(--amber-bg);color:var(--amber);padding:2px 7px;border-radius:20px;">🔔 ${fmtDate(t.raiseDate)}<br>D-${diff}</span>`;
  else raiseBadge=`<span style="font-size:11px;color:var(--text2);">${fmtDate(t.raiseDate)}<br><span style="color:var(--text3);">D-${diff}</span></span>`;
  }
- // v15.48: 자격증 발급비용 표시 (금액 + 반영월·50%)
- const _certAmt=Number(t.certFee)||0;
+ // v15.48/v15.56: 자격증 발급비용 표시 (개별 지정 or 기본값 · 반영월·50%)
+ const _certOwn=Number(t.certFee)||0;
+ const _certAmt=_effectiveCertFee(t);
  let certCell='<span style="color:var(--text3);font-size:12px;">-</span>';
  if(_certAmt>0){
   const _half=_certHalf(_certAmt);
   const _cym=_certReturnYm(t.certReturnDate||_calcCertReturnDate(t.hireDate));
-  certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span><div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} · 50% ${_half.toLocaleString()}</div>`;
+  const _tag=_certOwn>0?'':' <span style="font-size:9px;color:#8a6010;background:#FDF3DC;border:1px solid #E8CC80;border-radius:7px;padding:0 4px;">기본값</span>';
+  certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span>${_tag}<div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} · 50% ${_half.toLocaleString()}</div>`;
  }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
  <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}</div>
@@ -9081,14 +9104,14 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
  <div class="form-row-2" style="align-items:start;margin-bottom:8px;">
   <div>
    <label class="form-label" style="min-height:16px;color:#9a7b3a;">발급비용 (원)</label>
-   <input class="form-input" id="fi_certFee" type="number" min="0" value="${item?.certFee||''}" placeholder="예: 150000" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
+   <input class="form-input" id="fi_certFee" type="number" min="0" value="${item?.certFee||''}" placeholder="${_getCertDefaultFee()>0?'기본 '+_getCertDefaultFee().toLocaleString()+'원 적용':'예: 150000'}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
   </div>
   <div>
    <label class="form-label" style="min-height:16px;color:#9a7b3a;">발급 비용 반환일</label>
    <input class="form-input" id="fi_certReturnDate" type="date" value="${item?.certReturnDate||''}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
   </div>
  </div>
- <div class="form-hint">반영 월 = <b>첫 수업월 + 2개월</b> (예: 3월 첫 수업 → <b>5월 수업기록표</b>, 6월 지급) · 반환일이 속한 달에 반영 · 수동 수정 가능</div>
+ <div class="form-hint">반영 월 = <b>첫 수업월 + 2개월</b> (예: 3월 첫 수업 → <b>5월 수업기록표</b>, 6월 지급) · <b>비워두면 기본 발급비용 자동 적용</b> (강사 관리 상단에서 설정)</div>
  <div id="fi_certPreview" style="display:none;margin-top:8px;background:#F3FAF5;border:1px solid #CDEBD8;border-radius:8px;padding:9px 11px;font-size:12px;color:#166534;line-height:1.5;"></div>
  </div>
  <div class="form-row">
@@ -9314,15 +9337,29 @@ function updateFeeHint(){
 // v15.44: 자격증 발급비용 반영 미리보기
 function _certPreviewUpdate(){
  const pv=document.getElementById('fi_certPreview'); if(!pv) return;
- const fee=Number(document.getElementById('fi_certFee')?.value)||0;
+ const own=Number(document.getElementById('fi_certFee')?.value)||0;
+ const hd=document.getElementById('fi_hireDate')?.value||'';
+ // v15.56: 비워두면 기본 발급비용 적용(첫 수업 예정일이 있을 때)
+ const fee = own>0 ? own : (hd ? _getCertDefaultFee() : 0);
+ const usingDefault = own<=0 && fee>0;
  const rd=document.getElementById('fi_certReturnDate')?.value||'';
  if(fee<=0){ pv.style.display='none'; return; }
  const half=_certHalf(fee);
  const ym=_certReturnYm(rd);
+ const _pre = usingDefault ? `기본 발급비용 <b>${fee.toLocaleString()}원</b> 적용 · ` : '';
  pv.style.display='block';
  pv.innerHTML=ym
-  ? `📌 <b>${ym}</b> 정산 '기타'에 발급비용의 <b>50% (${half.toLocaleString()}원)</b>가 자동 반영됩니다.`
-  : `발급비용의 <b>50% (${half.toLocaleString()}원)</b>가 반환일이 속한 달 정산 '기타'에 반영됩니다. <span style="color:#B45309;">반환일을 입력하세요.</span>`;
+  ? `📌 ${_pre}<b>${ym}</b> 정산 '기타'에 <b>50% (${half.toLocaleString()}원)</b> 자동 반영됩니다.`
+  : `${_pre}<b>50% (${half.toLocaleString()}원)</b>가 반환일이 속한 달 정산 '기타'에 반영됩니다. <span style="color:#B45309;">반환일을 입력하세요.</span>`;
+}
+/* v15.56: 기본 발급비용 변경 → 저장 + 첫 수업 예정일 있는 강사 전원 자동 재계산 */
+function _onCertDefaultFeeChange(v){
+ _setCertDefaultFee(v);
+ const n=Number(v)||0;
+ try{ showToast(n>0?`🎓 기본 발급비용 ${n.toLocaleString()}원 — 첫 수업 예정일 있는 강사 자동 적용`:'기본 발급비용 해제됨'); }catch(_){}
+ try{ renderTeacherMgr(); }catch(_){}
+ // 현재 보고 있는 정산 월도 즉시 재반영
+ try{ if(STATE.data && Array.isArray(STATE.data.teachers)){ STATE.data.teachers.forEach(t=>{ try{ _ensureCertOnRecord(t); }catch(_){} }); if(typeof renderTeacher==='function') renderTeacher(STATE.cur); if(typeof _renderSettleAlerts==='function') _renderSettleAlerts(); } }catch(_){}
 }
 function closeModal(){document.getElementById('modalOverlay').style.display='none'; STATE.resvMode=null; STATE.resvOrig=null;/* v15.33 */}
 
