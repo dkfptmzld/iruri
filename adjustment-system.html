@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.54">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.55">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.54">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.55">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.54</title>
+<title>수업기록표 정산 시스템 v15.55</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.54';
+const SYSTEM_VERSION='v15.55';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4643,6 +4643,51 @@ function startEditMode(){
  
 }
 
+/* v15.55: 편집 시작 스냅샷(before) ↔ 저장 시점(after)을 통째로 비교해 '누가·어디를·무엇을(이전→이후)'
+ *   전부 뽑아낸다. 개별 핸들러 로그에 의존하지 않아 어떤 편집이든 빠짐없이 상세 기록됨. */
+function _diffSettleForChangelog(before, after){
+ const out=[];
+ const W=n=>(Number(n)||0).toLocaleString()+'원';
+ const beforeMap=new Map((before?.teachers||[]).map(t=>[String(t.name||'').trim(), t]));
+ const afterNames=new Set();
+ (after?.teachers||[]).forEach(t=>{
+  const nm=String(t.name||'').trim(); afterNames.add(nm);
+  const b=beforeMap.get(nm);
+  if(!b){ out.push(`${nm} · 강사 기록 추가됨`); return; }
+  // 정산 상태
+  if((b.settleStatus||'')!==(t.settleStatus||'')){
+   const L=s=>s==='done'?'완료':'미정산';
+   out.push(`${nm} · 정산상태: ${L(b.settleStatus)} → ${L(t.settleStatus)}`);
+  }
+  // 비용 항목
+  [['parkingCost','주차료'],['supplyCost','물품'],['etcCost','기타'],['mockLesson','모의수업'],['costExtra','비용처리'],['otherCost','기타비용']].forEach(([k,lbl])=>{
+   const bv=Number(b[k])||0, av=Number(t[k])||0;
+   if(bv!==av) out.push(`${nm} · ${lbl}: ${W(bv)} → ${W(av)}`);
+  });
+  // 수업(lessons): 센터명 / 회당수업료 / 주차별 출석
+  const bl=Array.isArray(b.lessons)?b.lessons:[], al=Array.isArray(t.lessons)?t.lessons:[];
+  const maxL=Math.max(bl.length, al.length);
+  for(let i=0;i<maxL;i++){
+   const lb=bl[i], la=al[i];
+   if(!lb && la){ out.push(`${nm} · 수업 추가: ${la.center||('수업'+(i+1))}`); continue; }
+   if(lb && !la){ out.push(`${nm} · 수업 삭제: ${lb.center||('수업'+(i+1))}`); continue; }
+   if(!lb||!la) continue;
+   const cName=la.center||lb.center||('수업'+(i+1));
+   if((lb.center||'')!==(la.center||'')) out.push(`${nm} · ${i+1}번 수업 센터: ${lb.center||'없음'} → ${la.center||'없음'}`);
+   if((Number(lb.feePer)||0)!==(Number(la.feePer)||0)) out.push(`${nm} · ${cName} 회당수업료: ${W(lb.feePer)} → ${W(la.feePer)}`);
+   const ba=Array.isArray(lb.attend)?lb.attend:[], aa=Array.isArray(la.attend)?la.attend:[];
+   const maxA=Math.max(ba.length, aa.length);
+   for(let w=0;w<maxA;w++){ const bw=ba[w]||'', aw=aa[w]||''; if(bw!==aw) out.push(`${nm} · ${cName} ${w+1}주차 출석: ${bw||'빈칸'} → ${aw||'빈칸'}`); }
+  }
+  // 특이사항(notesData)
+  if(JSON.stringify(b.notesData||[])!==JSON.stringify(t.notesData||[])){
+   const bc=(b.notesData||[]).length, ac=(t.notesData||[]).length;
+   out.push(bc!==ac ? `${nm} · 특이사항 ${bc}건 → ${ac}건` : `${nm} · 특이사항 내용 수정`);
+  }
+ });
+ (before?.teachers||[]).forEach(b=>{ const nm=String(b.name||'').trim(); if(!afterNames.has(nm)) out.push(`${nm} · 강사 기록 삭제됨`); });
+ return out;
+}
 function saveEdits(){
  if (!_isEditMode) return;
  showLoader('저장하는 중...');
@@ -4659,14 +4704,18 @@ function saveEdits(){
  try {
   const _adminSess = sessionStorage.getItem('iruri_admin_session')==='true';
   const _editor = _adminSess ? '관리자' : (window._loggedInTeacher || sessionStorage.getItem('iruri_session') || '관리자');
-  // v15.51: 상세가 하나도 안 잡혔으면 최소한 개수라도 남겨 '뭘 바꿨는지 모름' 방지
-  if(_editChangeLogs.length===0 && _editChangeCount>0) _editChangeLogs.push(`${_editChangeCount}건 변경됨 (비용·특이사항·상태 등)`);
-  const _logSummary = _editChangeLogs.slice(0,20).map(l=>`• ${l}`).join('<br>') + (_editChangeLogs.length>20?`<br>… 외 ${_editChangeLogs.length-20}건`:'');
+  // v15.55: 편집 전/후 스냅샷 전체 비교로 상세 변경 내역을 빠짐없이 생성
+  let _changes = [];
+  try{ _changes = _diffSettleForChangelog(_editBackup, STATE.data); }catch(e){ _changes = []; }
+  // 혹시 diff가 못 잡은 게 있으면 개별 핸들러 로그로 보완(중복 제거)
+  (_editChangeLogs||[]).forEach(l=>{ if(l && !_changes.includes(l)) _changes.push(l); });
+  if(_changes.length===0 && _editChangeCount>0) _changes.push(`${_editChangeCount}건 변경됨`);
+  const _changeCount = _changes.length || _editChangeCount;
   pushChangelog({
    type: 'bulk_edit',
-   desc: `일괄 편집 — ${_editChangeCount}개 변경`,
+   desc: `일괄 편집 — ${_changeCount}개 변경`,
    detail: `${ym} · 수정자: ${_editor}`,
-   changes: _editChangeLogs,
+   changes: _changes,
    snapshot: { ym, data: _editBackup }
   });
  } catch(e) { console.warn('변경 이력 기록 실패:', e); }
@@ -10431,7 +10480,7 @@ function renderChangelog(){
     </div>
     <div style="font-size:13px;font-weight:500;color:var(--text);">${escH(e.desc)}</div>
     ${e.detail?`<div style="font-size:12px;color:var(--text3);margin-top:2px;">${escH(e.detail)}</div>`:''}
-    ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▶ 상세 보기</button><div id="${bulkId}" style="display:none;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${escH(c)}`).join('<br>')}</div>`:''}
+    ${hasBulkDetail?`<button onclick="const d=document.getElementById('${bulkId}');d.style.display=d.style.display==='none'?'block':'none';this.textContent=d.style.display==='none'?'▶ 상세 보기':'▼ 접기';" style="margin-top:6px;font-size:11px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;">▼ 접기</button><div id="${bulkId}" style="display:block;margin-top:6px;background:#F9F8F4;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2);line-height:1.9;">${(e.changes||[]).map(c=>`• ${escH(c)}`).join('<br>')}</div>`:''}
    </div>
    ${(e.snapshot || e.type==='error_log')?`<button onclick="restoreChangelog(${e.id})" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:1.5px solid var(--green);background:white;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;" onmouseover="this.style.background='var(--green)';this.style.color='white'" onmouseout="this.style.background='white';this.style.color='var(--green)'">↩ 되돌리기</button>`:''}
   </div>`;
