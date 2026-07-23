@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.51">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.52">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.51">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.52">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.51</title>
+<title>수업기록표 정산 시스템 v15.52</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.51';
+const SYSTEM_VERSION='v15.52';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4074,17 +4074,13 @@ window.addEventListener('load', ()=>{
     const dedupMap1 = new Map();
     r.data.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap1.has(key)) dedupMap1.set(key,c); });
     const dedupedCenters1 = Array.from(dedupMap1.values());
-    // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
-    const _prevCnt1 = DB.centers.length;
-    if(_prevCnt1 > 0 && dedupedCenters1.length < _prevCnt1){
-     const _missingC1 = DB.centers.filter(c=>!dedupedCenters1.find(d=>d.name===c.name&&d.region===c.region));
-     const _missing1 = _missingC1.map(c=>`${c.name}(${c.region||'지역미상'})`);
-     try{ pushErrorLog(`센터 감소 감지 (앱 시작)`, `${_prevCnt1}개 → ${dedupedCenters1.length}개 | 없어진 센터: ${_missing1.join(', ')}`, { centers: JSON.parse(JSON.stringify(_missingC1)) }); }catch{}
-    }
-    if(!_acceptDbPull('centers', dedupedCenters1)) return;   // v14.54 L1: 센터 급감이면 거부
-    DB.centers = dedupedCenters1;
-    localStorage.setItem(LS_C, JSON.stringify(dedupedCenters1));
-    _rebuildCenterFeesFromCenters(dedupedCenters1); // v12.68: schedule.fee → centerFees 재구성
+    // v15.52: 병합(union) — 사람이 삭제(도장)한 것만 빠지고, GAS에 없던 로컬 센터는 살려서 재저장. 구조적으로 유실 불가.
+    const _mrg1 = _mergeCenters(dedupedCenters1);
+    DB.centers = _mrg1.merged;
+    localStorage.setItem(LS_C, JSON.stringify(DB.centers));
+    _persistCentersAfterMerge(_mrg1.localOnly, _mrg1.tombedOnGas);
+    if(_mrg1.localOnly.length){ try{ pushErrorLog('센터 자동 보존 (앱 시작)', `서버에 없던 로컬 센터 ${_mrg1.localOnly.length}곳을 유지·재저장했어요: ${_mrg1.localOnly.map(c=>`${c.name}(${c.region||'지역미상'})`).join(', ')}`); }catch{} }
+    _rebuildCenterFeesFromCenters(DB.centers); // v12.68: schedule.fee → centerFees 재구성
     // v11.7: GAS에서 받은 원본 데이터에도 자동 정리 적용 (cross-region + 보강 이력 제거)
     cleanInvalidData();
     if(document.getElementById('centersView')?.style.display === 'block'){
@@ -4245,27 +4241,15 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     return;
    }
    if(JSON.stringify(r.data) !== JSON.stringify(DB.centers)){
-    // 이름+지역 기준 중복 제거 (GAS 응답 우선, 로컬 신규 항목 보존)
-    const gasKeySet = new Set(r.data.map(c=>`${c.name}||${c.region||''}`));
-    const localOnly = DB.centers.filter(c => !gasKeySet.has(`${c.name}||${c.region||''}`));
-    const merged2 = [...r.data, ...localOnly];
-    const dedupMap2 = new Map();
-    merged2.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap2.has(key)) dedupMap2.set(key,c); });
-    const dedupedCenters2 = Array.from(dedupMap2.values());
-    // 센터 수 감소 감지 (1개라도 줄면 오류 로그)
-    const _prevCnt2 = DB.centers.length;
-    if(_prevCnt2 > 0 && dedupedCenters2.length < _prevCnt2){
-     const _missingC2 = DB.centers.filter(c=>!dedupedCenters2.find(d=>d.name===c.name&&d.region===c.region));
-     const _missing2 = _missingC2.map(c=>`${c.name}(${c.region||'지역미상'})`);
-     try{ pushErrorLog(`센터 감소 감지 (센터탭)`, `${_prevCnt2}개 → ${dedupedCenters2.length}개 | 없어진 센터: ${_missing2.join(', ')}`, { centers: JSON.parse(JSON.stringify(_missingC2)) }); }catch{}
-    }
-    DB.centers = dedupedCenters2;
-    // v11.30 fix: LS_C_SHEETS(구버전 키, 매 로드 삭제됨) 대신 LS_C에 저장
+    // v15.52: 병합(union) + 삭제 도장 반영 + 로컬 전용 센터 재저장 (앱 시작 동기화와 동일 정책)
+    const _mrg2 = _mergeCenters(r.data);
+    DB.centers = _mrg2.merged;
     localStorage.setItem(LS_C, JSON.stringify(DB.centers));
-    _rebuildCenterFeesFromCenters(dedupedCenters2); // v12.68: schedule.fee → centerFees 재구성
+    _persistCentersAfterMerge(_mrg2.localOnly, _mrg2.tombedOnGas);
+    if(_mrg2.localOnly.length){ try{ pushErrorLog('센터 자동 보존 (센터탭)', `서버에 없던 로컬 센터 ${_mrg2.localOnly.length}곳을 유지·재저장했어요: ${_mrg2.localOnly.map(c=>`${c.name}(${c.region||'지역미상'})`).join(', ')}`); }catch{} }
+    _rebuildCenterFeesFromCenters(DB.centers); // v12.68: schedule.fee → centerFees 재구성
     cleanInvalidData();
     renderFn(); // 최신 데이터로 다시 렌더
-    
    }
   }
  } catch(e){ console.warn('탭 동기화 실패:', e); } finally{ hideLoader(); }
@@ -7719,6 +7703,56 @@ function delCenterByKey(name, region){
  delItem('center', i);
 }
 
+/* ═══ v15.52: 센터 유실 방지 (방법 1·2·3) ═══
+ *  - 삭제 도장(tombstone): 사용자가 삭제 버튼을 눌렀을 때만 기록 → 동기화가 '진짜 삭제'와 '유실'을 구분
+ *  - 병합(merge): 동기화는 GAS+로컬 union. 도장 찍힌 것만 제외 → 사람이 안 지우면 절대 안 사라짐
+ *  - 안정 저장: 로컬 전용 센터는 syncCenters 한 번 + 재시도로 확실히 서버에 보존 */
+const CENTER_TOMB_KEY='iruri_center_tombstones';
+function _tombKey(n,r){ return String(n||'').trim()+'||'+String(r||'').trim(); }
+function _getCenterTombs(){ try{ return JSON.parse(localStorage.getItem(CENTER_TOMB_KEY)||'[]'); }catch(_){ return []; } }
+function _isCenterTombed(n,r){ const k=_tombKey(n,r); return _getCenterTombs().some(x=>_tombKey(x.name,x.region)===k); }
+function _addCenterTomb(n,r){ const t=_getCenterTombs(); const k=_tombKey(n,r); if(!t.some(x=>_tombKey(x.name,x.region)===k)){ t.push({name:n,region:r||'',at:new Date().toISOString()}); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} } }
+function _removeCenterTomb(n,r){ const k=_tombKey(n,r); const t=_getCenterTombs().filter(x=>_tombKey(x.name,x.region)!==k); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} }
+
+/* GAS 재시도 래퍼 (실패 시 지수 백오프로 최대 tries회) */
+async function _gasPostRetry(body, tries=3){
+ for(let i=0;i<tries;i++){
+  try{ const r=await gasPost(body); if(!r || r.ok!==false) return true; }catch(_){}
+  await new Promise(s=>setTimeout(s, 400*(i+1)));
+ }
+ return false;
+}
+
+/* 병합: GAS 목록 + 로컬 목록을 union. 도장 찍힌(삭제된) 센터만 빠짐.
+ *  반환: {merged(최종 목록), localOnly(GAS에 없던 로컬 센터=재저장 필요), tombedOnGas(GAS에 남은 삭제분=서버삭제 재시도)} */
+function _mergeCenters(gasCenters){
+ const seen=new Set(); const merged=[]; const localOnly=[]; const tombedOnGas=[];
+ (gasCenters||[]).forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(seen.has(k)) return;
+  if(_isCenterTombed(c.name,c.region)){ tombedOnGas.push(c); return; }   // 사용자가 삭제 → 부활 금지
+  seen.add(k); merged.push(c);
+ });
+ (DB.centers||[]).forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(seen.has(k)) return;
+  if(_isCenterTombed(c.name,c.region)) return;                            // 사용자가 삭제 → 되살리지 않음
+  seen.add(k); merged.push(c); localOnly.push(c);                         // 로컬에만 있음 → 서버에 다시 저장 필요
+ });
+ return { merged, localOnly, tombedOnGas };
+}
+
+/* 로컬 전용 센터를 서버에 확실히 저장(한 번의 syncCenters + 재시도) + 삭제분은 서버 삭제 재시도 */
+function _persistCentersAfterMerge(localOnly, tombedOnGas){
+ try{
+  if(localOnly && localOnly.length){
+   const _snapshot = JSON.parse(JSON.stringify(DB.centers));
+   _gasPostRetry({action:'syncCenters', centers:_snapshot}).then(ok=>{
+    if(!ok){ try{ pushErrorLog('센터 서버 재저장 실패', `서버에 없던 로컬 센터 ${localOnly.length}곳 저장을 3회 시도했으나 실패 — 로컬엔 안전 보관, 다음 접속 때 재시도됩니다.`); }catch(_){} }
+   });
+  }
+  (tombedOnGas||[]).forEach(c=>{ _gasPostRetry({action:'deleteCenter', name:c.name}); });
+ }catch(_){}
+}
+/* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도) */
+function _saveAllCentersToGas(){ try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers))}); }catch(_){} }
+
 function switchCenterView(view){
  _centerView = 'tree';
  renderCenterTreeView();
@@ -8441,7 +8475,7 @@ function _dndApplyReorder(region, teacher, day, fromIdx, toIdx){
  // order + gyosi 재설정
  slots.forEach((x,i)=>{ if(x){ x.sched.order = i+1; x.sched.gyosi = i+1; } });
  lsSave();
- DB.centers.forEach(c=>gasPost({action:'saveCenter',center:c}).catch(()=>{}));
+ _saveAllCentersToGas();   // v15.52: 297개 동시전송 대신 1요청+재시도
  selectTreeTeacher(region, teacher, false);
  showToast('교시 순서가 변경됐어요');
 }
@@ -8473,7 +8507,7 @@ function movePeriodSlot(region, teacher, day, slotIdx, dir){
  slots.forEach((x,i)=>{ if(x) x.sched.order = i+1; });
 
  // DB 저장
- DB.centers.forEach(c=>gasPost({action:'saveCenter',center:c}).catch(()=>{}));
+ _saveAllCentersToGas();   // v15.52: 297개 동시전송 대신 1요청+재시도
  localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.30 fix: LS_C_SHEETS → LS_C
 
  selectTreeTeacher(region, teacher, window.innerWidth<=600);
@@ -8501,7 +8535,7 @@ function movePeriod(region, teacher, day, idx, dir){
  affected[j].sched.order = orderA;
 
  // DB 저장 + GAS 동기화
- DB.centers.forEach(c => gasPost({action:'saveCenter', center:c}).catch(()=>{}));
+ _saveAllCentersToGas();   // v15.52: 297개 동시전송 대신 1요청+재시도
  localStorage.setItem(LS_C, JSON.stringify(DB.centers)); // v11.30 fix: LS_C_SHEETS → LS_C
 
  // 화면 갱신 + 모바일 스크롤
@@ -9328,6 +9362,7 @@ function saveModal(){
  const contactName = document.getElementById('fi_contact_name')?.value.trim()||'';
  const memo = document.getElementById('fi_memo')?.value.trim()||''; // v12.46: 특이사항 메모
  const obj={name,region,fee,address,phone,email,contactName,memo,teachers:[...STATE.modalChips],schedule,source:STATE.editIdx!==null?DB.centers[STATE.editIdx].source:'수동'};
+ try{ _removeCenterTomb(name, region); }catch(_){}   // v15.52: 다시 추가/저장하면 삭제 도장 해제(부활 허용)
  // v15.33: 센터 수정 예약 모드 — DB.centers/GAS/정산은 절대 건드리지 않고 예약 op으로만 저장
  if(STATE.resvMode){
   const ym=STATE.resvMode; const r=_getResv(ym);
@@ -10746,6 +10781,7 @@ function _doApplyRaise(targets){
 function _doDelItem(type, i){
  const arr = type==='teacher' ? DB.teachers : DB.centers;
  const deletedName = arr[i].name;
+ const deletedRegion = arr[i].region||'';   // v15.52: 삭제 도장용
  const prev = JSON.parse(JSON.stringify(type==='teacher' ? DB.teachers : DB.centers));
  if(type==='teacher') pushChangelog({type:'teacher_delete',desc:`강사 삭제 — ${deletedName}`,snapshot:{teachers:prev}});
  else pushChangelog({type:'center_delete',desc:`센터 삭제 — ${deletedName}`,snapshot:{centers:prev}});
@@ -10788,6 +10824,7 @@ function _doDelItem(type, i){
   showToast(`${deletedName} 삭제됨${affectedCenters>0?` · ${affectedCenters}개 센터 미배정 처리`:''}`);
   return;
  } else {
+  _addCenterTomb(deletedName, deletedRegion);   // v15.52: 삭제 도장 — 동기화가 이 센터를 되살리지 않음
   gasPost({action:'deleteCenter', name:deletedName}).catch(()=>{});
   renderCenterMgr();
   // v12.36~37: 센터 삭제 시 모든 관련 화면 즉시 갱신 (박기남님 요청)
@@ -10863,7 +10900,7 @@ function _doRestoreChangelog(entry){
     }); }
    }
    let added=0;
-   restore.forEach(sc=>{ if(!DB.centers.find(c=>c.name===sc.name && (c.region||'')===(sc.region||''))){ DB.centers.push(JSON.parse(JSON.stringify(sc))); added++; } });
+   restore.forEach(sc=>{ try{ _removeCenterTomb(sc.name, sc.region); }catch(_){} if(!DB.centers.find(c=>c.name===sc.name && (c.region||'')===(sc.region||''))){ DB.centers.push(JSON.parse(JSON.stringify(sc))); added++; } });
    lsSave();
    try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
    try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
@@ -10873,7 +10910,7 @@ function _doRestoreChangelog(entry){
    return;
   }
   if(entry.type==='teacher_delete'||entry.type==='teacher_edit'){ DB.teachers=JSON.parse(JSON.stringify(snap.teachers)); lsSave(); renderTeacherMgr(); }
-  else if(entry.type==='center_delete'||entry.type==='center_edit'){ DB.centers=JSON.parse(JSON.stringify(snap.centers)); lsSave(); renderCenterMgr(); }
+  else if(entry.type==='center_delete'||entry.type==='center_edit'){ DB.centers=JSON.parse(JSON.stringify(snap.centers)); try{ (snap.centers||[]).forEach(c=>_removeCenterTomb(c.name, c.region)); }catch(_){} lsSave(); renderCenterMgr(); }
   else if(snap.ym&&snap.data){
    const key=MONTHLY_KEY_PREFIX+snap.ym.replace(/\s/g,'_');
    localStorage.setItem(key, JSON.stringify({ym:snap.ym, data:snap.data, savedAt:Date.now()}));
