@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.52">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.53">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.52">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.53">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.52</title>
+<title>수업기록표 정산 시스템 v15.53</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3621,7 +3621,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.52';
+const SYSTEM_VERSION='v15.53';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8329,7 +8329,15 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  // v11.30 fix: 교시 동적화 — 요일별 실제 등록 수만큼 슬롯 생성 (고정 3 제거)
  const rows = ['월','화','수','목','금','토','일'].flatMap(day=>{
   const items = (dayMap[day]||[]).sort((a,b)=>(a.order||1)-(b.order||1));
-  if(!items.length) return []; // 등록 없는 요일은 행 생략
+  if(!items.length){
+   // v15.53: 등록 없는 요일도 '드롭 대상' 행으로 표시 → 다른 요일 수업을 이 요일로 끌어다 놓기 가능
+   return [`<tr ondragover="_dndOver(event,0)" ondragleave="_dndLeave(event)" ondrop="_dndDropEmpty(event,'${region}','${escAttrJS(teacher)}','${day}')" style="border-bottom:1px solid var(--border);background:var(--surface2);">
+    <td style="text-align:center;vertical-align:middle;padding:6px 10px;border-right:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--text3);font-size:11px;font-weight:700;">${day}</span></td>
+    <td style="padding:6px 8px;font-size:11px;color:var(--text3);text-align:center;border-right:1px solid var(--border);">—</td>
+    <td colspan="${1+Object.values(cols).filter(Boolean).length}" style="padding:6px 10px;font-size:11px;color:var(--text3);border-right:1px solid var(--border);">↳ 여기로 수업을 끌어다 놓으면 <b>${day}요일</b>로 이동</td>
+    <td style="padding:5px 8px;"></td>
+   </tr>`]; // 등록 없는 요일 = 드롭존
+  }
   // 실제 슬롯 수: 등록된 센터 수 OR 최대 order 값 중 큰 것 (최소 1)
   // v11.30 fix: slotCount = 실제 센터 수만 (maxOrder 제거)
   // order 값이 비정상적으로 크면 빈 슬롯이 수십 개 생기는 버그 방지
@@ -8453,7 +8461,10 @@ function _dndDrop(event, region, teacher, day, toIdx){
  tr.style.background = '';
  const src = window._dndSrc;
  window._dndSrc = null;
- if(!src || src.day !== day || src.slotIdx === toIdx) return;
+ if(!src) return;
+ if(src.region!==region || src.teacher!==teacher) return; // 다른 강사/지역 간 이동 미지원
+ if(src.day !== day){ _dndMoveDay(region, teacher, src.day, src.slotIdx, day); return; } // v15.53: 다른 요일로 이동
+ if(src.slotIdx === toIdx) return;
  _dndApplyReorder(region, teacher, day, src.slotIdx, toIdx);
 }
 function _dndEnd(event){
@@ -8478,6 +8489,45 @@ function _dndApplyReorder(region, teacher, day, fromIdx, toIdx){
  _saveAllCentersToGas();   // v15.52: 297개 동시전송 대신 1요청+재시도
  selectTreeTeacher(region, teacher, false);
  showToast('교시 순서가 변경됐어요');
+}
+/* v15.53: 다른 요일로 수업 이동 — 담당강사 스케줄(sched.days)의 요일을 실제로 변경 */
+function _dndMoveDay(region, teacher, fromDay, slotIdx, toDay){
+ if(fromDay===toDay) return;
+ // fromDay 슬롯 목록 (renderTeacherTable과 동일 구성)
+ const fromSlots=[];
+ DB.centers.filter(c=>c.region===region).forEach(c=>{
+  (c.schedule||[]).filter(s=>s.teacher===teacher && (s.days||[]).includes(fromDay)).forEach(sched=>{ fromSlots.push({center:c, sched}); });
+ });
+ fromSlots.sort((a,b)=>(a.sched.order||99)-(b.sched.order||99)||(a.sched.gyosi||1)-(b.sched.gyosi||1));
+ if(slotIdx<0 || slotIdx>=fromSlots.length) return;
+ const item=fromSlots[slotIdx];
+ // 담당강사 카드의 요일 변경: fromDay 제거 + toDay 추가
+ let days=Array.isArray(item.sched.days)?item.sched.days.slice():[];
+ days=days.filter(d=>d!==fromDay);
+ if(!days.includes(toDay)) days.push(toDay);
+ item.sched.days=days;
+ // toDay 그룹 끝 순번 부여
+ let maxOrder=0;
+ DB.centers.filter(c=>c.region===region).forEach(c=>{
+  (c.schedule||[]).filter(s=>s.teacher===teacher && s!==item.sched && (s.days||[]).includes(toDay)).forEach(s=>{ maxOrder=Math.max(maxOrder, s.order||0); });
+ });
+ item.sched.order=maxOrder+1; item.sched.gyosi=maxOrder+1;
+ // fromDay 남은 슬롯 재정렬
+ fromSlots.filter(x=>x!==item).sort((a,b)=>(a.sched.order||99)-(b.sched.order||99)).forEach((x,i)=>{ x.sched.order=i+1; x.sched.gyosi=i+1; });
+ lsSave();
+ _saveAllCentersToGas();
+ selectTreeTeacher(region, teacher, false);
+ showToast(`${item.center.name} 수업을 ${fromDay} → ${toDay}요일로 옮겼어요`);
+}
+/* v15.53: 등록 없는(빈) 요일 행에 드롭 → 그 요일로 이동 */
+function _dndDropEmpty(event, region, teacher, toDay){
+ event.preventDefault(); event.stopPropagation();
+ const tr=event.currentTarget; if(tr){ tr.style.borderTop=''; tr.style.background=''; }
+ const src=window._dndSrc; window._dndSrc=null;
+ if(!src) return;
+ if(src.region!==region || src.teacher!==teacher) return;
+ if(src.day===toDay) return;
+ _dndMoveDay(region, teacher, src.day, src.slotIdx, toDay);
 }
 
 function movePeriodSlot(region, teacher, day, slotIdx, dir){
