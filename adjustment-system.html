@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.65">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.66">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.65">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.66">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.65</title>
+<title>수업기록표 정산 시스템 v15.66</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.65';
+const SYSTEM_VERSION='v15.66';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8416,8 +8416,11 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   </div>`;
 
  // 활성 컬럼 목록
+ // v15.66: 수업료는 정산과 동일하게 '강사별 개별 수업료' 우선(getCenterFee) — 마스터값과 다르면 '개별' 태그
+ const _feeCell=(c)=>{ const eff=getCenterFee(c.name, teacher, 0, c.region)||Number(c.fee)||0; const indiv=eff!==(Number(c.fee)||0);
+   return `<td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">${eff.toLocaleString()}원${indiv?` <span title="이 강사 개별 수업료 (마스터 ${Number(c.fee||0).toLocaleString()}원)" style="font-size:9px;font-weight:800;color:#8a6010;background:#FDF3DC;border:1px solid #E8CC80;border-radius:6px;padding:0 4px;">개별</span>`:''}</td>`; };
  const activeCols = [
-   {key:'fee',     label:'수업료',       render:(c)=>cols.fee    ? `<td style="font-size:12px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">${Number(c.fee||0).toLocaleString()}원</td>` : ''},
+   {key:'fee',     label:'수업료',       render:(c)=>cols.fee    ? _feeCell(c) : ''},
    {key:'address', label:'주소',         render:(c)=>cols.address? `<td style="font-size:11px;color:var(--text2);padding:7px 10px;border-right:1px solid var(--border);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.address||'—'}</td>` : ''},
    {key:'contact', label:'담당자·연락처', render:(c)=>cols.contact? `<td style="font-size:11px;color:var(--text2);white-space:nowrap;padding:7px 10px;border-right:1px solid var(--border);">${[c.contactName,c.phone].filter(Boolean).join(' · ')||'—'}</td>` : ''},
    {key:'email',   label:'이메일',       render:(c)=>cols.email  ? `<td style="font-size:11px;color:var(--text2);padding:7px 10px;">${c.email||'—'}</td>` : ''},
@@ -8501,7 +8504,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
    <td style="padding:7px 10px;border-right:1px solid var(--border);"><span style="font-size:10px;color:var(--text3);">미등록</span></td>
    <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);">—</td>
    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);">${dispName(c)}</td>
-   ${cols.fee     ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:12px;color:var(--text2);">${Number(c.fee||0).toLocaleString()}원</td>` : ''}
+   ${cols.fee     ? _feeCell(c) : ''}
    ${cols.address ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">${c.address||'—'}</td>` : ''}
    ${cols.contact ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">${[c.contactName,c.phone].filter(Boolean).join(' · ')||'—'}</td>` : ''}
    ${cols.email   ? `<td style="padding:7px 10px;font-size:11px;color:var(--text2);border-right:1px solid var(--border);">${c.email||'—'}</td>` : ''}
