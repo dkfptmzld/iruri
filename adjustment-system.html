@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.64">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.65">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.64">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.65">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.64</title>
+<title>수업기록표 정산 시스템 v15.65</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.64';
+const SYSTEM_VERSION='v15.65';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4376,10 +4376,10 @@ function _fillSettleFields(rec){
 
 /* ═══ v15.45: 자격증 발급비용 반환 (발급비용의 50%를 대상월 정산 '기타'에 반영) ═══
  *  - 규칙 고정: 반환일 = 첫 수업월 + 3개월의 25일(일자 무관, 항상 25일), 반영 비율 = 50%
- *  - 정산 반영 월 = 반환일이 매월 10일 정산 마감을 지나므로 '반환월 + 1' = 첫 수업월 + 4개월
- *    (예: 5/1 첫 수업 → 8/25 반환 → 9월 정산 '기타' 반영
- *         7/15 첫 수업 → 10/25 반환 → 11월 정산 '기타' 반영)
- *    ※ 정산은 매월 10일 기준 → 25일 반환분은 그 다음 달 정산에 반영됨
+ *  - 정산 반영 월 = 반환일이 속한 달 = 첫 수업월 + 3개월
+ *    (예: 5/1 첫 수업 → 8/25 반환 → 8월 정산 '기타' 반영
+ *         7/15 첫 수업 → 10/25 반환 → 10월 정산 '기타' 반영)
+ *    ※ 각 달 정산은 다음 달 10일 이전에 마감 → 그 달 반환분은 그 달 정산에 포함됨
  *  - 반영은 관리자 DB(DB.teachers.certFee)에서 파생 → 강사 제출과 무관하게 항상 계산됨
  *  - etcCost 이중합산 방지: rec._certApplied 에 현재 반영된 금액을 기록(멱등) */
 const CERT_PCT = 0.5, CERT_RETURN_MONTHS = 3, CERT_RETURN_DAY = 25;
@@ -4406,15 +4406,10 @@ function _certReturnYm(dateStr){ // 'YYYY-MM-DD' → 'YYYY년 M월' (반환일�
  const m=String(dateStr||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
  return m ? `${+m[1]}년 ${+m[2]}월` : '';
 }
-/* 반환일이 실제로 반영되는 정산 월. 정산은 매월 10일 기준 → 반환일이 그 달 10일을 지나면
- *  다음 달 정산에 반영된다. 반환일은 규칙상 항상 25일 → 항상 '반환월 + 1'.
- *  (예: 8/25 반환 → 9월 정산, 10/25 반환 → 11월 정산 = 첫 수업월 + 4개월) */
-function _certSettleYm(dateStr){
- const m=String(dateStr||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return '';
- let y=+m[1], moIdx=(+m[2]-1); const day=+m[3];
- if(day>10){ moIdx+=1; y+=Math.floor(moIdx/12); moIdx=((moIdx%12)+12)%12; }
- return `${y}년 ${moIdx+1}월`;
-}
+/* 반환일이 반영되는 정산 월 = 반환일이 속한 달. 각 달 정산은 그 달 발생분을 담아
+ *  다음 달 10일 이전에 마감·지급되므로, 반환일은 '그 달' 정산에 그대로 들어간다.
+ *  (예: 8/25 반환 → 8월 정산(9/10 이전 마감), 10/25 반환 → 10월 정산 = 첫 수업월 + 3개월) */
+function _certSettleYm(dateStr){ return _certReturnYm(dateStr); }
 /* v15.56: 기본 발급비용(전역) — 한 번만 정해두면 첫 수업 예정일 있는 강사 전원 자동 적용 */
 const CERT_DEFAULT_FEE_KEY='iruri_cert_default_fee';
 function _getCertDefaultFee(){ try{ return Number(localStorage.getItem(CERT_DEFAULT_FEE_KEY))||0; }catch(_){ return 0; } }
@@ -4435,8 +4430,8 @@ function _effectiveCertFee(t){
  return def;
 }
 /* 강사(name)의 자격증 반영이 해당 월(ym='YYYY년 M월')이면 {half,date,fee} 반환, 아니면 null.
- *  대상 월 = 반환일이 반영되는 정산 월(_certSettleYm) = 반환일이 10일 지나면 다음 달.
- *  반환일은 (첫 수업월 + 3개월)의 25일 → 정산 반영은 첫 수업월 + 4개월. 금액 = 개별값 or 기본값. */
+ *  대상 월 = 반환일이 속한 달(_certSettleYm) = 첫 수업월 + 3개월.
+ *  반환일은 (첫 수업월 + 3개월)의 25일. 금액 = 개별값 or 기본값. */
 function _certForMonth(name, ym){
  if(!ym) return null;
  const t=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===name):null;
@@ -9150,7 +9145,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    <input class="form-input" id="fi_certReturnDate" type="date" value="${item?.certReturnDate || (item?.hireDate ? _calcCertReturnDate(item.hireDate) : '')}" style="border-color:#EAD6A6;" oninput="_certPreviewUpdate()">
   </div>
  </div>
- <div class="form-hint">반환일 = <b>첫 수업월 + 3개월의 25일</b>. 25일은 매월 10일 정산 마감을 지나므로 <b>다음 달 정산</b>에 반영됩니다. (예: 5/1 첫 수업 → <b>8/25 반환</b> → <b>9월 정산</b> 반영 / 7/15 첫 수업 → <b>10/25 반환</b> → <b>11월 정산</b> 반영) · <b>비워두면 기본 발급비용 자동 적용</b> (강사 관리 상단에서 설정)</div>
+ <div class="form-hint">반환일 = <b>첫 수업월 + 3개월의 25일</b>. <b>반환일이 속한 달 정산</b>에 반영됩니다(각 달 정산은 다음 달 10일 이전 마감). (예: 5/1 첫 수업 → <b>8/25 반환</b> → <b>8월 정산</b> 반영 / 7/15 첫 수업 → <b>10/25 반환</b> → <b>10월 정산</b> 반영) · <b>비워두면 기본 발급비용 자동 적용</b> (강사 관리 상단에서 설정)</div>
  <div id="fi_certPreview" style="display:none;margin-top:8px;background:#F3FAF5;border:1px solid #CDEBD8;border-radius:8px;padding:9px 11px;font-size:12px;color:#166534;line-height:1.5;"></div>
  </div>
  <div class="form-row">
@@ -9398,7 +9393,7 @@ function _certPreviewUpdate(){
  const _pre = usingDefault ? `기본 발급비용 <b>${fee.toLocaleString()}원</b> 적용 · ` : '';
  pv.style.display='block';
  pv.innerHTML=ym
-  ? `📌 ${_pre}반환일 <b>${rdShort}</b> → <b>${ym}</b> 정산 '기타'에 <b>50% (${half.toLocaleString()}원)</b> 자동 반영됩니다. <span style="color:#9a7b3a;">(반환일이 매월 10일 정산 마감 이후라 다음 달 정산 반영)</span>`
+  ? `📌 ${_pre}반환일 <b>${rdShort}</b> → <b>${ym}</b> 정산 '기타'에 <b>50% (${half.toLocaleString()}원)</b> 자동 반영됩니다. <span style="color:#9a7b3a;">(반환일이 속한 달 정산 · 다음 달 10일 이전 마감)</span>`
   : `${_pre}<b>50% (${half.toLocaleString()}원)</b>가 반환일 다음 정산에 '기타'로 반영됩니다. <span style="color:#B45309;">반환일을 입력하세요.</span>`;
 }
 /* v15.56: 기본 발급비용 변경 → 저장 + 첫 수업 예정일 있는 강사 전원 자동 재계산 */
