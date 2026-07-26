@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.67">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.68">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.67">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.68">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.67</title>
+<title>수업기록표 정산 시스템 v15.68</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.67';
+const SYSTEM_VERSION='v15.68';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13941,6 +13941,17 @@ function renderTiLedger(){
  if(o.value===prev || o.value===curKey) o.selected=true;
  centerSel.appendChild(o);
  });
+ // v15.68: 직접 입력한(DB 목록에 없는) 센터명도 옵션으로 유지 → 재렌더 시 빈칸으로 사라지지 않게
+ if(c.name){
+  const _dup = nameCount[c.name] > 1;
+  const _key = _dup ? `${c.name}||${c.region||''}` : c.name;
+  const _exists = Array.from(centerSel.options).some(o=>o.value===_key || o.value===c.name);
+  if(!_exists){
+   const oc=document.createElement('option');
+   oc.value=c.name; oc.textContent=`${c.name} (직접 입력)`; oc.selected=true;
+   centerSel.appendChild(oc);
+  }
+ }
  const customO=document.createElement('option');
  customO.value='__custom__'; customO.textContent='✏️ 직접 입력...';
  centerSel.appendChild(customO);
@@ -14080,6 +14091,25 @@ function getDraftKey(){
  return DRAFT_KEY_PREFIX + (window._loggedInTeacher || 'unknown');
 }
 
+/* v15.68: 수동 임시저장 '복원 지점' 목록 (강사별, 최근 10개) — 자동저장 단일키와 별개 저장소 */
+const DRAFTLIST_PREFIX='ti_draftlist_';
+function _draftListKey(){ return DRAFTLIST_PREFIX + (window._loggedInTeacher || document.getElementById('ti-teacher')?.value || 'unknown'); }
+function _getDraftList(){ try{ const a=JSON.parse(localStorage.getItem(_draftListKey())||'[]'); return Array.isArray(a)?a.filter(d=>d&&!_isDraftStale(d)):[]; }catch(_){ return []; } }
+function _saveDraftList(list){ try{ localStorage.setItem(_draftListKey(), JSON.stringify((list||[]).slice(0,10))); }catch(_){} }
+function _draftSummary(d){
+ const groups=Array.isArray(d.dayGroups)?d.dayGroups:[];
+ const centers=groups.reduce((s,g)=>s+((g.centers||[]).filter(c=>c&&c.name&&c.name!=='__custom__').length),0);
+ const notes=Array.isArray(d.notes)?d.notes.length:0;
+ return `${d.year||''}년 ${d.month||''}월 · 센터 ${centers}곳${notes?` · 특이사항 ${notes}건`:''}`;
+}
+/* 자동저장 단일본 + 수동 스냅샷을 합친 표시용 목록 (최신순) */
+function _buildCombinedDraftList(){
+ const out=[]; const auto=_getValidDraft();
+ if(auto){ out.push(Object.assign({}, auto, {id:'__auto__', _auto:true})); }
+ _getDraftList().forEach(d=>{ if(!(auto && d.savedTs===auto.savedTs)) out.push(d); });
+ return out;
+}
+
 function saveTiDraft(){
  const teacher = document.getElementById('ti-teacher').value;
  const year = document.getElementById('ti-year').value;
@@ -14190,9 +14220,9 @@ function _entryDialogPlan(teacher, now){
  return null;
 }
 
-function loadTiDraft(){
+function loadTiDraft(draftObj){
  try {
- const draft = _getValidDraft();
+ const draft = draftObj || _getValidDraft();   // v15.68: 목록에서 고른 저장본을 직접 적용 가능
  if(!draft) return false;
 
  // 연월 복원
@@ -14283,6 +14313,18 @@ function manualSaveDraft(){
  const teacher = document.getElementById('ti-teacher')?.value;
  if(!teacher){ showLoginAreaToast('강사 이름이 없어요. 다시 로그인해주세요.'); return; }
  saveTiDraft();
+ // v15.68: 수동 저장은 '복원 지점' 목록에도 스냅샷으로 남김(최근 10개) — 나중에 골라서 불러올 수 있게
+ try{
+  const snap={ id:'d'+Date.now()+'_'+Math.floor(Date.now()%1000),
+   teacher,
+   year:document.getElementById('ti-year')?.value||'',
+   month:document.getElementById('ti-month')?.value||'',
+   account:document.getElementById('ti-account')?.value||'',
+   dayGroups:JSON.parse(JSON.stringify(tiDayGroups||[])),
+   notes:JSON.parse(JSON.stringify(tiNotes||[])),
+   savedAt:new Date().toLocaleString('ko-KR'), savedTs:Date.now() };
+  const list=_getDraftList(); list.unshift(snap); _saveDraftList(list);
+ }catch(_){}
  showToast('💾 임시저장 했어요');
 }
 
@@ -14291,56 +14333,48 @@ function manualSaveDraft(){
  * v14.69: '불러올까요?' 팝업 안에 🗑 삭제 버튼을 추가 (취소 / 삭제 / 불러오기 3버튼)
  */
 function manualLoadDraft(){
- const draft = _getValidDraft();
- if(!draft){ showToast('저장된 임시저장본이 없어요'); return; }
- const savedAt = draft.savedAt || '';
+ // v15.68: 저장본이 여러 개면 목록으로 보여주고 그 중에서 골라 불러오게 함
+ const list=_buildCombinedDraftList();
+ if(!list.length){ showToast('저장된 임시저장본이 없어요'); return; }
+ _showDraftListModal(list);
+}
 
- const overlay = document.getElementById('confirmOverlay');
- const icon = document.getElementById('confirmIcon');
- const titleEl = document.getElementById('confirmTitle');
- const descEl = document.getElementById('confirmDesc');
- const cancelBtn = document.getElementById('confirmCancelBtn');
- const okBtn = document.getElementById('confirmOkBtn');
-
- icon.textContent = '📂';
- titleEl.textContent = '임시저장본을 불러올까요?';
- descEl.innerHTML = `현재 작성 중인 내용은 저장본으로 덮어써져요.${savedAt?`<br><span style="font-size:11px;color:#9B9888;">${esc(savedAt)} 저장본</span>`:''}`;
-
- cancelBtn.style.display = '';
- cancelBtn.textContent = '취소';
- cancelBtn.style.cssText = 'min-width:72px;';
-
- okBtn.textContent = '불러오기';
- okBtn.className = 'btn';
- okBtn.style.cssText = 'min-width:90px;background:var(--green);color:white;border-color:var(--green);font-weight:700;';
-
- // 동적 🗑 삭제 버튼 — 취소와 불러오기 사이에 배치
- let delBtn = document.getElementById('_draftDelBtn');
- if(!delBtn){
-  delBtn = document.createElement('button');
-  delBtn.id = '_draftDelBtn';
-  delBtn.className = 'btn';
-  cancelBtn.parentNode.insertBefore(delBtn, okBtn);
- }
- delBtn.textContent = '🗑 삭제';
- delBtn.style.cssText = 'min-width:72px;background:#FEF2F2;color:#DC2626;border-color:#FCA5A5;font-weight:600;';
- delBtn.style.display = '';
- delBtn.onclick = ()=>{
-  overlay.style.display = 'none';
-  delBtn.style.display = 'none';
-  deleteDraft(); // 기존 삭제 확인 다이얼로그 재사용
- };
-
- _confirmCallback = ()=>{ delBtn.style.display='none'; if(loadTiDraft()) showToast('임시저장본을 불러왔어요'); };
- _confirmCancelCallback = ()=>{ delBtn.style.display='none'; };
-
- overlay.style.display = 'flex';
- const box = overlay.querySelector('.modal');
- if(box){
-  box.style.transform='scale(.92)'; box.style.opacity='0';
-  box.style.transition='transform .18s cubic-bezier(.34,1.56,.64,1),opacity .15s';
-  requestAnimationFrame(()=>{ box.style.transform='scale(1)'; box.style.opacity='1'; });
- }
+/* v15.68: 임시저장 목록 모달 — 저장 시각·대상 월·요약을 보여주고 골라서 불러오기/삭제 */
+function _showDraftListModal(list){
+ document.getElementById('draftListOverlay')?.remove();
+ const ov=document.createElement('div'); ov.id='draftListOverlay';
+ ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+ const rows=(list||[]).map(d=>`
+  <div style="display:flex;align-items:center;gap:8px;border:1px solid #E8E5DD;border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#FCFBF8;">
+   <div style="flex:1;min-width:0;">
+    <div style="font-size:13px;font-weight:700;color:#2a2a28;">${esc(d.savedAt||'')}${d._auto?' <span style="font-size:10px;font-weight:600;color:#8A6D1F;background:#FDF3DC;border:1px solid #E8CC80;border-radius:6px;padding:0 5px;">최근 자동저장</span>':''}</div>
+    <div style="font-size:11.5px;color:#8A8778;margin-top:2px;">${esc(_draftSummary(d))}</div>
+   </div>
+   <button onclick="_loadDraftFromList('${d.id}')" style="height:32px;padding:0 12px;border:none;border-radius:8px;background:#1A7A50;color:white;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">불러오기</button>
+   <button onclick="_delDraftFromList('${d.id}')" title="삭제" style="width:32px;height:32px;border:1px solid #FCA5A5;border-radius:8px;background:#FEF2F2;color:#DC2626;font-size:13px;cursor:pointer;">🗑</button>
+  </div>`).join('');
+ ov.innerHTML=`
+  <div style="background:white;border-radius:14px;padding:20px;width:100%;max-width:420px;max-height:80vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+   <div style="font-size:16px;font-weight:700;color:#1a1916;margin-bottom:4px;">📂 임시저장 불러오기</div>
+   <div style="font-size:12px;color:#8A8778;margin-bottom:14px;">불러오면 현재 작성 중인 내용은 <b>선택한 저장본</b>으로 바뀝니다.</div>
+   ${rows||'<div style="text-align:center;color:#9B9888;font-size:13px;padding:20px;">저장본이 없어요</div>'}
+   <button onclick="document.getElementById('draftListOverlay').remove()" style="width:100%;height:42px;margin-top:6px;border:1px solid #E2E0D8;border-radius:10px;background:white;font-size:14px;cursor:pointer;color:#555;font-weight:600;">닫기</button>
+  </div>`;
+ document.body.appendChild(ov);
+ ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+}
+function _loadDraftFromList(id){
+ const d = id==='__auto__' ? _getValidDraft() : _getDraftList().find(x=>x.id===id);
+ if(!d){ showToast('저장본을 찾을 수 없어요'); return; }
+ document.getElementById('draftListOverlay')?.remove();
+ if(loadTiDraft(d)) showToast('임시저장본을 불러왔어요');
+}
+function _delDraftFromList(id){
+ if(id==='__auto__'){ clearTiDraft(); }
+ else { _saveDraftList(_getDraftList().filter(x=>x.id!==id)); }
+ const list=_buildCombinedDraftList();
+ if(list.length){ _showDraftListModal(list); }
+ else { document.getElementById('draftListOverlay')?.remove(); showToast('저장본을 삭제했어요'); }
 }
 
 /** v14.68: 임시저장본 수동 삭제 버튼 (현재 작성 중인 화면 내용은 유지, 저장본만 삭제) */
