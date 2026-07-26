@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.68">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.69">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.68">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.69">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.68</title>
+<title>수업기록표 정산 시스템 v15.69</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.68';
+const SYSTEM_VERSION='v15.69';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14091,11 +14091,13 @@ function getDraftKey(){
  return DRAFT_KEY_PREFIX + (window._loggedInTeacher || 'unknown');
 }
 
-/* v15.68: 수동 임시저장 '복원 지점' 목록 (강사별, 최근 10개) — 자동저장 단일키와 별개 저장소 */
+/* v15.68: 수동 임시저장 '복원 지점' 목록 (강사별, 최근 3개) — 자동저장 단일키와 별개 저장소
+ *  v15.69: 최대 3개 유지 · 만료(매달 10일 00:00 이전 저장분)는 _getDraftList에서 자동 제외 */
 const DRAFTLIST_PREFIX='ti_draftlist_';
+const DRAFTLIST_MAX=3;
 function _draftListKey(){ return DRAFTLIST_PREFIX + (window._loggedInTeacher || document.getElementById('ti-teacher')?.value || 'unknown'); }
-function _getDraftList(){ try{ const a=JSON.parse(localStorage.getItem(_draftListKey())||'[]'); return Array.isArray(a)?a.filter(d=>d&&!_isDraftStale(d)):[]; }catch(_){ return []; } }
-function _saveDraftList(list){ try{ localStorage.setItem(_draftListKey(), JSON.stringify((list||[]).slice(0,10))); }catch(_){} }
+function _getDraftList(){ try{ const a=JSON.parse(localStorage.getItem(_draftListKey())||'[]'); return Array.isArray(a)?a.filter(d=>d&&!_isDraftStale(d)).slice(0,DRAFTLIST_MAX):[]; }catch(_){ return []; } }
+function _saveDraftList(list){ try{ localStorage.setItem(_draftListKey(), JSON.stringify((list||[]).slice(0,DRAFTLIST_MAX))); }catch(_){} }
 function _draftSummary(d){
  const groups=Array.isArray(d.dayGroups)?d.dayGroups:[];
  const centers=groups.reduce((s,g)=>s+((g.centers||[]).filter(c=>c&&c.name&&c.name!=='__custom__').length),0);
