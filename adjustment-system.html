@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.69">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.70">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.69">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.70">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.69</title>
+<title>수업기록표 정산 시스템 v15.70</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.69';
+const SYSTEM_VERSION='v15.70';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14711,7 +14711,7 @@ function renderTiNotes(){
    }
    return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
     <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'date',this.value)">
-    ${noCenter ? '' : `<select class="me-center" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{_updateEntry(${i},${ei},'center',v.trim());});this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>`}
+    ${noCenter ? '' : `<select class="me-center" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{_updateEntry(${i},${ei},'center',v.trim());renderTiNotes();});this.value=tiNotes[${i}].entries[${ei}].center||'';}else _updateEntry(${i},${ei},'center',this.value)">${selOpts}</select>`}
     <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[note.cat]||'내용'}" style="height:28px;border:1px solid #E2E0D8;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${s.color}'" onblur="this.style.borderColor='#E2E0D8'" oninput="_updateEntry(${i},${ei},'text',this.value)">
     ${hasAmt2 ? `<div class="me-amt">${amtCell}</div>` : ''}
     <button class="me-del" onclick="_removeEntry(${i},${ei})" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
