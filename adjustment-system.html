@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.70">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.71">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.70">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.71">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.70</title>
+<title>수업기록표 정산 시스템 v15.71</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.70';
+const SYSTEM_VERSION='v15.71';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11135,16 +11135,21 @@ function _showDraftDialog(teacher, savedAt, isSubmitted, month){
  if(isSubmitted){
   icon.textContent = '✅';
   titleEl.textContent = `${month}월 수업기록표 제출 완료`;
-  descEl.innerHTML = `<span style="font-size:13px;color:var(--text2);">이미 제출이 완료된 달이에요.</span>`;
+  descEl.innerHTML = `<span style="font-size:13px;color:var(--text2);">이미 제출이 완료된 달이에요.<br>아래 <b>제출한 내용 보기</b>로 내가 낸 내용을 확인할 수 있어요.</span>`;
   // 홈 / 새로 작성 버튼 숨김
   const homeBtn0 = document.getElementById('_draftHomeBtn');
   if(homeBtn0) homeBtn0.style.display = 'none';
-  cancelBtn.style.display = 'none';
+  const delBtn0 = document.getElementById('_draftDelBtn');
+  if(delBtn0) delBtn0.style.display = 'none';
+  // v15.71: 취소 버튼을 '제출한 내용 보기'로 사용 → 로컬 제출 사본 읽기전용 보기(관리자 정산완료와 무관)
+  cancelBtn.style.display = '';
+  cancelBtn.textContent = '📋 제출한 내용 보기';
+  cancelBtn.style.cssText = 'min-width:130px;background:#FDF3DC;color:#8A6D1F;border:1px solid #E8CC80;font-weight:700;';
   okBtn.textContent = '확인';
   okBtn.className = 'btn';
-  okBtn.style.cssText = 'min-width:90px;background:#1A7A50;color:white;border-color:#1A7A50;font-weight:700;';
+  okBtn.style.cssText = 'min-width:80px;background:#1A7A50;color:white;border-color:#1A7A50;font-weight:700;';
   _confirmCallback = ()=>{};
-  _confirmCancelCallback = ()=>{};
+  _confirmCancelCallback = ()=>{ _showMySubmissionView(teacher, month); };
   overlay.style.display = 'flex';
   const box0 = overlay.querySelector('.modal');
   if(box0){
@@ -11291,6 +11296,97 @@ function _confirmCancel(){
  _confirmCallback = null;
  _confirmCancelCallback = null;
  if(typeof cb === 'function') cb();
+}
+
+/* v15.71: 이미 제출한 달의 '내가 낸 내용' 읽기전용 보기.
+ *  - 데이터 출처: 제출 시 저장되는 로컬 사본 ti_submit_history_<강사> (관리자 정산완료와 무관하게 항상 존재)
+ *  - 표시: 출석 O/X 표 · 특이사항 · 정산 미리보기(_calcTiSettlement) */
+function _showMySubmissionView(teacher, month){
+ let entry=null;
+ try{
+  const hist=JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
+  if(Array.isArray(hist) && hist.length){
+   const byMonth = month ? hist.filter(h=>{ const m=/(\d+)\s*월/.exec(h.yearMonth||''); return m && (+m[1])===(+month); }) : [];
+   const pool = byMonth.length?byMonth:hist;
+   entry = pool[pool.length-1];
+  }
+ }catch(_){}
+ if(!entry){ try{ showToast('이 기기에 저장된 제출 내용이 없어요 (다른 기기에서 제출했을 수 있어요)'); }catch(_){} return; }
+
+ const dayGroups = Array.isArray(entry.dayGroups)?entry.dayGroups:[];
+ const notes = Array.isArray(entry.notes)?entry.notes:[];
+ const OXstyle=(v)=>{ v=String(v||'').toUpperCase();
+  if(v==='O') return 'background:#DCFCE7;color:#166534;border-color:#A7E0BC;';
+  if(v==='X') return 'background:#FEE2E2;color:#DC2626;border-color:#FCA5A5;';
+  if(v==='△') return 'background:#FEF3C7;color:#92400E;border-color:#F0D488;';
+  return 'background:#F5F4F0;color:#B8B4A8;border-color:#E2E0D8;'; };
+ const validG = dayGroups.filter(g=>g && g.day!=='미등록' && Array.isArray(g.centers) && g.centers.some(c=>c && c.name && c.name!=='__custom__'));
+ const daySections = validG.map(g=>{
+  const dates=Array.isArray(g.dates)?g.dates:[];
+  const headCells = dates.map(d=>`<th style="padding:3px 4px;font-size:10px;color:#8A8778;font-weight:600;text-align:center;min-width:26px;">${esc(String(d))}</th>`).join('');
+  const rows = g.centers.filter(c=>c && c.name && c.name!=='__custom__').map(c=>{
+   const att=Array.isArray(c.attend)?c.attend:[];
+   const oCount=att.filter(a=>String(a).toUpperCase()==='O').length;
+   const cells=dates.map((d,idx)=>{ const v=att[idx]||''; return `<td style="padding:2px;text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid;border-radius:6px;font-size:11px;font-weight:700;${OXstyle(v)}">${v?esc(String(v)):'·'}</span></td>`; }).join('');
+   return `<tr><td style="padding:4px 6px;font-size:12px;font-weight:600;color:#2a2a28;white-space:nowrap;">${esc(c.name)}${c.isSubstitute?' <span style="font-size:9px;color:#8A6D1F;">(보강)</span>':''} <span style="font-size:10px;color:#1A7A50;font-weight:700;">${oCount}회</span></td>${cells}</tr>`;
+  }).join('');
+  return `<div style="margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:800;color:#1A7A50;margin-bottom:4px;">${esc(String(g.day))}요일</div>
+    <div style="overflow-x:auto;border:1px solid #E8E5DD;border-radius:8px;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#FAFAF7;"><th style="padding:3px 6px;font-size:10px;color:#8A8778;text-align:left;">센터</th>${headCells}</tr></thead><tbody>${rows}</tbody></table></div>
+  </div>`;
+ }).join('') || '<div style="color:#9B9888;font-size:13px;padding:10px;">등록된 수업이 없어요</div>';
+
+ const noteBlocks = notes.filter(n=>n && n.cat).map(n=>{
+  const entries=(Array.isArray(n.entries)&&n.entries.length)?n.entries:[{date:n.date,center:n.center,text:(n.text||n.content),amount:n.amount}];
+  const lines=entries.filter(e=>e&&(e.date||e.center||e.text||e.amount)).map(e=>{
+   const amt=Number(e.amount)||0;
+   return `<div style="font-size:11.5px;color:#555;padding:2px 0;">· ${esc(e.date||'')} ${esc(e.center||'')} ${esc(e.text||'')}${amt?` <b>${amt.toLocaleString()}원</b>`:''}</div>`;
+  }).join('');
+  return lines?`<div style="margin-bottom:6px;"><span style="font-size:11px;font-weight:700;color:#8A6D1F;">${esc(n.cat)}</span>${lines}</div>`:'';
+ }).join('') || '<div style="color:#9B9888;font-size:12px;">특이사항 없음</div>';
+
+ // 정산 미리보기 — _calcTiSettlement는 전역 tiNotes를 참조하므로 잠깐 스왑 후 복원
+ //  (멀티엔트리 note의 top-level amount가 비어있어도 정확하도록 entries 합계로 보정)
+ const _notesForCalc = notes.map(n=>{
+  if(n && Array.isArray(n.entries) && n.entries.length){
+   return Object.assign({}, n, {amount: n.entries.reduce((s,e)=>s+(Number(e&&e.amount)||0),0)});
+  }
+  return n;
+ });
+ let settle=null;
+ try{ const _sav=tiNotes; tiNotes=_notesForCalc; settle=_calcTiSettlement(teacher, validG); tiNotes=_sav; }catch(_){}
+ let settleHtml='';
+ if(settle){
+  const extrasHtml=(settle.extras||[]).map(x=>`<div style="display:flex;justify-content:space-between;font-size:12px;color:#555;"><span>${esc(x.label)}</span><span>${x.amount.toLocaleString()}원</span></div>`).join('');
+  settleHtml=`
+   <div style="display:flex;justify-content:space-between;font-size:12px;color:#555;"><span>수업 ${settle.count}회 ${esc(settle.feeLabel)}</span><span>${settle.pretax.toLocaleString()}원</span></div>
+   <div style="display:flex;justify-content:space-between;font-size:12px;color:#999;"><span>세금 3.3%</span><span>-${settle.tax.toLocaleString()}원</span></div>
+   <div style="display:flex;justify-content:space-between;font-size:12px;color:#555;"><span>세후 수업료</span><span>${settle.afterTax.toLocaleString()}원</span></div>
+   ${extrasHtml}
+   <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#1A7A50;border-top:1.5px solid #E8E5DD;margin-top:6px;padding-top:6px;"><span>최종 지급 예상</span><span>${settle.finalTotal.toLocaleString()}원</span></div>`;
+ }
+
+ document.getElementById('mySubViewOverlay')?.remove();
+ const ov=document.createElement('div'); ov.id='mySubViewOverlay';
+ ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:flex;align-items:center;justify-content:center;padding:14px;';
+ ov.innerHTML=`
+  <div style="background:white;border-radius:16px;padding:18px;width:100%;max-width:480px;max-height:88vh;overflow:auto;box-shadow:0 8px 40px rgba(0,0,0,.22);">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <div style="font-size:16px;font-weight:800;color:#1a1916;">📋 제출한 내용</div>
+    <button onclick="document.getElementById('mySubViewOverlay').remove()" style="width:30px;height:30px;border:none;background:#F0EDE8;border-radius:8px;cursor:pointer;font-size:15px;color:#666;">✕</button>
+   </div>
+   <div style="font-size:12px;color:#8A8778;margin-bottom:12px;">${esc(entry.yearMonth||'')} · ${esc(teacher)}${entry.submittedAt?` · ${esc(entry.submittedAt)} 제출`:''}</div>
+   <div style="font-size:11px;color:#8A6D1F;background:#FDF3DC;border:1px solid #E8CC80;border-radius:8px;padding:7px 10px;margin-bottom:12px;">아래는 <b>제출 당시 내가 입력한 내용</b>이에요. 최종 금액은 관리자 확인 후 확정됩니다.</div>
+   <div style="font-size:12.5px;font-weight:800;color:#2a2a28;margin:2px 0 8px;">📅 출석 (O 수업 · X 결석/휴강 · △ 기타)</div>
+   ${daySections}
+   <div style="font-size:12.5px;font-weight:800;color:#2a2a28;margin:14px 0 6px;">📝 특이사항</div>
+   ${noteBlocks}
+   ${settleHtml?`<div style="font-size:12.5px;font-weight:800;color:#2a2a28;margin:14px 0 6px;">💰 정산 미리보기</div><div style="background:#F7FBF9;border:1px solid #CDEBD8;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;">${settleHtml}</div>`:''}
+   ${entry.account?`<div style="font-size:11px;color:#8A8778;margin-top:12px;">계좌: ${esc(entry.account)}</div>`:''}
+   <button onclick="document.getElementById('mySubViewOverlay').remove()" style="width:100%;height:44px;margin-top:14px;border:1px solid #E2E0D8;border-radius:10px;background:white;font-size:14px;cursor:pointer;color:#555;font-weight:600;">닫기</button>
+  </div>`;
+ document.body.appendChild(ov);
+ ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
 }
 
 /* ═══ 로딩 오버레이 ═══ */
