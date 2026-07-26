@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.72">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.73">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.72">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.73">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.72</title>
+<title>수업기록표 정산 시스템 v15.73</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3626,7 +3626,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.72';
+const SYSTEM_VERSION='v15.73';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11321,22 +11321,22 @@ function _showMySubmissionView(teacher, month){
   if(v==='△') return 'background:#FEF3C7;color:#92400E;border-color:#F0D488;';
   return 'background:#F5F4F0;color:#B8B4A8;border-color:#E2E0D8;'; };
  const validG = dayGroups.filter(g=>g && g.day!=='미등록' && Array.isArray(g.centers) && g.centers.some(c=>c && c.name && c.name!=='__custom__'));
+ const WEEKS=5;
+ // 주차(週) 세로 정렬: 모든 요일 표를 '고정 5주 컬럼'으로 → 1열=1주(1·2·3일), 2열=2주(6~10일)…
+ //  calcDatesForMonth이 주차 인덱스로 된 5슬롯 배열(없는 주=null)이라, att[w]도 같은 주차에 정렬됨.
+ const colgroup=`<colgroup><col style="width:86px;">${Array.from({length:WEEKS},()=>'<col>').join('')}</colgroup>`;
  const daySections = validG.map(g=>{
   const rawDates=Array.isArray(g.dates)?g.dates:[];
-  // 주차 정렬: calcDatesForMonth은 5슬롯(주차) 배열이라 해당 주에 그 요일이 없으면 null.
-  //  null 열은 빼고, 날짜와 출석(같은 주차 인덱스 att[w])을 짝지어 왼쪽 정렬로 깔끔하게 표시.
-  const cols=[]; const _len=Math.max(rawDates.length,5);
-  for(let w=0; w<_len; w++){ const d=rawDates[w]; if(d!=null && d!=='') cols.push({w, date:d}); }
-  const headCells = cols.map(col=>`<th style="padding:3px 6px;font-size:10.5px;color:#8A8778;font-weight:700;text-align:center;min-width:30px;">${esc(String(col.date))}</th>`).join('');
+  const headCells=Array.from({length:WEEKS},(_,w)=>{ const d=rawDates[w]; const has=(d!=null&&d!==''); return `<th style="padding:3px 4px;font-size:10.5px;color:${has?'#8A8778':'#D8D4C8'};font-weight:700;text-align:center;">${has?esc(String(d)):''}</th>`; }).join('');
   const rows = g.centers.filter(c=>c && c.name && c.name!=='__custom__').map(c=>{
    const att=Array.isArray(c.attend)?c.attend:[];
    const oCount=att.filter(a=>String(a).toUpperCase()==='O').length;
-   const cells=cols.map(col=>{ const v=att[col.w]||''; return `<td style="padding:3px;text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid;border-radius:6px;font-size:11px;font-weight:700;${OXstyle(v)}">${v?esc(String(v)):'·'}</span></td>`; }).join('');
-   return `<tr><td style="padding:4px 8px;font-size:12px;font-weight:600;color:#2a2a28;white-space:nowrap;text-align:left;">${esc(c.name)}${c.isSubstitute?' <span style="font-size:9px;color:#8A6D1F;">(보강)</span>':''} <span style="font-size:10px;color:#1A7A50;font-weight:700;">${oCount}회</span></td>${cells}</tr>`;
+   const cells=Array.from({length:WEEKS},(_,w)=>{ const d=rawDates[w]; if(d==null||d===''){ return `<td style="padding:3px;"></td>`; } const v=att[w]||''; return `<td style="padding:3px;text-align:center;"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid;border-radius:6px;font-size:11px;font-weight:700;${OXstyle(v)}">${v?esc(String(v)):'·'}</span></td>`; }).join('');
+   return `<tr><td style="padding:4px 6px;font-size:12px;font-weight:600;color:#2a2a28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.name)}${c.isSubstitute?' <span style="font-size:9px;color:#8A6D1F;">(보강)</span>':''} <span style="font-size:10px;color:#1A7A50;font-weight:700;">${oCount}회</span></td>${cells}</tr>`;
   }).join('');
   return `<div style="margin-bottom:12px;">
     <div style="font-size:12px;font-weight:800;color:#1A7A50;margin-bottom:4px;">${esc(String(g.day))}요일</div>
-    <div style="overflow-x:auto;border:1px solid #E8E5DD;border-radius:8px;"><table style="border-collapse:collapse;width:100%;"><thead><tr style="background:#FAFAF7;"><th style="padding:3px 8px;font-size:10.5px;color:#8A8778;text-align:left;font-weight:700;">센터</th>${headCells}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div style="overflow-x:auto;border:1px solid #E8E5DD;border-radius:8px;"><table style="border-collapse:collapse;width:100%;table-layout:fixed;">${colgroup}<thead><tr style="background:#FAFAF7;"><th style="padding:3px 6px;font-size:10.5px;color:#8A8778;text-align:left;font-weight:700;">센터</th>${headCells}</tr></thead><tbody>${rows}</tbody></table></div>
   </div>`;
  }).join('') || '<div style="color:#9B9888;font-size:13px;padding:10px;">등록된 수업이 없어요</div>';
 
