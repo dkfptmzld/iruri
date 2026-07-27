@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.73">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.74">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.73">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.74">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.73</title>
+<title>수업기록표 정산 시스템 v15.74</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2454,6 +2454,11 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   <div id="monthlyDashboard"></div>
  </div>
 
+ <!-- v15.74: 지역별 핵심 지표 (서울·인천·수원 비교) -->
+ <div style="padding:24px 32px 0;">
+  <div id="regionKpiArea"></div>
+ </div>
+
  <!-- v11.83: 옵션 1 — KPI 6개 신호등 카드 (실데이터) -->
  <div style="padding:24px 32px 0;">
   <div id="signalCardDemo"></div>
@@ -3626,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.73';
+const SYSTEM_VERSION='v15.74';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17639,6 +17644,218 @@ let _gOpenIdx=null;
  * - Hero/스토리바/타임라인/차트 모두 _renderSignalCardDemo로 통합
  * - 옵션 1~8 + 새 월별 현황 표가 모든 정보 표시
  */
+/* ═══ v15.74: 지역별 핵심 지표 (서울·인천·수원 비교) ═══
+ *  월별 정산 스냅샷에서 지역 단위로 집계한다. 표시 지표:
+ *   매출 · 영업이익 · 마진률 · 강사(전월대비·과목별) · 모의수업 건수 · 신규/이탈 센터 · 비용처리 금액
+ *  - 매출        = Σ(수업료 × 'O' 출석 수), 수업의 region 기준(비면 센터명으로 지역 조회)
+ *  - 강사료(세전) = 회사가 실제 부담하는 인건비. 비율제 강사는 매출 비중, 회당제 강사는 회차 비중으로 지역 배분
+ *  - 비용        = 모의수업+주차료+물품+기타. 특이사항에 센터명이 있으면 그 센터의 지역으로,
+ *                  없으면(물품 구매 등) 그 강사의 지역별 매출 비중으로 배분 → 합계는 기존 '비용 추이'와 일치
+ *  - 영업이익    = 매출 − 강사료(세전) − 비용,  마진률 = 영업이익 ÷ 매출
+ *  - 신규/이탈   = 전월 대비 그 지역에서 새로 생긴/사라진 센터 수 (기존 방식과 동일) */
+function _getRegionGrowth(){
+ const GROWTH_START_YM='2026년 6월';
+ const _n=(ym)=>{ const m=(ym||'').match(/(\d{4})\D+?(\d{1,2})/); return m?(parseInt(m[1])*100+parseInt(m[2])):0; };
+ const _regionOf=(l)=>{
+  const r=(l && l.region||'').trim();
+  if(r) return r;
+  const c=(typeof DB!=='undefined'&&Array.isArray(DB.centers))?DB.centers.find(x=>x.name===l.center):null;
+  return (c && c.region) ? c.region : '미지정';
+ };
+ const months=[]; const seen=new Set();
+ for(let i=0;i<localStorage.length;i++){
+  const k=localStorage.key(i);
+  if(!k||!k.startsWith(MONTHLY_KEY_PREFIX)) continue;
+  if(/_bak\d*$/.test(k)) continue;
+  try{
+   const raw=JSON.parse(localStorage.getItem(k));
+   const snap=raw.data||raw;
+   const ym=raw.ym||k.replace(MONTHLY_KEY_PREFIX,'').replace(/_/g,' ');
+   if(seen.has(ym)) continue; seen.add(ym);
+   try{ const dm=JSON.parse(localStorage.getItem('iruri_deleted_months')||'[]'); if(dm.some(d=>d.ym===ym)) continue; }catch(_){}
+   if(_n(ym) < _n(GROWTH_START_YM)) continue;
+   if(!snap || !Array.isArray(snap.teachers)) continue;
+
+   const R={}; // region → 집계
+   const bucket=(r)=>{ if(!R[r]) R[r]={revenue:0,labor:0,cost:0,mock:0,centers:new Set(),teachers:new Set(),subjects:{}}; return R[r]; };
+
+   snap.teachers.forEach(t=>{
+    const regRev={}, regCnt={}, cenReg={};
+    let tRev=0, tCnt=0;
+    (t.lessons||[]).forEach(l=>{
+     const attend=Array.isArray(l.attend)?l.attend:[];
+     const cnt=attend.filter(a=>a==='O').length;
+     const fee=Number(l.feePer||l.fee||0);
+     const reg=_regionOf(l);
+     const tri=(l.triCount!==undefined)?(Number(l.triCount)||0):attend.filter(a=>a==='△'||a==='▲').length;
+     const b=bucket(reg);
+     b.revenue+=fee*cnt; b.mock+=tri;
+     if(l.center){ b.centers.add(l.center); cenReg[l.center]=reg; }
+     if(cnt>0 || tri>0) b.teachers.add(t.name);
+     regRev[reg]=(regRev[reg]||0)+fee*cnt; regCnt[reg]=(regCnt[reg]||0)+cnt;
+     tRev+=fee*cnt; tCnt+=cnt;
+    });
+
+    // ── 강사료(세전) 지역 배분 ──
+    let pretax=0;
+    if(t.pretax!==undefined) pretax=Number(t.pretax)||0;
+    else if(t.finalPay!==undefined) pretax=Math.round((Number(t.finalPay)||0)/0.967);
+    const dbT=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===t.name):null;
+    const byCount=(dbT&&dbT.feeType!=='pct'); // 회당고정 → 회차 비중, 비율제 → 매출 비중
+    const wMap=byCount?regCnt:regRev, wTot=byCount?tCnt:tRev;
+    if(pretax>0){
+     if(wTot>0) Object.keys(wMap).forEach(r=>{ bucket(r).labor += pretax*(wMap[r]/wTot); });
+     else if(tRev>0) Object.keys(regRev).forEach(r=>{ bucket(r).labor += pretax*(regRev[r]/tRev); });
+    }
+
+    // ── 비용 지역 배분 (센터명 힌트 우선, 나머지는 매출 비중) ──
+    const costTotal = ((t.mockLesson!==undefined)?(Number(t.mockLesson)||0):((Number(t.mockLessonAuto)||0)*20000))
+      + (Number(t.parkingCost)||0) + (Number(t.supplyCost)||0)
+      + (Number(t.etcCost)||0) + (Number(t.costExtra)||0) + (Number(t.otherCost)||0);
+    if(costTotal>0){
+     const hint={}; let hintSum=0;
+     (Array.isArray(t.notesData)?t.notesData:[]).forEach(nt=>{
+      const es=(Array.isArray(nt.entries)&&nt.entries.length)?nt.entries:[{center:nt.center,amount:nt.amount}];
+      es.forEach(e=>{
+       const amt=Number(e&&e.amount)||0; if(amt<=0) return;
+       const cn=String((e&&e.center)||nt.center||'').trim(); if(!cn) return;
+       const c=(typeof DB!=='undefined'&&Array.isArray(DB.centers))?DB.centers.find(x=>x.name===cn):null;
+       const reg=cenReg[cn]||(c&&c.region)||''; if(!reg) return;
+       hint[reg]=(hint[reg]||0)+amt; hintSum+=amt;
+      });
+     });
+     const byHint=Math.min(hintSum, costTotal);
+     if(byHint>0) Object.keys(hint).forEach(r=>{ bucket(r).cost += byHint*(hint[r]/hintSum); });
+     const rest=costTotal-byHint;
+     if(rest>0){
+      if(tRev>0) Object.keys(regRev).forEach(r=>{ bucket(r).cost += rest*(regRev[r]/tRev); });
+      else bucket('미지정').cost += rest;
+     }
+    }
+   });
+
+   // 과목별 강사 수 (현재 강사 마스터의 과목 기준)
+   Object.keys(R).forEach(r=>{
+    R[r].teachers.forEach(nm=>{
+     const dt=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===nm):null;
+     const s=(dt&&dt.subject)?dt.subject:'미지정';
+     R[r].subjects[s]=(R[r].subjects[s]||0)+1;
+    });
+   });
+   months.push({ym, ymNum:_n(ym), R});
+  }catch(e){}
+ }
+ months.sort((a,b)=>a.ymNum-b.ymNum);
+ // 진행 중인 달 제외 (매월 10일 정산 마감 기준) — 기존 성장추이와 동일
+ try{
+  if(typeof _getSettlementCycleYm==='function'){
+   const cut=_n(_getSettlementCycleYm());
+   if(cut) return months.filter(m=>m.ymNum<=cut);
+  }
+ }catch(_){}
+ return months;
+}
+
+/* 지역별 핵심 지표 카드 렌더 */
+function _renderRegionKpis(){
+ const target=document.getElementById('regionKpiArea');
+ if(!target) return;
+ const months=_getRegionGrowth();
+ if(!months.length){ target.innerHTML=''; return; }
+ const cur=months[months.length-1], prev=months.length>1?months[months.length-2]:null;
+
+ const ORDER=['서울','인천','수원'];
+ const names=Object.keys(cur.R).sort((a,b)=>{
+  const ia=ORDER.indexOf(a), ib=ORDER.indexOf(b);
+  return (ia<0?99:ia)-(ib<0?99:ib) || (cur.R[b].revenue-cur.R[a].revenue);
+ });
+ const PAL={'서울':['#2E75B6','#5B9BD5','#F2F7FC'],'인천':['#1A7A50','#2E9E68','#F1F9F4'],'수원':['#7C5CD6','#A78BFA','#F6F3FD']};
+ const DEF=['#6B7280','#9CA3AF','#F4F4F5'];
+ const won=(v)=>Math.round(v).toLocaleString()+'원';
+ const man=(v)=>{ const m=v/10000; return (Math.abs(m)>=100?Math.round(m).toLocaleString():m.toFixed(1))+'만원'; };
+ const pct=(a,b)=>{ if(!b) return null; return ((a-b)/Math.abs(b))*100; };
+ const dTag=(v,inv)=>{
+  if(v===null||!isFinite(v)) return '';
+  const up=v>=0, good=inv?!up:up;
+  const col=Math.abs(v)<0.05?'#9B9888':(good?'#16A34A':'#DC2626');
+  return `<span style="font-size:11.5px;font-weight:800;margin-left:6px;color:${col};">${up?'▲':'▼'}${Math.abs(v).toFixed(1)}%</span>`;
+ };
+ const dNum=(v)=>{
+  if(!v) return '';
+  const col=v>0?'#16A34A':'#DC2626';
+  return `<span style="font-size:11.5px;font-weight:800;margin-left:6px;color:${col};">${v>0?'▲':'▼'}${Math.abs(v)}</span>`;
+ };
+
+ const cards=names.map(rg=>{
+  const c=cur.R[rg];
+  const p=prev?prev.R[rg]:null;
+  const [c1,c2,bg]=PAL[rg]||DEF;
+  const profit=c.revenue-c.labor-c.cost;
+  const margin=c.revenue>0?(profit/c.revenue*100):0;
+  const pProfit=p?(p.revenue-p.labor-p.cost):null;
+  // 신규/이탈 센터 (전월 대비)
+  let nNew=0, nOut=0;
+  if(p){
+   c.centers.forEach(x=>{ if(!p.centers.has(x)) nNew++; });
+   p.centers.forEach(x=>{ if(!c.centers.has(x)) nOut++; });
+  }
+  const subs=Object.keys(c.subjects).sort((a,b)=>c.subjects[b]-c.subjects[a])
+   .map(s=>`<span style="font-size:10.5px;font-weight:700;background:#F2F0E8;color:#6A6760;border-radius:7px;padding:3px 8px;">${esc(s)} <b style="color:#2A2A28;">${c.subjects[s]}</b></span>`).join('');
+  const row=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;"><span style="font-size:12.5px;color:#5A5750;font-weight:600;">${l}</span><span style="font-size:14px;font-weight:800;">${v}</span></div>`;
+
+  return `<div style="background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;">
+   <div style="background:linear-gradient(135deg,${c1},${c2});color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:16px;font-weight:800;">${esc(rg)}</span>
+    <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;">센터 ${c.centers.size}곳</span>
+   </div>
+   <div style="padding:13px 16px;border-bottom:1px solid #F2F0E8;">
+    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">💰 돈</div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px;">
+     <span style="font-size:12px;color:#7A776C;font-weight:600;">매출</span>
+     <span><span style="font-size:23px;font-weight:900;color:${c1};letter-spacing:-.02em;">${man(c.revenue)}</span>${p?dTag(pct(c.revenue,p.revenue)):''}</span></div>
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px;">
+     <span style="font-size:12px;color:#7A776C;font-weight:600;">영업이익</span>
+     <span><span style="font-size:16px;font-weight:800;color:${profit<0?'#DC2626':'inherit'};">${man(profit)}</span>${(p&&pProfit)?dTag(pct(profit,pProfit)):''}</span></div>
+    <div style="background:${bg};border-radius:10px;padding:8px 11px;display:flex;justify-content:space-between;align-items:center;">
+     <span style="font-size:12px;font-weight:700;color:#5A5750;">마진률</span>
+     <span style="font-size:17px;font-weight:900;color:${margin<0?'#DC2626':c1};">${margin.toFixed(1)}%</span></div>
+    ${row('비용처리 금액', `${man(c.cost)}${p?dTag(pct(c.cost,p.cost),true):''}`)}
+   </div>
+   <div style="padding:13px 16px;border-bottom:1px solid #F2F0E8;">
+    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">👥 강사</div>
+    ${row('활동 강사', `${c.teachers.size}명${p?dNum(c.teachers.size-p.teachers.size):''}`)}
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;">${subs||'<span style="font-size:11px;color:#9B9888;">과목 정보 없음</span>'}</div>
+   </div>
+   <div style="padding:13px 16px;">
+    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">🌱 성장</div>
+    <div style="display:flex;align-items:center;gap:9px;background:#FFF9EC;border:1px solid #F0DDAE;border-radius:11px;padding:9px 12px;">
+     <span style="font-size:19px;">🧪</span>
+     <span><span style="font-size:19px;font-weight:900;color:#B4791A;">${c.mock}건</span>
+     <span style="font-size:11.5px;color:#8A7440;font-weight:700;">이달의 모의수업</span></span></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+     <div style="flex:1;background:#EAF7EF;border:1px solid #BFE3CE;border-radius:11px;padding:9px 10px;text-align:center;">
+      <div style="font-size:19px;font-weight:900;line-height:1;color:#16A34A;">${nNew}</div>
+      <div style="font-size:10px;font-weight:700;margin-top:3px;color:#6A6760;">신규 센터</div></div>
+     <div style="flex:1;background:#FDF0F0;border:1px solid #F3C4C4;border-radius:11px;padding:9px 10px;text-align:center;">
+      <div style="font-size:19px;font-weight:900;line-height:1;color:#DC2626;">${nOut}</div>
+      <div style="font-size:10px;font-weight:700;margin-top:3px;color:#6A6760;">이탈 센터</div></div>
+    </div>
+   </div>
+  </div>`;
+ }).join('');
+
+ const totRev=names.reduce((s,r)=>s+cur.R[r].revenue,0);
+ target.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+   <div>
+    <div style="font-size:15px;font-weight:800;color:var(--text);">🗺️ 지역별 핵심 지표</div>
+    <div style="font-size:11.5px;color:var(--text3);margin-top:2px;">${esc(cur.ym)} 기준${prev?` · 증감은 ${esc(prev.ym)} 대비`:''} · 전체 매출 ${won(totRev)}</div>
+   </div>
+   <div style="font-size:10.5px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;">영업이익 = 매출 − 강사료(세전) − 비용</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:13px;">${cards}</div>`;
+}
+
 function renderGrowthView(){
  _renderSignalCardDemo();
 }
@@ -17652,6 +17869,7 @@ function renderGrowthView(){
 function _renderSignalCardDemo(){
  _renderSettlementCycleNotice();
  _renderMonthlyDashboard();
+ try{ _renderRegionKpis(); }catch(e){ console.warn('지역별 지표 렌더 실패', e); }  // v15.74
  _renderOption1Kpis();
  // v14.60: 옵션6(출석 분류) 제거 (요청)
  _renderOption5Churn();
