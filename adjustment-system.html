@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.80">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.81">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.80">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.81">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.80</title>
+<title>수업기록표 정산 시스템 v15.81</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.80';
+const SYSTEM_VERSION='v15.81';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -18093,14 +18093,21 @@ function renderGrowthView(){
 // v12.08: 옵션 7 (비용 추이) 추가
 // v12.10: 정산 사이클 안내 박스 추가
 function _renderSignalCardDemo(){
+ // v15.81: 성장추이를 '지역별 성장' 화면으로 단일화 (요청)
+ //  - 유지: 정산 사이클 안내(어느 달 기준인지 알려주는 안내문) + 지역별 성장
+ //  - 제거: 월별 현황 표 / 핵심 지표 KPI / 신규·이탈 / 비용 추이
+ //    → 모두 지역별 카드(매출·영업이익·마진률·강사·모의수업·신규/이탈·비용)로 대체됨
+ //    (함수 자체는 남겨둠 — 되돌리려면 아래 호출만 복원하면 됨)
  _renderSettlementCycleNotice();
- _renderMonthlyDashboard();
- try{ _renderRegionKpis(); }catch(e){ console.warn('지역별 지표 렌더 실패', e); }  // v15.74
- _renderOption1Kpis();
- // v14.60: 옵션6(출석 분류) 제거 (요청)
- _renderOption5Churn();
- _renderOption7Cost();
- // v14.63: 옵션8 지역×과목 매트릭스 제거 (강사 관리 화면에 동일 매트릭스 있음)
+ try{ _renderRegionKpis(); }catch(e){ console.warn('지역별 지표 렌더 실패', e); }
+ // 제거된 옛 항목의 빈 영역·여백 정리
+ ['monthlyDashboard','signalCardDemo','kpiExpandArea','option5Area','churnExpandArea','option7CostArea','costExpandArea']
+  .forEach(id=>{
+   const el=document.getElementById(id); if(!el) return;
+   el.innerHTML=''; el.style.display='none';
+   const w=el.parentElement;                       // 패딩만 주는 래퍼면 같이 숨김
+   if(w && w.id!=='growthRoot' && w.children.length===1) w.style.display='none';
+  });
 }
 
 /**
