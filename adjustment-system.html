@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.74">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.75">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.74">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.75">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.74</title>
+<title>수업기록표 정산 시스템 v15.75</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.74';
+const SYSTEM_VERSION='v15.75';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17677,7 +17677,8 @@ function _getRegionGrowth(){
    if(!snap || !Array.isArray(snap.teachers)) continue;
 
    const R={}; // region → 집계
-   const bucket=(r)=>{ if(!R[r]) R[r]={revenue:0,labor:0,cost:0,mock:0,centers:new Set(),teachers:new Set(),subjects:{}}; return R[r]; };
+   const bucket=(r)=>{ if(!R[r]) R[r]={revenue:0,labor:0,cost:0,mock:0,centers:new Set(),teachers:new Set(),subjects:{},
+     costs:{mock:0,parking:0,supply:0,etc:0}, centerRev:{}, teacherRev:{}, mockCenters:new Set(), liveCenters:new Set()}; return R[r]; };
 
    snap.teachers.forEach(t=>{
     const regRev={}, regCnt={}, cenReg={};
@@ -17690,8 +17691,15 @@ function _getRegionGrowth(){
      const tri=(l.triCount!==undefined)?(Number(l.triCount)||0):attend.filter(a=>a==='△'||a==='▲').length;
      const b=bucket(reg);
      b.revenue+=fee*cnt; b.mock+=tri;
-     if(l.center){ b.centers.add(l.center); cenReg[l.center]=reg; }
+     if(l.center){
+      b.centers.add(l.center); cenReg[l.center]=reg;
+      if(cnt>0) b.liveCenters.add(l.center);     // 정상수업(O)이 있었던 센터
+      if(tri>0) b.mockCenters.add(l.center);     // 모의수업(△)이 있었던 센터
+      if(!b.centerRev[l.center]) b.centerRev[l.center]={rev:0,cnt:0};
+      b.centerRev[l.center].rev+=fee*cnt; b.centerRev[l.center].cnt+=cnt;
+     }
      if(cnt>0 || tri>0) b.teachers.add(t.name);
+     b.teacherRev[t.name]=(b.teacherRev[t.name]||0)+fee*cnt;
      regRev[reg]=(regRev[reg]||0)+fee*cnt; regCnt[reg]=(regCnt[reg]||0)+cnt;
      tRev+=fee*cnt; tCnt+=cnt;
     });
@@ -17708,13 +17716,18 @@ function _getRegionGrowth(){
      else if(tRev>0) Object.keys(regRev).forEach(r=>{ bucket(r).labor += pretax*(regRev[r]/tRev); });
     }
 
-    // ── 비용 지역 배분 (센터명 힌트 우선, 나머지는 매출 비중) ──
-    const costTotal = ((t.mockLesson!==undefined)?(Number(t.mockLesson)||0):((Number(t.mockLessonAuto)||0)*20000))
-      + (Number(t.parkingCost)||0) + (Number(t.supplyCost)||0)
-      + (Number(t.etcCost)||0) + (Number(t.costExtra)||0) + (Number(t.otherCost)||0);
-    if(costTotal>0){
+    // ── 비용 지역 배분 (카테고리별 · 센터명 힌트 우선, 나머지는 매출 비중) ──
+    const CATS=[
+     {key:'mock',    amt:(t.mockLesson!==undefined)?(Number(t.mockLesson)||0):((Number(t.mockLessonAuto)||0)*20000), match:['신규(모의) 수업','모의수업']},
+     {key:'parking', amt:Number(t.parkingCost)||0, match:['주차료']},
+     {key:'supply',  amt:Number(t.supplyCost)||0,  match:['물품']},
+     {key:'etc',     amt:(Number(t.etcCost)||0)+(Number(t.costExtra)||0)+(Number(t.otherCost)||0), match:['기타']},
+    ];
+    CATS.forEach(ct=>{
+     if(!(ct.amt>0)) return;
      const hint={}; let hintSum=0;
      (Array.isArray(t.notesData)?t.notesData:[]).forEach(nt=>{
+      if(!nt || ct.match.indexOf(nt.cat)<0) return;
       const es=(Array.isArray(nt.entries)&&nt.entries.length)?nt.entries:[{center:nt.center,amount:nt.amount}];
       es.forEach(e=>{
        const amt=Number(e&&e.amount)||0; if(amt<=0) return;
@@ -17724,14 +17737,15 @@ function _getRegionGrowth(){
        hint[reg]=(hint[reg]||0)+amt; hintSum+=amt;
       });
      });
-     const byHint=Math.min(hintSum, costTotal);
-     if(byHint>0) Object.keys(hint).forEach(r=>{ bucket(r).cost += byHint*(hint[r]/hintSum); });
-     const rest=costTotal-byHint;
+     const add=(r,v)=>{ const b=bucket(r); b.cost+=v; b.costs[ct.key]+=v; };
+     const byHint=Math.min(hintSum, ct.amt);
+     if(byHint>0) Object.keys(hint).forEach(r=>add(r, byHint*(hint[r]/hintSum)));
+     const rest=ct.amt-byHint;
      if(rest>0){
-      if(tRev>0) Object.keys(regRev).forEach(r=>{ bucket(r).cost += rest*(regRev[r]/tRev); });
-      else bucket('미지정').cost += rest;
+      if(tRev>0) Object.keys(regRev).forEach(r=>add(r, rest*(regRev[r]/tRev)));
+      else add('미지정', rest);
      }
-    }
+    });
    });
 
    // 과목별 강사 수 (현재 강사 마스터의 과목 기준)
@@ -17756,7 +17770,15 @@ function _getRegionGrowth(){
  return months;
 }
 
-/* 지역별 핵심 지표 카드 렌더 */
+/* 지역 카드 상세 토글 (매출·비용·강사) */
+function _rgTog(id){
+ const e=document.getElementById(id); if(!e) return;
+ const open=e.style.display!=='none';
+ e.style.display=open?'none':'block';
+ const c=document.getElementById(id+'-chev'); if(c) c.textContent=open?'▾':'▴';
+}
+
+/* ═══ v15.75: 지역별 성장 화면 (대항전 · 지표카드 · 6개월 추이 · 점유율 · 성장률) ═══ */
 function _renderRegionKpis(){
  const target=document.getElementById('regionKpiArea');
  if(!target) return;
@@ -17771,6 +17793,7 @@ function _renderRegionKpis(){
  });
  const PAL={'서울':['#2E75B6','#5B9BD5','#F2F7FC'],'인천':['#1A7A50','#2E9E68','#F1F9F4'],'수원':['#7C5CD6','#A78BFA','#F6F3FD']};
  const DEF=['#6B7280','#9CA3AF','#F4F4F5'];
+ const pal=(r)=>PAL[r]||DEF;
  const won=(v)=>Math.round(v).toLocaleString()+'원';
  const man=(v)=>{ const m=v/10000; return (Math.abs(m)>=100?Math.round(m).toLocaleString():m.toFixed(1))+'만원'; };
  const pct=(a,b)=>{ if(!b) return null; return ((a-b)/Math.abs(b))*100; };
@@ -17785,49 +17808,114 @@ function _renderRegionKpis(){
   const col=v>0?'#16A34A':'#DC2626';
   return `<span style="font-size:11.5px;font-weight:800;margin-left:6px;color:${col};">${v>0?'▲':'▼'}${Math.abs(v)}</span>`;
  };
+ const sec=(t)=>`<div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">${t}</div>`;
+ const dRow=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px;"><span style="color:#6A6760;">${l}</span><span style="font-weight:700;">${v}</span></div>`;
 
- const cards=names.map(rg=>{
-  const c=cur.R[rg];
-  const p=prev?prev.R[rg]:null;
-  const [c1,c2,bg]=PAL[rg]||DEF;
+ /* ── A. 지역 대항전 (성장률 순위) ── */
+ const rank=names.map(r=>({r, rev:cur.R[r].revenue, g:prev&&prev.R[r]?pct(cur.R[r].revenue, prev.R[r].revenue):null}))
+   .sort((a,b)=>((b.g===null?-1e9:b.g)-(a.g===null?-1e9:a.g)));
+ const MED=['🥇','🥈','🥉'];
+ const podium=rank.map((x,i)=>`
+   <div style="flex:1;min-width:140px;background:${i===0?'linear-gradient(160deg,rgba(255,216,107,.3),rgba(255,255,255,.12))':'rgba(255,255,255,.13)'};border:1px solid ${i===0?'rgba(255,216,107,.6)':'rgba(255,255,255,.25)'};border-radius:14px;padding:12px 14px;">
+    <div style="font-size:19px;line-height:1;">${MED[i]||'·'}</div>
+    <div style="font-size:15px;font-weight:800;margin-top:5px;">${esc(x.r)}</div>
+    <div style="font-size:18px;font-weight:900;margin-top:2px;">${x.g===null?'—':(x.g>=0?'+':'')+x.g.toFixed(1)+'%'}</div>
+    <div style="font-size:11px;opacity:.85;margin-top:2px;">${man(x.rev)} · 센터 ${cur.R[x.r].centers.size}곳</div>
+   </div>`).join('');
+ const vsBox=`
+  <div style="background:linear-gradient(135deg,#243B34,#1A7A50);border-radius:20px;padding:19px 21px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px;">
+   <div style="position:absolute;right:-50px;top:-50px;width:180px;height:180px;background:rgba(255,255,255,.07);border-radius:50%;"></div>
+   <div style="font-size:15px;font-weight:800;position:relative;">🏆 ${esc(cur.ym)} 지역 성장 순위</div>
+   <div style="font-size:12px;opacity:.85;margin:3px 0 15px;position:relative;">${prev?`${esc(prev.ym)} 대비 매출이 가장 많이 오른 지역`:'비교할 지난달 자료가 아직 없어요'}</div>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;position:relative;">${podium}</div>
+  </div>`;
+
+ /* ── B. 지역별 핵심 지표 카드 ── */
+ const cards=names.map((rg,idx)=>{
+  const c=cur.R[rg], p=prev?prev.R[rg]:null;
+  const [c1,c2,bg]=pal(rg);
   const profit=c.revenue-c.labor-c.cost;
   const margin=c.revenue>0?(profit/c.revenue*100):0;
   const pProfit=p?(p.revenue-p.labor-p.cost):null;
-  // 신규/이탈 센터 (전월 대비)
   let nNew=0, nOut=0;
-  if(p){
-   c.centers.forEach(x=>{ if(!p.centers.has(x)) nNew++; });
-   p.centers.forEach(x=>{ if(!c.centers.has(x)) nOut++; });
-  }
-  const subs=Object.keys(c.subjects).sort((a,b)=>c.subjects[b]-c.subjects[a])
-   .map(s=>`<span style="font-size:10.5px;font-weight:700;background:#F2F0E8;color:#6A6760;border-radius:7px;padding:3px 8px;">${esc(s)} <b style="color:#2A2A28;">${c.subjects[s]}</b></span>`).join('');
-  const row=(l,v)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;"><span style="font-size:12.5px;color:#5A5750;font-weight:600;">${l}</span><span style="font-size:14px;font-weight:800;">${v}</span></div>`;
+  if(p){ c.centers.forEach(x=>{ if(!p.centers.has(x)) nNew++; }); p.centers.forEach(x=>{ if(!c.centers.has(x)) nOut++; }); }
 
-  return `<div style="background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;">
+  // 매출 상세 — 센터별
+  const cRows=Object.keys(c.centerRev).map(n=>({n, ...c.centerRev[n]})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+  const cTop=cRows.slice(0,10).map(x=>dRow(`${esc(x.n)} <span style="color:#9B9888;">${x.cnt}회</span>`, man(x.rev))).join('');
+  const cMore=cRows.length>10?dRow(`<span style="color:#9B9888;">그 외 ${cRows.length-10}곳</span>`, man(cRows.slice(10).reduce((s,x)=>s+x.rev,0))):'';
+
+  // 비용 상세 — 카테고리별
+  const CL=[['모의수업','mock'],['주차료','parking'],['물품','supply'],['기타','etc']];
+  const costRows=CL.map(([lbl,k])=>dRow(lbl, `<span style="color:${c.costs[k]>0?'inherit':'#C4C0B4'};">${man(c.costs[k]||0)}</span>`)).join('');
+
+  // 강사 상세 — 이름 + 매출
+  const tRows=Array.from(c.teachers).map(n=>{
+   const dt=(typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.find(x=>x.name===n):null;
+   return {n, sub:(dt&&dt.subject)||'', rev:c.teacherRev[n]||0};
+  }).sort((a,b)=>b.rev-a.rev)
+   .map(x=>dRow(`${esc(x.n)}${x.sub?` <span style="font-size:10px;color:#9B9888;">${esc(x.sub)}</span>`:''}`, man(x.rev))).join('');
+
+  // 과목별 강사 + 증감
+  const subKeys=Array.from(new Set([...Object.keys(c.subjects), ...(p?Object.keys(p.subjects):[])]));
+  const subs=subKeys.map(s=>{
+   const now=c.subjects[s]||0, was=p?(p.subjects[s]||0):0, d=now-was;
+   if(now===0 && d===0) return '';
+   const dd=d===0?'':`<span style="font-size:9.5px;font-weight:800;margin-left:3px;color:${d>0?'#16A34A':'#DC2626'};">${d>0?'+':'−'}${Math.abs(d)}</span>`;
+   return `<span style="font-size:10.5px;font-weight:700;background:#F2F0E8;color:#6A6760;border-radius:7px;padding:3px 8px;">${esc(s)} <b style="color:#2A2A28;">${now}</b>${dd}</span>`;
+  }).filter(Boolean).join('');
+
+  // 전환률 — 지난달 모의수업 센터 중 이번 달 정상수업 시작한 비율
+  let convBox='';
+  if(p && p.mockCenters.size){
+   let conv=0; p.mockCenters.forEach(x=>{ if(c.liveCenters.has(x)) conv++; });
+   const rate=conv/p.mockCenters.size*100;
+   const rc=rate>=50?'#16A34A':(rate>=20?'#B4791A':'#DC2626');
+   convBox=`<div style="margin-top:8px;background:#F7FAF8;border:1px solid #DCE6E0;border-radius:11px;padding:9px 12px;">
+     <div style="display:flex;justify-content:space-between;align-items:baseline;">
+      <span style="font-size:11.5px;font-weight:700;color:#5A5750;">전환률</span>
+      <span style="font-size:18px;font-weight:900;color:${rc};">${rate.toFixed(0)}%</span></div>
+     <div style="height:7px;background:#EFEDE4;border-radius:99px;overflow:hidden;margin-top:6px;"><i style="display:block;height:100%;width:${Math.min(100,rate).toFixed(0)}%;background:${rc};border-radius:99px;"></i></div>
+     <div style="font-size:10.5px;color:#9B9888;margin-top:5px;">${esc(prev.ym)} 모의수업 ${p.mockCenters.size}곳 → ${conv}곳 정상수업 시작</div>
+    </div>`;
+  } else {
+   convBox=`<div style="margin-top:8px;background:#FAFAF7;border:1px dashed #E2DFD4;border-radius:11px;padding:9px 12px;font-size:10.5px;color:#9B9888;">전환률은 지난달 모의수업이 있어야 계산돼요</div>`;
+  }
+
+  const clickRow=(id,label,valHtml)=>`
+    <div onclick="_rgTog('${id}')" style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;cursor:pointer;user-select:none;">
+     <span style="font-size:12.5px;color:#5A5750;font-weight:600;">${label} <span id="${id}-chev" style="display:inline-block;font-size:10px;color:#7A776C;background:#EFEDE4;border-radius:5px;padding:0 5px;line-height:16px;vertical-align:middle;margin-left:2px;">▾</span></span>
+     <span style="font-size:14px;font-weight:800;">${valHtml}</span></div>`;
+  const panel=(id,inner)=>`<div id="${id}" style="display:none;background:#FAFAF7;border:1px solid #EDEAE0;border-radius:10px;padding:9px 11px;margin:2px 0 6px;">${inner||'<div style="font-size:11.5px;color:#9B9888;">내역이 없어요</div>'}</div>`;
+
+  return `<div style="background:#fff;border:1px solid #E6E3D8;border-radius:18px;overflow:hidden;">
    <div style="background:linear-gradient(135deg,${c1},${c2});color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;">
     <span style="font-size:16px;font-weight:800;">${esc(rg)}</span>
     <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;">센터 ${c.centers.size}곳</span>
    </div>
    <div style="padding:13px 16px;border-bottom:1px solid #F2F0E8;">
-    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">💰 돈</div>
-    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px;">
-     <span style="font-size:12px;color:#7A776C;font-weight:600;">매출</span>
+    ${sec('💰 돈')}
+    <div onclick="_rgTog('rgrev${idx}')" style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;cursor:pointer;user-select:none;">
+     <span style="font-size:12px;color:#7A776C;font-weight:600;">매출 <span id="rgrev${idx}-chev" style="display:inline-block;font-size:10px;color:#7A776C;background:#EFEDE4;border-radius:5px;padding:0 5px;line-height:16px;vertical-align:middle;margin-left:2px;">▾</span></span>
      <span><span style="font-size:23px;font-weight:900;color:${c1};letter-spacing:-.02em;">${man(c.revenue)}</span>${p?dTag(pct(c.revenue,p.revenue)):''}</span></div>
+    ${panel('rgrev'+idx, cTop+cMore)}
     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px;">
      <span style="font-size:12px;color:#7A776C;font-weight:600;">영업이익</span>
      <span><span style="font-size:16px;font-weight:800;color:${profit<0?'#DC2626':'inherit'};">${man(profit)}</span>${(p&&pProfit)?dTag(pct(profit,pProfit)):''}</span></div>
     <div style="background:${bg};border-radius:10px;padding:8px 11px;display:flex;justify-content:space-between;align-items:center;">
      <span style="font-size:12px;font-weight:700;color:#5A5750;">마진률</span>
      <span style="font-size:17px;font-weight:900;color:${margin<0?'#DC2626':c1};">${margin.toFixed(1)}%</span></div>
-    ${row('비용처리 금액', `${man(c.cost)}${p?dTag(pct(c.cost,p.cost),true):''}`)}
+    ${clickRow('rgcost'+idx,'비용처리 금액', `${man(c.cost)}${p?dTag(pct(c.cost,p.cost),true):''}`)}
+    ${panel('rgcost'+idx, costRows)}
    </div>
    <div style="padding:13px 16px;border-bottom:1px solid #F2F0E8;">
-    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">👥 강사</div>
-    ${row('활동 강사', `${c.teachers.size}명${p?dNum(c.teachers.size-p.teachers.size):''}`)}
+    ${sec('👥 강사')}
+    ${clickRow('rgtea'+idx,'활동 강사', `${c.teachers.size}명${p?dNum(c.teachers.size-p.teachers.size):''}`)}
+    ${panel('rgtea'+idx, tRows)}
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;">${subs||'<span style="font-size:11px;color:#9B9888;">과목 정보 없음</span>'}</div>
    </div>
    <div style="padding:13px 16px;">
-    <div style="font-size:10px;font-weight:800;color:#A8A498;letter-spacing:.06em;margin-bottom:8px;">🌱 성장</div>
+    ${sec('🌱 성장')}
     <div style="display:flex;align-items:center;gap:9px;background:#FFF9EC;border:1px solid #F0DDAE;border-radius:11px;padding:9px 12px;">
      <span style="font-size:19px;">🧪</span>
      <span><span style="font-size:19px;font-weight:900;color:#B4791A;">${c.mock}건</span>
@@ -17840,20 +17928,102 @@ function _renderRegionKpis(){
       <div style="font-size:19px;font-weight:900;line-height:1;color:#DC2626;">${nOut}</div>
       <div style="font-size:10px;font-weight:700;margin-top:3px;color:#6A6760;">이탈 센터</div></div>
     </div>
+    ${convBox}
    </div>
   </div>`;
  }).join('');
 
+ /* ── C. 최근 6개월 지역별 매출 추이 ── */
+ const last6=months.slice(-6);
+ let maxV=1;
+ last6.forEach(m=>names.forEach(r=>{ const v=m.R[r]?m.R[r].revenue:0; if(v>maxV) maxV=v; }));
+ const chartCols=last6.map(m=>{
+  const bars=names.map(r=>{
+   const v=m.R[r]?m.R[r].revenue:0;
+   const h=Math.max(2,(v/maxV)*100);
+   return `<i title="${esc(r)} ${man(v)}" style="width:14px;height:${h.toFixed(1)}%;background:${pal(r)[0]};border-radius:5px 5px 0 0;display:block;"></i>`;
+  }).join('');
+  const label=(m.ym.match(/(\d+)월/)||[])[1]||m.ym;
+  return `<div style="flex:1;min-width:58px;display:flex;flex-direction:column;align-items:center;height:100%;">
+    <div style="flex:1;display:flex;align-items:flex-end;gap:4px;justify-content:center;width:100%;">${bars}</div>
+    <div style="font-size:11px;color:#8A8778;font-weight:700;margin-top:7px;white-space:nowrap;">${esc(String(label))}월</div></div>`;
+ }).join('');
+ const legend=names.map(r=>`<span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;"><i style="width:11px;height:11px;border-radius:3px;background:${pal(r)[0]};display:block;"></i>${esc(r)}</span>`).join('');
+ const chartBox=`
+  <div style="background:#fff;border:1px solid #E6E3D8;border-radius:16px;padding:18px;margin-top:16px;">
+   <div style="font-size:13px;font-weight:800;margin-bottom:10px;">📊 최근 ${last6.length}개월 지역별 매출 추이</div>
+   <div style="display:flex;align-items:flex-end;gap:12px;height:180px;padding:6px 2px 0;overflow-x:auto;">${chartCols}</div>
+   <div style="display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap;">${legend}</div>
+  </div>`;
+
+ /* ── D. 매출 점유율 ── */
  const totRev=names.reduce((s,r)=>s+cur.R[r].revenue,0);
+ let acc=0;
+ const segs=names.map(r=>{
+  const sh=totRev>0?cur.R[r].revenue/totRev:0;
+  const from=acc*100; acc+=sh;
+  return `${pal(r)[0]} ${from.toFixed(2)}% ${(acc*100).toFixed(2)}%`;
+ }).join(',');
+ const shareRows=names.map(r=>{
+  const sh=totRev>0?(cur.R[r].revenue/totRev*100):0;
+  return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+    <i style="width:11px;height:11px;border-radius:3px;background:${pal(r)[0]};display:block;flex-shrink:0;"></i>
+    <span style="flex:1;font-size:13px;font-weight:700;">${esc(r)}</span>
+    <span style="font-size:13px;font-weight:800;">${man(cur.R[r].revenue)}</span>
+    <span style="font-size:11px;color:#8A8778;width:48px;text-align:right;">${sh.toFixed(1)}%</span></div>`;
+ }).join('');
+ const shareBox=`
+  <div style="background:#fff;border:1px solid #E6E3D8;border-radius:16px;padding:18px;margin-top:16px;">
+   <div style="font-size:13px;font-weight:800;margin-bottom:12px;">🥧 매출 점유율</div>
+   <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+    <div style="width:150px;height:150px;border-radius:50%;flex-shrink:0;margin:0 auto;position:relative;background:conic-gradient(${segs||'#EFEDE4 0 100%'});">
+     <div style="position:absolute;inset:34px;background:#fff;border-radius:50%;"></div>
+     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <b style="font-size:16px;font-weight:900;">${man(totRev)}</b>
+      <span style="font-size:10px;color:#8A8778;">전체 매출</span></div>
+    </div>
+    <div style="flex:1;min-width:210px;">${shareRows}</div>
+   </div>
+  </div>`;
+
+ /* ── E. 성장률 비교 (0 기준 좌우) ── */
+ let growthBox='';
+ if(prev){
+  const gs=names.map(r=>({r, g:prev.R[r]?pct(cur.R[r].revenue, prev.R[r].revenue):null})).filter(x=>x.g!==null&&isFinite(x.g));
+  if(gs.length){
+   const mx=Math.max(...gs.map(x=>Math.abs(x.g)),1);
+   const rows=gs.sort((a,b)=>b.g-a.g).map(x=>{
+    const w=(Math.abs(x.g)/mx)*45;
+    const pos=x.g>=0;
+    const col=pos?`linear-gradient(90deg,${pal(x.r)[1]},${pal(x.r)[0]})`:'linear-gradient(90deg,#F87171,#DC2626)';
+    return `<div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid #F2F0E8;">
+      <span style="width:48px;font-size:13px;font-weight:800;">${esc(x.r)}</span>
+      <span style="flex:1;display:flex;align-items:center;height:24px;position:relative;">
+       <i style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#DDD9CC;display:block;"></i>
+       <i style="position:absolute;height:16px;top:4px;border-radius:5px;display:block;${pos?`left:50%;width:${w.toFixed(1)}%`:`right:50%;width:${w.toFixed(1)}%`};background:${col};"></i>
+      </span>
+      <span style="width:66px;text-align:right;font-size:13px;font-weight:800;color:${pos?'#16A34A':'#DC2626'};">${pos?'+':'−'}${Math.abs(x.g).toFixed(1)}%</span>
+     </div>`;
+   }).join('');
+   growthBox=`<div style="background:#fff;border:1px solid #E6E3D8;border-radius:16px;padding:18px;margin-top:16px;">
+     <div style="font-size:13px;font-weight:800;margin-bottom:6px;">📈 성장률 비교 <span style="font-size:11px;font-weight:600;color:#8A8778;">(${esc(prev.ym)} → ${esc(cur.ym)})</span></div>
+     ${rows}</div>`;
+  }
+ }
+
  target.innerHTML=`
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
    <div>
-    <div style="font-size:15px;font-weight:800;color:var(--text);">🗺️ 지역별 핵심 지표</div>
+    <div style="font-size:15px;font-weight:800;color:var(--text);">🗺️ 지역별 성장</div>
     <div style="font-size:11.5px;color:var(--text3);margin-top:2px;">${esc(cur.ym)} 기준${prev?` · 증감은 ${esc(prev.ym)} 대비`:''} · 전체 매출 ${won(totRev)}</div>
    </div>
-   <div style="font-size:10.5px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;">영업이익 = 매출 − 강사료(세전) − 비용</div>
+   <div style="font-size:10.5px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 9px;">영업이익 = 매출 − 강사료(세전) − 비용 · 매출·비용·강사를 누르면 상세</div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:13px;">${cards}</div>`;
+  ${vsBox}
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:13px;">${cards}</div>
+  ${chartBox}
+  ${shareBox}
+  ${growthBox}`;
 }
 
 function renderGrowthView(){
