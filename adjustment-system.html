@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.82">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.83">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.82">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.83">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.82</title>
+<title>수업기록표 정산 시스템 v15.83</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.82';
+const SYSTEM_VERSION='v15.83';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10875,7 +10875,11 @@ async function syncAllToDB(force){
   if(_done) return false; // 워치독이 이미 처리
   // v11.30: 월별 스냅샷도 함께 동기화
   const localMonths = getSavedMonths();
-  const snapPromises = localMonths.map(ym => {
+  // v15.83: 예전에는 강사·센터·월별스냅샷 전부를 Promise.all 로 '동시에' 보냈다.
+  //  구글 앱스스크립트는 같은 스크립트를 동시에 여러 개 실행하지 못해, 몰릴수록 일부 요청이
+  //  JSON 대신 오류 HTML 페이지를 돌려주고 → "Unexpected token '<'" 로 터졌다(되다 안 되다 반복).
+  //  → 무거운 월별 스냅샷은 '하나씩 순차' 로 보낸다.
+  const snapTasks = localMonths.map(ym => () => {
    const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
    const raw = localStorage.getItem(key);
    if(!raw) return Promise.resolve();
@@ -10889,11 +10893,16 @@ async function syncAllToDB(force){
    }catch(e){ return Promise.resolve(); }
   });
 
+  // 강사·센터 2건만 동시에 (이건 서버가 감당 가능한 수준)
   const [tr, cr] = await Promise.all([
    gasPost({action:'syncTeachers', teachers:DB.teachers, force: force||undefined}),
-   gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })(), force: force||undefined}),
-   ...snapPromises
+   gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })(), force: force||undefined})
   ]);
+  // 월별 스냅샷은 하나씩 순차 업로드 (동시 실행 충돌 방지)
+  for(const task of snapTasks){
+   if(_done) break;                       // 워치독이 이미 종료했으면 중단
+   try{ await task(); }catch(_){}
+  }
   if(_done) return false; // 워치독이 이미 버튼을 복구함 → 뒤늦게 도착한 응답은 조용히 무시
   const now = new Date().toISOString();
   // v14.55/v15.26: 서버가 차단(blocked)하면 → 무엇이 바뀌는지 보여주고 확인 후 force 재시도
@@ -10936,7 +10945,14 @@ async function syncAllToDB(force){
    return false;
   }
  } catch(e){
-  if(!_done) showToast('❌ 동기화 오류: ' + e.message);
+  // v15.83: 원인 불명의 개발자 메시지 대신 무엇을 하면 되는지 안내
+  if(!_done){
+   const m=String(e&&e.message||'');
+   const busy = /Unexpected token|not valid JSON|DOCTYPE|Failed to fetch|aborted|NetworkError/i.test(m);
+   showToast(busy
+     ? '⏳ 서버가 잠시 바빴어요. 저장된 내용은 그대로 있으니 잠시 후 다시 눌러주세요.'
+     : '❌ 동기화 오류: ' + m);
+  }
   return false;
  } finally {
   clearTimeout(_watchdog);
@@ -11997,15 +12013,23 @@ async function gasGet(params, ms=45000){
  const id = setTimeout(()=>ctrl.abort(), ms);
  try{
   const res = await fetch(url, {signal:ctrl.signal});
-  return res.json();
+  return _gasParse(await res.text());   // v15.83: HTML 오류 페이지도 안전 처리
  }finally{ clearTimeout(id); }
+}
+/* v15.83: 서버가 JSON 대신 오류 HTML(<!DOCTYPE …)을 돌려줄 때가 있다.
+ *  (구글 앱스스크립트 과부하·동시실행 충돌·일시 오류) 예전엔 res.json() 이 그대로 터져
+ *  "Unexpected token '<'" 라는 무서운 메시지가 떴다. → 조용히 {ok:false} 로 바꿔
+ *  기존 재시도 로직(_gasPostRetry)이 알아서 다시 시도하게 한다. */
+function _gasParse(txt){
+ try{ return JSON.parse(txt); }
+ catch(_){ return {ok:false, _busy:true, message:'서버가 잠시 응답하지 못했어요 (구글 서버 혼잡). 잠시 후 자동으로 다시 시도합니다.'}; }
 }
 async function gasPost(body, ms=45000){
  const ctrl = new AbortController();
  const id = setTimeout(()=>ctrl.abort(), ms);
  try{
   const res = await fetch(GAS_URL, {method:'POST', body:JSON.stringify(body), signal:ctrl.signal});
-  return res.json();
+  return _gasParse(await res.text());
  }finally{ clearTimeout(id); }
 }
 
