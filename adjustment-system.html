@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.81">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.82">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.81">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.82">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.81</title>
+<title>수업기록표 정산 시스템 v15.82</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.81';
+const SYSTEM_VERSION='v15.82';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7853,7 +7853,16 @@ function _mergeCenters(gasCenters){
 /* 로컬 전용 센터를 서버에 확실히 저장(한 번의 syncCenters + 재시도) + 삭제분은 서버 삭제 재시도
  *  v15.54: force:true — 병합 결과는 로컬을 지켜낸 '전체 목록(union)'이라 서버 급증 차단에 막히면
  *          영영 반영이 안 됨. 사람 확인 없이 정상 로컬 목록을 그대로 밀어넣어 미동기화 해소. */
+/* v15.82: 센터 목록을 '서버에 쓰는' 것은 관리자 기기에서만 허용.
+ *  [고친 문제] 이 함수는 페이지 로드 때 모든 기기(강사 포함)에서 실행되는데,
+ *  그 기기에 남아있던 옛 목록을 force로 서버에 밀어넣어 관리자가 삭제한 센터가 되살아났다.
+ *  삭제 도장(tombstone)은 삭제한 기기에만 있어서 다른 기기는 부활을 막지 못한다.
+ *  → 강사 기기는 서버에서 '읽기만' 하고, 쓰기는 관리자 기기로 한정한다. */
+function _canWriteCenters(){
+ try{ return typeof _isAdminMode==='function' ? _isAdminMode() : false; }catch(_){ return false; }
+}
 function _persistCentersAfterMerge(localOnly, tombedOnGas){
+ if(!_canWriteCenters()) return;   // 강사 기기·로그인 전 → 서버에 쓰지 않음(부활 차단)
  try{
   if(localOnly && localOnly.length){
    const _snapshot = JSON.parse(JSON.stringify(DB.centers));
@@ -7865,8 +7874,12 @@ function _persistCentersAfterMerge(localOnly, tombedOnGas){
  }catch(_){}
 }
 /* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도)
- *  v15.54: force:true — 사용자 조작(드래그 등) 후의 '현재 전체 목록'을 확실히 저장(막힘 방지). */
-function _saveAllCentersToGas(){ try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers)), force:true}); }catch(_){} }
+ *  v15.54: force:true — 사용자 조작(드래그 등) 후의 '현재 전체 목록'을 확실히 저장(막힘 방지).
+ *  v15.82: 관리자 기기에서만 (관리자 UI에서만 호출되지만 이중 안전장치) */
+function _saveAllCentersToGas(){
+ if(!_canWriteCenters()) return;
+ try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers)), force:true}); }catch(_){}
+}
 
 function switchCenterView(view){
  _centerView = 'tree';
