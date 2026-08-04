@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.83">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.84">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.83">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.84">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.83</title>
+<title>수업기록표 정산 시스템 v15.84</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.83';
+const SYSTEM_VERSION='v15.84';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10855,6 +10855,19 @@ async function syncSnapshotsToGAS(){
 let _syncInFlight = false;
 const _SYNC_BTN_ORIG = '<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화';
 const _SYNC_BTN_HARD_MS = 50000;
+/* v15.84: 월별 기록은 버튼을 붙잡지 않고 백그라운드에서 하나씩 올린다.
+ *  (동시 전송 금지 — 구글 앱스스크립트 과부하 방지 / 버튼 응답성은 유지) */
+let _snapBgRunning = false;
+async function _uploadSnapshotsBg(tasks){
+ if(_snapBgRunning || !tasks || !tasks.length) return;
+ _snapBgRunning = true;
+ try{
+  for(const t of tasks){
+   try{ await t(); }catch(_){}
+   await new Promise(r=>setTimeout(r, 300));   // 서버 숨 돌릴 틈
+  }
+ } finally { _snapBgRunning = false; }
+}
 async function syncAllToDB(force){
  const btn = document.getElementById('syncDBBtn');
  const chip = document.getElementById('syncStatusChip');
@@ -10875,34 +10888,38 @@ async function syncAllToDB(force){
   if(_done) return false; // 워치독이 이미 처리
   // v11.30: 월별 스냅샷도 함께 동기화
   const localMonths = getSavedMonths();
-  // v15.83: 예전에는 강사·센터·월별스냅샷 전부를 Promise.all 로 '동시에' 보냈다.
-  //  구글 앱스스크립트는 같은 스크립트를 동시에 여러 개 실행하지 못해, 몰릴수록 일부 요청이
-  //  JSON 대신 오류 HTML 페이지를 돌려주고 → "Unexpected token '<'" 로 터졌다(되다 안 되다 반복).
-  //  → 무거운 월별 스냅샷은 '하나씩 순차' 로 보낸다.
-  const snapTasks = localMonths.map(ym => () => {
+  // v15.83: 강사·센터·월별스냅샷을 전부 동시에 보내면 구글 앱스스크립트가 밀려
+  //  일부가 JSON 대신 오류 HTML 을 돌려준다("Unexpected token '<'"). → 순차 전송.
+  // v15.84: 여기에 더해 '바뀐 달만' 올린다. 예전엔 누를 때마다 모든 달을 다시 올려
+  //  매번 느렸다(월이 쌓일수록 악화). 이미 올린 것과 저장시각이 같으면 건너뛴다.
+  const _upKey='iruri_snap_uploaded';
+  let _uploaded={}; try{ _uploaded=JSON.parse(localStorage.getItem(_upKey)||'{}')||{}; }catch(_){ _uploaded={}; }
+  const snapTasks = localMonths.map(ym => {
    const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
    const raw = localStorage.getItem(key);
-   if(!raw) return Promise.resolve();
-   try{
-    const snap = JSON.parse(raw);
-    // v15.21: 빈(강사 0명) 스냅샷은 업로드하지 않음 — 한 컴퓨터의 빈 기록이 서버를 오염시켜
-    //         다른 컴퓨터로 퍼지던 경로 차단 (여러 PC 사용 시 월 기록 소실의 전파 원인)
-    if(!snap?.data?.teachers?.length) return Promise.resolve();
+   if(!raw) return null;
+   let snap=null; try{ snap=JSON.parse(raw); }catch(e){ return null; }
+   // v15.21: 빈(강사 0명) 스냅샷은 업로드하지 않음 — 한 컴퓨터의 빈 기록이 서버를 오염시켜
+   //         다른 컴퓨터로 퍼지던 경로 차단 (여러 PC 사용 시 월 기록 소실의 전파 원인)
+   if(!snap?.data?.teachers?.length) return null;
+   const stamp = String(snap.savedAt||'');
+   if(!force && stamp && _uploaded[ym] === stamp) return null;   // 이미 올린 그대로면 건너뜀
+   return () => {
     // v15.26: 원본 저장시각을 함께 전송 → 서버가 '오래된 재업로드'로 최신본을 덮어쓰지 않도록(단조성)
-    return gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:snap.data, savedAt:snap.savedAt||undefined}).catch(()=>{});
-   }catch(e){ return Promise.resolve(); }
-  });
+    return gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data:snap.data, savedAt:snap.savedAt||undefined})
+     .then(r=>{ if(r && r.ok!==false && stamp){ try{ const u=JSON.parse(localStorage.getItem(_upKey)||'{}'); u[ym]=stamp; localStorage.setItem(_upKey, JSON.stringify(u)); }catch(_){} } })
+     .catch(()=>{});
+   };
+  }).filter(Boolean);
 
-  // 강사·센터 2건만 동시에 (이건 서버가 감당 가능한 수준)
+  // v15.84: 버튼이 기다리는 건 '강사·센터' 2건뿐. 무겁고 느린 월별 스냅샷은
+  //  성공 판정을 마친 뒤 백그라운드에서 하나씩 올린다.
+  //  [고친 문제] v15.83에서 스냅샷을 순차로 바꾸면서 전체 시간이 합산돼 50초 워치독을
+  //  넘기는 일이 생겼고, 그러면 성공 처리가 실행되지 못해 '미동기화'로 남았다.
   const [tr, cr] = await Promise.all([
    gasPost({action:'syncTeachers', teachers:DB.teachers, force: force||undefined}),
    gasPost({action:'syncCenters', centers:(()=>{ const m=new Map(); DB.centers.forEach(c=>{const k=`${c.name}||${c.region||''}`;if(!m.has(k))m.set(k,c);}); return Array.from(m.values()); })(), force: force||undefined})
   ]);
-  // 월별 스냅샷은 하나씩 순차 업로드 (동시 실행 충돌 방지)
-  for(const task of snapTasks){
-   if(_done) break;                       // 워치독이 이미 종료했으면 중단
-   try{ await task(); }catch(_){}
-  }
   if(_done) return false; // 워치독이 이미 버튼을 복구함 → 뒤늦게 도착한 응답은 조용히 무시
   const now = new Date().toISOString();
   // v14.55/v15.26: 서버가 차단(blocked)하면 → 무엇이 바뀌는지 보여주고 확인 후 force 재시도
@@ -10935,6 +10952,7 @@ async function syncAllToDB(force){
    localStorage.setItem(LS_SYNC_TIME, JSON.stringify(info));
    _updateSyncChip(true, now, tCount, cCount);
    showToast(`✅ 동기화 완료 — 강사 ${tCount}명, 센터 ${cCount}개 Sheets 저장 확인`);
+   _uploadSnapshotsBg(snapTasks);   // v15.84: 월별 기록은 백그라운드에서 계속 (버튼은 이미 완료)
    return true;
   } else {
    const info = {ok:false, time:now, teachers:0, centers:0};
