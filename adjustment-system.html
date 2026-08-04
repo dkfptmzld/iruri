@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.84">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.86">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.84">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.86">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.84</title>
+<title>수업기록표 정산 시스템 v15.86</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1713,7 +1713,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <!-- v14.74: 알림 발송·GitHub 업로드 버튼 제거 (해당 기능 미사용) -->
  
-<button onclick="syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
+<button onclick="_invalidateTabSync(); syncAllToDB()" title="센터·강사 DB를 Google Sheets에 동기화" class="btn" style="font-size:12px;background:#1565C0;color:white;border-color:#1565C0;font-weight:600;display:flex;align-items:center;gap:4px;" id="syncDBBtn">
  <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"></path></svg>DB 동기화
 </button><span id="unsyncedBadge" style="display: none; font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgb(255, 243, 205); color: rgb(133, 100, 4); border: 1px solid rgb(255, 215, 0); font-weight: 700; white-space: nowrap;">⚠ 미동기화</span>
 
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.84';
+const SYSTEM_VERSION='v15.86';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -3858,11 +3858,15 @@ function lsGet(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
 // 초기 로드(빈 저장소)에서 lsSave()→_scheduleAutoSync()가 먼저 호출되므로 상단에서 선언 (TDZ 방지)
 let _autoSyncTimer = null;
 const AUTO_SYNC_DEBOUNCE = 3000; // 3초 대기 후 push
-function lsSave(){
+/* v15.86: 로컬에만 저장한다(서버 전체 업로드를 예약하지 않음).
+ *  이미 개별 저장(saveTeacher 등)으로 서버 반영이 끝난 자동 처리에서 쓰기 위한 것. */
+function lsSaveLocal(){
  localStorage.setItem(LS_T,JSON.stringify(DB.teachers));
  localStorage.setItem(LS_C,JSON.stringify(DB.centers));
  localStorage.setItem(LS_CF,JSON.stringify(DB.centerFees));
-
+}
+function lsSave(){
+ lsSaveLocal();
  _scheduleAutoSync();
 }
 
@@ -4107,6 +4111,11 @@ window.addEventListener('load', ()=>{
  gasGet({ action:'listMonthlySnapshots' })
   .then(r => {
    if(!r.ok || !r.data) return;
+   // v15.85: 예전에는 '더 최신인 달' 전부를 forEach 로 동시에 내려받았다.
+   //  달이 쌓일수록 앱 시작 때 요청이 몰려(구글 앱스스크립트는 동시 처리 불가)
+   //  강사·센터 조회까지 같이 밀리면서 로딩이 크게 느려졌다.
+   //  → 받아야 할 달만 골라 '최신 달부터 하나씩' 순차로 내려받는다.
+   const _todo=[];
    r.data.forEach(item => {
     if(!_isRealMonthYM(item.yearMonth)) return; // v15.22: 서버의 백업 파일(...bak.json)이 월로 잡히는 것 방지
     // v14.59: 삭제된 달은 GAS에서 다시 받지 않음 (예: 제거한 3월 더미)
@@ -4126,22 +4135,30 @@ window.addEventListener('load', ()=>{
     // GAS 저장 시각
     const gasSavedAt = item.savedAt ? new Date(item.savedAt).getTime() : 0;
 
-    // GAS가 더 최신이면(또는 로컬에 없으면) 가져오기
-    if(gasSavedAt > localSavedAt){
-     gasGet({ action:'getMonthlySnapshot', yearMonth: item.yearMonth })
-      .then(res => {
-       if(res.ok && res.data){
-        // savedAt 보존을 위해 wrapping (saveMonthlySnapshot과 같은 형식)
-        const snap = { ym: item.yearMonth, savedAt: item.savedAt, data: res.data };
-        localStorage.setItem(key, JSON.stringify(snap));
-        // 사이드바 갱신
-        if(typeof renderSidebarMonths === 'function' && STATE.data){
-         _renderSidebarYM(); _renderNewTeacherList();
-        }
-       }
-      }).catch(()=>{});
-    }
+    // GAS가 더 최신이면(또는 로컬에 없으면) 받을 목록에 담기
+    if(gasSavedAt > localSavedAt) _todo.push({ym:item.yearMonth, key, savedAt:item.savedAt});
    });
+   if(!_todo.length) return;
+   // 최신 달부터 (지금 보는 달이 가장 먼저 채워지도록)
+   const _n=(ym)=>{ const m=String(ym||'').match(/(\d{4})\D+?(\d{1,2})/); return m?(+m[1]*100 + +m[2]):0; };
+   _todo.sort((a,b)=>_n(b.ym)-_n(a.ym));
+   (async()=>{
+    for(const it of _todo){
+     try{
+      const res = await gasGet({ action:'getMonthlySnapshot', yearMonth: it.ym });
+      if(res && res.ok && res.data){
+       // savedAt 보존을 위해 wrapping (saveMonthlySnapshot과 같은 형식)
+       const snap = { ym: it.ym, savedAt: it.savedAt, data: res.data };
+       localStorage.setItem(it.key, JSON.stringify(snap));
+       // 사이드바 갱신
+       if(typeof renderSidebarMonths === 'function' && STATE.data){
+        _renderSidebarYM(); _renderNewTeacherList();
+       }
+      }
+     }catch(_){}
+     await new Promise(r=>setTimeout(r, 200));   // 서버 부담 완화
+    }
+   })();
   })
   .catch(()=>{});
 
@@ -4223,15 +4240,29 @@ function switchView(v){
  * - 로딩 화면 표시 제거 → UI 차단 없이 백그라운드 실행
  * - 변경 있을 때만 토스트로 완료 알림
  */
+/* v15.86: 탭을 누를 때마다 강사 30명·센터 300곳 '전체'를 매번 다시 받던 것을
+ *  '조금 전에 받아왔으면 건너뛰기'(기본 90초)로 바꾼다.
+ *  [고친 문제] 강사관리↔센터관리↔기록표관리를 오갈 때마다 전체 재조회가 걸렸고,
+ *  구글 앱스스크립트는 요청을 한 줄로 처리해서 탭을 누를 때마다 몇 초씩 멈춘 것처럼 느껴졌다.
+ *  또 '최신 데이터 확인 중…' 로딩 화면이 화면을 덮고 있었는데,
+ *  바로 윗줄에서 로컬 데이터로 이미 다 그려놓은 뒤라 굳이 막을 이유가 없다 → 제거.
+ *  최신 값을 강제로 받고 싶으면 상단 '동기화' 버튼을 누르면 된다(캐시 무시). */
+const TAB_SYNC_TTL = 90000;
+const _tabSyncAt = {};
+function _invalidateTabSync(tab){
+ if(tab) delete _tabSyncAt[tab];
+ else Object.keys(_tabSyncAt).forEach(k=>delete _tabSyncAt[k]);
+}
 async function _syncDBOnTabSwitch(tab, renderFn){
  // 즉시 현재 로컬 데이터로 먼저 렌더 (빠른 응답)
  renderFn();
- showLoader('최신 데이터 확인 중...', '', 90000);
+ if(_tabSyncAt[tab] && (Date.now() - _tabSyncAt[tab]) < TAB_SYNC_TTL) return;   // v15.86: 최근에 받아왔으면 건너뜀
  try{
   if(tab === 'teachers'){
    // v11.31: 강사 관리 탭은 관리자 전용 → isAdmin:'true' 고정
    const r = await gasGet({action:'getTeachers', teacher:'', isAdmin:'true'});
    if(!r.ok || !r.data?.length) return;
+   _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록 (실패는 다음 진입에 즉시 재시도)
    // 변경 있을 때만 업데이트
    if(JSON.stringify(r.data) !== JSON.stringify(DB.teachers)){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
@@ -4243,6 +4274,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
   } else if(tab === 'centers'){
    const r = await gasGet({action:'getCenters'});
    if(!r.ok || !r.data?.length) return;
+   _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록
    // v11.30 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
    // 스케줄 없는 GAS 데이터로 DB 덮어쓰기 방지
    const hasSchedule = r.data.some(c => c.schedule && c.schedule.length > 0);
@@ -4262,7 +4294,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     renderFn(); // 최신 데이터로 다시 렌더
    }
   }
- } catch(e){ console.warn('탭 동기화 실패:', e); } finally{ hideLoader(); }
+ } catch(e){ console.warn('탭 동기화 실패:', e); }
 }
 
 /* ═══ FILE LOAD & PARSE (DecompressionStream + Central Directory) ═══ */
@@ -10405,12 +10437,14 @@ function _renderPresenceWidget(list){
 
  // v11.30 fix: DB.teachers 비어있으면 GAS에서 먼저 로드 후 재렌더
  // v11.31: presence 위젯은 관리자 전용 → isAdmin:'true' 고정
- if(!(window.DB?.teachers?.length)){
+ /* v15.86 [고친 문제] 여기서 window.DB 를 봤는데, DB 는 const 로 선언돼 있어
+  *  window 에 붙지 않는다 → 강사 목록이 멀쩡히 있어도 항상 '비어있다'고 판단해서
+  *  앱을 열 때마다 강사 전체 조회를 한 번씩 더 보내고 있었다. → DB 를 직접 본다. */
+ if(!(typeof DB !== 'undefined' && DB.teachers && DB.teachers.length)){
   listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div>';
   gasGet({action:'getTeachers', teacher:'', isAdmin:'true'}).then(r=>{
    if(r.ok && r.data?.length){
-    window.DB = window.DB||{};
-    window.DB.teachers = r.data;
+    DB.teachers = r.data;
     _renderPresenceWidget(list);
    }
   }).catch(()=>{});
@@ -12025,14 +12059,26 @@ const ADMIN_PW_HASH = '-ecgotm'; // 관리자 비밀번호 해시 (원문 노출
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbBCkZ3pHlkGArHZf1TkEZoNBfPKmRm492Byb_kPpFecgqWXw/exec';
 
 /* ── Google Sheets API 헬퍼 ── */
+/* v15.86: 똑같은 조회를 동시에 두 번 보내지 않는다 (중복 요청 합치기).
+ *  [고친 문제] 구글 앱스스크립트는 한 사용자의 요청을 사실상 한 줄로 세워 처리한다.
+ *  그래서 앱 시작 때 9개를 한꺼번에 보내면 '동시'가 아니라 '9번 차례로' 기다리게 된다.
+ *  그중 getTeachers 는 두 곳에서 동시에 불려 왕복 한 번을 통째로 낭비하고 있었다.
+ *  → 이미 진행 중인 같은 요청이 있으면 그 결과를 같이 쓴다.
+ *  (오래된 값을 저장해두는 캐시가 아니라 '진행 중인 것만' 공유 → 데이터가 낡을 위험 없음) */
+const _gasInflight = new Map();
 async function gasGet(params, ms=45000){
- const url = GAS_URL + '?' + new URLSearchParams(params);
- const ctrl = new AbortController();
- const id = setTimeout(()=>ctrl.abort(), ms);
- try{
-  const res = await fetch(url, {signal:ctrl.signal});
-  return _gasParse(await res.text());   // v15.83: HTML 오류 페이지도 안전 처리
- }finally{ clearTimeout(id); }
+ const qs = new URLSearchParams(params).toString();
+ if(_gasInflight.has(qs)) return _gasInflight.get(qs);
+ const job = (async()=>{
+  const ctrl = new AbortController();
+  const id = setTimeout(()=>ctrl.abort(), ms);
+  try{
+   const res = await fetch(GAS_URL + '?' + qs, {signal:ctrl.signal});
+   return _gasParse(await res.text());   // v15.83: HTML 오류 페이지도 안전 처리
+  }finally{ clearTimeout(id); _gasInflight.delete(qs); }
+ })();
+ _gasInflight.set(qs, job);
+ return job;
 }
 /* v15.83: 서버가 JSON 대신 오류 HTML(<!DOCTYPE …)을 돌려줄 때가 있다.
  *  (구글 앱스스크립트 과부하·동시실행 충돌·일시 오류) 예전엔 res.json() 이 그대로 터져
@@ -12826,9 +12872,18 @@ switchView = function(v){
 };
 
 /* ═══ 강사료 자동 인상 ═══ */
+/* v15.86 [고친 문제] 이 함수는 앱을 열 때마다 실행되는데, 서버(GAS)가 아직 옛 값을
+ *  돌려주면 같은 강사를 매번 다시 인상 처리했다. 그때마다
+ *   ① saveTeacher 를 강사 수만큼 보내고  ② lsSave() 가 '강사·센터 전체 업로드'까지 예약해
+ *  앱을 열 때마다 서버 왕복이 7번씩 더 붙었다(느려짐의 큰 원인).
+ *  → 서버 재전송은 강사당 하루 한 번으로 제한하고, 저장은 로컬만(개별 saveTeacher 로 이미 반영됨). */
 function checkAndApplyRaises(){
  const today = new Date(); today.setHours(0,0,0,0);
  const raised = [];
+ const _RK='iruri_raise_pushed';
+ const _todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+ let _pushed={}; try{ _pushed=JSON.parse(localStorage.getItem(_RK)||'{}'); }catch(_){ _pushed={}; }
+ let _pushedChanged=false;
 
  DB.teachers.forEach(t => {
   if(!t.raiseDate) return;
@@ -12841,17 +12896,21 @@ function checkAndApplyRaises(){
    t.feeVal = 42000;
    t.raiseDate = null;
    raised.push({ name: t.name, region: t.region, oldVal, newVal: 42000 });
-   // GAS 동기화
-   gasPost({ action:'saveTeacher', teacher: t }).catch(()=>{});
+   // GAS 동기화 — 같은 강사는 하루 한 번만 재전송 (서버가 옛 값을 계속 주더라도 매번 보내지 않음)
+   if(_pushed[t.name] !== _todayStr){
+    _pushed[t.name] = _todayStr; _pushedChanged = true;
+    gasPost({ action:'saveTeacher', teacher: t }).catch(()=>{});
+   }
   } else {
    // feeVal이 이미 42000이면 raiseDate만 제거
    t.raiseDate = null;
   }
  });
+ if(_pushedChanged){ try{ localStorage.setItem(_RK, JSON.stringify(_pushed)); }catch(_){} }
 
  if(raised.length === 0) return;
 
- lsSave();
+ lsSaveLocal();   // v15.86: 전체 업로드 예약 없이 로컬 저장만 (서버는 위 saveTeacher 로 이미 반영)
 
  // 인상 적용 배너 표시
  document.getElementById('raise-applied-banner')?.remove();
