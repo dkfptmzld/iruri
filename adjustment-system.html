@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.87">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.88">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.87">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.88">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.87</title>
+<title>수업기록표 정산 시스템 v15.88</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3631,7 +3631,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.87';
+const SYSTEM_VERSION='v15.88';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12100,18 +12100,38 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbB
  *  그중 getTeachers 는 두 곳에서 동시에 불려 왕복 한 번을 통째로 낭비하고 있었다.
  *  → 이미 진행 중인 같은 요청이 있으면 그 결과를 같이 쓴다.
  *  (오래된 값을 저장해두는 캐시가 아니라 '진행 중인 것만' 공유 → 데이터가 낡을 위험 없음) */
+/* v15.88: 조회 실패 시 자동 재시도.
+ *  [고친 문제] 구글 앱스스크립트는 응답을 script.googleusercontent.com 으로 넘겨 주는데,
+ *  서버가 붐비면 그 주소가 이따금 404 를 돌려준다(콘솔의 '.../macros/echo ... 404').
+ *  지금까지는 그 조회가 그냥 실패로 끝나서, 센터·강사 목록이 갱신되지 않은 채 남고
+ *  '미동기화'가 뜨곤 했다. 실제 측정에서도 앱 자신의 요청이 404 를 맞는 것을 확인했다.
+ *  → 조회(GET)는 다시 불러도 안전하므로(읽기 전용) 잠깐 쉬었다가 두 번 더 시도한다.
+ *  ※ 저장(POST)은 여기서 재시도하지 않는다. 수업기록 제출처럼 '한 번 더 보내면
+ *    한 건 더 쌓이는' 요청이 있어서다. 저장 쪽은 기존 _gasPostRetry 가 담당한다. */
 const _gasInflight = new Map();
+const _GAS_GET_RETRY = 2;          // 최초 1회 + 재시도 2회
+const _GAS_GET_GAP   = [900, 2200]; // 재시도 전 대기(ms) — 서버가 숨 돌릴 틈
 async function gasGet(params, ms=45000){
  const qs = new URLSearchParams(params).toString();
  if(_gasInflight.has(qs)) return _gasInflight.get(qs);
  const job = (async()=>{
-  const ctrl = new AbortController();
-  const id = setTimeout(()=>ctrl.abort(), ms);
-  try{
-   const res = await fetch(GAS_URL + '?' + qs, {signal:ctrl.signal});
-   return _gasParse(await res.text());   // v15.83: HTML 오류 페이지도 안전 처리
-  }finally{ clearTimeout(id); _gasInflight.delete(qs); }
- })();
+  let last = null, lastErr = null;
+  for(let i=0; i<=_GAS_GET_RETRY; i++){
+   const ctrl = new AbortController();
+   const id = setTimeout(()=>ctrl.abort(), ms);
+   try{
+    const res = await fetch(GAS_URL + '?' + qs, {signal:ctrl.signal});
+    last = _gasParse(await res.text());   // v15.83: HTML/404 응답도 안전 처리
+    lastErr = null;
+    if(!last._busy) return last;          // 제대로 된 JSON → 바로 반환
+   }catch(e){
+    lastErr = e;                          // 네트워크 끊김·시간 초과
+   }finally{ clearTimeout(id); }
+   if(i < _GAS_GET_RETRY) await new Promise(s=>setTimeout(s, _GAS_GET_GAP[i]));
+  }
+  if(lastErr) throw lastErr;               // 끝까지 실패 → 기존과 똑같이 예외
+  return last;                             // {ok:false,_busy:true}
+ })().finally(()=>{ _gasInflight.delete(qs); });
  _gasInflight.set(qs, job);
  return job;
 }
