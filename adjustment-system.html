@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.88">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.89">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.88">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.89">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.88</title>
+<title>수업기록표 정산 시스템 v15.89</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -411,6 +411,19 @@ body.edit-mode-active .ledger-wrap textarea {
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
 /* GLOBAL LOADING OVERLAY */
+/* v15.89: 탭별 서버 요청 상태 줄 */
+.srv-line{display:none;align-items:center;gap:6px;padding:6px 9px;border-radius:7px;font-size:10.5px;font-weight:600;line-height:1.4;margin-bottom:10px;}
+.srv-line .srv-el{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;opacity:.85;flex-shrink:0;padding-left:8px;}
+.srv-line.busy {background:var(--green-bg);border:1px solid #B8E0CC;color:var(--green);}
+.srv-line.retry{background:#FFFBEB;border:1px solid #FCD34D;color:#B45309;}
+.srv-line.ok   {background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-weight:500;}
+.srv-line.fresh{background:var(--green-bg);border:1px solid #B8E0CC;color:var(--green);}
+.srv-line.fail {background:var(--red-bg);border:1px solid #FCA5A5;color:var(--red);flex-wrap:wrap;}
+.srv-line.off  {background:#F1F5F9;border:1px solid #E2E8F0;color:#64748B;}
+.srv-line .srv-rt{margin-left:auto;background:var(--red);color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;}
+@media(min-width:601px){ .srv-line.srv-mobile{ display:none!important; } }
+.srv-spin{width:11px;height:11px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:srvsp .7s linear infinite;flex-shrink:0;display:inline-block;}
+@keyframes srvsp{to{transform:rotate(360deg)}}
 #globalLoader{position:fixed;inset:0;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:99998;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;transition:opacity .2s;}
 #globalLoader.show{opacity:1;pointer-events:all;}
 #globalLoader .loader-card{background:white;border-radius:14px;padding:28px 36px;display:flex;flex-direction:column;align-items:center;gap:14px;min-width:160px;}
@@ -1746,7 +1759,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 <div id="mgr-teacher-bar" style="display: flex;">
   <span id="mgr-teacher-bar-label">강사 선택</span>
   <button id="mgr-teacher-bar-pill" onclick="_openSidebarOverlay()">김유천 · 1,129,456원 ▾</button>
-  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div id="settleAlertPanel" style="display:none;padding:12px 16px 0;"></div><div class="layout" id="settleView" style="display: none;">
+  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div id="settleAlertPanel" style="display:none;padding:12px 16px 0;"></div><div id="srvStatus_settle_m" class="srv-line srv-mobile" data-srv="settle" data-view="settleView" style="margin:10px 16px 0;"></div><div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
  <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
   <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
@@ -2313,6 +2326,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <div style="font-size:13px;color:var(--text2);">강사료 기준을 관리합니다.</div></div>
  <button class="btn primary" onclick="openModal('teacher')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>강사 추가</button>
  </div>
+ <div id="srvStatus_teachers" class="srv-line" data-srv="teachers" style="margin-top:10px;max-width:340px;"></div>
 
  <!-- 인상 예정 알림 -->
  <div id="raiseAlert" style="display:none;"></div>
@@ -2374,6 +2388,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
    </div>
    <!-- v12.39: 헤더 센터 추가 버튼 제거 (강사 상세의 + 센터 추가로 통일) -->
   </div>
+  <div id="srvStatus_centers" class="srv-line" data-srv="centers" style="margin-top:-6px;margin-bottom:14px;max-width:340px;"></div>
 
   <!-- 지역별 통계 (v15.13: 숨김 — 요소는 유지해 renderRegionStats 호환) -->
   <div class="region-stats" style="display:none;">
@@ -2521,6 +2536,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
     <button class="btn sm primary" onclick="_applyAllSubs()" id="applyAllBtn" style="gap:4px;">✅ 전체 반영</button>
    </div>
   </div>
+  <div id="srvStatus_submissions" class="srv-line" data-srv="submissions" style="max-width:340px;"></div>
 
   <!-- 탭: 대기중 / 반영완료 -->
   <div style="display:flex;gap:4px;margin-bottom:14px;background:var(--bg);border-radius:10px;padding:4px;">
@@ -2634,6 +2650,9 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
   <div class="loader-text" id="loaderText">GitHub에 업로드하는 중...</div>
   <div class="loader-sub" id="loaderSub">완료까지 잠시 기다려주세요</div>
   <div id="loaderElapsed" style="margin-top:6px;font-size:12px;font-weight:600;color:#1A7A50;letter-spacing:.2px;"></div>
+  <!-- v15.89: 오래 걸릴 때 안내 + 빠져나갈 방법 -->
+  <div id="loaderHint" style="display:none;margin-top:2px;font-size:11px;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:7px;padding:5px 10px;max-width:260px;text-align:center;"></div>
+  <button id="loaderCancel" onclick="hideLoader()" style="display:none;margin-top:6px;height:28px;padding:0 14px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">그만 기다리기</button>
  </div>
 </div>
 
@@ -3631,7 +3650,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.88';
+const SYSTEM_VERSION='v15.89';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4236,6 +4255,7 @@ function switchView(v){
  if(_bar) _bar.style.display = v==='settle' ? 'flex' : 'none';
  document.getElementById('settleView').style.display=v==='settle'?'flex':'none';
  try{ _renderSettleAlerts(); }catch(_){}
+ try{ _srvRender('settle'); }catch(_){}   // v15.89: 탭 전환 시 상태 줄 자리 갱신
  document.getElementById('teachersView').style.display=v==='teachers'?'block':'none';
  document.getElementById('centersView').style.display=v==='centers'?'block':'none';
  document.getElementById('historyView').style.display=v==='history'?'block':'none';
@@ -4291,7 +4311,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
  try{
   if(tab === 'teachers'){
    // v11.31: 강사 관리 탭은 관리자 전용 → isAdmin:'true' 고정
-   const r = await gasGet({action:'getTeachers', teacher:'', isAdmin:'true', v:_dbVerGet('teachers|a')});
+   const r = await gasGet({action:'getTeachers', teacher:'', isAdmin:'true', v:_dbVerGet('teachers|a')}, 45000, 'teachers');
    if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); return; }   // v15.87: 서버 그대로
    if(!r.ok || !r.data?.length) return;
    _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록 (실패는 다음 진입에 즉시 재시도)
@@ -4301,11 +4321,11 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     DB.teachers = _mergeTeacherAccounts(r.data);   // v15.15: 계좌 보존
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     renderFn(); // 최신 데이터로 다시 렌더
-
+    try{ _srvFresh('teachers', DB.teachers.length+'명'); }catch(_){}   // v15.89
    }
    _dbVerSet('teachers|a', r.version);   // v15.87
   } else if(tab === 'centers'){
-   const r = await gasGet({action:'getCenters', v:_dbVerGet('centers')});
+   const r = await gasGet({action:'getCenters', v:_dbVerGet('centers')}, 45000, 'centers');
    if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); return; }   // v15.87: 서버 그대로
    if(!r.ok || !r.data?.length) return;
    _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록
@@ -4326,6 +4346,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     _rebuildCenterFeesFromCenters(DB.centers); // v12.68: schedule.fee → centerFees 재구성
     cleanInvalidData();
     renderFn(); // 최신 데이터로 다시 렌더
+    try{ _srvFresh('centers', DB.centers.length+'곳'); }catch(_){}   // v15.89
    }
    _dbVerSet('centers', r.version);   // v15.87
   }
@@ -5206,7 +5227,7 @@ function loadMonthlySnapshot(ym){
  _sessionLoadedMonths.add(ym);
 
  // 백그라운드: GAS 타임스탬프 확인 후 더 최신이면 교체
- gasGet({action:'getMonthlySnapshot', yearMonth:ym})
+ gasGet({action:'getMonthlySnapshot', yearMonth:ym}, 45000, 'settle')   // v15.89: 정산탭 상태 줄
   .then(r=>{
    hideLoader();
    if(!r.ok || !r.data){
@@ -5328,6 +5349,7 @@ function loadMonthlySnapshot(ym){
     }
     STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
     renderSettle();
+    try{ _srvFresh('settle', (data.teachers||[]).length+'명'); }catch(_){}   // v15.89
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
    }
@@ -9841,6 +9863,7 @@ function _renderSidebarYM(ym){
    <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${yOpts}</select>
    <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;">${mOpts}</select>
   </div>
+  <div id="srvStatus_settle" class="srv-line" data-srv="settle"></div>
   ${(typeof _isClosedMonth==='function' && _isClosedMonth(loadedYm) && _isMonthLocked(loadedYm)) ? `<div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin:-6px 0 12px;padding:5px 9px;background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;font-size:10.5px;color:#64748B;" title="마감된 달이라 서버 재확인 없이 저장된 값을 고정 표시합니다">
    <span>🔒 마감 · 고정본</span>
    <span onclick="_refreshMonth('${String(loadedYm).replace(/'/g,"\\'")}')" style="color:#2563EB;cursor:pointer;font-weight:700;">🔄 새로고침</span>
@@ -9855,6 +9878,7 @@ function _renderSidebarYM(ym){
    </div>
   </div>
   ${_pendingDone>0?`<button onclick="markAllSettled()" title="미정산 강사를 한번에 정산완료로 변경" style="width:100%;margin-top:10px;height:32px;border:none;border-radius:8px;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">✓ 미정산 ${_pendingDone}명 전체 완료</button>`:''}`;
+ try{ _srvRender('settle'); }catch(_){}   // v15.89: 다시 그려도 상태 줄 유지
 }
 
 // 미정산 강사를 한번에 정산완료로 처리
@@ -10568,9 +10592,9 @@ async function renderSubmissionsView(){
 
  try{
   const [rPending, rDone, rPresence] = await Promise.all([
-   gasGet({ action:'getSubmissions' }),
-   gasGet({ action:'getHistory', teacher:'__all__' }),
-   gasGet({ action:'getPresence' })
+   gasGet({ action:'getSubmissions' }, 45000, 'submissions'),        // v15.89: 기록표관리 상태 줄
+   gasGet({ action:'getHistory', teacher:'__all__' }, 45000, 'submissions'),
+   gasGet({ action:'getPresence' }, 45000, 'submissions')
   ]);
 
   // 접속 현황 위젯 갱신
@@ -11582,6 +11606,123 @@ function _initNoteEditors(){
  });
 }
 
+/* ═══════════ v15.89: 서버 요청 상태 표시 ═══════════
+ *  [고친 문제] 저장된 기록이 있는 달·탭은 화면이 바로 뜨지만, 서버 재확인은
+ *  완전히 조용히 돌아서 "진행 중인지 멈춘 건지" 알 수가 없었다.
+ *  v15.88에서 넣은 재시도(최대 3회)도 전혀 보이지 않았다.
+ *  → 탭마다 한 줄을 두고 '확인 중 · N초 / 다시 시도 (2/3) / 최신 / 실패' 를 보여준다.
+ *
+ *  원칙: 이 줄은 '서버 확인이 어떻게 됐는지'만 알린다.
+ *        실패해도 화면의 데이터는 절대 건드리지 않는다(저장된 기록 그대로 유지).
+ */
+const _SRV = {};
+/* 실패했을 때 [다시 시도] 가 무엇을 다시 하는지 */
+const _SRV_RETRY_ACTION = {
+ settle:      ()=>{ try{
+                 const y=parseInt(document.getElementById('sbYear')?.value)||0;
+                 const m=parseInt(document.getElementById('sbMonth')?.value)||0;
+                 const ym = (y&&m) ? `${y}년 ${m}월` : (STATE.data?.teachers?.[0]?.yearMonth||'');
+                 if(ym){ _sessionLoadedMonths.delete(ym); loadMonthlySnapshot(ym); }
+                }catch(_){} },
+ teachers:    ()=>{ try{ _invalidateTabSync('teachers'); _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); }); }catch(_){} },
+ centers:     ()=>{ try{ _invalidateTabSync('centers'); _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); _renderCenterView(); }); }catch(_){} },
+ submissions: ()=>{ try{ renderSubmissionsView(); }catch(_){} }
+};
+function _srvState(scope){
+ return _SRV[scope] || (_SRV[scope] = {n:0, state:'idle', t0:0, tries:1, total:1, at:0, note:'', tick:null});
+}
+function _srvBegin(scope){
+ const s = _srvState(scope);
+ s.n++;
+ if(s.n === 1){
+  s.state='busy'; s.tries=1; s.note=''; s.t0=Date.now();
+  if(s.tick) clearInterval(s.tick);
+  s.tick = setInterval(()=>_srvRender(scope), 100);
+ }
+ _srvRender(scope);
+}
+function _srvRetry(scope, attempt, total){
+ const s=_srvState(scope);
+ if(!s.n) return;
+ s.state='retry'; s.tries=attempt; s.total=total;
+ _srvRender(scope);
+ // 화면을 막는 로더가 떠 있으면 거기에도 같이 알려준다
+ const sub=document.getElementById('loaderSub');
+ if(sub && document.getElementById('globalLoader')?.classList.contains('show')){
+  sub.innerHTML = `응답이 없어 다시 시도 중 · <b>${attempt}번째 / ${total}번</b>`;
+ }
+}
+function _srvEnd(scope, ok){
+ const s=_srvState(scope);
+ s.n = Math.max(0, s.n-1);
+ if(s.n > 0){ _srvRender(scope); return; }        // 아직 진행 중인 요청이 남음
+ if(s.tick){ clearInterval(s.tick); s.tick=null; }
+ s.at = Date.now();
+ if(!ok) s.state='fail';
+ else if(s.state !== 'fresh') s.state='ok';       // 호출자가 '새 내용 받음'으로 올려놨으면 유지
+ _srvRender(scope);
+}
+/* 서버에서 실제로 새 내용을 받아 화면에 반영했을 때 호출 */
+function _srvFresh(scope, note){
+ const s=_srvState(scope);
+ s.state='fresh'; s.note=note||''; s.at=Date.now();
+ _srvRender(scope);
+}
+function _srvAgo(ms){
+ const d = Math.floor((Date.now()-ms)/1000);
+ if(d < 10) return '방금';
+ if(d < 60) return d+'초 전';
+ if(d < 3600) return Math.floor(d/60)+'분 전';
+ return Math.floor(d/3600)+'시간 전';
+}
+function _srvRender(scope){
+ // v15.89: 한 scope 에 표시 자리가 여러 개일 수 있다.
+ //  (정산탭은 PC=사이드바 / 모바일=본문 — 모바일에선 사이드바가 통째로 숨겨지기 때문)
+ const els = document.querySelectorAll('[data-srv="'+scope+'"]');
+ if(!els.length) return;
+ const s = _srvState(scope);
+ const off = (typeof navigator!=='undefined' && navigator.onLine === false);
+ const sec = s.t0 ? ((Date.now()-s.t0)/1000).toFixed(1)+'초' : '';
+ const SP = '<span class="srv-spin"></span>';
+ let cls='ok', body='';
+ if(off){
+  cls='off'; body='📴 인터넷 연결 없음 · 저장된 기록 표시 중';
+ } else if(s.state==='busy'){
+  cls='busy'; body=SP+' 서버 확인 중<span class="srv-el">'+sec+'</span>';
+ } else if(s.state==='retry'){
+  cls='retry'; body=SP+` 응답이 없어 다시 시도 중 (${s.tries}/${s.total})<span class="srv-el">${sec}</span>`;
+ } else if(s.state==='fresh'){
+  cls='fresh'; body='✓ 서버에서 최신본 반영'+(s.note?` (${esc(s.note)})`:'')+'<span class="srv-el">'+_srvAgo(s.at)+'</span>';
+ } else if(s.state==='fail'){
+  cls='fail';
+  body='<span style="flex:1 1 100%">⚠ 서버가 응답하지 않아요<br><span style="font-weight:500;opacity:.85">저장된 기록을 보여주는 중이에요</span></span>'+
+       `<button class="srv-rt" onclick="_srvRetryNow('${scope}')">🔄 다시 시도</button>`;
+ } else if(s.state==='ok'){
+  cls='ok'; body='✓ 서버 확인 완료 · 최신<span class="srv-el">'+_srvAgo(s.at)+'</span>';
+ } else {
+  els.forEach(el=>{ el.style.display='none'; el.innerHTML=''; });
+  return;
+ }
+ els.forEach(el=>{
+  const mob = el.classList.contains('srv-mobile');
+  el.className = 'srv-line ' + cls + (mob ? ' srv-mobile' : '');
+  // 그 자리가 속한 화면이 지금 안 보이면(= 다른 탭이면) 표시하지 않는다
+  const own = el.dataset.view ? document.getElementById(el.dataset.view) : null;
+  if(own && getComputedStyle(own).display === 'none'){ el.style.display='none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = body;
+ });
+}
+function _srvRetryNow(scope){
+ const s=_srvState(scope); s.state='idle'; _srvRender(scope);
+ const fn=_SRV_RETRY_ACTION[scope]; if(fn) fn();
+}
+/* 오프라인/온라인 전환 즉시 반영 */
+try{
+ window.addEventListener('offline', ()=>Object.keys(_SRV).forEach(_srvRender));
+ window.addEventListener('online',  ()=>Object.keys(_SRV).forEach(_srvRender));
+}catch(_){}
+
 function showLoader(msg='불러오는 중...', sub='', ms=15000){
   const el = document.getElementById('globalLoader');
   const txt = document.getElementById('loaderText');
@@ -11598,7 +11739,20 @@ function showLoader(msg='불러오는 중...', sub='', ms=15000){
   if(elp){
     const t0 = (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
     const _now = ()=> (typeof performance!=='undefined'&&performance.now)?performance.now():Date.now();
-    const render = ()=>{ const s=(_now()-t0)/1000; elp.textContent = s.toFixed(1)+'초 경과' + (s>=15?' · 시간이 걸리고 있어요…':''); };
+    // v15.89: 15초가 넘으면 안내 문구와 '그만 기다리기' 버튼을 띄운다(하염없이 기다리지 않도록)
+    const hint = document.getElementById('loaderHint');
+    const cancel = document.getElementById('loaderCancel');
+    if(hint){ hint.style.display='none'; hint.textContent=''; }
+    if(cancel) cancel.style.display='none';
+    const render = ()=>{
+      const s=(_now()-t0)/1000;
+      elp.textContent = s.toFixed(1)+'초 경과';
+      if(s>=8 && cancel && cancel.style.display==='none') cancel.style.display='block';
+      if(s>=15 && hint && hint.style.display==='none'){
+        hint.style.display='block';
+        hint.textContent='구글 서버가 붐비는 것 같아요. 보통 30초 안에 됩니다';
+      }
+    };
     render();
     _loaderTick = setInterval(render, 100);
   }
@@ -11610,6 +11764,8 @@ function hideLoader(){
   if(_loaderTimer){ clearTimeout(_loaderTimer); _loaderTimer=null; }
   if(_loaderTick){ clearInterval(_loaderTick); _loaderTick=null; } // v15.42
   const elp = document.getElementById('loaderElapsed'); if(elp) elp.textContent='';
+  const hint = document.getElementById('loaderHint'); if(hint){ hint.style.display='none'; hint.textContent=''; }   // v15.89
+  const cancel = document.getElementById('loaderCancel'); if(cancel) cancel.style.display='none';                    // v15.89
 }
 
 /* 사이드바 스켈레톤 렌더 */
@@ -12111,9 +12267,15 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbB
 const _gasInflight = new Map();
 const _GAS_GET_RETRY = 2;          // 최초 1회 + 재시도 2회
 const _GAS_GET_GAP   = [900, 2200]; // 재시도 전 대기(ms) — 서버가 숨 돌릴 틈
-async function gasGet(params, ms=45000){
+/* v15.89: scope 를 주면 그 탭의 상태 줄에 '확인 중 / 다시 시도 (2/3) / 실패' 가 자동으로 표시된다. */
+async function gasGet(params, ms=45000, scope){
  const qs = new URLSearchParams(params).toString();
- if(_gasInflight.has(qs)) return _gasInflight.get(qs);
+ if(scope) _srvBegin(scope);
+ const _watch = (pr)=> scope
+   ? pr.then(r=>{ _srvEnd(scope, !!(r && r.ok !== false)); return r; },
+             e=>{ _srvEnd(scope, false); throw e; })
+   : pr;
+ if(_gasInflight.has(qs)) return _watch(_gasInflight.get(qs));
  const job = (async()=>{
   let last = null, lastErr = null;
   for(let i=0; i<=_GAS_GET_RETRY; i++){
@@ -12127,13 +12289,16 @@ async function gasGet(params, ms=45000){
    }catch(e){
     lastErr = e;                          // 네트워크 끊김·시간 초과
    }finally{ clearTimeout(id); }
-   if(i < _GAS_GET_RETRY) await new Promise(s=>setTimeout(s, _GAS_GET_GAP[i]));
+   if(i < _GAS_GET_RETRY){
+    if(scope) _srvRetry(scope, i+2, _GAS_GET_RETRY+1);   // v15.89: 재시도 중임을 화면에 알림
+    await new Promise(s=>setTimeout(s, _GAS_GET_GAP[i]));
+   }
   }
   if(lastErr) throw lastErr;               // 끝까지 실패 → 기존과 똑같이 예외
   return last;                             // {ok:false,_busy:true}
  })().finally(()=>{ _gasInflight.delete(qs); });
  _gasInflight.set(qs, job);
- return job;
+ return _watch(job);
 }
 /* v15.83: 서버가 JSON 대신 오류 HTML(<!DOCTYPE …)을 돌려줄 때가 있다.
  *  (구글 앱스스크립트 과부하·동시실행 충돌·일시 오류) 예전엔 res.json() 이 그대로 터져
