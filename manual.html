@@ -32,7 +32,7 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 html{scroll-behavior:smooth;}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:15px;overflow-x:hidden;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;font-size:15px;overflow-x:hidden;word-break:keep-all;text-wrap:pretty;}
 
 /* HERO */
 .hero{background:var(--green);color:white;padding:38px 20px 34px;text-align:center;position:relative;overflow:hidden;}
@@ -41,8 +41,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .hero-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:500;letter-spacing:.5px;margin-bottom:14px;}
 .hero h1{font-size:clamp(21px,5.5vw,30px);font-weight:800;letter-spacing:-.5px;line-height:1.25;margin-bottom:8px;position:relative;}
 .hero p{font-size:13px;opacity:.82;line-height:1.6;position:relative;}
-.hero-back{display:inline-flex;align-items:center;gap:6px;margin-top:18px;background:white;color:var(--green);border-radius:8px;padding:10px 18px;font-weight:700;font-size:13.5px;text-decoration:none;position:relative;}
-.hero-back svg{width:15px;height:15px;fill:none;stroke:var(--green);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px;position:relative;}
+.hero-btn{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:10px 18px;font-weight:700;font-size:13.5px;text-decoration:none;transition:all .15s;}
+.hero-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.hero-btn.primary{background:white;color:var(--green);}
+.hero-btn.ghost{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.55);}
 
 /* LAYOUT */
 .wrap{max-width:680px;margin:0 auto;padding:0 16px;}
@@ -76,10 +79,16 @@ h2{font-size:clamp(19px,4.6vw,24px);font-weight:800;letter-spacing:-.5px;margin-
   <div class="hero-badge">업무 매뉴얼</div>
   <h1>이루리 실버 아카데미<br>업무 매뉴얼</h1>
   <p>최종 수정일 2026.07.27</p>
-  <a class="hero-back" href="adjustment-system.html">
-    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    정산 시스템으로 돌아가기
-  </a>
+  <div class="hero-actions">
+    <a class="hero-btn primary" href="manual.pdf" download="이루리_실버아카데미_업무매뉴얼.pdf">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+      PDF 다운로드
+    </a>
+    <a class="hero-btn ghost" href="adjustment-system.html">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      정산 시스템으로
+    </a>
+  </div>
 </div>
 
 <div class="wrap">
