@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.89">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.90">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.89">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.90">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.89</title>
+<title>수업기록표 정산 시스템 v15.90</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3650,7 +3650,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.89';
+const SYSTEM_VERSION='v15.90';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12949,21 +12949,19 @@ function _injectSidebarOverlay(){
  const panel = document.createElement('div');
  panel.id = 'mgr-sidebar-panel';
 
- // 기존 사이드바 내용을 패널로 이동 (참조만, 원본 유지)
- const origSidebar = document.getElementById('sidebar');
  const panelHeader = document.createElement('div');
  panelHeader.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface2);';
- panelHeader.innerHTML = '<span style="font-size:13px;font-weight:600;">강사 목록</span><button onclick="_closeSidebarOverlay()" style="border:none;background:none;font-size:18px;color:var(--text2);cursor:pointer;padding:0 4px;">✕</button>';
+ panelHeader.innerHTML = '<span style="font-size:13px;font-weight:600;">월 · 강사 선택</span><button onclick="_closeSidebarOverlay()" style="border:none;background:none;font-size:18px;color:var(--text2);cursor:pointer;padding:0 4px;">✕</button>';
  panel.appendChild(panelHeader);
 
- // 사이드바 콘텐츠 복제
- if(origSidebar){
-  const clone = origSidebar.cloneNode(true);
-  clone.id = 'sidebar-panel-inner';
-  clone.style.cssText = 'display:flex!important;flex-direction:column;flex:1;overflow:hidden;';
-  // 패널 안의 t-item 클릭 시 원본도 클릭되도록
-  panel.appendChild(clone);
- }
+ /* v15.90 [고친 문제] 예전에는 사이드바를 통째로 cloneNode 로 복제해 넣었다.
+  *  복제본에 month-selector·sbYear·sbMonth·teacherList 가 그대로 딸려와 id 가 중복됐고,
+  *  그 결과 오버레이에서 월을 바꿔도 _onSbYmChange 가 '숨겨진 원본' 값을 읽어 아무 일도 안 났다.
+  *  → 복제하지 않고 빈 칸만 만든다. 열 때 진짜 month-selector 를 '옮겨서' 붙인다. */
+ const inner = document.createElement('div');
+ inner.id = 'sidebar-panel-inner';
+ inner.style.cssText = 'display:flex!important;flex-direction:column;flex:1;overflow-y:auto;';
+ panel.appendChild(inner);
  overlay.appendChild(panel);
  document.body.appendChild(overlay);
 
@@ -12981,12 +12979,17 @@ function _injectSidebarOverlay(){
  });
 }
 
+/* v15.90 [고친 문제] 모바일에서 이 패널이 정산탭의 '월 선택 + 강사 목록'으로 가는 유일한 길인데
+ *  (PC 사이드바는 모바일에서 display:none), 아직 월을 안 불러온 상태(STATE.data 없음)에서는
+ *  아래 조건에 걸려 아무 일도 일어나지 않았다. 월을 고를 방법이 없으니 데이터도 못 부르는
+ *  막다른 길이었다. → 데이터가 없어도 열리게 하고, 월 선택기를 항상 맨 위에 보여준다. */
 function _openSidebarOverlay(){
+ try{ _injectSidebarOverlay(); }catch(_){}
  const inner = document.getElementById('sidebar-panel-inner');
- if(!inner || !STATE.data) return;
+ if(!inner) return;
 
  // 강사 목록 직접 새로 생성 (orig 복사 방식 버림)
- const teachers = STATE.data.teachers || [];
+ const teachers = STATE.data?.teachers || [];
  const cur = STATE.cur;
 
  // 지역 그룹핑
@@ -13031,11 +13034,34 @@ function _openSidebarOverlay(){
   });
  });
 
- inner.innerHTML = html;
+ if(!teachers.length){
+  html += `<div style="padding:26px 18px;text-align:center;color:var(--text3);font-size:12.5px;line-height:1.8;">
+    📅 위에서 <b style="color:var(--text2)">년 · 월</b>을 고르면<br>그 달의 강사 목록이 여기 나와요</div>`;
+ }
+
+ // v15.90: 목록 부분만 갈아끼우고, 월 선택기는 '진짜 것'을 옮겨와 맨 위에 둔다.
+ let listBox = document.getElementById('sidebar-panel-list');
+ if(!listBox){
+  listBox = document.createElement('div');
+  listBox.id = 'sidebar-panel-list';
+  listBox.style.cssText = 'flex:1;overflow-y:auto;';
+  inner.appendChild(listBox);
+ }
+ listBox.innerHTML = html;
+
+ // 월 선택기(년/월 드롭다운 + 제출 진행률 + 서버 상태 줄)를 패널 맨 위로 이동
+ const ms = document.getElementById('month-selector');
+ if(ms && ms.parentElement !== inner){
+  ms.dataset.homeParent = '1';                 // 닫을 때 사이드바로 되돌리기 위한 표시
+  inner.insertBefore(ms, inner.firstChild);
+ }
+ if(ms) ms.style.display = 'block';
+
  const overlay = document.getElementById('mgr-sidebar-overlay');
  const panel = document.getElementById('mgr-sidebar-panel');
  if(overlay) overlay.classList.add('open');
  if(panel) panel.classList.add('open');
+ try{ _srvRender('settle'); }catch(_){}         // v15.90: 옮겨온 자리에도 서버 상태 줄 표시
 }
 
 function _panelSelT(i){
@@ -13053,12 +13079,62 @@ function _panelLoadMonth(ym){
 }
 
 function _closeSidebarOverlay(){
+ // v15.90: 옮겨왔던 월 선택기를 원래 자리(사이드바 맨 위)로 되돌린다.
+ //  되돌리지 않으면 PC 폭으로 돌아갔을 때 사이드바에서 월 선택기가 사라진다.
+ try{
+  const ms = document.getElementById('month-selector');
+  const sb = document.getElementById('sidebar');
+  if(ms && sb && ms.dataset.homeParent && ms.parentElement !== sb){
+   sb.insertBefore(ms, sb.firstChild);
+   delete ms.dataset.homeParent;
+  }
+ }catch(_){}
  document.getElementById('mgr-sidebar-overlay')?.classList.remove('open');
  document.getElementById('mgr-sidebar-panel')?.classList.remove('open');
- // inner 초기화 - 다음 열 때 최신 상태로 다시 그림
- const inner = document.getElementById('sidebar-panel-inner');
- if(inner) inner.innerHTML = '';
+ // 목록만 비움 (월 선택기는 위에서 이미 사이드바로 돌려놓음)
+ const listBox = document.getElementById('sidebar-panel-list');
+ if(listBox) listBox.innerHTML = '';
+ try{ _srvRender('settle'); }catch(_){}
 }
+
+/* v15.90: 상단 알림 배너를 '실제 topbar 아래'에 놓는다.
+ *  [고친 문제] 배너 위치가 top:52px(PC) / 120px(모바일) 로 하드코딩돼 있었는데,
+ *  모바일 topbar 가 버튼·탭이 늘어나며 그보다 길어져서 배너가 '목록' 버튼을 통째로 덮었다.
+ *  모바일에서 정산탭의 월·강사 목록으로 가는 유일한 버튼이라 아예 길이 막혔다.
+ *  (그 좌표를 찍어보면 버튼이 아니라 배너가 잡혔다)
+ *  → 하드코딩 대신 topbar 의 실제 아래끝을 재서 그 밑에 놓는다. */
+function _placeUnderTopbar(el){
+ if(!el) return;
+ try{
+  // 모바일에는 topbar 아래에 '강사 선택 바'(목록 버튼이 있는 줄)가 하나 더 있다. 둘 다 피해야 한다.
+  let bottom = 52;
+  ['adminTopbar','mgr-teacher-bar'].forEach(id=>{
+   const n = document.getElementById(id);
+   if(!n || getComputedStyle(n).display === 'none') return;
+   const r = n.getBoundingClientRect();
+   if(r.height > 0) bottom = Math.max(bottom, Math.round(r.bottom));
+  });
+  el.style.setProperty('top', Math.max(0, bottom) + 'px', 'important');  // CSS의 !important 를 이기려면 이쪽도 important
+ }catch(_){}
+}
+try{
+ window.addEventListener('resize', ()=>{
+  ['raise-applied-banner','editModeBanner'].forEach(id=>{
+   const el=document.getElementById(id);
+   if(el && getComputedStyle(el).display !== 'none') _placeUnderTopbar(el);
+  });
+ });
+}catch(_){}
+
+/* v15.90: 화면이 PC 폭으로 넓어졌는데 패널이 열린 채면 월 선택기가 사라져 보인다.
+ *  (패널은 601px 이상에서 display:none) → 넓어지면 자동으로 원래 자리로 되돌린다. */
+try{
+ window.addEventListener('resize', ()=>{
+  if(window.innerWidth > 600 && document.getElementById('month-selector')?.dataset.homeParent){
+   _closeSidebarOverlay();
+  }
+ });
+}catch(_){}
 
 /* 센터 관리 지역 탭 삽입 */
 function _injectCenterRegionTabs(){
@@ -13148,6 +13224,7 @@ function checkAndApplyRaises(){
   </div>
   <button onclick="document.getElementById('raise-applied-banner').remove()" style="height:28px;padding:0 12px;border-radius:6px;border:1px solid rgba(255,255,255,.4);background:transparent;color:white;font-size:12px;cursor:pointer;flex-shrink:0;">확인</button>`;
  document.body.appendChild(banner);
+ _placeUnderTopbar(banner);   // v15.90: 실제 topbar 아래로 (아래 설명 참고)
 
  // 강사 관리 뷰 열려있으면 갱신
  if(document.getElementById('teachersView')?.style.display === 'block'){
@@ -20769,123 +20846,7 @@ function changeFontSize(dir){
 }
 </script>
 
-<div id="mgr-sidebar-overlay"><div id="mgr-sidebar-panel"><div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--surface2);"><span style="font-size:13px;font-weight:600;">강사 목록</span><button onclick="_closeSidebarOverlay()" style="border:none;background:none;font-size:18px;color:var(--text2);cursor:pointer;padding:0 4px;">✕</button></div><div class="sidebar" id="sidebar-panel-inner" style="flex-direction: column; flex: 1 1 0%; overflow: hidden; display: flex !important;">
- <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
-  <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
-  <div style="display:flex;gap:5px;margin-bottom:12px;">
-   <select id="sbYear" onchange="_onSbYmChange()" style="flex:1.3;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="2024">2024년</option><option value="2025">2025년</option><option value="2026" selected="">2026년</option></select>
-   <select id="sbMonth" onchange="_onSbYmChange()" style="flex:1;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:12px;padding:0 6px;cursor:pointer;"><option value="1">1월</option><option value="2">2월</option><option value="3">3월</option><option value="4">4월</option><option value="5">5월</option><option value="6" selected="">6월</option><option value="7">7월</option><option value="8">8월</option><option value="9">9월</option><option value="10">10월</option><option value="11">11월</option><option value="12">12월</option></select>
-  </div>
-  <div style="background:var(--surface2);border-radius:8px;padding:8px 10px;">
-   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
-    <span style="font-size:12px;font-weight:600;color:var(--green);">0명 제출</span>
-    <span style="font-size:10px;color:var(--text3);">0 / 34명</span>
-   </div>
-   <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
-    <div style="width:0%;height:100%;background:var(--green);border-radius:3px;transition:width .3s;"></div>
-   </div>
-  </div></div>
- <div class="teacher-scroll" id="teacherList"><div class="region-group-label" style="border-left:3px solid #185FA5;padding-left:7px;">서울 <span style="font-size:10px;font-weight:400;opacity:.6;">0/17</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">김</div>
-     <div class="t-info"><div class="t-name">김은영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">오</div>
-     <div class="t-info"><div class="t-name">오건</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">구</div>
-     <div class="t-info"><div class="t-name">구명훈</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">송</div>
-     <div class="t-info"><div class="t-name">송준기</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">정</div>
-     <div class="t-info"><div class="t-name">정상준</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
-     <div class="t-info"><div class="t-name">양성모</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이인경</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">조</div>
-     <div class="t-info"><div class="t-name">조영미</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">윤</div>
-     <div class="t-info"><div class="t-name">윤혜미</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">장</div>
-     <div class="t-info"><div class="t-name">장성기</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">변</div>
-     <div class="t-info"><div class="t-name">변동</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">박</div>
-     <div class="t-info"><div class="t-name">박준형</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">양</div>
-     <div class="t-info"><div class="t-name">양재원</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">신</div>
-     <div class="t-info"><div class="t-name">신기윤</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이재하</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">이</div>
-     <div class="t-info"><div class="t-name">이재열</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #185FA5;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#185FA5 15%,white);color:#185FA5;">임</div>
-     <div class="t-info"><div class="t-name">임준우</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="region-group-label" style="border-left:3px solid #0F6E56;padding-left:7px;">인천 <span style="font-size:10px;font-weight:400;opacity:.6;">0/12</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">장</div>
-     <div class="t-info"><div class="t-name">장호준</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김유천</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">한</div>
-     <div class="t-info"><div class="t-name">한수희</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">박</div>
-     <div class="t-info"><div class="t-name">박기남</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김효민</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">방</div>
-     <div class="t-info"><div class="t-name">방진수</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김수민</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">홍</div>
-     <div class="t-info"><div class="t-name">홍예은</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">박</div>
-     <div class="t-info"><div class="t-name">박종일</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">이</div>
-     <div class="t-info"><div class="t-name">이재윤</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">김</div>
-     <div class="t-info"><div class="t-name">김보창</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #0F6E56;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#0F6E56 15%,white);color:#0F6E56;">조</div>
-     <div class="t-info"><div class="t-name">조아라</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="region-group-label" style="border-left:3px solid #534AB7;padding-left:7px;">수원 <span style="font-size:10px;font-weight:400;opacity:.6;">0/5</span></div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">최</div>
-     <div class="t-info"><div class="t-name">최정안</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">안</div>
-     <div class="t-info"><div class="t-name">안지훈</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">오</div>
-     <div class="t-info"><div class="t-name">오수정</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">원</div>
-     <div class="t-info"><div class="t-name">원보영</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div><div class="t-item" style="opacity:.38;pointer-events:none;cursor:default;border-left:3px solid #534AB7;">
-     <div class="t-avatar" style="background:color-mix(in srgb,#534AB7 15%,white);color:#534AB7;">김</div>
-     <div class="t-info"><div class="t-name">김수도</div><div class="t-pay" style="color:var(--text3);">미제출</div></div>
-    </div></div>
- </div></div></div></body></html>
+<!-- v15.90: 여기 있던 오버레이 정적 스냅샷 제거.
+     렌더된 DOM 이 파일에 저장되면서 month-selector·sbYear·sbMonth·teacherList 의 id 가
+     중복됐고, 오버레이에서 월을 바꿔도 숨겨진 원본 값이 읽혀 아무 일도 일어나지 않았다.
+     오버레이는 _injectSidebarOverlay() 가 필요할 때 만든다. --></body></html>
