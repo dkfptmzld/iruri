@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.92">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.93">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.92">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.93">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.92</title>
+<title>수업기록표 정산 시스템 v15.93</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3658,7 +3658,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.92';
+const SYSTEM_VERSION='v15.93';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5676,7 +5676,7 @@ function dlPDF(){
  //         feePct >= 10 → 정액형 (예: 40000) → "강사료 단가" + "40,000원/회"
  const feeLabelText = (t.feePct && t.feePct < 10) ? '강사료율' : '강사료 단가';
 
- pages+=`<div class="page">
+ pages+=`<div class="page"><div class="page-fit">
  <!-- 상단: 강사명 + 정보 + 강사료 + 최종 지급액 (한 줄) -->
  <div class="top-bar">
   <div class="top-info">
@@ -5719,7 +5719,7 @@ function dlPDF(){
    ${summaryRows.join('')}
   </table>
  </div>
- </div>`;
+ </div></div>`;
  });
 
  // 가로 A4 한 페이지 압축 레이아웃 (v11.36)
@@ -5731,8 +5731,14 @@ function dlPDF(){
  *{box-sizing:border-box;margin:0;padding:0;}
  @page{size:A4 landscape;margin:8mm;}
  body{font-family:'Noto Sans KR','맑은 고딕','Apple SD Gothic Neo',sans-serif;font-size:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f5f4f0;color:#1a1916;}
- .page{page-break-after:always;padding:8px 12px;background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:1180px;margin:0 auto 16px;}
+ /* v15.93: 한 사람 = 무조건 한 장.
+  *  화면 미리보기 상자를 A4 가로 인쇄 영역(281×194mm)과 똑같은 크기로 맞춰 놓고,
+  *  내용이 넘치면 .page-fit 을 그만큼 축소해 한 장에 밀어 넣는다.
+  *  (인쇄 시 실제로 차지하는 크기를 미리보기에서 그대로 잴 수 있어야 정확하다) */
+ .page{page-break-after:always;background:white;box-shadow:0 2px 12px rgba(0,0,0,.08);
+       width:281mm;height:194mm;overflow:hidden;margin:0 auto 16px;padding:0;}
  .page:last-child{page-break-after:auto;}
+ .page-fit{transform-origin:top left;width:100%;}
 
  /* 상단 한 줄: 강사명 + 정보 + 최종지급액 */
  .top-bar{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:4px;border-bottom:2px solid #1A7A50;margin-bottom:4px;}
@@ -5819,9 +5825,52 @@ function dlPDF(){
 
  @media print{
   body{background:white;}
-  .page{box-shadow:none;margin:0;padding:0;max-width:none;}
+  .page{box-shadow:none;margin:0;padding:0;}
  }
  </style></head><body>${pages}
+ <script>
+ /* v15.93: 한 사람당 한 장에 맞춰 자동 축소.
+  *  넘치는 만큼만 줄인다(안 넘치면 그대로). 폭을 1/배율로 넓혀서 축소 후에도
+  *  가로를 꽉 채우게 하고, 넓히면 줄바꿈이 줄어 높이가 또 바뀌므로 두 번 더 다듬는다. */
+ function fitPages(){
+  var MIN = 0.55;                       // 이보다 더 줄이면 읽기 어려워 멈춤
+  document.querySelectorAll('.page').forEach(function(pg){
+   var inner = pg.querySelector(':scope > .page-fit');
+   if(!inner){                     // 지역 표지·합계 등 다른 종류의 장도 똑같이 맞춘다
+    inner = document.createElement('div');
+    inner.className = 'page-fit';
+    while(pg.firstChild) inner.appendChild(pg.firstChild);
+    pg.appendChild(inner);
+   }
+   var maxH = pg.clientHeight, maxW = pg.clientWidth;
+   var s = 1;
+   for(var i=0;i<3;i++){
+    inner.style.transform = 'none';
+    inner.style.width = (100/s) + '%';
+    var h = inner.scrollHeight * s;     // 현재 배율에서 실제로 차지할 높이
+    if(h <= maxH + 0.5) break;
+    s = Math.max(MIN, s * (maxH / h));
+   }
+   if(s < 1){
+    inner.style.width = (100/s) + '%';
+    inner.style.transform = 'scale(' + s + ')';
+    pg.setAttribute('data-fit', Math.round(s*100) + '%');
+   } else {
+    inner.style.width = '100%';
+    inner.style.transform = 'none';
+    pg.removeAttribute('data-fit');
+   }
+  });
+ }
+ window.fitPages = fitPages;
+ fitPages();
+ /* 웹폰트가 늦게 뜨면 글자 크기가 달라져 높이가 바뀐다 → 폰트 준비 후 한 번 더 */
+ if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(function(){ fitPages(); window.__fitDone = 1; })
+                      .catch(function(){ window.__fitDone = 1; });
+  setTimeout(function(){ window.__fitDone = 1; }, 2500);   // 폰트가 안 와도 진행
+ } else { window.__fitDone = 1; }
+ <\/script>
 
 
 </body></html>`;
@@ -5830,7 +5879,18 @@ function dlPDF(){
  if(!w){showToast('팝업이 차단됐어요 — 팝업 허용 후 다시 시도해주세요');return;}
  w.document.write(html);
  w.document.close();
- setTimeout(()=>{w.focus();w.print();},300);
+ /* v15.93: 글꼴이 다 뜬 뒤에 크기를 재야 축소 배율이 정확하다.
+  *  팝업 쪽에서 맞춤이 끝났다고 알려주면(__fitDone) 그때 인쇄한다. 늦어도 3초 뒤엔 진행. */
+ let _printed = false;
+ const _doPrint = ()=>{ if(_printed) return; _printed = true; try{ w.focus(); w.print(); }catch(_){} };
+ const _t0 = Date.now();
+ (function waitFit(){
+  if(w.closed) return;
+  let done = false;
+  try{ done = !!w.__fitDone; }catch(_){ done = true; }
+  if(done || Date.now() - _t0 > 3000) setTimeout(_doPrint, 200);
+  else setTimeout(waitFit, 100);
+ })();
 }
 
 function buildTeacherListHtml(teachers, curIdx){
