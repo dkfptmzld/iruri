@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.91">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.92">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.91">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.92">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.91</title>
+<title>수업기록표 정산 시스템 v15.92</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1560,14 +1560,14 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div style="overflow-x:auto;" id="ti-ledger-table-wrap">
  <table id="ti-ledger-table" style="width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;">
- <colgroup>
+ <colgroup id="ti-ledger-cols">
  <col style="width:36px">
  <col style="min-width:160px">
  <col style="width:52px"><col style="width:52px"><col style="width:52px"><col style="width:52px"><col style="width:52px">
  <col style="width:40px">
  </colgroup>
  <thead>
- <tr style="background:#E8E6DC;">
+ <tr style="background:#E8E6DC;" id="ti-ledger-head">
  <th style="padding:8px 6px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:center;">요일</th>
  <th style="padding:8px 12px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:left;">센터명</th>
  <th style="padding:8px 4px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:center;">1주</th>
@@ -3658,7 +3658,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.91';
+const SYSTEM_VERSION='v15.92';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5451,7 +5451,7 @@ function _buildTeacherPdfPage(t){
  t.lessons.forEach(l=>{if(!dayMap.has(l.day)) dayMap.set(l.day,[]);dayMap.get(l.day).push(l);});
  const DAYS=['월','화','수','목','금','토','일'];
  const dayOrder=t.dayGroups?t.dayGroups.map(g=>g.day):DAYS.filter(d=>dayMap.has(d));
- const maxWeeks=Math.max(5,...(t.dayGroups||[]).map(g=>(g.dates||[]).filter(Boolean).length));
+ const maxWeeks=_weeksOfGroups(t.dayGroups);   // v15.92: filter(Boolean)이면 6주차가 안 잡힘
  let bodyRows='';
  dayOrder.forEach(day=>{
   const lessons=dayMap.get(day)||[];
@@ -5574,7 +5574,7 @@ function dlPDF(){
  const dayOrder=t.dayGroups?t.dayGroups.map(g=>g.day):DAYS.filter(d=>dayMap.has(d));
 
  // maxWeeks: 요일별 날짜 개수 중 최대값 (5주 초과 대응)
- const maxWeeks=Math.max(5,...(t.dayGroups||[]).map(g=>(g.dates||[]).filter(Boolean).length));
+ const maxWeeks=_weeksOfGroups(t.dayGroups);   // v15.92: filter(Boolean)이면 6주차가 안 잡힘
 
  let bodyRows='';
  dayOrder.forEach(day=>{
@@ -6055,18 +6055,10 @@ function renderLedger(ti){
   const m = ym.match(/(\d{4})년\s*(\d+)월/);
   if(!m) return [];
   const year = parseInt(m[1]), month = parseInt(m[2])-1;
-  const targetDow = DAY_IDX[day];
-  if(targetDow===undefined) return [];
-  const dates = [];
-  const d = new Date(year, month, 1);
-  // 해당 월의 첫 번째 해당 요일 찾기
-  while(d.getDay()!==targetDow) d.setDate(d.getDate()+1);
-  // 최대 5주
-  for(let w=0;w<5;w++){
-   if(d.getMonth()===month) { dates.push(d.getDate()); d.setDate(d.getDate()+7); }
-   else dates.push(null);
-  }
-  return dates;
+  if(DAY_IDX[day]===undefined) return [];
+  // v15.92: 예전엔 'n번째 해당 요일'로 역산해 화면(달력 주차)과 한 칸씩 어긋났다.
+  //  → 강사 입력과 같은 달력 주차 기준으로 통일.
+  return (calcDatesForMonth(year, month+1)[day]) || [];
  };
  t.lessons.forEach((l,idx)=>{
  const day=l.day||'기타';
@@ -6097,7 +6089,8 @@ function renderLedger(ti){
  dayOrder.sort((a, b) => DAYS_FULL_ORDER_V52.indexOf(a) - DAYS_FULL_ORDER_V52.indexOf(b));
 
  // v11.30 fix: 항상 5주 고정 (null 슬롯 포함, filter(Boolean) 제거)
- const maxWeeks=5;
+ // v15.92: 6주에 걸치는 달은 6칸 (그 달 데이터의 칸 수를 그대로 따름)
+ const maxWeeks=_weeksOfGroups(t.dayGroups);
 
  const headerCols=`
  <col style="width:24px"><col style="width:130px">
@@ -7075,7 +7068,8 @@ function confirmAddLesson(ti, day){
 
  const t = STATE.data.teachers[ti];
  const maxOrder = Math.max(0, ...(t.lessons||[]).map(l=>l.order||0));
- const attend   = Array(5).fill('');
+ // v15.92: 그 요일의 날짜 칸 수에 맞춘다(6주짜리 달이면 6칸)
+ const attend   = Array(_weeksOfGroups(t.dayGroups)).fill('');
 
  const newLesson = {
   center,
@@ -11526,7 +11520,7 @@ function _showMySubmissionView(teacher, month){
   if(v==='△') return 'background:#FEF3C7;color:#92400E;border-color:#F0D488;';
   return 'background:#F5F4F0;color:#B8B4A8;border-color:#E2E0D8;'; };
  const validG = dayGroups.filter(g=>g && g.day!=='미등록' && Array.isArray(g.centers) && g.centers.some(c=>c && c.name && c.name!=='__custom__'));
- const WEEKS=5;
+ const WEEKS=_weeksOfGroups(validG);   // v15.92: 6주짜리 달 대응
  // 주차(週) 세로 정렬: 모든 요일 표를 '고정 5주 컬럼'으로 → 1열=1주(1·2·3일), 2열=2주(6~10일)…
  //  calcDatesForMonth이 주차 인덱스로 된 5슬롯 배열(없는 주=null)이라, att[w]도 같은 주차에 정렬됨.
  const colgroup=`<colgroup><col style="width:86px;">${Array.from({length:WEEKS},()=>'<col>').join('')}</colgroup>`;
@@ -14153,12 +14147,44 @@ let tiNotes = [];
 let tiImages = [];
 let _tiOverlayCancelled = false; // 새로 작성 시 오버레이 재표시 차단용
 
+/* v15.92: 그 달이 달력상 몇 주에 걸치는지 (보통 5, 6주짜리 달은 6)
+ *  [고친 문제] 예전에는 주차 칸이 5개로 고정이라, 달력상 6주에 걸치는 달의
+ *  마지막 주 날짜가 조용히 버려졌다. (예: 2026년 8월 → 월요일 31일이 사라짐)
+ *  1일이 토요일인 31일 달은 31일이 반드시 월요일이라 늘 월요일만 피해를 봤다.
+ *  2020~2040 기준 55개월(21.8%)에서 발생. → 필요한 달만 6주로 늘린다. */
+function _weeksInMonth(year, month){
+ const firstDow = new Date(year, month-1, 1).getDay();   // 1일의 요일(0=일)
+ const daysInMonth = new Date(year, month, 0).getDate();
+ return Math.max(5, Math.ceil((daysInMonth + firstDow) / 7));
+}
+/* v15.92: 날짜 칸 수가 달라지면(5주 ↔ 6주) 출석 칸도 같이 맞춘다.
+ *  이미 찍어둔 표시는 같은 자리에 그대로 남긴다. */
+function _tiFitAttend(g){
+ if(!g) return;
+ const n = (Array.isArray(g.dates) && g.dates.length) ? g.dates.length : 5;
+ (g.centers||[]).forEach(c=>{
+  const a = Array.isArray(c.attend) ? c.attend : [];
+  c.attend = Array.from({length:n}, (_,i)=> a[i] || '');
+ });
+}
+/* 출석 칸을 그 요일의 날짜 칸 수만큼 만든다 (없으면 5) */
+function _tiAttend(dates){
+ const n = (Array.isArray(dates) && dates.length) ? dates.length : 5;
+ return Array(n).fill('');
+}
+/* 화면에 그릴 주차 칸 수 — 저장된 요일 그룹의 배열 길이를 따른다(옛 데이터는 5) */
+function _weeksOfGroups(groups){
+ const lens = (groups||[]).map(g => (g && Array.isArray(g.dates)) ? g.dates.length : 0);
+ return Math.max(5, ...(lens.length ? lens : [0]));
+}
+
 /* 현재 연월 기준 요일별 날짜 자동 계산 */
 function calcDatesForMonth(year, month){
  // v11.30: 달력 기준 주차 (1일이 속한 주 = 1주)
- // 5슬롯 배열: 인덱스 = 주차-1, 해당 주에 요일 없으면 null
+ // 인덱스 = 주차-1, 해당 주에 요일 없으면 null
+ const weeks = _weeksInMonth(year, month);   // v15.92: 5 또는 6
  const result = {};
- DAYS_ORDER.forEach(d => result[d] = [null,null,null,null,null]);
+ DAYS_ORDER.forEach(d => result[d] = Array(weeks).fill(null));
  const firstDow = new Date(year, month-1, 1).getDay(); // 1일의 요일(0=일)
  const daysInMonth = new Date(year, month, 0).getDate();
  for(let d=1; d<=daysInMonth; d++){
@@ -14166,8 +14192,8 @@ function calcDatesForMonth(year, month){
   const dayName = DAYS_KR[dow];
   if(!result[dayName]) continue;
   // 달력 기준 주차: 1일 포함 주가 1주
-  const weekIdx = Math.ceil((d + firstDow) / 7) - 1; // 0~4
-  if(weekIdx >= 0 && weekIdx < 5) result[dayName][weekIdx] = d;
+  const weekIdx = Math.ceil((d + firstDow) / 7) - 1;
+  if(weekIdx >= 0 && weekIdx < weeks) result[dayName][weekIdx] = d;
  }
  return result;
 }
@@ -14177,7 +14203,7 @@ function tiAutoFillDates(){
  const month = parseInt(document.getElementById('ti-month').value);
  const dates = calcDatesForMonth(year, month);
  // 기존 그룹의 날짜만 업데이트
- tiDayGroups.forEach(g => { g.dates = dates[g.day] || []; });
+ tiDayGroups.forEach(g => { g.dates = dates[g.day] || []; _tiFitAttend(g); });   // v15.92
  renderTiLedger();
  showToast('날짜가 자동으로 채워졌어요');
 }
@@ -14226,13 +14252,13 @@ function initTeacherInput(){
   tiDayGroups = schedule.map(s=>({
    day: s.day,
    dates: s.day==='미등록' ? [] : (dates[s.day]||[]), // v11.19: 미등록은 날짜 없음
-   centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:['','','','','']}))
+   centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:_tiAttend(dates[s.day])}))
   }));
  } else {
   tiDayGroups = ['월','화','수','목','금'].map(day=>({
    day,
    dates: dates[day]||[],
-   centers: [{name:'', attend:['','','','','']}]
+   centers: [{name:'', attend:_tiAttend(dates[day])}]
   }));
  }
 
@@ -14260,7 +14286,7 @@ document.addEventListener('change', function(e){
  const year = parseInt(document.getElementById('ti-year').value);
  const month = parseInt(document.getElementById('ti-month').value);
  const dates = calcDatesForMonth(year, month);
- tiDayGroups.forEach(g=>{ g.dates = dates[g.day]||[]; });
+ tiDayGroups.forEach(g=>{ g.dates = dates[g.day]||[]; _tiFitAttend(g); });   // v15.92
  renderTiLedger();
  }
 });
@@ -14279,14 +14305,33 @@ function tiAddDayGroup(){
  const year = parseInt(document.getElementById('ti-year').value);
  const month = parseInt(document.getElementById('ti-month').value);
  const dates = calcDatesForMonth(year, month);
- tiDayGroups.push({day:next, dates:dates[next]||[], centers:[{name:'',attend:['','','','','']}]});
+ tiDayGroups.push({day:next, dates:dates[next]||[], centers:[{name:'',attend:_tiAttend(dates[next])}]});
  renderTiLedger();
 }
 
+/* v15.92: 6주짜리 달이면 '6주' 칸을 하나 더 그린다(표 헤더·컬럼폭도 같이) */
+function _tiSyncWeekHeader(){
+ const n = _weeksOfGroups(tiDayGroups);
+ const head = document.getElementById('ti-ledger-head');
+ if(head){
+  const th = (t)=>`<th style="padding:8px 4px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:center;">${t}</th>`;
+  head.innerHTML =
+   '<th style="padding:8px 6px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:center;">요일</th>'+
+   '<th style="padding:8px 12px;font-size:11px;color:#555;font-weight:600;border:1px solid #C8C6B8;text-align:left;">센터명</th>'+
+   Array.from({length:n},(_,i)=>th((i+1)+'주')).join('')+
+   '<th style="border:1px solid #C8C6B8;"></th>';
+ }
+ const cols = document.getElementById('ti-ledger-cols');
+ if(cols){
+  cols.innerHTML = '<col style="width:36px"><col style="min-width:160px">'+
+   Array.from({length:n},()=>'<col style="width:52px">').join('')+'<col style="width:40px">';
+ }
+}
 function renderTiLedger(){
  const teacher = document.getElementById('ti-teacher').value;
  const tbody = document.getElementById('ti-ledger-body');
  tbody.innerHTML = '';
+ _tiSyncWeekHeader();   // v15.92
 
  tiDayGroups.forEach((g, gi)=>{
  const centerCount = g.centers.length;
@@ -14338,7 +14383,7 @@ function renderTiLedger(){
  const year=parseInt(document.getElementById('ti-year').value);
  const month=parseInt(document.getElementById('ti-month').value);
  const dates=calcDatesForMonth(year,month);
- g.day=this.value; g.dates=dates[this.value]||[];
+ g.day=this.value; g.dates=dates[this.value]||[]; _tiFitAttend(g);   // v15.92
  renderTiLedger();
  };
  dayTd.appendChild(daySel);
@@ -14350,8 +14395,8 @@ function renderTiLedger(){
  dateLabelTd.textContent='날짜';
  dateTr.appendChild(dateLabelTd);
 
- // 날짜 헤더 셀 5개 (v11.30: 가운데 정렬 텍스트)
- for(let w=0;w<5;w++){
+ // 날짜 헤더 셀 (v15.92: 5칸 고정 → 그 달이 걸치는 주차 수만큼)
+ for(let w=0;w<_weeksOfGroups(tiDayGroups);w++){
  const td=document.createElement('td');
  const hasDate = g.dates[w] != null;
  td.style.cssText=`border:1px solid #C8C6B8;background:${hasDate?'#F0EFE6':'#E8E6DC'};padding:4px 2px;text-align:center;vertical-align:middle;`;
@@ -14559,8 +14604,8 @@ function renderTiLedger(){
  centerTd.appendChild(centerSel);
  tr.appendChild(centerTd);
 
- // 출석 셀 5개
- for(let w=0;w<5;w++){
+ // 출석 셀 (v15.92: 날짜 칸 수와 동일)
+ for(let w=0;w<_weeksOfGroups(tiDayGroups);w++){
  const td=document.createElement('td');
  // v11.73: 첫 day group의 출석 셀들 마킹 (출석 표시 단계용 - 1주~5주 × 월요일 전체 행)
  if(gi === 0) td.classList.add('ti-tutorial-day1-attend');
@@ -15411,7 +15456,7 @@ function reloadSchedule(){
  tiDayGroups = schedule.map(s=>({
   day: s.day,
   dates: s.day==='미등록' ? [] : (dates[s.day]||[]), // v11.19: 미등록은 날짜 없음
-  centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:['','','','','']}))
+  centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:_tiAttend(dates[s.day])}))
  }));
  renderTiLedger();
  showToast(`📅 스케줄이 초기화됐어요`);
@@ -15432,7 +15477,7 @@ function onTeacherSelect(){
    tiDayGroups = schedule.map(s=>({
     day: s.day,
     dates: s.day==='미등록' ? [] : (dates[s.day]||[]), // v11.19: 미등록은 날짜 없음
-    centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:['','','','','']}))
+    centers: s.centers.map(c=>({name:c.name, region:c.region||'', attend:_tiAttend(dates[s.day])}))
    }));
    showToast(`📅 ${teacher} 강사의 스케줄을 불러왔어요`);
   } else {
@@ -15441,7 +15486,7 @@ function onTeacherSelect(){
    const month = parseInt(document.getElementById('ti-month').value);
    const dates = calcDatesForMonth(year, month);
    tiDayGroups = ['월','화','수','목','금'].map(day=>({
-    day, dates: dates[day]||[], centers:[{name:'',attend:['','','','','']}]
+    day, dates: dates[day]||[], centers:[{name:'',attend:_tiAttend(dates[day])}]
    }));
   }
  }
@@ -17001,7 +17046,7 @@ function renderMobileLedger(){
    const year=parseInt(document.getElementById('ti-year').value);
    const month=parseInt(document.getElementById('ti-month').value);
    const dates=calcDatesForMonth(year,month);
-   g.day=this.value; g.dates=dates[this.value]||[];
+   g.day=this.value; g.dates=dates[this.value]||[]; _tiFitAttend(g);   // v15.92
    renderTiLedger();
   };
   dayBadge.appendChild(daySel);
@@ -17217,7 +17262,7 @@ function renderMobileLedger(){
   const addBtn = document.createElement('button');
   addBtn.textContent = `+ ${g.day}요일 센터 추가`;
   addBtn.style.cssText = 'border:none;background:none;color:#1A7A50;font-size:13px;font-weight:600;cursor:pointer;padding:0;';
-  addBtn.onclick=()=>{ g.centers.push({name:'',attend:['','','','','']}); renderTiLedger(); };
+  addBtn.onclick=()=>{ g.centers.push({name:'',attend:_tiAttend(g.dates)}); renderTiLedger(); };
   addRow.appendChild(addBtn);
   grid.appendChild(addRow);
 
