@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.04">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.07">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.04">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.07">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.04</title>
+<title>수업기록표 정산 시스템 v16.07</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2357,6 +2357,9 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div id="srvStatus_teachers" class="srv-line" data-srv="teachers" style="margin-top:10px;max-width:340px;"></div>
 
+ <!-- v16.05: 강사 스케줄 수정요청 알림 -->
+ <div id="schedReqBanner" style="display:none;align-items:center;gap:10px;margin-top:10px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;"></div>
+
  <!-- 인상 예정 알림 -->
  <div id="raiseAlert" style="display:none;"></div>
 
@@ -3679,7 +3682,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.04';
+const SYSTEM_VERSION='v16.07';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4297,6 +4300,7 @@ function switchView(v){
  if(v==='teachers'){
   // v11.30: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
   _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); });
+  try{ _loadSchedRequests(true); }catch(_){}   // v16.05: 강사 스케줄 수정요청 확인
  }
  if(v==='centers'){
   // v12.43: 센터 관리 진입 시 정리 필요 뷰 닫고 홈(트리 뷰)으로 복귀
@@ -7984,11 +7988,17 @@ function _schTitle(teacher){
 }
 
 /* 표 HTML — 화면·인쇄에서 같은 것을 쓴다 */
-function _schTableHTML(teacher, showFee, editable){
+function _schTableHTML(teacher, showFee, editable, edit){
  const rows=_teacherScheduleRows(teacher);
  const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
  const TH='padding:6px 4px;font-size:11.5px;font-weight:700;border:1px solid #9A968C;background:#E8E6DC;text-align:center;';
  const TD='padding:5px 6px;font-size:11.5px;border:1px solid #C8C6B8;text-align:center;height:30px;';
+ // v16.05: 강사 편집 모드 — 강의시간·주소·이메일을 입력칸으로
+ const INP='width:100%;height:24px;border:1px solid #D8B25A;border-radius:6px;padding:0 5px;font-size:11px;font-family:inherit;outline:none;background:#FFFDF6;';
+ const argK=(r)=>`'${escAttrJS(r.center)}','${escAttrJS(r.region)}','${r.day}',${r.gyosi}`;
+ const timeCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="🕐 --:--" onclick="_openSchTimeInput(this,${argK(r)})" oninput="_schEditSet(${argK(r)},'time',this.value)" style="${INP}text-align:center;cursor:pointer;"></td>` : `<td style="${TD}"></td>`;
+ const addrCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.address||'').replace(/"/g,'&quot;')}" placeholder="주소 입력" oninput="_schEditSet(${argK(r)},'address',this.value)" style="${INP}text-align:left;"></td>` : `<td style="${TD}"></td>`;
+ const emailCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.email||'').replace(/"/g,'&quot;')}" placeholder="이메일 입력" oninput="_schEditSet(${argK(r)},'email',this.value)" style="${INP}text-align:left;font-size:10.5px;color:#2C5AA0;"></td>` : `<td style="${TD}"></td>`;
  if(!rows.length){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
@@ -8014,10 +8024,10 @@ function _schTableHTML(teacher, showFee, editable){
    body += `<tr>`
      + (i===0 ? `<td rowspan="${maxPerDay}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
      + `<td style="${TD}font-weight:600;">${r?e(r.center):''}</td>`
-     + `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`
+     + (edit ? timeCellEdit(r) : `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`)
      + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
-     + `<td style="${TD}font-size:11px;">${r?e(r.address):''}</td>`
-     + `<td style="${TD}font-size:10.5px;color:#2C5AA0;word-break:break-all;">${r?e(r.email):''}</td>`
+     + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;">${r?e(r.address):''}</td>`)
+     + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;word-break:break-all;">${r?e(r.email):''}</td>`)
      + (showFee ? feeCell(r) : '')
      + `</tr>`;
   }
@@ -8030,7 +8040,7 @@ function _schTableHTML(teacher, showFee, editable){
   <colgroup>${cols}</colgroup>
   <thead><tr>
    <th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th>
-   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">이메일주소</th>${showFee?`<th style="${TH}">특이사항 / 수업료</th>`:''}
+   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">이메일주소(사회복지사)</th>${showFee?`<th style="${TH}">특이사항 / 수업료</th>`:''}
   </tr></thead>
   <tbody>${body}</tbody>
  </table>`;
@@ -8064,9 +8074,14 @@ function _schCardsHTML(teacher, showFee){
  return out;
 }
 /* 화면으로 보기 (강사·관리자 공용) */
+let _schEditMode=false, _schEdits={}, _schEditBase={}, _schEditTeacher='';
 function openSchedule(teacher, showFee){
  const name=teacher || window._loggedInTeacher || '';
  if(!name){ try{ showToast('강사를 알 수 없어요'); }catch(_){} return; }
+ _schEditMode=false;   // 새로 열 때는 보기 모드
+ _schRenderOverlay(name, !!showFee);
+}
+function _schRenderOverlay(name, showFee){
  let ov=document.getElementById('schedOverlay');
  if(!ov){
   ov=document.createElement('div');
@@ -8079,17 +8094,193 @@ function openSchedule(teacher, showFee){
  ov.style.display='flex';
  const card=ov.querySelector('#schedCard');
  const safe=String(name).replace(/'/g,"\\'");
+ // 강사 본인 화면(수업료 없음)에서만 '수정 요청' 가능
+ const canRequest = !showFee;
+ const edit = canRequest && _schEditMode;
+ if(edit){ _schEditTeacher=name; _schBeginEdit(name); }
+ const headBtns = edit
+  ? `<button class="btn sm" onclick="_schCancelEdit('${safe}')">취소</button>`
+  : `${canRequest?`<button class="btn sm primary" onclick="_schStartEdit('${safe}')" style="gap:4px;">✏️ 수정 요청</button>`:''}
+     <button class="btn sm" onclick="printSchedule('${safe}',${showFee?'true':'false'})" style="gap:4px;">🖨 인쇄</button>
+     <button class="btn sm" onclick="closeSchedule()">닫기</button>`;
  card.innerHTML = `
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-   <div style="flex:1;min-width:180px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}</div>
-   <button class="btn sm" onclick="printSchedule('${safe}',${showFee?'true':'false'})" style="gap:4px;">🖨 인쇄</button>
-   <button class="btn sm" onclick="closeSchedule()">닫기</button>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+   <div style="flex:1;min-width:170px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}${edit?' <span style="font-size:11px;font-weight:700;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:20px;padding:1px 8px;">✏️ 수정 모드</span>':''}</div>
+   ${headBtns}
   </div>
-  <div class="sch-cards">${_schCardsHTML(name, !!showFee)}</div>
-  <div class="sch-table">${_schTableHTML(name, !!showFee, true)}</div>
-  <div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우면 여기에 자동으로 나옵니다.</div>`;
+  ${edit?'':`<div class="sch-cards">${_schCardsHTML(name, showFee)}</div>`}
+  <div class="sch-table"${edit?' style="display:block"':''}>${_schTableHTML(name, showFee, !edit, edit)}</div>
+  ${edit
+    ? `<div id="schEditBar" style="margin-top:12px;padding:12px 14px;background:#F7F5EE;border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px;"><span id="schEditCount">고친 곳이 없어요. 강의시간·주소·이메일을 채워보세요.</span></div>
+        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+         <div style="flex:1;min-width:200px;">
+          <div style="font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:4px;">✉️ 관리자에게 전할 메시지 <span style="font-weight:400;color:#9A968C;">(선택)</span></div>
+          <textarea id="schReqMsg" rows="2" placeholder="예) 효명센터 시간이 바뀌었어요. 확인 부탁드려요." style="width:100%;resize:vertical;border:1px solid #D8B25A;border-radius:8px;padding:7px 9px;font-size:12px;font-family:inherit;outline:none;background:#FFFDF6;line-height:1.5;"></textarea>
+         </div>
+         <button class="btn sm primary" id="schSendBtn" onclick="_sendScheduleRequest('${safe}')" disabled style="gap:4px;opacity:.5;white-space:nowrap;">📬 관리자에게 수정 요청 보내기</button>
+        </div>
+       </div>
+       <div style="margin-top:8px;font-size:11px;color:#9A968C;">· 요청을 보내면 <b>관리자 확인 후</b> 반영됩니다 (바로 바뀌지 않아요). · 지역은 주소를 넣으면 자동으로 채워집니다.</div>`
+    : `<div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우거나, <b>✏️ 수정 요청</b>으로 직접 채워 관리자에게 보낼 수 있어요.</div>`}`;
 }
-function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; }
+function _schStartEdit(name){ _schEditMode=true; _schRenderOverlay(name, false); }
+function _schCancelEdit(name){ _schEditMode=false; _schEdits={}; _schRenderOverlay(name, false); }
+function _schBeginEdit(name){
+ _schEdits={}; _schEditBase={};
+ _teacherScheduleRows(name).forEach(r=>{
+  _schEditBase[[r.center,r.region,r.day,r.gyosi].join('\u0001')] = {time:r.time||'', address:r.address||'', email:r.email||''};
+ });
+}
+function _schEditSet(center,region,day,gyosi,field,value){
+ _schEdits[[center,region,day,gyosi,field].join('\u0001')] = value;
+ _schUpdateEditBar();
+}
+function _openSchTimeInput(input, center, region, day, gyosi){
+ _openTimePickerAt(input, null, (v)=>{ input.value=v; _schEditSet(center,region,day,gyosi,'time',v); });
+}
+function _schBuildChanges(){
+ const norm=(field,v)=>{ if(field==='time') return _normTime(v); return String(v==null?'':v).trim(); };
+ const ch=[];
+ Object.keys(_schEdits).forEach(k=>{
+  const pa=k.split('\u0001'); const field=pa[4];
+  const base=_schEditBase[pa.slice(0,4).join('\u0001')]||{};
+  const from=norm(field, base[field]||''); const to=norm(field, _schEdits[k]);
+  if(from!==to) ch.push({center:pa[0], region:pa[1], day:pa[2], gyosi:Number(pa[3])||1, field, from, to});
+ });
+ return ch;
+}
+function _schUpdateEditBar(){
+ const ch=_schBuildChanges();
+ const cnt=document.getElementById('schEditCount'), btn=document.getElementById('schSendBtn');
+ if(cnt) cnt.innerHTML = ch.length ? `<b style="color:#B45309;">${ch.length}곳</b> 고쳤어요. 확인 후 요청을 보내세요.` : '고친 곳이 없어요. 강의시간·주소·이메일을 채워보세요.';
+ if(btn){ btn.disabled=!ch.length; btn.style.opacity=ch.length?'1':'.5'; }
+}
+async function _sendScheduleRequest(name){
+ const ch=_schBuildChanges();
+ if(!ch.length){ try{ showToast('고친 곳이 없어요'); }catch(_){} return; }
+ const t=(DB.teachers||[]).find(x=>x&&x.name===name);
+ const msg=(document.getElementById('schReqMsg')?.value||'').trim();
+ const btn=document.getElementById('schSendBtn');
+ if(btn){ btn.disabled=true; btn.textContent='보내는 중…'; }
+ try{
+  const r=await gasPost({action:'submitScheduleRequest', teacher:name, region:(t&&t.region)||'', changes:ch, message:msg});
+  if(r && r.ok!==false){
+   _schEditMode=false; _schEdits={};
+   try{ showToast('📬 수정 요청을 보냈어요 — 관리자 확인 후 반영됩니다'); }catch(_){}
+   _schRenderOverlay(name, false);
+  } else {
+   if(btn){ btn.disabled=false; btn.textContent='📬 관리자에게 수정 요청 보내기'; }
+   try{ showToast((r&&r.message)||'요청 보내기 실패 — 잠시 후 다시 시도해 주세요'); }catch(_){}
+  }
+ }catch(_){
+  if(btn){ btn.disabled=false; btn.textContent='📬 관리자에게 수정 요청 보내기'; }
+  try{ showToast('서버 연결 실패 — 잠시 후 다시 시도해 주세요'); }catch(_){}
+ }
+}
+function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; _schEditMode=false; _schEdits={}; }
+
+/* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
+let _schReqCache=[];
+function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='email'?'이메일':f; }
+async function _loadSchedRequests(silent){
+ if(!(typeof _isAdminMode==='function' ? _isAdminMode() : false)) return;
+ try{
+  const r=await gasGet({action:'getScheduleRequests'});
+  _schReqCache = (r && r.ok!==false && Array.isArray(r.data)) ? r.data : [];
+ }catch(_){ _schReqCache=[]; }
+ _renderSchedReqBanner();
+}
+function _renderSchedReqBanner(){
+ const host=document.getElementById('schedReqBanner');
+ if(!host) return;
+ const n=_schReqCache.length;
+ if(!n){ host.style.display='none'; host.innerHTML=''; return; }
+ host.style.display='flex';
+ host.innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;background:#B45309;color:#fff;font-size:12.5px;font-weight:800;border-radius:20px;padding:5px 12px;">📬 스케줄 수정요청 ${n}건</span>
+   <button class="btn sm" onclick="_openSchedReqPanel()" style="gap:4px;">확인하기</button>`;
+}
+function _openSchedReqPanel(){
+ let ov=document.getElementById('schedReqOverlay');
+ if(!ov){
+  ov=document.createElement('div'); ov.id='schedReqOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.onclick=(e)=>{ if(e.target===ov) ov.style.display='none'; };
+  ov.innerHTML='<div id="schedReqCard" style="background:#fff;border-radius:14px;max-width:820px;width:100%;max-height:calc(100vh - 24px);overflow:auto;padding:16px 18px;"></div>';
+  document.body.appendChild(ov);
+ }
+ ov.style.display='flex';
+ _renderSchedReqPanel();
+}
+function _renderSchedReqPanel(){
+ const card=document.getElementById('schedReqCard'); if(!card) return;
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ let list='';
+ if(!_schReqCache.length){
+  list='<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">대기 중인 수정 요청이 없어요</div>';
+ } else {
+  _schReqCache.forEach(req=>{
+   const rows=(req.changes||[]).map(c=>`<div style="display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px;flex-wrap:wrap;">
+     <span style="font-weight:700;min-width:130px;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
+     <span style="color:#9A968C;width:52px;font-size:11.5px;">${_fieldLabel(c.field)}</span>
+     <span style="color:#9A968C;${c.from?'text-decoration:line-through;':'font-style:italic;'}">${c.from?e(c.from):'빈칸'}</span>
+     <span style="color:#9A968C;">→</span>
+     <span style="color:#1A7A50;font-weight:700;">${e(c.to)}</span>
+    </div>`).join('');
+   list+=`<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;">
+     <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#FCFBF7;border-bottom:1px solid var(--border);">
+      <span style="font-size:13.5px;font-weight:800;">${e(req.teacher)}</span>
+      ${req.region?`<span style="font-size:11px;font-weight:700;background:var(--green-bg,#E8F5EE);color:var(--green,#1A7A50);border-radius:20px;padding:2px 9px;">${e(req.region)}지사</span>`:''}
+      <span style="margin-left:auto;font-size:11px;color:#9A968C;">${e(req.requestedAt||'')}</span>
+     </div>
+     <div style="padding:10px 14px;">${rows}</div>
+     ${req.message?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.55;">✉️ <b>메시지</b> · ${e(req.message)}</div>`:''}
+     <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
+      <span style="flex:1;font-size:12px;color:var(--text2);"><b>${(req.changes||[]).length}개 항목</b> 변경 요청</span>
+      <button class="btn sm" onclick="_rejectSchedRequest('${e(req.id)}')" style="border:1px solid #FCA5A5;color:#DC2626;">거절</button>
+      <button class="btn sm primary" onclick="_applySchedRequest('${e(req.id)}')">✓ 전체 반영</button>
+     </div>
+    </div>`;
+  });
+ }
+ card.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+    <div style="flex:1;font-size:15px;font-weight:800;">📬 스케줄 수정 요청</div>
+    <button class="btn sm" onclick="document.getElementById('schedReqOverlay').style.display='none'">닫기</button>
+   </div>${list}`;
+}
+function _applyChangeToDB(teacher, c){
+ const cc=(DB.centers||[]).find(x=>x && x.name===c.center && String(x.region||'')===String(c.region||''));
+ if(!cc) return false;
+ if(c.field==='address') cc.address=c.to;
+ else if(c.field==='email') cc.email=c.to;
+ else if(c.field==='time'){
+  const cand=(cc.schedule||[]).filter(s=>s && s.teacher===teacher && (s.days||[]).includes(c.day));
+  const s=cand.find(s=>(s.gyosi||1)===c.gyosi) || cand[0];
+  if(!s) return false;
+  const t=_normTime(c.to); if(t) s.time=t; else delete s.time;
+ }
+ return true;
+}
+async function _applySchedRequest(id){
+ const req=_schReqCache.find(r=>String(r.id)===String(id));
+ if(!req) return;
+ let ok=0, miss=0;
+ (req.changes||[]).forEach(c=>{ if(_applyChangeToDB(req.teacher, c)) ok++; else miss++; });
+ try{ lsSave(); }catch(_){}
+ try{ _saveAllCentersToGas(); }catch(_){}   // 관리자 기기만 센터DB 씀(안전)
+ try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'applied'}); }catch(_){}
+ _schReqCache=_schReqCache.filter(r=>String(r.id)!==String(id));
+ _renderSchedReqPanel(); _renderSchedReqBanner();
+ try{ if(document.getElementById('centersView')?.style.display==='block'){ renderCenterTreeView&&renderCenterTreeView(); } }catch(_){}
+ try{ showToast(`✓ ${req.teacher} 요청 ${ok}개 반영${miss?` · ${miss}개는 센터를 못 찾음`:''}`); }catch(_){}
+}
+async function _rejectSchedRequest(id){
+ const req=_schReqCache.find(r=>String(r.id)===String(id));
+ try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'rejected'}); }catch(_){}
+ _schReqCache=_schReqCache.filter(r=>String(r.id)!==String(id));
+ _renderSchedReqPanel(); _renderSchedReqBanner();
+ try{ showToast(`${req?req.teacher:''} 요청을 거절했어요`); }catch(_){}
+}
 
 /* 인쇄 — 한 사람당 한 장 (PDF와 같은 자동 축소 사용) */
 function printSchedule(teacher, showFee){ _printSchedules([teacher], showFee); }
