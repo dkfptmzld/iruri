@@ -42,6 +42,7 @@ const SHEET_TEACHERS   = '강사DB';
 const SHEET_CENTERS    = '센터DB';
 const SHEET_PRESENCE   = '접속현황';
 const SHEET_PENDING    = '가입대기';
+const SHEET_SCHEDREQ   = '스케줄요청';   // v16.05: 강사 스케줄 수정요청
 
 function response(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
@@ -65,6 +66,7 @@ function doGet(e) {
     if (action === 'getSettlementStatus')  return response(getSettlementStatus(p.teacher));
     if (action === 'getDbMeta')            return response(getDbMeta());
     if (action === 'getPendingSignups')    return response(getPendingSignups());
+    if (action === 'getScheduleRequests')  return response(getScheduleRequests());   // v16.05
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -95,6 +97,8 @@ function doPost(e) {
     if (action === 'signupRequest')         return response(signupRequest(body.data));
     if (action === 'approveSignup')         return response(approveSignup(body.name));
     if (action === 'rejectSignup')          return response(rejectSignup(body.name));
+    if (action === 'submitScheduleRequest') return response(submitScheduleRequest(body));            // v16.05
+    if (action === 'resolveScheduleRequest')return response(resolveScheduleRequest(body.id, body.status));   // v16.05
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -166,6 +170,7 @@ function getSheet(name) {
     if (name === SHEET_TEACHERS) sheet.appendRow(['강사명','지역','급여유형','급여액','입사일','인상일','계좌정보','JSON전체']);
     if (name === SHEET_CENTERS)  sheet.appendRow(['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']);
     if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태']);
+    if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','요청시각','상태','처리시각']);
   }
   return sheet;
 }
@@ -233,6 +238,54 @@ function rejectSignup(name){
     }
   }
   return { ok:false, message:'대기 신청 없음' };
+}
+
+/* ════════ v16.05: 강사 스케줄 수정요청 ════════
+ *  강사가 자기 스케줄(강의시간·주소·이메일)을 채워 관리자에게 요청을 보낸다.
+ *  요청은 이 시트에만 쌓이고, 실제 센터DB 반영은 관리자가 '전체 반영'을 눌러야 일어난다
+ *  (강사 기기는 센터DB를 직접 못 쓰게 막혀 있음 = 삭제된 센터가 되살아나는 사고 방지).
+ *  · 변경내용JSON: [{center,region,day,gyosi,field,from,to}, ...]
+ *  · 상태: 대기 / 반영 / 거절 */
+function submitScheduleRequest(body){
+  if(!body || !Array.isArray(body.changes) || !body.changes.length){
+    return { ok:false, message:'변경 내용이 없습니다' };
+  }
+  const sheet = getSheet(SHEET_SCHEDREQ);
+  const now = new Date();
+  const id = 'SR' + now.getTime() + Math.floor(Math.random()*1000);
+  const when = now.toLocaleString('ko-KR', { timeZone:'Asia/Seoul' });
+  sheet.appendRow([ id, String(body.teacher||''), String(body.region||''),
+                    JSON.stringify(body.changes), when, '대기', '' ]);
+  return { ok:true, id:id, message:'수정 요청 접수' };
+}
+
+function getScheduleRequests(){
+  const sheet = getSheet(SHEET_SCHEDREQ);
+  const vals = sheet.getDataRange().getValues();
+  const list = [];
+  for(let i=1;i<vals.length;i++){
+    const [id, teacher, region, changesJson, requestedAt, status] = vals[i];
+    if(!id || String(status) !== '대기') continue;
+    let changes = [];
+    try{ changes = JSON.parse(String(changesJson||'[]')); }catch(e){ changes = []; }
+    list.push({ id:String(id), teacher:String(teacher||''), region:String(region||''),
+                changes:changes, requestedAt:String(requestedAt||'') });
+  }
+  return { ok:true, data:list };
+}
+
+function resolveScheduleRequest(id, status){
+  const st = (status === 'applied') ? '반영' : (status === 'rejected') ? '거절' : String(status||'처리');
+  const sheet = getSheet(SHEET_SCHEDREQ);
+  const vals = sheet.getDataRange().getValues();
+  const when = new Date().toLocaleString('ko-KR', { timeZone:'Asia/Seoul' });
+  for(let i=1;i<vals.length;i++){
+    if(String(vals[i][0]) === String(id)){
+      sheet.getRange(i+1, 6, 1, 2).setValues([[ st, when ]]);   // 상태, 처리시각
+      return { ok:true, message:'처리됨: ' + st };
+    }
+  }
+  return { ok:false, message:'요청을 찾지 못함' };
 }
 
 /* ════════ DB 안전장치: 급감 차단 + 자동 백업 ════════ */
