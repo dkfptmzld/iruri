@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.97">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.98">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.97">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.98">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.97</title>
+<title>수업기록표 정산 시스템 v15.98</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -411,6 +411,10 @@ body.edit-mode-active .ledger-wrap textarea {
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
 /* GLOBAL LOADING OVERLAY */
+/* v15.98: 스케줄표 — 넓은 화면은 표, 휴대폰은 카드 */
+.sch-cards{display:none;}
+.sch-table{display:block;overflow-x:auto;}
+@media(max-width:600px){ .sch-cards{display:block;} .sch-table{display:none;} }
 /* v15.89: 탭별 서버 요청 상태 줄 */
 .srv-line{display:none;align-items:center;gap:6px;padding:6px 9px;border-radius:7px;font-size:10.5px;font-weight:600;line-height:1.4;margin-bottom:10px;}
 .srv-line .srv-el{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;opacity:.85;flex-shrink:0;padding-left:8px;}
@@ -1255,6 +1259,20 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  </div>
  <div style="font-size:16px;font-weight:700;color:#1a4a2e;margin-bottom:8px;">강사 모드</div>
  <div style="font-size:12px;color:#6B9A7A;line-height:1.6;">수업 기록표를 작성하고<br>관리자에게 제출합니다</div>
+ </div>
+
+ <!-- v15.98: 내 스케줄 (강사 본인 것만, 강사료 없음) -->
+ <div role="button" tabindex="0" id="card-myschedule" aria-label="내 스케줄 — 내 수업 시간표 보기"
+   onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
+   onclick="if(_landingEditMode)return; openSchedule(window._loggedInTeacher||sessionStorage.getItem('iruri_session')||'', false)"
+   style="background:white;border:2px solid #BBD9F0;border-radius:20px;padding:28px 24px;width:190px;cursor:pointer;transition:.2s;box-shadow:0 4px 16px rgba(37,99,235,.10);"
+   onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(37,99,235,.2)';this.style.borderColor='#2563EB';"
+   onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(37,99,235,.10)';this.style.borderColor='#BBD9F0';">
+ <div style="width:56px;height:56px;background:linear-gradient(135deg,#4B8FE3,#2563EB);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+ <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V9h14v10zM5 7V5h14v2H5z"/></svg>
+ </div>
+ <div style="font-size:16px;font-weight:700;color:#1E3A5F;margin-bottom:8px;">내 스케줄</div>
+ <div style="font-size:12px;color:#6B8AA8;line-height:1.6;">내 수업 요일·시간을<br>확인하고 인쇄합니다</div>
  </div>
 
  <div role="button" tabindex="0" id="card-admin" aria-label="관리자 모드 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
@@ -2332,7 +2350,10 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
  <div><div style="font-size:18px;font-weight:600;margin-bottom:4px;">강사 관리</div>
  <div style="font-size:13px;color:var(--text2);">강사료 기준을 관리합니다.</div></div>
+ <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+ <button class="btn" onclick="printAllSchedules()" title="모든 강사의 스케줄표를 한 명당 한 장씩 인쇄합니다" style="gap:4px;">🖨 전체 스케줄 인쇄</button>
  <button class="btn primary" onclick="openModal('teacher')"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>강사 추가</button>
+ </div>
  </div>
  <div id="srvStatus_teachers" class="srv-line" data-srv="teachers" style="margin-top:10px;max-width:340px;"></div>
 
@@ -3658,7 +3679,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.97';
+const SYSTEM_VERSION='v15.98';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7880,10 +7901,211 @@ function renderTeacherMgr(){
  <div class="mgr-cell">${raiseBadge}</div>
  <div class="mgr-cell">${certCell}</div>
  <div class="mgr-cell" style="display:flex;gap:4px;" onclick="event.stopPropagation()">
+ <button class="btn sm" title="${escH(t.name)} 강사 스케줄표 보기·인쇄" onclick="openSchedule('${String(t.name).replace(/'/g,"\\'")}',true)" style="gap:3px;">📅</button>
  <button class="btn sm danger" onclick="delItem('teacher',${i})"><svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
  </div>
  </div>`;
  }).join('');
+}
+
+/* ═══════════ v15.98: 강사 스케줄표 ═══════════
+ *  지금까지 따로 만들어 강사들에게 나눠주던 표를 앱에서 바로 뽑을 수 있게 한다.
+ *  · 강사모드: 본인 것만, 강사료 없음
+ *  · 관리자모드: 강사별로 보기 + 인쇄, 강사료 표시
+ *  시간·주소가 비어 있으면 그냥 빈칸으로 둔다(있는 것만 나온다). */
+const _SCH_DAYS = ['월','화','수','목','금','토','일'];
+
+/* 주소에서 '지역'(시·구)을 뽑는다.
+ *  서울 → 구 이름(금천·관악), 인천 → 인천, 그 외 → 시 이름(부천·시흥·광명).
+ *  받은 스케줄표의 주소 14개로 규칙을 맞춰 확인했다. 주소가 없으면 빈칸. */
+function _areaFromAddress(addr){
+ const a = String(addr||'').trim();
+ if(!a) return '';
+ const t = a.split(/\s+/);
+ if(/^서울/.test(t[0])){
+  const gu = t.find(x=>/구$/.test(x));
+  return gu ? gu.replace(/구$/,'') : '서울';
+ }
+ if(/^인천/.test(t[0])) return '인천';
+ const si = t.find(x=>/시$/.test(x));
+ if(si) return si.replace(/시$/,'');
+ const gu = t.find(x=>/구$/.test(x));
+ if(gu) return gu.replace(/구$/,'');
+ return '';
+}
+function _schMins(t){ const m=String(t||'').match(/^(\d{1,2}):(\d{2})/); return m?(+m[1])*60+(+m[2]):99999; }
+
+/* 한 강사의 스케줄 줄들 — 요일순, 같은 요일은 시간순(시간 없으면 교시순) */
+function _teacherScheduleRows(teacher){
+ const out=[];
+ (DB.centers||[]).forEach(c=>{
+  (c.schedule||[]).forEach(sc=>{
+   if(!sc || sc.teacher!==teacher) return;
+   (sc.days||[]).forEach(day=>{
+    if(_SCH_DAYS.indexOf(day)<0) return;
+    let fee=0;
+    try{ fee = getCenterFee(c.name, teacher, 0, c.region) || Number(c.fee)||0; }catch(_){ fee=Number(c.fee)||0; }
+    out.push({ day, center:c.name, region:c.region||'', area:_areaFromAddress(c.address),
+      time:sc.time||'', address:c.address||'', fee,
+      order:sc.order||99, gyosi:sc.gyosi||1 });
+   });
+  });
+ });
+ out.sort((a,b)=> _SCH_DAYS.indexOf(a.day)-_SCH_DAYS.indexOf(b.day)
+   || _schMins(a.time)-_schMins(b.time) || (a.order-b.order) || (a.gyosi-b.gyosi));
+ return out;
+}
+function _schTitle(teacher){
+ const t=(DB.teachers||[]).find(x=>x && x.name===teacher);
+ const br=t&&t.region ? ` (${t.region}지사)` : '';
+ const d=new Date();
+ const ymd=`${String(d.getFullYear()).slice(2)}년 ${d.getMonth()+1}월 ${d.getDate()}일 기준`;
+ return `${teacher} 강사 스케줄 ${ymd}${br}`;
+}
+
+/* 표 HTML — 화면·인쇄에서 같은 것을 쓴다 */
+function _schTableHTML(teacher, showFee){
+ const rows=_teacherScheduleRows(teacher);
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ const TH='padding:6px 4px;font-size:11.5px;font-weight:700;border:1px solid #9A968C;background:#E8E6DC;text-align:center;';
+ const TD='padding:5px 6px;font-size:11.5px;border:1px solid #C8C6B8;text-align:center;';
+ if(!rows.length){
+  return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
+   <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
+ }
+ // 요일별로 묶어서 요일 칸을 합친다
+ const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let body='';
+ _SCH_DAYS.forEach(day=>{
+  const list=byDay[day]; if(!list||!list.length) return;
+  list.forEach((r,i)=>{
+   body += `<tr>`
+     + (i===0 ? `<td rowspan="${list.length}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
+     + `<td style="${TD}text-align:left;font-weight:600;">${e(r.center)}</td>`
+     + `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${e(r.time)}</td>`
+     + `<td style="${TD}white-space:nowrap;">${e(r.area)}</td>`
+     + `<td style="${TD}text-align:left;font-size:11px;">${e(r.address)}</td>`
+     + (showFee ? `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r.fee?Number(r.fee).toLocaleString():''}</td>` : '')
+     + `</tr>`;
+  });
+  body += `<tr><td colspan="${showFee?6:5}" style="height:6px;padding:0;border:none;"></td></tr>`;
+ });
+ return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+  <colgroup><col style="width:62px"><col style="width:23%"><col style="width:96px"><col style="width:62px"><col>${showFee?'<col style="width:70px">':''}</colgroup>
+  <thead><tr>
+   <th style="${TH}">요일</th><th style="${TH}">센터 명</th><th style="${TH}">강의시간</th>
+   <th style="${TH}">지역</th><th style="${TH}">특이사항 · 기타</th>${showFee?`<th style="${TH}">강사료</th>`:''}
+  </tr></thead>
+  <tbody>${body}</tbody>
+ </table>`;
+}
+
+/* 휴대폰용 카드 형태 — 표를 좁은 화면에 밀어 넣으면 주소가 한 글자씩 쪼개진다 */
+function _schCardsHTML(teacher, showFee){
+ const rows=_teacherScheduleRows(teacher);
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ if(!rows.length) return '';
+ const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let out='';
+ _SCH_DAYS.forEach(day=>{
+  const list=byDay[day]; if(!list||!list.length) return;
+  out += `<div style="margin-bottom:14px;">
+   <div style="font-size:13px;font-weight:800;color:#1A7A50;margin-bottom:6px;">${day}요일 <span style="font-weight:500;color:#9A968C;font-size:11.5px;">${list.length}곳</span></div>`;
+  list.forEach(r=>{
+   out += `<div style="border:1px solid #E6E3D8;border-radius:10px;padding:9px 11px;margin-bottom:6px;background:#fff;">
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
+     <span style="font-size:13.5px;font-weight:700;">${e(r.center)}</span>
+     ${r.time?`<span style="font-size:12.5px;font-weight:700;color:#1A7A50;font-family:'DM Mono',monospace;">${e(r.time)}</span>`:'<span style="font-size:11.5px;color:#B8B4A8;">시간 미입력</span>'}
+     ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;">${e(r.area)}</span>`:''}
+     ${showFee&&r.fee?`<span style="margin-left:auto;font-size:12px;color:#6A6760;font-family:'DM Mono',monospace;">${Number(r.fee).toLocaleString()}원</span>`:''}
+    </div>
+    ${r.address?`<div style="font-size:11.5px;color:#8A8778;margin-top:4px;line-height:1.5;">${e(r.address)}</div>`:''}
+   </div>`;
+  });
+  out += `</div>`;
+ });
+ return out;
+}
+/* 화면으로 보기 (강사·관리자 공용) */
+function openSchedule(teacher, showFee){
+ const name=teacher || window._loggedInTeacher || '';
+ if(!name){ try{ showToast('강사를 알 수 없어요'); }catch(_){} return; }
+ let ov=document.getElementById('schedOverlay');
+ if(!ov){
+  ov=document.createElement('div');
+  ov.id='schedOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.onclick=(e)=>{ if(e.target===ov) closeSchedule(); };
+  ov.innerHTML='<div id="schedCard" style="background:#fff;border-radius:14px;max-width:940px;width:100%;max-height:calc(100vh - 24px);overflow:auto;padding:16px 18px;"></div>';
+  document.body.appendChild(ov);
+ }
+ ov.style.display='flex';
+ const card=ov.querySelector('#schedCard');
+ const safe=String(name).replace(/'/g,"\\'");
+ card.innerHTML = `
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+   <div style="flex:1;min-width:180px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}</div>
+   <button class="btn sm" onclick="printSchedule('${safe}',${showFee?'true':'false'})" style="gap:4px;">🖨 인쇄</button>
+   <button class="btn sm" onclick="closeSchedule()">닫기</button>
+  </div>
+  <div class="sch-cards">${_schCardsHTML(name, !!showFee)}</div>
+  <div class="sch-table">${_schTableHTML(name, !!showFee)}</div>
+  <div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우면 여기에 자동으로 나옵니다.</div>`;
+}
+function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; }
+
+/* 인쇄 — 한 사람당 한 장 (PDF와 같은 자동 축소 사용) */
+function printSchedule(teacher, showFee){ _printSchedules([teacher], showFee); }
+function printAllSchedules(){
+ const names=(DB.teachers||[]).map(t=>t&&t.name).filter(Boolean)
+   .filter(n=>_teacherScheduleRows(n).length);
+ if(!names.length){ try{ showToast('인쇄할 스케줄이 없어요'); }catch(_){} return; }
+ _printSchedules(names, true);
+}
+function _printSchedules(names, showFee){
+ const pages=(names||[]).map(n=>`<div class="page"><div class="page-fit">
+   <div class="sch-title">${(function(){try{return esc(_schTitle(n));}catch(_){return _schTitle(n);}})()}</div>
+   ${_schTableHTML(n, !!showFee)}
+  </div></div>`).join('');
+ const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>강사 스케줄</title><style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  @page{size:A4 portrait;margin:10mm;}
+  body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#EFEDE4;}
+  .page{page-break-after:always;background:#fff;width:190mm;height:277mm;overflow:hidden;margin:0 auto 14px;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+  .page:last-child{page-break-after:auto;}
+  .page-fit{transform-origin:top left;width:100%;}
+  .sch-title{text-align:center;font-size:15px;font-weight:700;padding:8px 4px 10px;border-bottom:2px solid #6A6760;margin-bottom:8px;}
+  @media print{ body{background:#fff;} .page{box-shadow:none;margin:0;} }
+ </style></head><body>${pages}
+ <script>
+ function fitPages(){
+  var MIN=0.55;
+  document.querySelectorAll('.page').forEach(function(pg){
+   var inner=pg.querySelector('.page-fit'); if(!inner) return;
+   var maxH=pg.clientHeight, s=1;
+   for(var i=0;i<3;i++){
+    inner.style.transform='none'; inner.style.width=(100/s)+'%';
+    var h=inner.scrollHeight*s;
+    if(h<=maxH+0.5) break;
+    s=Math.max(MIN, s*(maxH/h));
+   }
+   if(s<1){ inner.style.width=(100/s)+'%'; inner.style.transform='scale('+s+')'; }
+   else { inner.style.width='100%'; inner.style.transform='none'; }
+  });
+ }
+ fitPages();
+ if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){fitPages();window.__fitDone=1;}).catch(function(){window.__fitDone=1;});
+  setTimeout(function(){window.__fitDone=1;},2500); } else { window.__fitDone=1; }
+ <\/script></body></html>`;
+ const w=window.open('','_blank','width=900,height=1000');
+ if(!w){ try{ showToast('팝업이 차단됐어요 — 팝업 허용 후 다시 시도해주세요'); }catch(_){} return; }
+ w.document.write(html); w.document.close();
+ let done=false; const t0=Date.now();
+ const go=()=>{ if(done) return; done=true; try{ w.focus(); w.print(); }catch(_){} };
+ (function wait(){ if(w.closed) return;
+   let ok=false; try{ ok=!!w.__fitDone; }catch(_){ ok=true; }
+   if(ok || Date.now()-t0>3000) setTimeout(go,200); else setTimeout(wait,100); })();
 }
 
 /* ═══ 계좌번호 파싱/포맷 ═══ */
