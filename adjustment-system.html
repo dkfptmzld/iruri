@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.03">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.04">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.03">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.04">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.03</title>
+<title>수업기록표 정산 시스템 v16.04</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3679,7 +3679,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.03';
+const SYSTEM_VERSION='v16.04';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7988,7 +7988,7 @@ function _schTableHTML(teacher, showFee, editable){
  const rows=_teacherScheduleRows(teacher);
  const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
  const TH='padding:6px 4px;font-size:11.5px;font-weight:700;border:1px solid #9A968C;background:#E8E6DC;text-align:center;';
- const TD='padding:5px 6px;font-size:11.5px;border:1px solid #C8C6B8;text-align:center;';
+ const TD='padding:5px 6px;font-size:11.5px;border:1px solid #C8C6B8;text-align:center;height:30px;';
  if(!rows.length){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
