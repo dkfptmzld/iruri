@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.93">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.96">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.93">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.96">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.93</title>
+<title>수업기록표 정산 시스템 v15.96</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3658,7 +3658,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.93';
+const SYSTEM_VERSION='v15.96';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9407,8 +9407,9 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
   // 같은 강사의 여러 교시를 gyosiList로 묶기
   const _tmap={};
   item.schedule.forEach(s=>{
-   if(!_tmap[s.teacher]) _tmap[s.teacher]={gyosiList:[],fee:null};
+   if(!_tmap[s.teacher]) _tmap[s.teacher]={gyosiList:[],fee:null,timeList:[]};
    _tmap[s.teacher].gyosiList.push(s.days||[]);
+   _tmap[s.teacher].timeList.push(s.time||'');   // v15.94: 강의시간
    if(!_tmap[s.teacher].fee){
     _tmap[s.teacher].fee = s.fee || item.fee || DB.centerFees[`${item.name}|${s.teacher}`] || 0;
    }
@@ -9417,10 +9418,12 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    if(_tmap[t]){
     STATE.modalSchedule[t+'__gyosiList'] = _tmap[t].gyosiList;
     STATE.modalSchedule[t+'__fee'] = _tmap[t].fee || null;
+    STATE.modalSchedule[t+'__timeList'] = _tmap[t].timeList;   // v15.94
    } else {
     const fallbackFee = item.fee || DB.centerFees[`${item.name}|${t}`] || 0;
     STATE.modalSchedule[t+'__gyosiList'] = [[]];
     STATE.modalSchedule[t+'__fee'] = fallbackFee || null;
+    STATE.modalSchedule[t+'__timeList'] = [''];   // v15.94
    }
   });
  } else {
@@ -9428,6 +9431,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    const fallbackFee = item.fee || DB.centerFees[`${item.name}|${t}`] || 0;
    STATE.modalSchedule[t+'__gyosiList'] = [[]];
    STATE.modalSchedule[t+'__fee'] = fallbackFee || null;
+   STATE.modalSchedule[t+'__timeList'] = [''];   // v15.94
   });
  }
  // v11.14: 신규 센터 + prefillTeacher 있으면 해당 강사 자동 등록
@@ -9503,6 +9507,32 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
  },50);
 }
 
+/* v15.94: 강의시간 정리 — 어떻게 적어도 "10:30~11:30" 형태로 맞춰 저장한다.
+ *  스케줄표에 그대로 찍히는 값이라 표기가 제각각이면 표가 지저분해진다.
+ *  예) "1030-1130", "10시30분~11시30분", "10:30 ~ 11:30" → 모두 "10:30~11:30"
+ *  숫자를 못 읽으면 적은 그대로 둔다(빈칸도 그대로 빈칸). */
+function _normTime(v){
+ const raw = String(v==null?'':v).trim();
+ if(!raw) return '';
+ const nums = raw.match(/\d{1,2}\s*[:시]?\s*\d{0,2}/g);
+ const one = (x)=>{
+  const m = String(x).match(/(\d{1,2})\s*[:시]?\s*(\d{0,2})/);
+  if(!m) return null;
+  let h = parseInt(m[1],10);
+  let mi = m[2] ? parseInt(m[2],10) : 0;
+  if(!(h>=0 && h<=23) || !(mi>=0 && mi<=59)) return null;
+  return String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+ };
+ if(nums && nums.length>=2){
+  const a=one(nums[0]), b=one(nums[1]);
+  if(a && b) return a+'~'+b;
+ }
+ if(nums && nums.length===1){
+  const a=one(nums[0]);
+  if(a) return a;            // 시작 시간만 적었으면 그것만 저장
+ }
+ return raw;                 // 못 알아들으면 적은 그대로
+}
 function renderChips(){
  const DAYS=['월','화','수','목','금','토','일'];
  const baseFee = Number(document.getElementById('fi_fee')?.value||0);
@@ -9518,6 +9548,7 @@ function renderChips(){
   const i = STATE.modalChips.indexOf(t); // rmChip용 원본 인덱스 유지
   const gyosiList = STATE.modalSchedule[t+'__gyosiList'] || [[]];
   const fee = STATE.modalSchedule[t+'__fee'] || '';
+  const timeList = STATE.modalSchedule[t+'__timeList'] || [];   // v15.94
   const safeT = t.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   const gyosiRows = gyosiList.map((days,gi)=>{
    const dayBtns = DAYS.map(d=>{
@@ -9525,9 +9556,15 @@ function renderChips(){
     return `<button type="button" onclick="toggleScheduleDay('${safeT}',${gi},'${d}')" style="width:26px;height:24px;border-radius:5px;border:1.5px solid ${active?'var(--green)':'var(--border)'};background:${active?'var(--green)':'white'};color:${active?'white':'var(--text3)'};font-size:11px;font-weight:600;cursor:pointer;padding:0;">${d}</button>`;
    }).join('');
    const canDel = gyosiList.length > 1;
-   return `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 4px 10px;border-left:2px solid var(--green-light, #9FE1CB);">
+   const tVal = (timeList[gi]||'').replace(/"/g,'&quot;');   // v15.94
+   return `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 4px 10px;border-left:2px solid var(--green-light, #9FE1CB);flex-wrap:wrap;">
     <span style="font-size:11px;color:var(--text3);width:34px;flex-shrink:0;">${gi+1}수업</span>
     <div style="display:flex;gap:3px;flex-wrap:wrap;">${dayBtns}</div>
+    <input type="text" value="${tVal}" placeholder="🕐 10:30~11:30" title="눌러서 고르거나 직접 입력하세요. 비워두면 스케줄표에도 빈칸으로 나옵니다."
+     onclick="_openTimePicker('${safeT}',${gi},this)"
+     oninput="_setGyosiTime('${safeT}',${gi},this.value)"
+     onblur="if(!document.getElementById('timePickerPop')||document.getElementById('timePickerPop').style.display==='none')_setGyosiTime('${safeT}',${gi},this.value,true)"
+     style="flex:1 1 84px;min-width:76px;max-width:120px;height:24px;border:1px solid var(--border);border-radius:6px;padding:0 4px;font-size:11px;font-family:inherit;text-align:center;outline:none;">
     ${canDel?`<button type="button" onclick="rmGyosi('${safeT}',${gi})" style="width:20px;height:20px;border:none;background:transparent;color:#E24B4A;cursor:pointer;font-size:16px;padding:0;flex-shrink:0;line-height:1;">×</button>`:''}
    </div>`;
   }).join('');
@@ -9546,26 +9583,216 @@ function renderChips(){
  }).join('')||'<div style="color:var(--text3);font-size:12px;padding:4px 0;">담당 강사를 추가하고 수업 요일을 선택하세요</div>';
  return result;
 }
+/* ═══ v15.95: 강의시간 고르기 팝업 ═══
+ *  시간 칸을 누르면 시작·끝 시각을 눈으로 고를 수 있는 창이 뜬다.
+ *  칸에 직접 타이핑하는 것도 그대로 된다(둘 다 쓸 수 있게).
+ *  보내주신 스케줄표가 전부 60분 수업이라, 시작만 고르면 끝은 +1시간으로 자동으로 채운다. */
+const _TP_STARTS = ['09:00','09:30','10:00','10:30','10:40','10:50',
+                    '13:00','13:30','13:40','14:00','15:00','15:10','15:30','16:00'];
+const _TP_LEN = 60;          // v15.96: 수업은 60분으로 통일 (끝 시각은 항상 시작 +1시간)
+let _tpCtx = null;           // {teacher, gi, input, h, m, pm, mode}
+
+function _tpParse(v){
+ const m = String(v||'').match(/(\d{1,2}):(\d{2})/);
+ if(!m) return null;
+ let h=+m[1], mi=+m[2];
+ if(h>23||mi>59) return null;
+ return {h, m:mi};
+}
+function _tpAdd(hhmm, mins){
+ const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})$/); if(!m) return '';
+ let t=(+m[1])*60+(+m[2])+mins; t=((t%1440)+1440)%1440;
+ return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+}
+function _tpStart(){                 // 현재 고른 시작 시각 "HH:MM"
+ if(!_tpCtx || _tpCtx.h==null) return '';
+ let h=_tpCtx.h % 12; if(_tpCtx.pm) h+=12;
+ return String(h).padStart(2,'0')+':'+String(_tpCtx.m).padStart(2,'0');
+}
+function _tpValue(){
+ const st=_tpStart();
+ return st ? st+'~'+_tpAdd(st,_TP_LEN) : '';
+}
+function _tpApply(){                 // 입력칸에 즉시 반영 (다시 그리기는 닫을 때)
+ if(!_tpCtx) return;
+ const v=_tpValue();
+ if(_tpCtx.input) _tpCtx.input.value=v;
+ _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, v, false);
+ _tpRender();
+}
+function _tpClear(){ if(!_tpCtx) return; _tpCtx.h=null; _tpCtx.m=0; _tpApply(); }
+function _tpPickPreset(t){
+ const p=_tpParse(t); if(!p||!_tpCtx) return;
+ _tpCtx.pm = p.h>=12; _tpCtx.h = (p.h%12)||12; _tpCtx.m = p.m; _tpCtx.mode='m';
+ _tpApply();
+}
+function _tpSetMode(md){ if(_tpCtx){ _tpCtx.mode=md; _tpRender(); } }
+function _tpSetPm(v){ if(_tpCtx){ _tpCtx.pm=!!v; _tpApply(); } }
+
+/* ── 다이얼(시계판) ──
+ *  숫자를 눌러도 되고, 원 안 아무 데나 눌러도 가장 가까운 눈금으로 붙는다.
+ *  시를 고르면 자동으로 분 화면으로 넘어간다. */
+function _tpDial(){
+ if(!_tpCtx) return '';
+ const R=104, CX=120, CY=120, NR=84;          // 판 반지름 / 중심 / 숫자 반지름
+ const isH = _tpCtx.mode!=='m';
+ const vals = isH ? [12,1,2,3,4,5,6,7,8,9,10,11]
+                  : [0,5,10,15,20,25,30,35,40,45,50,55];
+ const sel = isH ? ((_tpCtx.h==null?12:_tpCtx.h)%12) : (Math.round(_tpCtx.m/5)%12);
+ let nodes='';
+ vals.forEach((v,i)=>{
+  const a=(i*30-90)*Math.PI/180;
+  const x=CX+NR*Math.cos(a), y=CY+NR*Math.sin(a);
+  const on = i===sel && !(isH && _tpCtx.h==null);
+  const label = isH ? String(v) : String(v).padStart(2,'0');
+  nodes += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17" fill="${on?'var(--green)':'transparent'}"/>`
+        +  `<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="${on?'700':'500'}" fill="${on?'#fff':'#3a3a38'}" style="pointer-events:none;user-select:none;">${label}</text>`;
+ });
+ let hand='';
+ if(!(isH && _tpCtx.h==null)){
+  const a=(sel*30-90)*Math.PI/180;
+  hand = `<line x1="${CX}" y1="${CY}" x2="${(CX+(NR-17)*Math.cos(a)).toFixed(1)}" y2="${(CY+(NR-17)*Math.sin(a)).toFixed(1)}" stroke="var(--green)" stroke-width="2"/>`;
+ }
+ return `<svg id="tpDial" width="240" height="240" viewBox="0 0 240 240" style="touch-action:none;display:block;margin:0 auto;cursor:pointer;"
+   onpointerdown="_tpDialPick(event)" onpointermove="if(event.buttons)_tpDialPick(event)">
+  <circle cx="${CX}" cy="${CY}" r="${R}" fill="var(--surface2,#F7F5EE)"/>
+  ${hand}<circle cx="${CX}" cy="${CY}" r="3" fill="var(--green)"/>
+  ${nodes}
+ </svg>`;
+}
+function _tpDialPick(ev){
+ if(!_tpCtx) return;
+ const svg=document.getElementById('tpDial'); if(!svg) return;
+ const r=svg.getBoundingClientRect();
+ const x=ev.clientX-r.left-(r.width/2), y=ev.clientY-r.top-(r.height/2);
+ if(Math.abs(x)<6 && Math.abs(y)<6) return;
+ let deg=Math.atan2(y,x)*180/Math.PI + 90;      // 12시 방향이 0도
+ deg=((deg%360)+360)%360;
+ const idx=Math.round(deg/30)%12;
+ if(_tpCtx.mode!=='m'){
+  _tpCtx.h = idx===0 ? 12 : idx;
+  _tpCtx.mode='m';                               // 시를 고르면 바로 분 화면으로
+ } else {
+  _tpCtx.m = idx*5;
+ }
+ _tpApply();
+}
+
+function _tpRender(){
+ const box=document.getElementById('timePickerPop'); if(!box||!_tpCtx) return;
+ const st=_tpStart();
+ const end= st ? _tpAdd(st,_TP_LEN) : '';
+ const isH=_tpCtx.mode!=='m';
+ const big=(txt,on,fn)=>`<span onclick="${fn}" style="cursor:pointer;font-size:26px;font-weight:800;color:${on?'var(--green)':'#B8B4A8'};">${txt}</span>`;
+ const ampm=(t,on,v)=>`<button type="button" onclick="_tpSetPm(${v})" style="height:26px;padding:0 12px;border-radius:13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'#fff'};color:${on?'#fff':'var(--text2)'};">${t}</button>`;
+ const chip=(t)=>`<button type="button" onclick="_tpPickPreset('${t}')" style="height:25px;padding:0 8px;border-radius:13px;font-size:11px;font-weight:${st===t?'700':'500'};cursor:pointer;font-family:inherit;border:1px solid ${st===t?'var(--green)':'var(--border)'};background:${st===t?'var(--green)':'#fff'};color:${st===t?'#fff':'var(--text2)'};">${t}</button>`;
+ box.querySelector('#tpBody').innerHTML = `
+  <div style="text-align:center;margin-bottom:6px;">
+   ${big(_tpCtx.h==null?'--':String(_tpCtx.h).padStart(2,'0'), isH, "_tpSetMode('h')")}
+   <span style="font-size:26px;font-weight:800;color:#B8B4A8;">:</span>
+   ${big(String(_tpCtx.m).padStart(2,'0'), !isH, "_tpSetMode('m')")}
+   <div style="display:flex;gap:5px;justify-content:center;margin-top:6px;">${ampm('오전',!_tpCtx.pm,false)}${ampm('오후',_tpCtx.pm,true)}</div>
+  </div>
+  <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:2px;">${isH?'시(時)를 고르세요':'분(分)을 고르세요'}</div>
+  ${_tpDial()}
+  <div style="text-align:center;font-size:13px;font-weight:700;color:${st?'var(--green)':'var(--text3)'};margin:4px 0 10px;">
+   ${st? st+' ~ '+end+'  <span style="font-size:11px;font-weight:500;color:var(--text3);">(60분)</span>' : '아직 안 정함'}
+  </div>
+  <div style="font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;">자주 쓰는 시작 시각</div>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:11px;">${_TP_STARTS.map(chip).join('')}</div>
+  <div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;">
+   <button type="button" onclick="_tpClear()" style="flex:1;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">지우기</button>
+   <button type="button" onclick="_closeTimePicker()" style="flex:2;height:32px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
+  </div>`;
+}
+function _openTimePicker(teacher, gi, input){
+ const cur=_tpParse(input?input.value:'');
+ _tpCtx={teacher, gi, input,
+   h: cur? ((cur.h%12)||12) : null,
+   m: cur? cur.m : 0,
+   pm: cur? cur.h>=12 : true,       // 대부분 오후 수업이라 기본 오후
+   mode: cur? 'm' : 'h'};
+ let box=document.getElementById('timePickerPop');
+ if(!box){
+  box=document.createElement('div');
+  box.id='timePickerPop';
+  // 센터 편집창(z-index 9999) 위에 떠야 한다
+  box.style.cssText='position:fixed;z-index:10050;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,.22);padding:12px 14px;width:272px;max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);overflow-y:auto;font-family:inherit;';
+  box.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:6px;">🕐 강의시간 <span style="font-weight:400;color:var(--text3);">— 60분 수업</span></div><div id="tpBody"></div>';
+  document.body.appendChild(box);
+ }
+ box.style.display='block';
+ _tpRender();
+ const r=input.getBoundingClientRect(), bw=box.offsetWidth, bh=box.offsetHeight;
+ let left=Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth-bw-8));
+ let top=r.bottom+6;
+ if(top+bh > window.innerHeight-8) top=Math.max(8, window.innerHeight-bh-8);
+ box.style.left=left+'px'; box.style.top=top+'px';
+ setTimeout(()=>document.addEventListener('mousedown', _tpOutside, true), 0);
+}
+function _tpOutside(e){
+ const box=document.getElementById('timePickerPop');
+ if(!box || box.style.display==='none') return;
+ if(box.contains(e.target)) return;
+ if(_tpCtx && _tpCtx.input && _tpCtx.input===e.target) return;
+ _closeTimePicker();
+}
+function _closeTimePicker(){
+ document.removeEventListener('mousedown', _tpOutside, true);
+ const box=document.getElementById('timePickerPop');
+ if(box) box.style.display='none';
+ if(_tpCtx){
+  _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, _tpValue(), true);
+  _tpCtx=null;
+ }
+}
+try{ window.addEventListener('keydown', e=>{ if(e.key==='Escape') _closeTimePicker(); }); }catch(_){}
+
+/* v15.95: 담당강사 목록 다시 그리기 — 한 번에 하나만.
+ *  [고친 문제] 시간 팝업을 닫으면 입력칸이 지워지는데, 그 순간 그 칸의 blur 가 또 다시그리기를
+ *  호출해서 "innerHTML 도중에 노드가 사라졌다"는 오류가 났다. → 겹치면 뒤엣것은 무시한다. */
+let _chipRerendering = false;
+function _rerenderChips(){
+ if(_chipRerendering) return;
+ _chipRerendering = true;
+ try{ const el=document.getElementById('chipContainer'); if(el) el.innerHTML = renderChips(); }
+ catch(_){ }
+ finally{ _chipRerendering = false; }
+}
+/* v15.94: 강의시간 입력 반영. 타이핑 중엔 적은 그대로 두고,
+ *  칸을 벗어날 때(onblur) 한 번만 "10:30~11:30" 형태로 정리한다.
+ *  (타이핑 도중에 고쳐버리면 커서가 튀어 입력이 불편해진다) */
+function _setGyosiTime(teacher, gyosiIdx, val, normalize){
+ const key = teacher+'__timeList';
+ if(!Array.isArray(STATE.modalSchedule[key])) STATE.modalSchedule[key] = [];
+ STATE.modalSchedule[key][gyosiIdx] = normalize ? _normTime(val) : val;
+ if(normalize) _rerenderChips();
+}
 function toggleScheduleDay(teacher, gyosiIdx, day){
  const gl = STATE.modalSchedule[teacher+'__gyosiList'];
  if(!gl||!gl[gyosiIdx]) return;
  const days = gl[gyosiIdx];
  const idx = days.indexOf(day);
  if(idx>=0) days.splice(idx,1); else days.push(day);
- document.getElementById('chipContainer').innerHTML=renderChips();
+ _rerenderChips();
 }
 function addGyosi(teacher){
  if(!STATE.modalSchedule[teacher+'__gyosiList']) STATE.modalSchedule[teacher+'__gyosiList']=[[]];
  // 마지막 교시 요일을 기본값으로 복사
  const last=[...(STATE.modalSchedule[teacher+'__gyosiList'].slice(-1)[0]||[])];
  STATE.modalSchedule[teacher+'__gyosiList'].push(last);
- document.getElementById('chipContainer').innerHTML=renderChips();
+ // v15.94: 시간 칸도 같이 늘린다(새 수업은 빈칸으로 시작)
+ if(!Array.isArray(STATE.modalSchedule[teacher+'__timeList'])) STATE.modalSchedule[teacher+'__timeList']=[];
+ STATE.modalSchedule[teacher+'__timeList'].push('');
+ _rerenderChips();
 }
 function rmGyosi(teacher, gyosiIdx){
  const gl=STATE.modalSchedule[teacher+'__gyosiList'];
  if(!gl||gl.length<=1) return;
  gl.splice(gyosiIdx,1);
- document.getElementById('chipContainer').innerHTML=renderChips();
+ const tl=STATE.modalSchedule[teacher+'__timeList'];   // v15.94: 시간 칸도 같은 줄을 지운다
+ if(Array.isArray(tl)) tl.splice(gyosiIdx,1);
+ _rerenderChips();
 }
 function addChip(){
  const sel=document.getElementById('fi_tAdd');if(!sel)return;
@@ -9576,7 +9803,7 @@ function addChip(){
   const baseFee=Number(document.getElementById('fi_fee')?.value||0);
   const centerName=document.getElementById('fi_name')?.value||'';
   STATE.modalSchedule[v+'__fee']=DB.centerFees[`${centerName}|${v}`]||baseFee||null;
-  document.getElementById('chipContainer').innerHTML=renderChips();
+  _rerenderChips();
  }
 }
 function rmChip(i){
@@ -9584,7 +9811,7 @@ function rmChip(i){
  STATE.modalChips.splice(i,1);
  delete STATE.modalSchedule[name+'__gyosiList'];
  delete STATE.modalSchedule[name+'__fee'];
- document.getElementById('chipContainer').innerHTML=renderChips();
+ _rerenderChips();
 }
 
 function updateFeeHint(){
@@ -9761,8 +9988,10 @@ function saveModal(){
   const gyosiList = STATE.modalSchedule[t+'__gyosiList'] || [[]];
   const chipFee = STATE.modalSchedule[t+'__fee'];
   const entryFee = chipFee || fee || 0;
+  const timeList = STATE.modalSchedule[t+'__timeList'] || [];
   gyosiList.forEach((days,gi)=>{
-   schedule.push({teacher:t, days:days, order:i+1, fee:entryFee, gyosi:gi+1});
+   const time = _normTime(timeList[gi]);   // v15.94: 강의시간 (예: 10:30~11:30)
+   schedule.push({teacher:t, days:days, order:i+1, fee:entryFee, gyosi:gi+1, ...(time && {time})});
   });
  });
  const phone = document.getElementById('fi_phone')?.value.trim()||'';
