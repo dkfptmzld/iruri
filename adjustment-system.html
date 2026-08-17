@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.06">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.07">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.06">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.07">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.06</title>
+<title>수업기록표 정산 시스템 v16.07</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3682,7 +3682,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.06';
+const SYSTEM_VERSION='v16.07';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8111,9 +8111,15 @@ function _schRenderOverlay(name, showFee){
   ${edit?'':`<div class="sch-cards">${_schCardsHTML(name, showFee)}</div>`}
   <div class="sch-table"${edit?' style="display:block"':''}>${_schTableHTML(name, showFee, !edit, edit)}</div>
   ${edit
-    ? `<div id="schEditBar" style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:12px 14px;background:#F7F5EE;border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;">
-        <span id="schEditCount" style="flex:1;font-size:12.5px;color:var(--text2);">고친 곳이 없어요. 강의시간·주소·이메일을 채워보세요.</span>
-        <button class="btn sm primary" id="schSendBtn" onclick="_sendScheduleRequest('${safe}')" disabled style="gap:4px;opacity:.5;">📬 관리자에게 수정 요청 보내기</button>
+    ? `<div id="schEditBar" style="margin-top:12px;padding:12px 14px;background:#F7F5EE;border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px;"><span id="schEditCount">고친 곳이 없어요. 강의시간·주소·이메일을 채워보세요.</span></div>
+        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+         <div style="flex:1;min-width:200px;">
+          <div style="font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:4px;">✉️ 관리자에게 전할 메시지 <span style="font-weight:400;color:#9A968C;">(선택)</span></div>
+          <textarea id="schReqMsg" rows="2" placeholder="예) 효명센터 시간이 바뀌었어요. 확인 부탁드려요." style="width:100%;resize:vertical;border:1px solid #D8B25A;border-radius:8px;padding:7px 9px;font-size:12px;font-family:inherit;outline:none;background:#FFFDF6;line-height:1.5;"></textarea>
+         </div>
+         <button class="btn sm primary" id="schSendBtn" onclick="_sendScheduleRequest('${safe}')" disabled style="gap:4px;opacity:.5;white-space:nowrap;">📬 관리자에게 수정 요청 보내기</button>
+        </div>
        </div>
        <div style="margin-top:8px;font-size:11px;color:#9A968C;">· 요청을 보내면 <b>관리자 확인 후</b> 반영됩니다 (바로 바뀌지 않아요). · 지역은 주소를 넣으면 자동으로 채워집니다.</div>`
     : `<div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우거나, <b>✏️ 수정 요청</b>으로 직접 채워 관리자에게 보낼 수 있어요.</div>`}`;
@@ -8154,10 +8160,11 @@ async function _sendScheduleRequest(name){
  const ch=_schBuildChanges();
  if(!ch.length){ try{ showToast('고친 곳이 없어요'); }catch(_){} return; }
  const t=(DB.teachers||[]).find(x=>x&&x.name===name);
+ const msg=(document.getElementById('schReqMsg')?.value||'').trim();
  const btn=document.getElementById('schSendBtn');
  if(btn){ btn.disabled=true; btn.textContent='보내는 중…'; }
  try{
-  const r=await gasPost({action:'submitScheduleRequest', teacher:name, region:(t&&t.region)||'', changes:ch});
+  const r=await gasPost({action:'submitScheduleRequest', teacher:name, region:(t&&t.region)||'', changes:ch, message:msg});
   if(r && r.ok!==false){
    _schEditMode=false; _schEdits={};
    try{ showToast('📬 수정 요청을 보냈어요 — 관리자 확인 후 반영됩니다'); }catch(_){}
@@ -8227,6 +8234,7 @@ function _renderSchedReqPanel(){
       <span style="margin-left:auto;font-size:11px;color:#9A968C;">${e(req.requestedAt||'')}</span>
      </div>
      <div style="padding:10px 14px;">${rows}</div>
+     ${req.message?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.55;">✉️ <b>메시지</b> · ${e(req.message)}</div>`:''}
      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
       <span style="flex:1;font-size:12px;color:var(--text2);"><b>${(req.changes||[]).length}개 항목</b> 변경 요청</span>
       <button class="btn sm" onclick="_rejectSchedRequest('${e(req.id)}')" style="border:1px solid #FCA5A5;color:#DC2626;">거절</button>

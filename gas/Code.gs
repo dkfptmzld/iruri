@@ -170,7 +170,7 @@ function getSheet(name) {
     if (name === SHEET_TEACHERS) sheet.appendRow(['강사명','지역','급여유형','급여액','입사일','인상일','계좌정보','JSON전체']);
     if (name === SHEET_CENTERS)  sheet.appendRow(['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']);
     if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태']);
-    if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','요청시각','상태','처리시각']);
+    if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','메시지','요청시각','상태','처리시각']);
   }
   return sheet;
 }
@@ -255,7 +255,7 @@ function submitScheduleRequest(body){
   const id = 'SR' + now.getTime() + Math.floor(Math.random()*1000);
   const when = now.toLocaleString('ko-KR', { timeZone:'Asia/Seoul' });
   sheet.appendRow([ id, String(body.teacher||''), String(body.region||''),
-                    JSON.stringify(body.changes), when, '대기', '' ]);
+                    JSON.stringify(body.changes), String(body.message||''), when, '대기', '' ]);
   return { ok:true, id:id, message:'수정 요청 접수' };
 }
 
@@ -264,12 +264,12 @@ function getScheduleRequests(){
   const vals = sheet.getDataRange().getValues();
   const list = [];
   for(let i=1;i<vals.length;i++){
-    const [id, teacher, region, changesJson, requestedAt, status] = vals[i];
+    const [id, teacher, region, changesJson, message, requestedAt, status] = vals[i];
     if(!id || String(status) !== '대기') continue;
     let changes = [];
     try{ changes = JSON.parse(String(changesJson||'[]')); }catch(e){ changes = []; }
     list.push({ id:String(id), teacher:String(teacher||''), region:String(region||''),
-                changes:changes, requestedAt:String(requestedAt||'') });
+                changes:changes, message:String(message||''), requestedAt:String(requestedAt||'') });
   }
   return { ok:true, data:list };
 }
@@ -281,7 +281,7 @@ function resolveScheduleRequest(id, status){
   const when = new Date().toLocaleString('ko-KR', { timeZone:'Asia/Seoul' });
   for(let i=1;i<vals.length;i++){
     if(String(vals[i][0]) === String(id)){
-      sheet.getRange(i+1, 6, 1, 2).setValues([[ st, when ]]);   // 상태, 처리시각
+      sheet.getRange(i+1, 7, 1, 2).setValues([[ st, when ]]);   // 상태(7열), 처리시각(8열)
       return { ok:true, message:'처리됨: ' + st };
     }
   }
