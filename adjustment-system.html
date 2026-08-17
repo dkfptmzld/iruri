@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.96">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.97">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.96">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.97">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.96</title>
+<title>수업기록표 정산 시스템 v15.97</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3658,7 +3658,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.96';
+const SYSTEM_VERSION='v15.97';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8577,6 +8577,28 @@ function selectTreeRegion(region){
 // 강사 상세 테이블 컬럼 필터 상태 (전역)
 window._teacherCols = window._teacherCols || {fee:true, address:true, contact:true, email:true, memo:true};
 
+/* v15.97: 센터관리 표에서 강의시간을 바로 고치기.
+ *  센터 편집창을 열지 않고 표에서 곧장 입력할 수 있어야 350곳을 감당할 수 있다. */
+function _saveCenterTime(name, region, teacher, day, gyosi, val){
+ const c = DB.centers.find(x=>x && x.name===name && String(x.region||'')===String(region||''));
+ if(!c || !Array.isArray(c.schedule)) return;
+ const cand = c.schedule.filter(s=>s && s.teacher===teacher && (s.days||[]).includes(day));
+ const s = cand.find(s=>(s.gyosi||1)===gyosi) || cand[0];
+ if(!s) return;
+ const t = _normTime(val);
+ const before = s.time || '';
+ if(t) s.time = t; else delete s.time;
+ if(before === (t||'')) return;             // 바뀐 게 없으면 저장도 화면 갱신도 안 함
+ try{ lsSave(); }catch(_){}                  // 로컬 저장 + 자동 동기화 예약
+ try{ _saveAllCentersToGas(); }catch(_){}    // 교시 순서 변경과 같은 방식으로 서버 반영
+ try{ selectTreeTeacher(region, teacher, false); }catch(_){}
+ try{ showToast(t ? `${name} ${t}` : `${name} 시간 지움`); }catch(_){}
+}
+function _openCenterTimePicker(input, name, region, teacher, day, gyosi){
+ _openTimePickerAt(input,
+   null,                                                   // 고르는 중엔 화면만 (입력칸 값은 픽커가 갱신)
+   (v)=>_saveCenterTime(name, region, teacher, day, gyosi, v));
+}
 function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const DAYS = ['월','화','수','목','금','토','일'];
  const REGION_COLOR = {'서울':'blue','인천':'teal','수원':'purple'};
@@ -8619,6 +8641,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const thead = `<thead><tr style="background:var(--surface2);">
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;min-width:40px;">요일</th>
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">교시</th>
+  <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">시간</th>
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">센터명</th>
   ${cols.fee     ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">수업료</th>' : ''}
   ${cols.address ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">주소</th>' : ''}
@@ -8636,6 +8659,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
    return [`<tr ondragover="_dndOver(event,0)" ondragleave="_dndLeave(event)" ondrop="_dndDropEmpty(event,'${region}','${escAttrJS(teacher)}','${day}')" style="border-bottom:1px solid var(--border);background:var(--surface2);">
     <td style="text-align:center;vertical-align:middle;padding:6px 10px;border-right:1px solid var(--border);"><span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--border);color:var(--text3);font-size:11px;font-weight:700;">${day}</span></td>
     <td style="padding:6px 8px;font-size:11px;color:var(--text3);text-align:center;border-right:1px solid var(--border);">—</td>
+    <td style="padding:6px 8px;border-right:1px solid var(--border);"></td>
     <td colspan="${1+Object.values(cols).filter(Boolean).length}" style="padding:6px 10px;font-size:11px;color:var(--text3);border-right:1px solid var(--border);">↳ 여기로 수업을 끌어다 놓으면 <b>${day}요일</b>로 이동</td>
     <td style="padding:5px 8px;"></td>
    </tr>`]; // 등록 없는 요일 = 드롭존
@@ -8657,11 +8681,24 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
      ${x ? `<span style="cursor:grab;color:var(--text3);font-size:16px;line-height:1;padding:0 2px;user-select:none;" title="드래그로 순서 변경">⠿</span>` : ''}
     </div>
    </td>`;
+   // v15.97: 교시 오른쪽 강의시간 칸 — 눌러서 다이얼로 고르거나 직접 입력
+   const timeCell = (x)=>{
+    const cn=(x&&x.center)?x.center.name:'', cr=(x&&x.center)?(x.center.region||''):'';
+    const gy=(x&&x.gyosi)||1, tv=((x&&x.sched&&x.sched.time)||'').replace(/"/g,'&quot;');
+    if(!x) return `<td style="padding:5px 6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"></td>`;
+    return `<td style="padding:4px 6px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;" onclick="event.stopPropagation();">
+     <input type="text" value="${tv}" placeholder="🕐 --:--" title="눌러서 고르거나 직접 입력하세요"
+      onclick="event.stopPropagation();_openCenterTimePicker(this,'${escAttrJS(cn)}','${escAttrJS(cr)}','${escAttrJS(teacher)}','${day}',${gy})"
+      onblur="if(!document.getElementById('timePickerPop')||document.getElementById('timePickerPop').style.display==='none')_saveCenterTime('${escAttrJS(cn)}','${escAttrJS(cr)}','${escAttrJS(teacher)}','${day}',${gy},this.value)"
+      style="width:96px;height:24px;border:1px solid var(--border);border-radius:6px;padding:0 4px;font-size:11px;font-family:inherit;text-align:center;outline:none;background:#fff;cursor:pointer;">
+    </td>`;
+   };
    if(!x){
     // 빈 슬롯
     return `<tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
      ${dayCell}
      ${periodCell}
+     ${timeCell(null)}
      <td style="padding:7px 10px;font-size:12px;color:var(--text3);border-right:1px solid var(--border);border-bottom:1px solid var(--border);" colspan="${1+Object.values(cols).filter(Boolean).length}">— 수업 없음</td>
      <td style="padding:5px 8px;text-align:center;white-space:nowrap;"></td>
     </tr>`;
@@ -8676,8 +8713,10 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
     style="border-bottom:1px solid var(--border);cursor:pointer;" onclick="openCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" onmouseover="if(!window._dndSrc)this.style.background='var(--green-bg)'" onmouseout="if(!window._dndSrc)this.style.background=''">
     ${dayCell}
     ${periodCell}
+    ${timeCell(x)}
     <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">${dispName(c)}</td>
     ${activeCols.map(col=>col.render(c)).join('')}
+    ${cols.memo ? `<td style="padding:7px 10px;font-size:11px;color:${c.memo?'#92670B':'var(--text3)'};border-right:1px solid var(--border);border-bottom:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.memo?esc(c.memo):'—'}</td>` : ''}
     <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
      <button onclick="event.stopPropagation();openCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
      <button onclick="event.stopPropagation();delCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
@@ -8692,6 +8731,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   return `<tr style="border-bottom:1px solid var(--border);cursor:pointer;background:var(--surface2);" onclick="openCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" onmouseover="this.style.background='var(--green-bg)'" onmouseout="this.style.background='var(--surface2)'">
    <td style="padding:7px 10px;border-right:1px solid var(--border);"><span style="font-size:10px;color:var(--text3);">미등록</span></td>
    <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);">—</td>
+   <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center;">—</td>
    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);">${dispName(c)}</td>
    ${cols.fee     ? _feeCell(c) : ''}
    ${cols.address ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">${c.address||'—'}</td>` : ''}
@@ -9613,11 +9653,11 @@ function _tpValue(){
  const st=_tpStart();
  return st ? st+'~'+_tpAdd(st,_TP_LEN) : '';
 }
-function _tpApply(){                 // 입력칸에 즉시 반영 (다시 그리기는 닫을 때)
+function _tpApply(){                 // 입력칸에 즉시 반영 (저장은 닫을 때)
  if(!_tpCtx) return;
  const v=_tpValue();
  if(_tpCtx.input) _tpCtx.input.value=v;
- _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, v, false);
+ try{ if(_tpCtx.live) _tpCtx.live(v); }catch(_){}
  _tpRender();
 }
 function _tpClear(){ if(!_tpCtx) return; _tpCtx.h=null; _tpCtx.m=0; _tpApply(); }
@@ -9705,13 +9745,23 @@ function _tpRender(){
    <button type="button" onclick="_closeTimePicker()" style="flex:2;height:32px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
   </div>`;
 }
-function _openTimePicker(teacher, gi, input){
+/* v15.97: 어디서든 쓸 수 있게 — live(고르는 중) / commit(확인) 만 넘기면 된다.
+ *  센터 편집창은 STATE.modalSchedule 에, 센터관리 표는 DB.centers 에 바로 저장한다. */
+function _openTimePickerAt(input, live, commit){
  const cur=_tpParse(input?input.value:'');
- _tpCtx={teacher, gi, input,
+ _tpCtx={input, live, commit,
    h: cur? ((cur.h%12)||12) : null,
    m: cur? cur.m : 0,
-   pm: cur? cur.h>=12 : true,       // 대부분 오후 수업이라 기본 오후
+   pm: cur? cur.h>=12 : true,
    mode: cur? 'm' : 'h'};
+ _tpShow(input);
+}
+function _openTimePicker(teacher, gi, input){
+ return _openTimePickerAt(input,
+   (v)=>_setGyosiTime(teacher, gi, v, false),
+   (v)=>_setGyosiTime(teacher, gi, v, true));
+}
+function _tpShow(input){
  let box=document.getElementById('timePickerPop');
  if(!box){
   box=document.createElement('div');
@@ -9742,7 +9792,9 @@ function _closeTimePicker(){
  const box=document.getElementById('timePickerPop');
  if(box) box.style.display='none';
  if(_tpCtx){
-  _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, _tpValue(), true);
+  const v=_tpValue();
+  try{ if(_tpCtx.commit) _tpCtx.commit(v);
+       else if(_tpCtx.teacher!=null) _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, v, true); }catch(_){}
   _tpCtx=null;
  }
 }
