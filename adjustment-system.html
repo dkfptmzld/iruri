@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.02">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.03">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.02">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.03">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.02</title>
+<title>수업기록표 정산 시스템 v16.03</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3679,7 +3679,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.02';
+const SYSTEM_VERSION='v16.03';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9728,9 +9728,10 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
   // 같은 강사의 여러 교시를 gyosiList로 묶기
   const _tmap={};
   item.schedule.forEach(s=>{
-   if(!_tmap[s.teacher]) _tmap[s.teacher]={gyosiList:[],fee:null,timeList:[]};
+   if(!_tmap[s.teacher]) _tmap[s.teacher]={gyosiList:[],fee:null,timeList:[],weeksList:[]};
    _tmap[s.teacher].gyosiList.push(s.days||[]);
    _tmap[s.teacher].timeList.push(s.time||'');   // v15.94: 강의시간
+   _tmap[s.teacher].weeksList.push(s.weeks===5?5:4);   // v16.03: 주차(4/5) 보존
    if(!_tmap[s.teacher].fee){
     _tmap[s.teacher].fee = s.fee || item.fee || DB.centerFees[`${item.name}|${s.teacher}`] || 0;
    }
@@ -9740,11 +9741,13 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
     STATE.modalSchedule[t+'__gyosiList'] = _tmap[t].gyosiList;
     STATE.modalSchedule[t+'__fee'] = _tmap[t].fee || null;
     STATE.modalSchedule[t+'__timeList'] = _tmap[t].timeList;   // v15.94
+    STATE.modalSchedule[t+'__weeksList'] = _tmap[t].weeksList;   // v16.03
    } else {
     const fallbackFee = item.fee || DB.centerFees[`${item.name}|${t}`] || 0;
     STATE.modalSchedule[t+'__gyosiList'] = [[]];
     STATE.modalSchedule[t+'__fee'] = fallbackFee || null;
     STATE.modalSchedule[t+'__timeList'] = [''];   // v15.94
+    STATE.modalSchedule[t+'__weeksList'] = [4];   // v16.03
    }
   });
  } else {
@@ -9753,6 +9756,7 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    STATE.modalSchedule[t+'__gyosiList'] = [[]];
    STATE.modalSchedule[t+'__fee'] = fallbackFee || null;
    STATE.modalSchedule[t+'__timeList'] = [''];   // v15.94
+   STATE.modalSchedule[t+'__weeksList'] = [4];   // v16.03
   });
  }
  // v11.14: 신규 센터 + prefillTeacher 있으면 해당 강사 자동 등록
@@ -10117,6 +10121,8 @@ function addGyosi(teacher){
  // v15.94: 시간 칸도 같이 늘린다(새 수업은 빈칸으로 시작)
  if(!Array.isArray(STATE.modalSchedule[teacher+'__timeList'])) STATE.modalSchedule[teacher+'__timeList']=[];
  STATE.modalSchedule[teacher+'__timeList'].push('');
+ if(!Array.isArray(STATE.modalSchedule[teacher+'__weeksList'])) STATE.modalSchedule[teacher+'__weeksList']=[];
+ STATE.modalSchedule[teacher+'__weeksList'].push(4);   // v16.03
  _rerenderChips();
 }
 function rmGyosi(teacher, gyosiIdx){
@@ -10125,6 +10131,8 @@ function rmGyosi(teacher, gyosiIdx){
  gl.splice(gyosiIdx,1);
  const tl=STATE.modalSchedule[teacher+'__timeList'];   // v15.94: 시간 칸도 같은 줄을 지운다
  if(Array.isArray(tl)) tl.splice(gyosiIdx,1);
+ const wl=STATE.modalSchedule[teacher+'__weeksList'];   // v16.03
+ if(Array.isArray(wl)) wl.splice(gyosiIdx,1);
  _rerenderChips();
 }
 function addChip(){
@@ -10322,9 +10330,11 @@ function saveModal(){
   const chipFee = STATE.modalSchedule[t+'__fee'];
   const entryFee = chipFee || fee || 0;
   const timeList = STATE.modalSchedule[t+'__timeList'] || [];
+  const weeksList = STATE.modalSchedule[t+'__weeksList'] || [];   // v16.03
   gyosiList.forEach((days,gi)=>{
    const time = _normTime(timeList[gi]);   // v15.94: 강의시간 (예: 10:30~11:30)
-   schedule.push({teacher:t, days:days, order:i+1, fee:entryFee, gyosi:gi+1, ...(time && {time})});
+   const wk = (weeksList[gi]===5?5:0);      // v16.03: 5주차만 저장(기본 4는 생략)
+   schedule.push({teacher:t, days:days, order:i+1, fee:entryFee, gyosi:gi+1, ...(time && {time}), ...(wk && {weeks:wk})});
   });
  });
  const phone = document.getElementById('fi_phone')?.value.trim()||'';
