@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.00">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.01">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.00">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.01">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.00</title>
+<title>수업기록표 정산 시스템 v16.01</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3679,7 +3679,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.00';
+const SYSTEM_VERSION='v16.01';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7936,6 +7936,14 @@ function _areaFromAddress(addr){
 function _schMins(t){ const m=String(t||'').match(/^(\d{1,2}):(\d{2})/); return m?(+m[1])*60+(+m[2]):99999; }
 
 /* 한 강사의 스케줄 줄들 — 요일순, 같은 요일은 시간순(시간 없으면 교시순) */
+/* 회당 강사료 — 비율 강사는 센터료×요율, 고정 강사는 회당 고정액 */
+function _schSessionFee(teacher, centerName, region){
+ const t=(DB.teachers||[]).find(x=>x && x.name===teacher);
+ let cf=0; try{ cf=getCenterFee(centerName, teacher, 0, region)||0; }catch(_){ cf=0; }
+ if(t && t.feeType==='pct') return Math.round(cf*(Number(t.feeVal)||0)/100);
+ if(t && t.feeType==='fixed') return Number(t.feeVal)||0;
+ return cf;
+}
 function _teacherScheduleRows(teacher){
  const out=[];
  (DB.centers||[]).forEach(c=>{
@@ -7943,10 +7951,10 @@ function _teacherScheduleRows(teacher){
    if(!sc || sc.teacher!==teacher) return;
    (sc.days||[]).forEach(day=>{
     if(_SCH_DAYS.indexOf(day)<0) return;
-    let fee=0;
-    try{ fee = getCenterFee(c.name, teacher, 0, c.region) || Number(c.fee)||0; }catch(_){ fee=Number(c.fee)||0; }
     out.push({ day, center:c.name, region:c.region||'', area:_areaFromAddress(c.address),
-      time:sc.time||'', address:c.address||'', fee,
+      time:sc.time||'', address:c.address||'', email:c.email||'',
+      fee:_schSessionFee(teacher, c.name, c.region),
+      weeks:(sc.weeks===5?5:4),                 // v16.01: 4주차/5주차 (기본 4)
       order:sc.order||99, gyosi:sc.gyosi||1 });
    });
   });
@@ -7954,6 +7962,18 @@ function _teacherScheduleRows(teacher){
  out.sort((a,b)=> _SCH_DAYS.indexOf(a.day)-_SCH_DAYS.indexOf(b.day)
    || _schMins(a.time)-_schMins(b.time) || (a.order-b.order) || (a.gyosi-b.gyosi));
  return out;
+}
+/* 관리자 스케줄 보기에서 '4주차↔5주차' 토글 */
+function _toggleSchedWeeks(name, region, teacher, day, gyosi){
+ const c=(DB.centers||[]).find(x=>x && x.name===name && String(x.region||'')===String(region||''));
+ if(!c || !Array.isArray(c.schedule)) return;
+ const cand=c.schedule.filter(s=>s && s.teacher===teacher && (s.days||[]).includes(day));
+ const s=cand.find(s=>(s.gyosi||1)===gyosi) || cand[0];
+ if(!s) return;
+ s.weeks=((s.weeks===5)?4:5);
+ try{ lsSave(); }catch(_){}
+ try{ _saveAllCentersToGas(); }catch(_){}
+ try{ openSchedule(teacher, true); }catch(_){}   // 보던 화면 다시 그림
 }
 function _schTitle(teacher){
  const t=(DB.teachers||[]).find(x=>x && x.name===teacher);
@@ -7964,7 +7984,7 @@ function _schTitle(teacher){
 }
 
 /* 표 HTML — 화면·인쇄에서 같은 것을 쓴다 */
-function _schTableHTML(teacher, showFee){
+function _schTableHTML(teacher, showFee, editable){
  const rows=_teacherScheduleRows(teacher);
  const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
  const TH='padding:6px 4px;font-size:11.5px;font-weight:700;border:1px solid #9A968C;background:#E8E6DC;text-align:center;';
@@ -7973,28 +7993,44 @@ function _schTableHTML(teacher, showFee){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
  }
- // 요일별로 묶어서 요일 칸을 합친다
+ const NC = showFee ? 7 : 6;                       // 열 개수
+ // 요일별로 묶고, 수업이 있는 요일은 모두 '가장 바쁜 요일 칸 수'로 맞춘다(빈 칸은 완전 빈칸)
  const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let maxPerDay=1; _SCH_DAYS.forEach(d=>{ if(byDay[d]) maxPerDay=Math.max(maxPerDay, byDay[d].length); });
+ const feeCell=(r)=>{
+  if(!r) return `<td style="${TD}"></td>`;
+  const w = r.weeks===5?5:4;
+  const won = r.fee?Number(r.fee).toLocaleString()+'원':'';
+  const wtag = editable
+   ? `<span onclick="_toggleSchedWeeks('${escAttrJS(r.center)}','${escAttrJS(r.region)}','${escAttrJS(teacher)}','${r.day}',${r.gyosi})" title="눌러서 4주차↔5주차 변경" style="cursor:pointer;text-decoration:underline dotted;">${w}주차 수업</span>`
+   : `${w}주차 수업`;
+  return `<td style="${TD}white-space:nowrap;font-size:11px;">${wtag}${won?` / <b style="font-family:'DM Mono',monospace;">${won}</b>`:''}</td>`;
+ };
  let body='';
  _SCH_DAYS.forEach(day=>{
   const list=byDay[day]; if(!list||!list.length) return;
-  list.forEach((r,i)=>{
+  for(let i=0;i<maxPerDay;i++){
+   const r=list[i]||null;
    body += `<tr>`
-     + (i===0 ? `<td rowspan="${list.length}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
-     + `<td style="${TD}text-align:left;font-weight:600;">${e(r.center)}</td>`
-     + `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${e(r.time)}</td>`
-     + `<td style="${TD}white-space:nowrap;">${e(r.area)}</td>`
-     + `<td style="${TD}text-align:left;font-size:11px;">${e(r.address)}</td>`
-     + (showFee ? `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r.fee?Number(r.fee).toLocaleString():''}</td>` : '')
+     + (i===0 ? `<td rowspan="${maxPerDay}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
+     + `<td style="${TD}text-align:left;font-weight:600;">${r?e(r.center):''}</td>`
+     + `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`
+     + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
+     + `<td style="${TD}text-align:left;font-size:11px;">${r?e(r.address):''}</td>`
+     + `<td style="${TD}text-align:left;font-size:10.5px;color:#2C5AA0;word-break:break-all;">${r?e(r.email):''}</td>`
+     + (showFee ? feeCell(r) : '')
      + `</tr>`;
-  });
-  body += `<tr><td colspan="${showFee?6:5}" style="height:6px;padding:0;border:none;"></td></tr>`;
+  }
+  body += `<tr><td colspan="${NC}" style="height:6px;padding:0;border:none;"></td></tr>`;
  });
+ const cols = showFee
+  ? `<col style="width:56px"><col style="width:15%"><col style="width:92px"><col style="width:48px"><col><col style="width:19%"><col style="width:132px">`
+  : `<col style="width:56px"><col style="width:18%"><col style="width:100px"><col style="width:52px"><col><col style="width:23%">`;
  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
-  <colgroup><col style="width:62px"><col style="width:23%"><col style="width:96px"><col style="width:62px"><col>${showFee?'<col style="width:70px">':''}</colgroup>
+  <colgroup>${cols}</colgroup>
   <thead><tr>
-   <th style="${TH}">요일</th><th style="${TH}">센터 명</th><th style="${TH}">강의시간</th>
-   <th style="${TH}">지역</th><th style="${TH}">특이사항 · 기타</th>${showFee?`<th style="${TH}">강사료</th>`:''}
+   <th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th>
+   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">이메일주소</th>${showFee?`<th style="${TH}">특이사항 / 수업료</th>`:''}
   </tr></thead>
   <tbody>${body}</tbody>
  </table>`;
@@ -8017,9 +8053,10 @@ function _schCardsHTML(teacher, showFee){
      <span style="font-size:13.5px;font-weight:700;">${e(r.center)}</span>
      ${r.time?`<span style="font-size:12.5px;font-weight:700;color:#1A7A50;font-family:'DM Mono',monospace;">${e(r.time)}</span>`:'<span style="font-size:11.5px;color:#B8B4A8;">시간 미입력</span>'}
      ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;">${e(r.area)}</span>`:''}
-     ${showFee&&r.fee?`<span style="margin-left:auto;font-size:12px;color:#6A6760;font-family:'DM Mono',monospace;">${Number(r.fee).toLocaleString()}원</span>`:''}
+     ${showFee?`<span style="margin-left:auto;font-size:11px;color:#6A6760;white-space:nowrap;">${(r.weeks===5?5:4)}주차${r.fee?` · <b style="font-family:'DM Mono',monospace;">${Number(r.fee).toLocaleString()}원</b>`:''}</span>`:''}
     </div>
     ${r.address?`<div style="font-size:11.5px;color:#8A8778;margin-top:4px;line-height:1.5;">${e(r.address)}</div>`:''}
+    ${r.email?`<div style="font-size:11px;color:#2C5AA0;margin-top:2px;word-break:break-all;">${e(r.email)}</div>`:''}
    </div>`;
   });
   out += `</div>`;
@@ -8049,7 +8086,7 @@ function openSchedule(teacher, showFee){
    <button class="btn sm" onclick="closeSchedule()">닫기</button>
   </div>
   <div class="sch-cards">${_schCardsHTML(name, !!showFee)}</div>
-  <div class="sch-table">${_schTableHTML(name, !!showFee)}</div>
+  <div class="sch-table">${_schTableHTML(name, !!showFee, true)}</div>
   <div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우면 여기에 자동으로 나옵니다.</div>`;
 }
 function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; }
@@ -8065,7 +8102,7 @@ function printAllSchedules(){
 function _printSchedules(names, showFee){
  const pages=(names||[]).map(n=>`<div class="page"><div class="page-fit">
    <div class="sch-title">${(function(){try{return esc(_schTitle(n));}catch(_){return _schTitle(n);}})()}</div>
-   ${_schTableHTML(n, !!showFee)}
+   ${_schTableHTML(n, !!showFee, false)}
   </div></div>`).join('');
  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>강사 스케줄</title><style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
