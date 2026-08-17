@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v15.95">
+<meta property="og:title" content="수업기록표 정산 시스템 v15.96">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v15.95">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v15.96">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v15.95</title>
+<title>수업기록표 정산 시스템 v15.96</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3658,7 +3658,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v15.95';
+const SYSTEM_VERSION='v15.96';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9587,107 +9587,146 @@ function renderChips(){
  *  시간 칸을 누르면 시작·끝 시각을 눈으로 고를 수 있는 창이 뜬다.
  *  칸에 직접 타이핑하는 것도 그대로 된다(둘 다 쓸 수 있게).
  *  보내주신 스케줄표가 전부 60분 수업이라, 시작만 고르면 끝은 +1시간으로 자동으로 채운다. */
-const _TP_STARTS = ['09:00','09:30','10:00','10:30','10:40','10:50','11:00',
-                    '13:00','13:30','13:40','14:00','14:30','15:00','15:10','15:30','16:00'];
-const _TP_LENS = [30,50,60,90];
-let _tpCtx = null;   // {teacher, gi, input, start, end, len}
+const _TP_STARTS = ['09:00','09:30','10:00','10:30','10:40','10:50',
+                    '13:00','13:30','13:40','14:00','15:00','15:10','15:30','16:00'];
+const _TP_LEN = 60;          // v15.96: 수업은 60분으로 통일 (끝 시각은 항상 시작 +1시간)
+let _tpCtx = null;           // {teacher, gi, input, h, m, pm, mode}
 
 function _tpParse(v){
- const m = String(v||'').match(/(\d{1,2}):(\d{2})(?:\s*~\s*(\d{1,2}):(\d{2}))?/);
- if(!m) return {start:'', end:''};
- const p=(h,mi)=>String(h).padStart(2,'0')+':'+mi;
- return { start:p(m[1],m[2]), end: m[3]!=null ? p(m[3],m[4]) : '' };
+ const m = String(v||'').match(/(\d{1,2}):(\d{2})/);
+ if(!m) return null;
+ let h=+m[1], mi=+m[2];
+ if(h>23||mi>59) return null;
+ return {h, m:mi};
 }
 function _tpAdd(hhmm, mins){
  const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})$/); if(!m) return '';
- let total = (+m[1])*60 + (+m[2]) + mins;
- total = ((total % 1440) + 1440) % 1440;
- return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+ let t=(+m[1])*60+(+m[2])+mins; t=((t%1440)+1440)%1440;
+ return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
 }
-function _tpDiff(a,b){
- const A=String(a||'').match(/^(\d{1,2}):(\d{2})$/), B=String(b||'').match(/^(\d{1,2}):(\d{2})$/);
- if(!A||!B) return null;
- let d = ((+B[1])*60+(+B[2])) - ((+A[1])*60+(+A[2]));
- if(d<0) d+=1440;
- return d;
+function _tpStart(){                 // 현재 고른 시작 시각 "HH:MM"
+ if(!_tpCtx || _tpCtx.h==null) return '';
+ let h=_tpCtx.h % 12; if(_tpCtx.pm) h+=12;
+ return String(h).padStart(2,'0')+':'+String(_tpCtx.m).padStart(2,'0');
 }
 function _tpValue(){
- if(!_tpCtx) return '';
- const {start,end}=_tpCtx;
- if(!start) return '';
- return end ? start+'~'+end : start;
+ const st=_tpStart();
+ return st ? st+'~'+_tpAdd(st,_TP_LEN) : '';
 }
-function _tpApply(){                      // 화면의 입력칸에 즉시 반영 (아직 다시 그리지는 않음)
+function _tpApply(){                 // 입력칸에 즉시 반영 (다시 그리기는 닫을 때)
  if(!_tpCtx) return;
  const v=_tpValue();
  if(_tpCtx.input) _tpCtx.input.value=v;
  _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, v, false);
  _tpRender();
 }
-function _tpSetStart(v){
- if(!_tpCtx) return;
- _tpCtx.start=v;
- if(v && (!_tpCtx.end || _tpCtx.autoEnd!==false)) _tpCtx.end=_tpAdd(v, _tpCtx.len||60);
+function _tpClear(){ if(!_tpCtx) return; _tpCtx.h=null; _tpCtx.m=0; _tpApply(); }
+function _tpPickPreset(t){
+ const p=_tpParse(t); if(!p||!_tpCtx) return;
+ _tpCtx.pm = p.h>=12; _tpCtx.h = (p.h%12)||12; _tpCtx.m = p.m; _tpCtx.mode='m';
  _tpApply();
 }
-function _tpSetEnd(v){ if(!_tpCtx) return; _tpCtx.end=v; _tpCtx.autoEnd=false;
- const d=_tpDiff(_tpCtx.start,v); if(d) _tpCtx.len=d; _tpApply(); }
-function _tpSetLen(n){ if(!_tpCtx) return; _tpCtx.len=n; _tpCtx.autoEnd=true;
- if(_tpCtx.start) _tpCtx.end=_tpAdd(_tpCtx.start,n); _tpApply(); }
-function _tpClear(){ if(!_tpCtx) return; _tpCtx.start=''; _tpCtx.end=''; _tpApply(); }
+function _tpSetMode(md){ if(_tpCtx){ _tpCtx.mode=md; _tpRender(); } }
+function _tpSetPm(v){ if(_tpCtx){ _tpCtx.pm=!!v; _tpApply(); } }
+
+/* ── 다이얼(시계판) ──
+ *  숫자를 눌러도 되고, 원 안 아무 데나 눌러도 가장 가까운 눈금으로 붙는다.
+ *  시를 고르면 자동으로 분 화면으로 넘어간다. */
+function _tpDial(){
+ if(!_tpCtx) return '';
+ const R=104, CX=120, CY=120, NR=84;          // 판 반지름 / 중심 / 숫자 반지름
+ const isH = _tpCtx.mode!=='m';
+ const vals = isH ? [12,1,2,3,4,5,6,7,8,9,10,11]
+                  : [0,5,10,15,20,25,30,35,40,45,50,55];
+ const sel = isH ? ((_tpCtx.h==null?12:_tpCtx.h)%12) : (Math.round(_tpCtx.m/5)%12);
+ let nodes='';
+ vals.forEach((v,i)=>{
+  const a=(i*30-90)*Math.PI/180;
+  const x=CX+NR*Math.cos(a), y=CY+NR*Math.sin(a);
+  const on = i===sel && !(isH && _tpCtx.h==null);
+  const label = isH ? String(v) : String(v).padStart(2,'0');
+  nodes += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17" fill="${on?'var(--green)':'transparent'}"/>`
+        +  `<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="${on?'700':'500'}" fill="${on?'#fff':'#3a3a38'}" style="pointer-events:none;user-select:none;">${label}</text>`;
+ });
+ let hand='';
+ if(!(isH && _tpCtx.h==null)){
+  const a=(sel*30-90)*Math.PI/180;
+  hand = `<line x1="${CX}" y1="${CY}" x2="${(CX+(NR-17)*Math.cos(a)).toFixed(1)}" y2="${(CY+(NR-17)*Math.sin(a)).toFixed(1)}" stroke="var(--green)" stroke-width="2"/>`;
+ }
+ return `<svg id="tpDial" width="240" height="240" viewBox="0 0 240 240" style="touch-action:none;display:block;margin:0 auto;cursor:pointer;"
+   onpointerdown="_tpDialPick(event)" onpointermove="if(event.buttons)_tpDialPick(event)">
+  <circle cx="${CX}" cy="${CY}" r="${R}" fill="var(--surface2,#F7F5EE)"/>
+  ${hand}<circle cx="${CX}" cy="${CY}" r="3" fill="var(--green)"/>
+  ${nodes}
+ </svg>`;
+}
+function _tpDialPick(ev){
+ if(!_tpCtx) return;
+ const svg=document.getElementById('tpDial'); if(!svg) return;
+ const r=svg.getBoundingClientRect();
+ const x=ev.clientX-r.left-(r.width/2), y=ev.clientY-r.top-(r.height/2);
+ if(Math.abs(x)<6 && Math.abs(y)<6) return;
+ let deg=Math.atan2(y,x)*180/Math.PI + 90;      // 12시 방향이 0도
+ deg=((deg%360)+360)%360;
+ const idx=Math.round(deg/30)%12;
+ if(_tpCtx.mode!=='m'){
+  _tpCtx.h = idx===0 ? 12 : idx;
+  _tpCtx.mode='m';                               // 시를 고르면 바로 분 화면으로
+ } else {
+  _tpCtx.m = idx*5;
+ }
+ _tpApply();
+}
 
 function _tpRender(){
  const box=document.getElementById('timePickerPop'); if(!box||!_tpCtx) return;
- const {start,end,len}=_tpCtx;
- const chip=(t,on,fn)=>`<button type="button" onclick="${fn}" style="height:26px;padding:0 9px;border-radius:14px;font-size:11.5px;font-weight:${on?'700':'500'};cursor:pointer;font-family:inherit;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'#fff'};color:${on?'#fff':'var(--text2)'};">${t}</button>`;
+ const st=_tpStart();
+ const end= st ? _tpAdd(st,_TP_LEN) : '';
+ const isH=_tpCtx.mode!=='m';
+ const big=(txt,on,fn)=>`<span onclick="${fn}" style="cursor:pointer;font-size:26px;font-weight:800;color:${on?'var(--green)':'#B8B4A8'};">${txt}</span>`;
+ const ampm=(t,on,v)=>`<button type="button" onclick="_tpSetPm(${v})" style="height:26px;padding:0 12px;border-radius:13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'#fff'};color:${on?'#fff':'var(--text2)'};">${t}</button>`;
+ const chip=(t)=>`<button type="button" onclick="_tpPickPreset('${t}')" style="height:25px;padding:0 8px;border-radius:13px;font-size:11px;font-weight:${st===t?'700':'500'};cursor:pointer;font-family:inherit;border:1px solid ${st===t?'var(--green)':'var(--border)'};background:${st===t?'var(--green)':'#fff'};color:${st===t?'#fff':'var(--text2)'};">${t}</button>`;
  box.querySelector('#tpBody').innerHTML = `
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-   <div style="flex:1;">
-    <div style="font-size:10.5px;color:var(--text3);margin-bottom:3px;font-weight:600;">시작</div>
-    <input type="time" value="${start}" onchange="_tpSetStart(this.value)"
-      style="width:100%;height:34px;border:1.5px solid var(--green);border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit;outline:none;">
-   </div>
-   <div style="padding-top:16px;color:var(--text3);font-size:13px;">~</div>
-   <div style="flex:1;">
-    <div style="font-size:10.5px;color:var(--text3);margin-bottom:3px;font-weight:600;">끝</div>
-    <input type="time" value="${end}" onchange="_tpSetEnd(this.value)"
-      style="width:100%;height:34px;border:1px solid var(--border);border-radius:8px;padding:0 8px;font-size:14px;font-family:inherit;outline:none;">
-   </div>
+  <div style="text-align:center;margin-bottom:6px;">
+   ${big(_tpCtx.h==null?'--':String(_tpCtx.h).padStart(2,'0'), isH, "_tpSetMode('h')")}
+   <span style="font-size:26px;font-weight:800;color:#B8B4A8;">:</span>
+   ${big(String(_tpCtx.m).padStart(2,'0'), !isH, "_tpSetMode('m')")}
+   <div style="display:flex;gap:5px;justify-content:center;margin-top:6px;">${ampm('오전',!_tpCtx.pm,false)}${ampm('오후',_tpCtx.pm,true)}</div>
   </div>
-  <div style="font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;">수업 길이</div>
-  <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;">
-   ${_TP_LENS.map(n=>chip(n+'분', (len||60)===n, `_tpSetLen(${n})`)).join('')}
+  <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:2px;">${isH?'시(時)를 고르세요':'분(分)을 고르세요'}</div>
+  ${_tpDial()}
+  <div style="text-align:center;font-size:13px;font-weight:700;color:${st?'var(--green)':'var(--text3)'};margin:4px 0 10px;">
+   ${st? st+' ~ '+end+'  <span style="font-size:11px;font-weight:500;color:var(--text3);">(60분)</span>' : '아직 안 정함'}
   </div>
   <div style="font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;">자주 쓰는 시작 시각</div>
-  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;">
-   ${_TP_STARTS.map(t=>chip(t, start===t, `_tpSetStart('${t}')`)).join('')}
-  </div>
-  <div style="display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);padding-top:10px;">
-   <span style="flex:1;font-size:13px;font-weight:700;color:${start?'var(--green)':'var(--text3)'};">${start? (end?start+' ~ '+end : start) : '아직 안 정함'}</span>
-   <button type="button" onclick="_tpClear()" style="height:30px;padding:0 12px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">지우기</button>
-   <button type="button" onclick="_closeTimePicker()" style="height:30px;padding:0 16px;border:none;border-radius:7px;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
+  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:11px;">${_TP_STARTS.map(chip).join('')}</div>
+  <div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;">
+   <button type="button" onclick="_tpClear()" style="flex:1;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">지우기</button>
+   <button type="button" onclick="_closeTimePicker()" style="flex:2;height:32px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
   </div>`;
 }
 function _openTimePicker(teacher, gi, input){
  const cur=_tpParse(input?input.value:'');
- const d=_tpDiff(cur.start,cur.end);
- _tpCtx={teacher, gi, input, start:cur.start, end:cur.end, len:d||60, autoEnd:!cur.end};
+ _tpCtx={teacher, gi, input,
+   h: cur? ((cur.h%12)||12) : null,
+   m: cur? cur.m : 0,
+   pm: cur? cur.h>=12 : true,       // 대부분 오후 수업이라 기본 오후
+   mode: cur? 'm' : 'h'};
  let box=document.getElementById('timePickerPop');
  if(!box){
   box=document.createElement('div');
   box.id='timePickerPop';
   // 센터 편집창(z-index 9999) 위에 떠야 한다
-  box.style.cssText='position:fixed;z-index:10050;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 34px rgba(0,0,0,.22);padding:12px 14px;width:288px;max-width:calc(100vw - 24px);font-family:inherit;';
-  box.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:9px;">🕐 강의시간</div><div id="tpBody"></div>';
+  box.style.cssText='position:fixed;z-index:10050;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,.22);padding:12px 14px;width:272px;max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);overflow-y:auto;font-family:inherit;';
+  box.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:6px;">🕐 강의시간 <span style="font-weight:400;color:var(--text3);">— 60분 수업</span></div><div id="tpBody"></div>';
   document.body.appendChild(box);
  }
  box.style.display='block';
  _tpRender();
- // 입력칸 아래에 붙이되 화면 밖으로 나가지 않게
  const r=input.getBoundingClientRect(), bw=box.offsetWidth, bh=box.offsetHeight;
- let left=Math.min(Math.max(8, r.left), window.innerWidth-bw-8);
+ let left=Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth-bw-8));
  let top=r.bottom+6;
- if(top+bh > window.innerHeight-8) top=Math.max(8, r.top-bh-6);
+ if(top+bh > window.innerHeight-8) top=Math.max(8, window.innerHeight-bh-8);
  box.style.left=left+'px'; box.style.top=top+'px';
  setTimeout(()=>document.addEventListener('mousedown', _tpOutside, true), 0);
 }
@@ -9695,7 +9734,7 @@ function _tpOutside(e){
  const box=document.getElementById('timePickerPop');
  if(!box || box.style.display==='none') return;
  if(box.contains(e.target)) return;
- if(_tpCtx && _tpCtx.input && _tpCtx.input===e.target) return;   // 같은 칸 다시 누르면 유지
+ if(_tpCtx && _tpCtx.input && _tpCtx.input===e.target) return;
  _closeTimePicker();
 }
 function _closeTimePicker(){
@@ -9703,7 +9742,7 @@ function _closeTimePicker(){
  const box=document.getElementById('timePickerPop');
  if(box) box.style.display='none';
  if(_tpCtx){
-  _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, _tpValue(), true);   // 여기서 정리 + 다시 그리기
+  _setGyosiTime(_tpCtx.teacher, _tpCtx.gi, _tpValue(), true);
   _tpCtx=null;
  }
 }
