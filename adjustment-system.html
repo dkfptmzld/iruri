@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.08">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.09">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.08">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.09">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.08</title>
+<title>수업기록표 정산 시스템 v16.09</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3682,7 +3682,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.08';
+const SYSTEM_VERSION='v16.09';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12433,6 +12433,64 @@ function _confirmCancel(){
  _confirmCancelCallback = null;
  if(typeof cb === 'function') cb();
 }
+
+/* ═══ v16.09: 휴대폰 뒤로가기 → 앱 종료 대신 이전 화면 ═══
+ *  PWA(홈 화면 앱)에서 안드로이드 뒤로가기를 누르면 앱이 바로 꺼지던 것을
+ *   ① 열린 팝업 닫기 → ② 이전 화면 → ③ 홈에서 한 번 더 누르면 종료  로 바꾼다.
+ *  방식: 히스토리에 '가드' 한 칸을 항상 유지 → 뒤로가기가 그 칸을 먹으면 처리 후 다시 채운다.
+ *  (앱 안에서 별도 히스토리 조작은 없어서 충돌 없음) */
+(function(){
+ if(window.__iruriBackInit) return; window.__iruriBackInit=true;
+ const _shown=(el)=>{ if(!el) return false;
+  if(el.offsetWidth===0 && el.offsetHeight===0 && el.getClientRects().length===0) return false;
+  const s=getComputedStyle(el); return s.display!=='none' && s.visibility!=='hidden'; };
+ // 닫을 수 있는 팝업 (위에서부터 우선순위) — [id, 닫기함수]
+ const OVERLAYS=[
+  ['schedReqOverlay',    el=>el.style.display='none'],
+  ['schedOverlay',       ()=>{ try{ closeSchedule(); }catch(_){} }],
+  ['modalOverlay',       ()=>{ try{ closeModal(); }catch(_){} }],
+  ['inputModalOverlay',  el=>el.style.display='none'],
+  ['mySubViewOverlay',   el=>el.style.display='none'],
+  ['draftListOverlay',   el=>el.style.display='none'],
+  ['centerPickerModal',  el=>el.classList.remove('open')],
+  ['githubSettingsModal',el=>el.style.display='none'],
+  ['adminLoginModal',    el=>el.style.display='none'],
+  ['noticeModal',        el=>el.style.display='none'],
+  ['confirmOverlay',     ()=>{ try{ _confirmCancel(); }catch(_){} }],
+  ['mgr-sidebar-overlay',()=>{ try{ _closeSidebarOverlay(); }catch(_){} }]
+ ];
+ function _closeTopOverlay(){
+  for(const [id,close] of OVERLAYS){
+   const el=document.getElementById(id);
+   if(_shown(el)){ try{ close(el); }catch(_){ try{ el.style.display='none'; }catch(__){} } return true; }
+  }
+  return false;
+ }
+ function _goPrevScreen(){
+  // 강사 수업기록표 작성 화면 → 홈
+  const ti=document.getElementById('teacherInputScreen');
+  if(_shown(ti)){ try{ (typeof showLanding==='function') ? showLanding() : (ti.style.display='none'); }catch(_){} return true; }
+  // 관리자 화면(상단바 보임) → 홈
+  const top=document.getElementById('adminTopbar');
+  if(top && (top.classList.contains('visible') || _shown(top))){ try{ if(typeof showLanding==='function') showLanding(); }catch(_){} return true; }
+  return false; // 이미 홈/로그인 화면
+ }
+ function _pushGuard(){ try{ history.pushState({__iruriGuard:1}, '', location.href); }catch(_){} }
+ window.addEventListener('popstate', function(){
+  // 제출 진행 중에는 뒤로가기 무시 (중간에 끊기면 위험)
+  const sp=document.getElementById('submitProgressOverlay');
+  if(_shown(sp)){ _pushGuard(); return; }
+  if(_closeTopOverlay()){ _pushGuard(); return; }
+  if(_goPrevScreen()){ _pushGuard(); return; }
+  // 홈/루트 화면: 한 번 더 누르면 종료
+  if(window.__iruriBackExit){ try{ history.back(); }catch(_){} return; }
+  window.__iruriBackExit=true;
+  try{ if(typeof showToast==='function') showToast('한 번 더 누르면 종료됩니다'); }catch(_){}
+  setTimeout(()=>{ window.__iruriBackExit=false; }, 2000);
+  _pushGuard();
+ });
+ _pushGuard();   // 최초 가드 1칸
+})();
 
 /* v15.71: 이미 제출한 달의 '내가 낸 내용' 읽기전용 보기.
  *  - 데이터 출처: 제출 시 저장되는 로컬 사본 ti_submit_history_<강사> (관리자 정산완료와 무관하게 항상 존재)
