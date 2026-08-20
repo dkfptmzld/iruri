@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.10">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.11">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.10">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.11">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.10</title>
+<title>수업기록표 정산 시스템 v16.11</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2461,9 +2461,9 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
    <button id="cResvBtn" onclick="_toggleResvEditor()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:#4F46E5;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 2px 6px rgba(79,70,229,.25);display:inline-flex;align-items:center;gap:7px;"><span id="cResvLamp" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);transition:all .2s;"></span>📅 센터 수정 예약</button>
   </div>
   <div id="cMemoSection" style="margin-bottom:14px;border:1.5px dashed #E0C878;background:#FFFDF4;border-radius:12px;padding:10px 12px;">
-   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-    <span style="font-size:13px;font-weight:800;color:#8A6010;">📝 센터 메모 <span style="font-size:11px;font-weight:600;color:#B0863A;">지역별 · 계속 유지 · 개별 추가/삭제</span></span>
-    <button onclick="_toggleMemoVisible()" style="font-size:11px;border:1px solid #E0C878;background:#fff;color:#8A6010;border-radius:6px;padding:3px 9px;cursor:pointer;">접기/펼치기</button>
+   <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+    <span style="font-size:13px;font-weight:800;color:#8A6010;flex:1;min-width:0;">📝 센터 메모 <span style="font-size:11px;font-weight:600;color:#B0863A;">지역별 · 계속 유지 · 개별 추가/삭제</span></span>
+    <button onclick="_toggleMemoVisible()" style="font-size:11px;border:1px solid #E0C878;background:#fff;color:#8A6010;border-radius:6px;padding:3px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;">접기/펼치기</button>
    </div>
    <div id="cMemoWrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;"></div>
   </div>
@@ -3706,7 +3706,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.10';
+const SYSTEM_VERSION='v16.11';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7799,7 +7799,7 @@ function _renderSettleAlerts(){
  const loadedYm = STATE.data?.teachers?.[0]?.yearMonth || (typeof _getSettlementCycleYm==='function'?_getSettlementCycleYm():'');
  const d=_settleAlertData(loadedYm, _settleAlertMode);
  const modeTitle = _settleAlertMode==='this' ? `📌 이번 정산 알림${loadedYm?' · '+escH(loadedYm):''}` : '📋 전체 보기';
- const tab=(m,txt)=>`<span onclick="_setSettleAlertMode('${m}')" style="cursor:pointer;font-size:11px;font-weight:${_settleAlertMode===m?'800':'600'};color:${_settleAlertMode===m?'#1a4a2e':'#94a3b8'};padding:2px 8px;border-radius:8px;background:${_settleAlertMode===m?'#E7F3EC':'transparent'};">${txt}</span>`;
+ const tab=(m,txt)=>`<span onclick="_setSettleAlertMode('${m}')" style="cursor:pointer;font-size:11px;font-weight:${_settleAlertMode===m?'800':'600'};color:${_settleAlertMode===m?'#1a4a2e':'#94a3b8'};padding:2px 8px;border-radius:8px;background:${_settleAlertMode===m?'#E7F3EC':'transparent'};white-space:nowrap;">${txt}</span>`;
  const pill=(bg,fg,txt)=>`<span style="font-size:9px;font-weight:800;border-radius:7px;padding:1px 6px;white-space:nowrap;flex-shrink:0;background:${bg};color:${fg};">${txt}</span>`;
  const badgeRegion=r=>r?`<span class="badge ${r==='서울'?'blue':r==='인천'?'teal':'purple'}" style="flex-shrink:0;">${escH(r)}</span>`:'';
  // 강사 메모 항목
@@ -7828,12 +7828,10 @@ function _renderSettleAlerts(){
   }
  }
  host.innerHTML=`<div style="border:1px solid #E4E7EC;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(20,60,40,.05);">
-  <div style="display:flex;justify-content:space-between;align-items:center;background:#F6FBF7;padding:8px 12px;">
-   <div style="display:flex;align-items:center;gap:10px;">
-    <span style="font-size:12px;font-weight:800;color:#1a4a2e;">${modeTitle} · ${d.count}건</span>
-    <span style="display:inline-flex;gap:2px;">${tab('this','이번 정산')}${tab('all','전체 보기')}</span>
-   </div>
-   <span onclick="_toggleSettleAlertOpen()" style="cursor:pointer;font-size:11px;color:#64748B;font-weight:600;">${_settleAlertOpen?'▲ 접기':'▼ 펼치기'}</span>
+  <div style="display:flex;align-items:center;gap:8px;background:#F6FBF7;padding:8px 12px;">
+   <span style="font-size:12px;font-weight:800;color:#1a4a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;">${modeTitle} · ${d.count}건</span>
+   <span style="display:inline-flex;gap:3px;flex-shrink:0;">${tab('this','이번 정산')}${tab('all','전체 보기')}</span>
+   <span onclick="_toggleSettleAlertOpen()" title="${_settleAlertOpen?'접기':'펼치기'}" style="cursor:pointer;font-size:12px;color:#64748B;font-weight:700;flex-shrink:0;white-space:nowrap;">${_settleAlertOpen?'▲':'▼'}</span>
   </div>
   ${body}
  </div>`;
