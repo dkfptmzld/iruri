@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.09">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.10">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.09">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.10">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.09</title>
+<title>수업기록표 정산 시스템 v16.10</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -652,6 +652,29 @@ body.edit-mode-active .ledger-wrap textarea {
     border-bottom:0.5px solid #e2e0d8;
     font-size:12px; z-index:100;
   }
+  /* v16.10: 모바일 월 이동 바 (◀ 이전달 · 이번달 · 다음달 ▶) */
+  #mgr-month-bar {
+    display:none; align-items:center; gap:8px;
+    padding:8px 12px; background:#fff;
+    border-bottom:0.5px solid #e2e0d8; z-index:100;
+  }
+  #mgr-month-bar .mmb-nav {
+    width:40px; height:36px; flex:0 0 auto; border:1px solid #B8DFCC;
+    background:#F1FAF4; color:#1A7A50; border-radius:9px; font-size:17px;
+    font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  #mgr-month-bar .mmb-nav:active { background:#DCF0E4; }
+  #mgr-month-bar .mmb-label {
+    flex:1; height:36px; border:1px solid var(--border); background:var(--surface2);
+    border-radius:9px; font-size:14px; font-weight:800; color:var(--text);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+    font-family:inherit;
+  }
+  #mgr-month-bar .mmb-today {
+    flex:0 0 auto; height:36px; padding:0 11px; border:1px solid var(--border);
+    background:#fff; color:var(--text2); border-radius:9px; font-size:12px; font-weight:700;
+    cursor:pointer; white-space:nowrap; font-family:inherit;
+  }
 
   /* ── 내부 관리자 뷰 모바일: 아래 max-width:600 블록(원래 min-width:601에 잘못 묶여 있던 것을 정정)이 카드/2x2/스택을 담당. 여기는 그 블록에 없는 고유 규칙만. ── */
   /* 센터 관리: 목록|상세 2단 → 세로 스택 (#cTreeGrid) */
@@ -665,9 +688,9 @@ body.edit-mode-active .ledger-wrap textarea {
   #regionSubjectMatrix-growth, #regionSubjectMatrixExpand-growth { display:none!important; }
 }
 /* 데스크톱 전용: 모바일 강사선택 바를 강제 숨김 (JS 인라인 flex보다 우선) */
-@media(min-width:601px){ #mgr-teacher-bar, #mgr-sidebar-overlay, #mgr-sidebar-panel { display:none!important; } }
+@media(min-width:601px){ #mgr-teacher-bar, #mgr-month-bar, #mgr-sidebar-overlay, #mgr-sidebar-panel { display:none!important; } }
 /* v14.70: 강사 모드(수업기록표 작성)에서는 관리자용 강사선택 바를 항상 숨김 */
-body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #mgr-sidebar-panel { display:none!important; }
+body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #mgr-sidebar-panel { display:none!important; }
 /* ↓ 원래 모바일용 규칙들 — 실수로 min-width:601(데스크톱)에 묶여 모바일에 적용 안 되던 것을 max-width:600으로 정정 */
 @media(max-width:600px){
   #mgr-teacher-bar-label { color:#888; font-size:11px; }
@@ -1782,6 +1805,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-sidebar-overlay, body.ti-mode #
 </style>
 
 <!-- 정산 뷰 -->
+<div id="mgr-month-bar"></div>
 <div id="mgr-teacher-bar" style="display: flex;">
   <span id="mgr-teacher-bar-label">강사 선택</span>
   <button id="mgr-teacher-bar-pill" onclick="_openSidebarOverlay()">김유천 · 1,129,456원 ▾</button>
@@ -3682,7 +3706,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.09';
+const SYSTEM_VERSION='v16.10';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4285,6 +4309,8 @@ function switchView(v){
  // 강사 선택 바: 정산 탭에서만 표시
  const _bar = document.getElementById('mgr-teacher-bar');
  if(_bar) _bar.style.display = v==='settle' ? 'flex' : 'none';
+ const _mbar = document.getElementById('mgr-month-bar');
+ if(_mbar){ _mbar.style.display = v==='settle' ? 'flex' : 'none'; if(v==='settle'){ try{ _renderMobileMonthBar(); }catch(_){} } }
  document.getElementById('settleView').style.display=v==='settle'?'flex':'none';
  try{ _renderSettleAlerts(); }catch(_){}
  try{ _srvRender('settle'); }catch(_){}   // v15.89: 탭 전환 시 상태 줄 자리 갱신
@@ -5183,6 +5209,8 @@ async function recoverSubmissionsFromHistory(){
 }
 
 function loadMonthlySnapshot(ym){
+ window._settleViewedYm = ym;   // v16.10: 모바일 월 이동 바가 현재 보는 달을 알도록
+ try{ _renderMobileMonthBar(ym); }catch(_){}
  const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
  const raw = localStorage.getItem(key);
 
@@ -10818,6 +10846,7 @@ function _renderSidebarYM(ym){
   </div>
   ${_pendingDone>0?`<button onclick="markAllSettled()" title="미정산 강사를 한번에 정산완료로 변경" style="width:100%;margin-top:10px;height:32px;border:none;border-radius:8px;background:var(--green);color:white;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">✓ 미정산 ${_pendingDone}명 전체 완료</button>`:''}`;
  try{ _srvRender('settle'); }catch(_){}   // v15.89: 다시 그려도 상태 줄 유지
+ try{ _renderMobileMonthBar(loadedYm); }catch(_){}   // v16.10: 모바일 월 바 동기화
 }
 
 // 미정산 강사를 한번에 정산완료로 처리
@@ -10845,6 +10874,37 @@ function _onSbYmChange(){
  const m=parseInt(document.getElementById('sbMonth')?.value)||0;
  if(!y||!m) return;
  loadMonthlySnapshot(`${y}년 ${m}월`);
+}
+
+/* ═══ v16.10: 모바일 월 이동 바 (◀ 이전달 · [년·월] · 다음달 ▶) ═══
+ *  모바일에서 월 바꾸려면 매번 '목록' 서랍을 열어야 하던 불편 해소. */
+function _curSettleYm(){
+ return window._settleViewedYm || STATE.data?.teachers?.[0]?.yearMonth || '';
+}
+function _renderMobileMonthBar(ym){
+ const bar=document.getElementById('mgr-month-bar'); if(!bar) return;
+ const cur=ym||_curSettleYm();
+ const [y,m]=_parseYm(cur);
+ const now=new Date();
+ const label=(y&&m)?`${y}년 ${m}월`:'월 선택';
+ const isThis=(y===now.getFullYear() && m===now.getMonth()+1);
+ bar.innerHTML=`
+  <button class="mmb-nav" onclick="_settleMonthShift(-1)" title="이전 달" aria-label="이전 달">◀</button>
+  <button class="mmb-label" onclick="_openSidebarOverlay()" title="월·강사 목록 열기">📅 ${label} <span style="font-size:11px;opacity:.6;">▾</span></button>
+  ${isThis?'':`<button class="mmb-today" onclick="_settleGoThisMonth()" title="이번 달로">이번 달</button>`}
+  <button class="mmb-nav" onclick="_settleMonthShift(1)" title="다음 달" aria-label="다음 달">▶</button>`;
+}
+function _settleMonthShift(delta){
+ const [y,m]=_parseYm(_curSettleYm());
+ const now=new Date();
+ let Y=y||now.getFullYear(), M=(m||now.getMonth()+1)+delta;
+ while(M<1){ M+=12; Y--; }
+ while(M>12){ M-=12; Y++; }
+ loadMonthlySnapshot(`${Y}년 ${M}월`);
+}
+function _settleGoThisMonth(){
+ const now=new Date();
+ loadMonthlySnapshot(`${now.getFullYear()}년 ${now.getMonth()+1}월`);
 }
 
 function _renderNewTeacherList(){
