@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.12">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.13">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.12">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.13">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.12</title>
+<title>수업기록표 정산 시스템 v16.13</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3706,7 +3706,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.12';
+const SYSTEM_VERSION='v16.13';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -18115,12 +18115,15 @@ function renderMobileLedger(){
   card.appendChild(header);
 
   // ── 날짜 + 출석 그리드 ──
+  // v16.13: 6주짜리 달은 좁은 폰에서 칸이 넘쳐 잘리므로, 그리드를 가로 스크롤 가능하게 하고
+  //  각 행에 최소 너비를 줘서 어느 폰에서도 6번째 칸(예: 31일)까지 안 잘리고 옆으로 넘겨 볼 수 있게 함.
+  const _minRowW = 108 + weekCount*42 + 28;   // 이름칸 + 주차칸 + 삭제칸
   const grid = document.createElement('div');
-  grid.style.cssText = 'padding:0;';
+  grid.style.cssText = 'padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;';
 
   // 날짜 헤더 행
   const dateRow = document.createElement('div');
-  dateRow.style.cssText = 'display:grid;align-items:center;border-bottom:1px solid #E2E0D8;background:#F5F4F0;';
+  dateRow.style.cssText = `display:grid;align-items:center;border-bottom:1px solid #E2E0D8;background:#F5F4F0;min-width:${_minRowW}px;`;
   dateRow.style.gridTemplateColumns = `108px repeat(${weekCount}, 1fr) 28px`; // v11.30: X열 포함
 
   const dateLabelCell = document.createElement('div');
@@ -18155,7 +18158,7 @@ function renderMobileLedger(){
   // ── 센터별 출석 행 ──
   g.centers.forEach((c, ci)=>{
    const centerRow = document.createElement('div');
-   centerRow.style.cssText = 'display:grid;align-items:stretch;border-bottom:1px solid #F0EFE9;';
+   centerRow.style.cssText = `display:grid;align-items:stretch;border-bottom:1px solid #F0EFE9;min-width:${_minRowW}px;`;
    centerRow.style.gridTemplateColumns = `108px repeat(${weekCount}, 1fr) 28px`;
    if(c.name) centerRow.style.background='rgba(26,122,80,0.04)';
 
