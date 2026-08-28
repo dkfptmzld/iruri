@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.14">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.15">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.14">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.15">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.14</title>
+<title>수업기록표 정산 시스템 v16.15</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -554,6 +554,8 @@ body.edit-mode-active .ledger-wrap textarea {
   #ti-ledger-table-wrap { display:none!important; }
   #ti-mobile-ledger { display:block!important; }
   #ti-mobile-ledger input[type="number"] { font-size:16px!important; }
+  /* v16.15: 센터명·보강강사 드롭다운은 작게(셀렉트는 iOS 확대 안 됨) → 5글자 이상 보이게 */
+  #ti-mobile-ledger select.ti-msel { font-size:10px!important; padding:0 1px!important; }
   #ti-mobile-ledger > div { margin-bottom:12px!important; }
 
   /* ══ 정산 미리보기 ══ */
@@ -1576,11 +1578,13 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
 
  <!-- Step 2+3: 수업 기록표 (관리자 형태와 동일) -->
  <div id="ti-step2-card" style="background:white;border:1px solid #E2E0D8;border-radius:14px;overflow:hidden;">
- <div style="padding:14px 20px;border-bottom:1px solid #E2E0D8;background:#F8F7F2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+ <div style="padding:14px 20px;border-bottom:1px solid #E2E0D8;background:#F8F7F2;">
  <div style="display:flex;align-items:center;gap:10px;">
  <span style="width:24px;height:24px;background:#1A7A50;border-radius:50%;color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</span>
- <span style="font-size:14px;font-weight:600;">수업 기록표</span>
+ <span style="font-size:14px;font-weight:600;flex:1;">수업 기록표</span>
  <button onclick="startTutorialFromStep(3)" title="이 섹션 도움말" aria-label="이 섹션 도움말" style="width:26px;height:26px;border-radius:50%;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:13px;cursor:pointer;font-weight:700;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;">?</button>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
  <span style="font-size:12px;color:#9B9888;">셀을 클릭해 O → X → △ 순으로 변경</span>
  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
   <span style="display:inline-flex;align-items:center;gap:3px;background:#E8F5EE;border:1px solid #B8E0CC;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;color:#1A7A50;">
@@ -3706,7 +3710,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.14';
+const SYSTEM_VERSION='v16.15';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -18118,8 +18122,8 @@ function renderMobileLedger(){
   // v16.14: 6주짜리 달도 좌우 스크롤 없이 '한 화면'에 다 들어가도록 칸을 줄인다.
   //  이름칸·삭제칸을 좁히고, 출석칸은 minmax(0,1fr)로 화면 폭에 맞춰 자동 축소.
   const wk6 = weekCount >= 6;
-  const _nameW = wk6 ? 76 : 108;      // 6주면 센터 이름칸을 줄여 자리 확보
-  const _delW  = 22;                  // 삭제(✕) 칸
+  const _nameW = wk6 ? 84 : 108;      // 6주면 센터 이름칸을 줄여 자리 확보(글씨는 작아서 5자+ 보임)
+  const _delW  = 20;                  // 삭제(✕) 칸
   const _attBtn = wk6 ? 30 : 36;      // 출석 버튼 크기
   const _attFont = wk6 ? 14 : 16;
   const _colTpl = `${_nameW}px repeat(${weekCount}, minmax(0,1fr)) ${_delW}px`;
@@ -18188,7 +18192,7 @@ function renderMobileLedger(){
 
    // 보강 강사 선택 드롭다운 (보강 체크 시 표시)
    const substSel = document.createElement('select');
-   substSel.className='ti-subst-sel'; // v15.17: 제출 시 필수값(누구 보강) 검증용
+   substSel.className='ti-subst-sel ti-msel'; // v15.17: 제출 시 필수값(누구 보강) 검증용
    substSel.dataset.gi=gi; substSel.dataset.ci=ci;
    substSel.style.cssText=`display:${isSubst?'block':'none'};flex:1;min-width:0;height:20px;border:1px solid #E2E0D8;border-radius:4px;padding:0 2px;font-size:10px;background:#FDF3DC;outline:none;`;
    substSel.innerHTML='<option value="">누구?</option>';
@@ -18204,7 +18208,8 @@ function renderMobileLedger(){
 
    // 센터 선택 드롭다운 (PC 버전 updateCenterOptions 로직 동일)
    const centerSel = document.createElement('select');
-   centerSel.style.cssText = 'font-size:10px;border:1px solid #E2E0D8;border-radius:5px;padding:2px 2px;background:white;color:#333;width:100%;outline:none;';
+   centerSel.className = 'ti-msel';
+   centerSel.style.cssText = 'font-size:10px;border:1px solid #E2E0D8;border-radius:5px;padding:2px 1px;background:white;color:#333;width:100%;outline:none;';
 
    const nameCountM = {};
    DB.centers.forEach(ct=>{ nameCountM[ct.name]=(nameCountM[ct.name]||0)+1; });
