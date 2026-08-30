@@ -72,9 +72,19 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  var body, action;
+  try { body = JSON.parse(e.postData.contents); action = body.action; }
+  catch (err) { return response({ ok: false, message: '요청 파싱 실패' }); }
+  // [안전 2단계] 쓰기 잠금 — 저장을 한 번에 하나씩만 처리(동시 저장 충돌 방지).
+  //  접속현황·영수증 업로드처럼 '줄 추가만 하는(충돌 무해)' 동작은 잠금 없이 통과 → 강사 활동은 안 느려짐.
+  var _NO_LOCK = { updatePresence: 1, removePresence: 1, uploadReceipt: 1 };
+  var _lock = null;
+  if (!_NO_LOCK[action]) {
+    _lock = LockService.getScriptLock();
+    try { _lock.waitLock(30000); }
+    catch (e2) { return response({ ok: false, busy: true, message: '다른 저장이 처리 중이에요. 잠시 후 다시 시도해 주세요' }); }
+  }
   try {
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
     if (action === 'submitRecord')          return response(submitRecord(body.data));
     if (action === 'signupAccount')         return response(signupAccount(body.teacher, body.hashedPw));
     if (action === 'loginCheck')            return response(loginCheck(body.teacher, body.hashedPw, body.legacyPw));
@@ -101,6 +111,7 @@ function doPost(e) {
     if (action === 'resolveScheduleRequest')return response(resolveScheduleRequest(body.id, body.status));   // v16.05
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
+  finally { if (_lock) { try { _lock.releaseLock(); } catch (_e) {} } }
 }
 
 /* ════════ [속도] DB 버전 · 내용 지문 ════════
@@ -292,6 +303,13 @@ function resolveScheduleRequest(id, status){
 function DB_DROP_BLOCK(curCount, newCount){
   return curCount >= 6 && newCount < curCount && (curCount - newCount) >= Math.max(3, Math.ceil(curCount * 0.05));
 }
+/* [안전 2단계] 대량 유실 하드 차단 — force(강제)로도 못 넘는다.
+ *  70% 넘게 줄거나(=대부분 사라짐) 3개 미만이 되면 무조건 거부.
+ *  실수/오래된 캐시로 인한 '센터·강사 전체 날아감'을 원천 차단.
+ *  (정상 편집·소수 삭제는 걸리지 않음. 자동백업이 있어 걸려도 데이터는 안전) */
+function DB_HARD_WIPE(curCount, newCount){
+  return curCount >= 10 && newCount < Math.max(3, Math.ceil(curCount * 0.30));
+}
 function backupSheetSnapshot_(srcName){
   try{
     const ss = ss_();
@@ -354,6 +372,11 @@ function getTeachers(requesterName, isAdmin, clientVer) {
 function syncTeachers(teachers, force) {
   const sheet = getSheet(SHEET_TEACHERS);
   const curCount = Math.max(0, sheet.getLastRow() - 1);
+  // [안전 2단계] force로도 못 넘는 대량 유실 하드 차단
+  if (DB_HARD_WIPE(curCount, (teachers||[]).length)) {
+    return { ok: false, blocked: true, reason: 'wipe', curCount: curCount,
+             message: '강사 대량 유실 차단: 현재 '+curCount+'명 → 요청 '+(teachers||[]).length+'명. 자동백업에서 복구 가능하며, 정말 맞다면 잠시 후 다시 시도하세요' };
+  }
   if (!force && DB_DROP_BLOCK(curCount, teachers.length)) {
     return { ok: false, blocked: true, reason: 'drop', curCount: curCount,
              message: '강사 급감 차단: 현재 '+curCount+'명 → 요청 '+teachers.length+'명 (정상이면 force로 재요청)' };
@@ -389,6 +412,7 @@ function syncTeachers(teachers, force) {
   }
 
   backupSheetSnapshot_(SHEET_TEACHERS);
+  try { autoBackupDB(); } catch (_e) {}   // [안전 2단계] 덮어쓰기 직전 버전 백업(복원 지점)
   sheet.clearContents();
   const header = [['강사명','지역','급여유형','급여액','입사일','인상일','계좌정보','JSON전체']];
   const all = header.concat(rows);
@@ -475,6 +499,11 @@ function deleteCenter(name) {
 function syncCenters(centers, force) {
   const sheet = getSheet(SHEET_CENTERS);
   const curCount = Math.max(0, sheet.getLastRow() - 1);
+  // [안전 2단계] force로도 못 넘는 대량 유실 하드 차단
+  if (DB_HARD_WIPE(curCount, (centers||[]).length)) {
+    return { ok: false, blocked: true, reason: 'wipe', curCount: curCount,
+             message: '센터 대량 유실 차단: 현재 '+curCount+'개 → 요청 '+(centers||[]).length+'개. 자동백업에서 복구 가능하며, 정말 맞다면 잠시 후 다시 시도하세요' };
+  }
   if (!force && DB_DROP_BLOCK(curCount, centers.length)) {
     return { ok: false, blocked: true, reason: 'drop', curCount: curCount,
              message: '센터 급감 차단: 현재 '+curCount+'개 → 요청 '+centers.length+'개 (정상이면 force로 재요청)' };
@@ -517,6 +546,7 @@ function syncCenters(centers, force) {
   }
 
   backupSheetSnapshot_(SHEET_CENTERS);
+  try { autoBackupDB(); } catch (_e) {}   // [안전 2단계] 덮어쓰기 직전 버전 백업(복원 지점)
   sheet.clearContents();
   const header = [['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']];
   const all = header.concat(rows);
@@ -940,7 +970,7 @@ function getSettlementStatus(teacher) {
  *     (기존 Code.gs 끝에 이 블록을 붙여넣기만 하면 됩니다) */
 
 const BACKUP_FOLDER = '이루리_자동백업';
-const BACKUP_KEEP   = 72;   // 최근 72개(≈ 3일치, 매시간) 보관 후 오래된 것 자동 정리
+const BACKUP_KEEP   = 150;  // 최근 150개 보관(정기+저장직전 백업 포함)
 
 function backupRoot_() {
   const root = getIruriRoot();
