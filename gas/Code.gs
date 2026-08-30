@@ -93,7 +93,7 @@ function doPost(e) {
     if (action === 'saveTeacher')           return response(saveTeacher(body.teacher));
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
-    if (action === 'deleteCenter')          return response(deleteCenter(body.name));
+    if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
     if (action === 'syncCenters')           return response(syncCenters(body.centers, body.force));
     if (action === 'saveMonthlySnapshot')   return response(saveMonthlySnapshot(body.yearMonth, body.data, body.force, body.savedAt));
@@ -475,8 +475,10 @@ function saveCenter(center) {
   const values = sheet.getDataRange().getValues();
   const t = center.teachers || [];
   const row = [center.name, center.region||'', center.fee||0, t[0]||'', t[1]||'', t[2]||'', t[3]||'', center.address||'', center.source||'수동', JSON.stringify(center.schedule||[]), center.phone||'', center.email||'', center.contactName||'', JSON.stringify(center)];
+  // v16.19: 이름+지역으로 행을 찾는다(동명이센터를 잘못 덮지 않게)
+  const rg = String(center.region||'');
   for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === center.name) {
+    if (String(values[i][0]) === String(center.name) && String(values[i][1]||'') === rg) {
       sheet.getRange(i+1,1,1,14).setValues([row]);
       touchDb_('centers');
       return { ok: true, message: '수정 완료' };
@@ -487,11 +489,16 @@ function saveCenter(center) {
   return { ok: true, message: '추가 완료' };
 }
 
-function deleteCenter(name) {
+function deleteCenter(name, region) {
   const sheet = getSheet(SHEET_CENTERS);
   const values = sheet.getDataRange().getValues();
+  // v16.19: region 이 오면 이름+지역으로, 없으면(구버전 호출) 이름만으로 매칭
+  const hasRg = (region !== undefined && region !== null);
+  const rg = String(region||'');
   for (let i = 1; i < values.length; i++) {
-    if (values[i][0] === name) { sheet.deleteRow(i+1); touchDb_('centers'); return { ok: true, message: '삭제 완료' }; }
+    if (String(values[i][0]) === String(name) && (!hasRg || String(values[i][1]||'') === rg)) {
+      sheet.deleteRow(i+1); touchDb_('centers'); return { ok: true, message: '삭제 완료' };
+    }
   }
   return { ok: false, message: '해당 센터 없음' };
 }

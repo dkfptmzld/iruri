@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.18">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.19">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.18">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.19">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.18</title>
+<title>수업기록표 정산 시스템 v16.19</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3728,7 +3728,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.18';
+const SYSTEM_VERSION='v16.19';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4219,6 +4219,7 @@ window.addEventListener('load', ()=>{
     const _mrg1 = _mergeCenters(dedupedCenters1);
     DB.centers = _mrg1.merged;
     localStorage.setItem(LS_C, JSON.stringify(DB.centers));
+    try{ _initCenterShadow(); }catch(_){}   // v16.19: 서버 최신을 받았으니 기준선 갱신
     _persistCentersAfterMerge(_mrg1.localOnly, _mrg1.tombedOnGas);
     if(_mrg1.localOnly.length){ try{ pushErrorLog('센터 자동 보존 (앱 시작)', `서버에 없던 로컬 센터 ${_mrg1.localOnly.length}곳을 유지·재저장했어요: ${_mrg1.localOnly.map(c=>`${c.name}(${c.region||'지역미상'})`).join(', ')}`); }catch{} }
     _rebuildCenterFeesFromCenters(DB.centers); // v12.68: schedule.fee → centerFees 재구성
@@ -4422,6 +4423,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     const _mrg2 = _mergeCenters(r.data);
     DB.centers = _mrg2.merged;
     localStorage.setItem(LS_C, JSON.stringify(DB.centers));
+    try{ _initCenterShadow(); }catch(_){}   // v16.19: 서버 최신을 받았으니 기준선 갱신
     _persistCentersAfterMerge(_mrg2.localOnly, _mrg2.tombedOnGas);
     if(_mrg2.localOnly.length){ try{ pushErrorLog('센터 자동 보존 (센터탭)', `서버에 없던 로컬 센터 ${_mrg2.localOnly.length}곳을 유지·재저장했어요: ${_mrg2.localOnly.map(c=>`${c.name}(${c.region||'지역미상'})`).join(', ')}`); }catch{} }
     _rebuildCenterFeesFromCenters(DB.centers); // v12.68: schedule.fee → centerFees 재구성
@@ -8660,10 +8662,39 @@ function _persistCentersAfterMerge(localOnly, tombedOnGas){
 /* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도)
  *  v15.54: force:true — 사용자 조작(드래그 등) 후의 '현재 전체 목록'을 확실히 저장(막힘 방지).
  *  v15.82: 관리자 기기에서만 (관리자 UI에서만 호출되지만 이중 안전장치) */
+/* v16.19: 전체 통 밀어올리기 → '바뀐 센터만 건별 저장'.
+ *  마지막으로 알던 상태(_centerShadow)와 비교해 — 내가 바꾸거나 추가한 센터만 saveCenter,
+ *  내가 지운 센터만 deleteCenter 로 보낸다. 다른 지역·다른 관리자 데이터는 절대 안 건드림(핑퐁 방지).
+ *  ※ 오래된 캐시라도 '내가 안 건드린 센터'는 삭제 대상이 안 됨 → 대량 유실이 구조적으로 불가능. */
+function _snapCenters(){
+ const m=new Map();
+ (DB.centers||[]).forEach(c=>{ if(c && c.name!=null) m.set(String(c.name)+''+String(c.region||''), JSON.stringify(c)); });
+ return m;
+}
+let _centerShadow = null;
+function _initCenterShadow(){ try{ _centerShadow = _snapCenters(); }catch(_){ _centerShadow=null; } }
 function _saveAllCentersToGas(){
  if(!_canWriteCenters()) return;
- try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers)), force:true}); }catch(_){}
+ try{
+  const shadow = _centerShadow || _snapCenters();
+  const seen = {}; const changed = [];
+  (DB.centers||[]).forEach(c=>{
+   if(!c || c.name==null) return;
+   const k = String(c.name)+''+String(c.region||'');
+   seen[k]=1;
+   if(shadow.get(k) !== JSON.stringify(c)) changed.push(c);   // 새 값 또는 새 센터
+  });
+  const deleted = [];
+  shadow.forEach((v,k)=>{ if(!seen[k]){ const p=k.split(''); deleted.push({name:p[0], region:p[1]||''}); } });
+  changed.forEach(c=>{ try{ _gasPostRetry({action:'saveCenter', center: JSON.parse(JSON.stringify(c))}); }catch(_){} });
+  deleted.forEach(d=>{ try{ _gasPostRetry({action:'deleteCenter', name:d.name, region:d.region}); }catch(_){} });
+  _centerShadow = _snapCenters();   // 기준선 갱신(다음 저장은 이 이후 변경분만)
+ }catch(_){
+  // 예상 못한 오류 시에도 데이터가 안 올라가는 일이 없게 — 기존 전체 방식으로 폴백
+  try{ _gasPostRetry({action:'syncCenters', centers: JSON.parse(JSON.stringify(DB.centers)), force:true}); }catch(__){}
+ }
 }
+try{ _initCenterShadow(); }catch(_){}   // v16.19: 앱 로드 시점의 로컬 센터 상태를 기준선으로
 
 function switchCenterView(view){
  _centerView = 'tree';
