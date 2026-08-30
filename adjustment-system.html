@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.17">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.18">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.17">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.18">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.17</title>
+<title>수업기록표 정산 시스템 v16.18</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3728,7 +3728,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.17';
+const SYSTEM_VERSION='v16.18';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12037,6 +12037,16 @@ async function syncAllToDB(force){
   // v14.55/v15.26: 서버가 차단(blocked)하면 → 무엇이 바뀌는지 보여주고 확인 후 force 재시도
   //  - reason='drop'(급감) 또는 reason='bulk'(2건 이상 변경). 확인 못 하면 하나도 반영 안 됨.
   if(!force && ((tr&&tr.blocked) || (cr&&cr.blocked))){
+   // v16.18: 삭제·급감(데이터 유실 위험)만 확인창을 띄우고, 추가·수정만이면 조용히 자동 반영
+   //  (예전 추가/수정 내역이 반복해서 뜨던 불편 해소 — 삭제/급감 안전장치는 유지)
+   const _danger=(r)=>{ if(!(r&&r.blocked)) return false;
+    if(r.reason==='drop' || r.curCount!=null) return true;                         // 급감(대폭 감소)
+    if(Array.isArray(r.changes) && r.changes.some(c=>/^\s*삭제/.test(String(c)))) return true;  // 삭제 포함
+    return false; };
+   if(!_danger(tr) && !_danger(cr)){                                                 // 추가·수정만 → 알림 없이 반영
+    _done=true; clearTimeout(_watchdog); _syncInFlight=false;                        // 재진입 잠금 해제 후 force 재동기화
+    return syncAllToDB(true);
+   }
    const lines=[];
    const _fmt=(r,label,unit,localLen)=>{
     if(!(r&&r.blocked)) return;
