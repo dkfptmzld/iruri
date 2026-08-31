@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.25">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.25">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.25</title>
+<title>수업기록표 정산 시스템 v16.26</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3738,7 +3738,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.25';
+const SYSTEM_VERSION='v16.26';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8333,21 +8333,36 @@ function _renderSchedReqPanel(){
   list='<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">대기 중인 수정 요청이 없어요</div>';
  } else {
   _schReqCache.forEach(req=>{
-   const rows=(req.changes||[]).map(c=> c.type==='add'
-    ? `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;flex-wrap:wrap;">
-        <span style="font-size:10px;font-weight:800;color:#1A7A50;background:#E1F5EA;border:1px solid #B8E0CC;border-radius:6px;padding:1px 6px;">새 센터</span>
-        <span style="font-weight:700;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
-        ${c.time?`<span style="color:#1A7A50;font-weight:700;font-family:'DM Mono',monospace;">${e(c.time)}</span>`:''}
-        ${c.address?`<span style="color:#6A6760;">· ${e(c.address)}</span>`:''}
-        ${c.email?`<span style="color:#2C5AA0;font-size:11px;">· ${e(c.email)}</span>`:''}
-       </div>`
-    : `<div style="display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px;flex-wrap:wrap;">
-     <span style="font-weight:700;min-width:130px;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
-     <span style="color:#9A968C;width:52px;font-size:11.5px;">${_fieldLabel(c.field)}</span>
-     <span style="color:#9A968C;${c.from?'text-decoration:line-through;':'font-style:italic;'}">${c.from?e(c.from):'빈칸'}</span>
-     <span style="color:#9A968C;">→</span>
-     <span style="color:#1A7A50;font-weight:700;">${e(c.to)}</span>
-    </div>`).join('');
+   // v16.26: 센터별로 묶어서 보기 — 한 센터의 주소·이메일·강의시간을 한 블록으로 정리
+   const rows=(()=>{
+    const chs=req.changes||[];
+    const adds=chs.filter(c=>c.type==='add');
+    const edits=chs.filter(c=>c.type!=='add');
+    const gmap={}, order=[];
+    edits.forEach(c=>{ const k=(c.center||'')+'|'+(c.day||''); if(!gmap[k]){gmap[k]=[];order.push(k);} gmap[k].push(c); });
+    let out='';
+    adds.forEach(c=>{ out+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:12.5px;flex-wrap:wrap;border-bottom:1px solid #F0EEE7;">
+      <span style="font-size:10px;font-weight:800;color:#1A7A50;background:#E1F5EA;border:1px solid #B8E0CC;border-radius:6px;padding:1px 6px;">새 센터</span>
+      <span style="font-weight:700;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
+      ${c.time?`<span style="color:#1A7A50;font-weight:700;font-family:'DM Mono',monospace;">${e(c.time)}</span>`:''}
+      ${c.address?`<span style="color:#6A6760;">· ${e(c.address)}</span>`:''}
+      ${c.email?`<span style="color:#2C5AA0;font-size:11px;">· ${e(c.email)}</span>`:''}
+     </div>`; });
+    order.forEach(k=>{
+     const list=gmap[k], f=list[0];
+     const fieldRows=list.map(c=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;font-size:12px;">
+        <span style="color:#9A968C;width:58px;flex-shrink:0;">${_fieldLabel(c.field)}</span>
+        <span style="color:#B8B4A8;${c.from?'text-decoration:line-through;':'font-style:italic;'}">${c.from?e(c.from):'빈칸'}</span>
+        <span style="color:#C8C4B8;flex-shrink:0;">→</span>
+        <span style="color:#1A7A50;font-weight:700;word-break:break-all;">${e(c.to)}</span>
+       </div>`).join('');
+     out+=`<div style="padding:7px 0;border-bottom:1px solid #F0EEE7;">
+       <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${e(f.center)} <span style="font-weight:500;color:#9A968C;font-size:11.5px;">(${e(f.day)})</span> <span style="font-size:10.5px;font-weight:600;color:#B8B4A8;">· ${list.length}건</span></div>
+       ${fieldRows}
+      </div>`;
+    });
+    return out;
+   })();
    list+=`<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;">
      <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#FCFBF7;border-bottom:1px solid var(--border);">
       <span style="font-size:13.5px;font-weight:800;">${e(req.teacher)}</span>
@@ -8357,7 +8372,7 @@ function _renderSchedReqPanel(){
      <div style="padding:10px 14px;">${rows}</div>
      ${req.message?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.55;">✉️ <b>메시지</b> · ${e(req.message)}</div>`:''}
      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
-      <span style="flex:1;font-size:12px;color:var(--text2);"><b>${(req.changes||[]).length}개 항목</b> 변경 요청</span>
+      <span style="flex:1;font-size:12px;color:var(--text2);"><b>센터 ${new Set((req.changes||[]).map(c=>(c.center||'')+'|'+(c.day||''))).size}곳</b> · ${(req.changes||[]).length}개 항목 변경</span>
       <button class="btn sm" onclick="_rejectSchedRequest('${e(req.id)}')" style="border:1px solid #FCA5A5;color:#DC2626;">거절</button>
       <button class="btn sm primary" onclick="_applySchedRequest('${e(req.id)}')">✓ 전체 반영</button>
      </div>
