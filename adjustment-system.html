@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.31">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.33">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.31">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.33">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.31</title>
+<title>수업기록표 정산 시스템 v16.33</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -425,6 +425,126 @@ body.edit-mode-active .ledger-wrap textarea {
 #actionFlash .af-sub{font-size:13px;font-weight:500;color:#8A8676;text-align:center;line-height:1.5;margin-top:-8px;max-width:280px;}
 #actionFlash.err .af-sub{color:#C0392B;background:#FDECEA;border-radius:9px;padding:8px 12px;margin-top:0;}
 @media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}#actionFlash .af-sub{font-size:12.5px;}}
+/* v16.32: 새 센터 추가/수정 흐름 */
+.nc-scrim{position:fixed;inset:0;z-index:10040;background:rgba(20,18,12,.5);display:flex;align-items:flex-start;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .18s;}
+.nc-scrim.on{opacity:1;pointer-events:auto;}
+.nc-sheet{background:var(--bg,#F5F3EC);width:100%;max-width:640px;height:100%;max-height:100%;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.25);}
+.nc-topbar{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #E4E1D6;flex:0 0 auto;}
+.nc-title{font-size:16px;font-weight:800;color:#20201C;}
+.nc-x{margin-left:auto;width:34px;height:34px;border:1px solid #E4E1D6;border-radius:9px;background:#fff;color:#6A6760;font-size:15px;cursor:pointer;}
+.nc-x:hover{background:#F5F3EC;}
+.nc-body{flex:1;overflow-y:auto;padding:16px;max-width:640px;margin:0 auto;width:100%;}
+.nc-lead{font-size:13px;color:#6A6760;margin-bottom:12px;}
+.nc-search{display:flex;align-items:center;gap:9px;border:1.5px solid #D6D2C6;border-radius:12px;padding:0 12px;height:50px;background:#fff;transition:border-color .15s;}
+.nc-search:focus-within{border-color:#1A7A50;}
+.nc-search .nc-sic{font-size:16px;color:#9A968C;}
+.nc-search input{border:0;outline:0;background:transparent;font:inherit;color:#20201C;width:100%;height:100%;}
+.nc-hint{font-size:12px;color:#146142;background:#E8F5EE;border:1px solid #B8E0CC;border-radius:9px;padding:8px 11px;display:flex;gap:7px;align-items:flex-start;line-height:1.5;margin-top:10px;}
+.nc-hint b{font-weight:700;}
+.nc-results{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+.nc-result{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid #E4E1D6;border-radius:11px;background:#fff;cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit;transition:border-color .12s,background .12s;}
+.nc-result:hover{border-color:#B8E0CC;background:#E8F5EE;}
+.nc-result .nm{font-weight:700;font-size:14.5px;color:#20201C;}
+.nc-result .meta{font-size:11.5px;color:#6A6760;margin-top:2px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.nc-result .grow{flex:1;min-width:0;}
+.nc-result .pick{font-size:11.5px;font-weight:700;color:#1A7A50;white-space:nowrap;opacity:.7;}
+.nc-addr{font-size:11.5px;color:#6A6760;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nc-addr.noaddr{color:#9A968C;font-style:italic;}
+.nc-rbadge{font-size:10.5px;font-weight:700;border-radius:20px;padding:1px 8px;white-space:nowrap;background:#EEF3FF;color:#2563EB;}
+.nc-empty{padding:20px 8px;text-align:center;color:#9A968C;font-size:13px;}
+.nc-newbar{margin-top:10px;border-top:1px dashed #D6D2C6;padding-top:12px;}
+.nc-newcta{width:100%;border:1.5px dashed #B8E0CC;background:#E8F5EE;color:#146142;border-radius:12px;padding:13px;font:inherit;font-weight:700;cursor:pointer;}
+.nc-newcta:hover{background:#fff;border-color:#1A7A50;}
+.nc-back{display:inline-flex;align-items:center;gap:5px;background:none;border:0;color:#6A6760;font:inherit;font-size:13px;font-weight:700;cursor:pointer;padding:2px 0;margin-bottom:8px;}
+.nc-back:hover{color:#1A7A50;}
+.nc-fld{display:block;margin-top:14px;}
+.nc-fld .nc-lb{font-size:12px;font-weight:700;color:#6A6760;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.nc-fld .nc-req{color:#DC2626;font-weight:800;}
+.nc-fld .nc-opt{color:#9A968C;font-weight:500;font-size:11px;}
+.nc-inp{width:100%;border:1.5px solid #D6D2C6;border-radius:10px;padding:11px 12px;font:inherit;color:#20201C;background:#fff;outline:none;transition:border-color .15s;}
+.nc-inp:focus{border-color:#1A7A50;}
+.nc-rgn-row{display:flex;gap:8px;}
+.nc-rgn{flex:1;border:1.5px solid #D6D2C6;background:#fff;color:#6A6760;border-radius:10px;padding:11px;font:inherit;font-weight:700;cursor:pointer;transition:all .12s;}
+.nc-rgn:hover{border-color:#B8E0CC;}
+.nc-rgn.on{border-color:#1A7A50;background:#E8F5EE;color:#146142;}
+.nc-sec{margin-top:22px;border-top:1px solid #E4E1D6;padding-top:16px;}
+.nc-sec-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.nc-sec-head .nc-st{font-size:14px;font-weight:800;color:#20201C;}
+.nc-sec-head .nc-sc{font-size:11px;font-weight:700;color:#1A7A50;background:#E8F5EE;border-radius:20px;padding:1px 8px;}
+.nc-sec-sub{font-size:12px;color:#6A6760;margin-bottom:12px;}
+.nc-tblock{border:1px solid #E4E1D6;border-radius:13px;padding:12px;margin-bottom:10px;background:#FAF9F4;}
+.nc-tblock-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.nc-tsel{flex:1;font-weight:700;border:1.5px solid #D6D2C6;border-radius:9px;padding:8px 10px;font:inherit;color:#20201C;background:#fff;outline:none;cursor:pointer;}
+.nc-tsel:focus{border-color:#1A7A50;}
+.nc-tblock-del,.nc-slot-del{width:30px;height:30px;border:1px solid #E4E1D6;border-radius:8px;background:#fff;color:#DC2626;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.nc-tblock-del:hover,.nc-slot-del:hover{border-color:#F3B9B4;background:#FDECEC;}
+.nc-tslots{display:flex;flex-direction:column;gap:8px;}
+.nc-slot{border:1px solid #E4E1D6;border-radius:10px;padding:10px;background:#fff;}
+.nc-days{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+.nc-day{width:34px;height:34px;border:1.5px solid #D6D2C6;background:#fff;color:#6A6760;border-radius:9px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:all .1s;}
+.nc-day:hover{border-color:#B8E0CC;}
+.nc-day.on{border-color:#1A7A50;background:#1A7A50;color:#fff;}
+.nc-tfee-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:9px 11px;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.06);border-radius:9px;}
+.nc-tfee-lb{font-size:12px;font-weight:700;color:#20201C;flex:0 0 auto;}
+.nc-tfee-in{margin-left:auto;display:flex;align-items:center;gap:5px;flex:0 0 auto;}
+.nc-tfee{width:112px;border:1.5px solid #D6D2C6;border-radius:9px;padding:8px 10px;font:inherit;font-family:'DM Mono','Noto Sans KR',monospace;color:#20201C;background:#fff;outline:none;text-align:right;}
+.nc-tfee:focus{border-color:#1A7A50;}
+.nc-tfee-won{font-size:12.5px;color:#6A6760;}
+.nc-slot-grid{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:7px;align-items:end;}
+.nc-mini-lb{font-size:10.5px;color:#9A968C;font-weight:700;margin-bottom:4px;display:block;}
+.nc-mini{border:1.5px solid #D6D2C6;border-radius:9px;padding:8px 10px;font:inherit;color:#20201C;background:#fff;outline:none;width:100%;}
+.nc-mini:focus{border-color:#1A7A50;}
+.nc-mini.tm{cursor:pointer;font-family:'DM Mono','Noto Sans KR',monospace;}
+.nc-add-slot{width:100%;margin-top:9px;border:1.5px dashed #D6D2C6;background:transparent;color:#6A6760;border-radius:9px;padding:9px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;}
+.nc-add-slot:hover{border-color:#B8E0CC;color:#146142;}
+.nc-add-asg{width:100%;border:1.5px dashed #D6D2C6;background:transparent;color:#6A6760;border-radius:11px;padding:11px;font:inherit;font-weight:700;cursor:pointer;}
+.nc-add-asg:hover{border-color:#B8E0CC;color:#146142;}
+.nc-preview{margin-top:14px;}
+.nc-foot{display:flex;gap:9px;margin-top:22px;padding-bottom:20px;}
+.nc-btn{border:0;border-radius:11px;padding:13px 16px;font:inherit;font-weight:700;cursor:pointer;transition:filter .12s,background .12s;}
+.nc-btn.ghost{background:#fff;border:1.5px solid #D6D2C6;color:#6A6760;flex:0 0 auto;}
+.nc-btn.ghost:hover{border-color:#9A968C;}
+.nc-btn.primary{background:#1A7A50;color:#fff;flex:1;box-shadow:0 2px 8px rgba(26,122,80,.25);}
+.nc-btn.primary:hover{filter:brightness(1.06);}
+.nc-exist{border:1px solid #B8E0CC;background:#E8F5EE;border-radius:13px;padding:14px;}
+.nc-exist .en{font-size:17px;font-weight:800;color:#20201C;}
+.nc-tblk{background:#fff;border:1px solid #E4E1D6;border-radius:11px;padding:10px 12px;margin-top:8px;}
+.nc-tblk-name{font-weight:800;font-size:14px;margin-bottom:6px;color:#20201C;}
+.nc-sess{display:flex;align-items:center;gap:9px;padding:5px 0;border-top:1px solid #E4E1D6;flex-wrap:wrap;}
+.nc-sess:first-of-type{border-top:0;}
+.nc-gtag{font-size:11px;font-weight:800;color:#6A6760;background:#FAF9F4;border:1px solid #E4E1D6;border-radius:6px;padding:1px 7px;}
+.nc-dchip{font-size:11px;font-weight:800;color:#146142;background:#E8F5EE;border:1px solid #B8E0CC;border-radius:6px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;}
+.nc-sess-time{font-size:12.5px;color:#6A6760;}
+.nc-sess-fee{margin-left:auto;font-size:12.5px;font-weight:700;color:#20201C;}
+/* 미리보기 스케줄표 */
+.nc-pvhead{background:#FAF9F4;font-size:11.5px;font-weight:800;color:#6A6760;padding:8px 12px;border:1px solid #E4E1D6;border-bottom:0;border-radius:11px 11px 0 0;}
+.nc-pv-teacher{border:1px solid #E4E1D6;border-top:0;}
+.nc-pv-tname{font-weight:800;font-size:13px;padding:9px 12px 5px;background:#FAF9F4;color:#20201C;}
+.nc-pv-tname span{font-weight:500;font-size:11px;color:#9A968C;margin-left:4px;}
+.nc-pvwrap{padding:8px 12px 12px;overflow-x:auto;}
+.nc-sch{width:100%;border-collapse:collapse;table-layout:fixed;min-width:320px;}
+.nc-sch th{font-size:11px;font-weight:800;padding:6px 4px;border:1px solid #D6D2C6;background:#FAF9F4;color:#6A6760;text-align:center;}
+.nc-sch td{font-size:12px;padding:6px 8px;border:1px solid #E4E1D6;text-align:center;height:30px;background:#fff;color:#20201C;}
+.nc-sch td.day{font-weight:800;background:#FAF9F4;color:#146142;width:40px;}
+.nc-sch td.ctr{font-weight:700;text-align:left;}
+.nc-sch td.tm{font-family:'DM Mono','Noto Sans KR',monospace;color:#6A6760;white-space:nowrap;width:96px;}
+.nc-sch tr.newrow td{background:#E8F5EE;}
+.nc-sch tr.newrow td.ctr,.nc-sch tr.newrow td.day{color:#146142;}
+.nc-nowtag{font-size:9px;font-weight:800;color:#fff;background:#1A7A50;border-radius:5px;padding:1px 5px;margin-left:6px;white-space:nowrap;}
+.nc-pvlegend{font-size:11px;color:#9A968C;padding:8px 4px 0;display:flex;align-items:center;gap:6px;}
+.nc-pvlegend .sw{width:11px;height:11px;border-radius:3px;background:#E8F5EE;border:1px solid #B8E0CC;display:inline-block;}
+.nc-pv-empty{padding:14px 12px;font-size:12.5px;color:#9A968C;text-align:center;border:1px solid #E4E1D6;border-top:0;border-radius:0 0 11px 11px;}
+.nc-dupscrim{position:fixed;inset:0;z-index:10070;background:rgba(20,18,12,.5);display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:opacity .16s;}
+.nc-dupscrim.on{opacity:1;pointer-events:auto;}
+.nc-dupmodal{background:#fff;border-radius:16px;max-width:400px;width:100%;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.nc-dupi{font-size:26px;}
+.nc-dupt{font-size:16px;font-weight:800;margin:6px 0;color:#20201C;}
+.nc-dupd{font-size:13px;color:#6A6760;line-height:1.6;}
+.nc-dup{display:flex;align-items:center;gap:9px;border:1px solid #F0D488;background:#FEF3C7;border-radius:11px;padding:11px;margin:12px 0;cursor:pointer;}
+.nc-dup .dn{font-weight:800;color:#20201C;}
+.nc-dup .dd{font-size:11.5px;color:#6A6760;}
+.nc-dupfoot{display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+@media(max-width:480px){.nc-slot-grid{grid-template-columns:1fr auto;}.nc-slot-grid>div:nth-child(1){grid-column:1/-1;}.nc-slot-del{align-self:center;}}
 /* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
@@ -2770,6 +2890,80 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  </div>
 </div>
 
+<!-- v16.32: 새 센터 추가/수정 — 검색 우선 흐름(중복 방지 · 강사별 배정 · 기본 수업료 없음) -->
+<div id="ncOverlay" class="nc-scrim">
+ <div class="nc-sheet">
+  <div class="nc-topbar">
+   <span class="nc-title" id="ncTitle">센터 추가</span>
+   <button class="nc-x" onclick="_ncClose()" aria-label="닫기">✕</button>
+  </div>
+  <div class="nc-body">
+   <!-- 1) 검색 -->
+   <div id="nc-scr-search">
+    <div class="nc-lead">먼저 검색하세요. 있으면 고르고, 없을 때만 새로 등록합니다.</div>
+    <div class="nc-search">
+     <span class="nc-sic">🔍</span>
+     <input id="ncQ" placeholder="센터명을 입력하세요 (예: 효명)" autocomplete="off">
+    </div>
+    <div class="nc-hint"><span>💡</span><span><b>이미 있는 센터면 목록에서 누르세요.</b> 새로 만들지 않아도 돼요 — 이렇게 하면 같은 센터가 두 개 생기지 않아요.</span></div>
+    <div class="nc-results" id="ncResults"></div>
+    <div class="nc-newbar" id="ncNewbar" style="display:none;"><button class="nc-newcta" id="ncNewBtn" onclick="_ncOpenNew()"></button></div>
+   </div>
+   <!-- 2) 기존 센터 -->
+   <div id="nc-scr-exist" hidden>
+    <button class="nc-back" onclick="_ncToSearch()">‹ 검색으로</button>
+    <div class="nc-exist" id="ncExistCard"></div>
+    <div class="nc-hint" style="margin-top:12px;"><span>✅</span><span>이 센터는 <b>이미 등록돼 있어요.</b> 강사를 더 배정하거나 주소를 고치려면 아래 <b>이 센터 수정</b>을 누르세요. (중복 생성 안 함)</span></div>
+    <div class="nc-foot">
+     <button class="nc-btn ghost" onclick="_ncToSearch()">닫기</button>
+     <button class="nc-btn primary" id="ncExistEditBtn">이 센터 수정 · 강사 배정</button>
+    </div>
+   </div>
+   <!-- 3) 새 등록 / 수정 -->
+   <div id="nc-scr-form" hidden>
+    <button class="nc-back" id="ncFormBack" onclick="_ncToSearch()">‹ 검색으로</button>
+    <label class="nc-fld"><span class="nc-lb">센터명 <span class="nc-req">*</span></span>
+     <input class="nc-inp" id="ncName" placeholder="예: 대교구리" oninput="_ncBuildPreview()"></label>
+    <label class="nc-fld"><span class="nc-lb">지역 <span class="nc-req">*</span> <span class="nc-opt">— 꼭 골라주세요 (빈 지역이면 목록에서 사라져요)</span></span>
+     <div class="nc-rgn-row" id="ncRgnRow">
+      <button type="button" class="nc-rgn" data-r="서울">서울</button>
+      <button type="button" class="nc-rgn" data-r="인천">인천</button>
+      <button type="button" class="nc-rgn" data-r="수원">수원</button>
+     </div></label>
+    <label class="nc-fld"><span class="nc-lb">주소 <span class="nc-opt">선택 · 나중에 채워도 돼요</span></span>
+     <input class="nc-inp" id="ncAddr" placeholder="도로명 주소 또는 건물명"></label>
+    <label class="nc-fld"><span class="nc-lb">이메일 <span class="nc-opt">선택</span></span>
+     <input class="nc-inp" id="ncEmail" placeholder="센터 이메일 (있으면)"></label>
+    <div class="nc-sec">
+     <div class="nc-sec-head"><span class="nc-st">강사 배정</span><span class="nc-sc" id="ncAsgCount">0명</span></div>
+     <div class="nc-sec-sub">강사를 고르고 그 강사의 <b>수업 시간대</b>를 추가해요. 수업료는 강사·시간대마다 따로. <b>지금 안 해도 나중에 추가 가능.</b></div>
+     <div class="nc-hint" style="margin:2px 0 12px;"><span>🗓️</span><span><b>월·수·금 같은 시간</b> → 요일 여러 개 켜서 <b>한 줄</b>.<br><b>같은 요일 오전·오후</b> → 그 강사 아래 <b>＋ 시간 추가</b>.<br><b>교시는 시간 순서로 자동</b> — 이른 시간이 1교시예요.</span></div>
+     <div id="ncAsgList"></div>
+     <button class="nc-add-asg" onclick="_ncAddTeacherBlock()">＋ 강사 추가</button>
+     <div class="nc-preview" id="ncPreview"></div>
+    </div>
+    <div class="nc-foot">
+     <button class="nc-btn ghost" onclick="_ncToSearch()">취소</button>
+     <button class="nc-btn primary" id="ncSaveBtn" onclick="_ncTrySave()">센터 저장</button>
+    </div>
+   </div>
+  </div>
+ </div>
+</div>
+<!-- 중복 확인 모달 (새 센터 흐름) -->
+<div id="ncDupScrim" class="nc-dupscrim">
+ <div class="nc-dupmodal">
+  <div class="nc-dupi">🤔</div>
+  <div class="nc-dupt" id="ncDupTitle">혹시 이 센터인가요?</div>
+  <div class="nc-dupd" id="ncDupDesc"></div>
+  <div id="ncDupList"></div>
+  <div class="nc-dupfoot">
+   <button class="nc-btn primary" id="ncDupUseBtn" style="width:100%;">네, 기존 센터 쓰기</button>
+   <button class="nc-btn ghost" id="ncDupNewBtn" style="width:100%;" onclick="_ncCloseDup(); _ncRealSave();">아니요, 다른 센터예요 (새로 등록)</button>
+  </div>
+ </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ═══ DEFAULT MASTER DATA (엑셀에서 추출) ═══ */
@@ -3764,7 +3958,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.31';
+const SYSTEM_VERSION='v16.33';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6772,7 +6966,7 @@ function selectCenter(centerName, fee){
 function addNewCenterFromPicker(){
  const q=document.getElementById('cpickerSearch').value.trim();
  closeCenterPicker();
- openModal('center', null, q);
+ _ncOpen(null, q);   // v16.32: 새 센터 추가 흐름
 }
 
 function updateAccount(ti, val){
@@ -8643,7 +8837,7 @@ function _centerIdxByKey(name, region){
 function openCenterByKey(name, region){
  const i=_centerIdxByKey(name, region);
  if(i<0){ try{ showToast('센터를 찾을 수 없어요 — 목록을 새로고침해 주세요'); }catch(_){} return; }
- openModal('center', i);
+ _ncOpen(i);   // v16.32: 새 센터 수정 흐름
 }
 function delCenterByKey(name, region){
  const i=_centerIdxByKey(name, region);
@@ -9493,7 +9687,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
     </div>
    </div>
    <button class="btn sm" onclick="openSchedule('${teacher.replace(/'/g,"\\'")}',true)" title="${escH(teacher)} 강사 스케줄표 보기·인쇄" style="flex-shrink:0;gap:4px;">📅 스케줄표 보기</button>
-   <button class="btn sm primary" onclick="openModal('center', null, '', '${teacher.replace(/'/g,"\\'")}')" style="flex-shrink:0;gap:4px;">
+   <button class="btn sm primary" onclick="_ncOpen(null)" style="flex-shrink:0;gap:4px;">
     <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>센터 추가
    </button>
   </div>
@@ -9873,7 +10067,7 @@ function _renderCleanupView(){
     <span style="color:var(--text3);font-size:11px;">${Number(c.fee||0).toLocaleString()}원</span>
    </div>
    <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',${i})" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
+    <button onclick="_ncOpen(${i})" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
     <button onclick="delItem('center',${i})" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
    </div>
   </div>`;
@@ -9894,7 +10088,7 @@ function _renderCleanupView(){
      <span style="color:var(--text3);font-size:11px;">담당: ${teachers} · ${Number(c.fee||0).toLocaleString()}원</span>
     </div>
     <div style="display:flex;gap:4px;">
-     <button onclick="openModal('center',${i})" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
+     <button onclick="_ncOpen(${i})" title="수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
      <button onclick="delItem('center',${i})" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
     </div>
    </div>`;
@@ -9917,7 +10111,7 @@ function _renderCleanupView(){
     <span style="color:#B45309;font-size:11px;">요일 미지정: ${noDayList}</span>
    </div>
    <div style="display:flex;gap:4px;">
-    <button onclick="openModal('center',${i})" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
+    <button onclick="_ncOpen(${i})" title="요일 지정/수정" style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;font-size:13px;">✏️</button>
     <button onclick="delItem('center',${i})" title="삭제" style="width:28px;height:28px;border:1px solid #FCA5A5;border-radius:6px;background:#FEE2E2;cursor:pointer;font-size:13px;">🗑️</button>
    </div>
   </div>`;
@@ -10585,7 +10779,7 @@ function _openDupCenterFlow(existingCenter, newChips, newSchedule){
    : `새로 선택한 강사가 이미 모두 담당 중이에요.\n기존 센터 정보를 수정하시겠어요?`
  ].join('\n');
 
- showConfirm({icon:'ℹ️',title:'센터 중복 확인',desc:msg.replace(/\n/g,'<br>'),okText:'수정하기',okStyle:'primary',onOk:()=>{closeModal();openModal('center',dupIdx);}}); return;
+ showConfirm({icon:'ℹ️',title:'센터 중복 확인',desc:msg.replace(/\n/g,'<br>'),okText:'수정하기',okStyle:'primary',onOk:()=>{closeModal();_ncOpen(dupIdx);}}); return;
 
  // 새 강사들 자동 추가 (중복 제외)
  if(newTeachers.length){
@@ -10770,6 +10964,293 @@ function saveModal(){
  closeModal();showToast('저장되었습니다');
  if(STATE.data)recompute();
  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+ * v16.32: 새 센터 추가/수정 — 검색 우선 흐름 (④ 새 UI + ⑤ 기본 수업료 없음)
+ *  · 검색 먼저 → 있으면 기존 센터로, 없을 때만 새 등록(중복 방지)
+ *  · 강사별 배정(여러 시간대) · 강사·시간대별 수업료 · 교시는 시간순 자동
+ *  · 저장은 기존 DB.centers/GAS(saveCenter) 경로 그대로. 센터 기본 수업료 없음.
+ * ════════════════════════════════════════════════════════════ */
+let _ncEditIdx=null, _ncRegion='';
+const _NC_DAYS=['월','화','수','목','금','토','일'];
+// v16.33: 강사별 구분용 바탕색 팔레트 (이름 기준으로 항상 같은 색)
+const _NC_TINTS=[
+ {bg:'#EAF3FF',br:'#BBD6F2'},{bg:'#EAF7EF',br:'#B7E0C8'},{bg:'#FBEEF5',br:'#EDC2DA'},
+ {bg:'#FEF3E2',br:'#F0D6A6'},{bg:'#F0ECFB',br:'#D2C4F0'},{bg:'#E6F6F4',br:'#B2E0DB'},
+ {bg:'#FDEEEC',br:'#F2C4BE'},{bg:'#EEF6E3',br:'#CDE3A8'}
+];
+function _ncTintFor(name){
+ if(!name) return {bg:'#FAF9F4',br:'#E4E1D6'};
+ let h=0; const s=String(name); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
+ return _NC_TINTS[h%_NC_TINTS.length];
+}
+function _ncNorm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
+function _ncCenterTeachers(c){
+ const set=new Set();
+ (c.schedule||[]).forEach(s=>{ if(s.teacher) set.add(s.teacher); });
+ (c.teachers||[]).forEach(t=>{ if(t) set.add(t); });
+ return [...set];
+}
+function _ncOpen(editIdx=null, prefillName=''){
+ _ncEditIdx = (editIdx==null?null:editIdx);
+ document.getElementById('ncTitle').textContent = (_ncEditIdx!=null?'센터 수정':'센터 추가');
+ // 지역 버튼 · 검색창 핸들러(열 때마다 안전하게 재바인딩)
+ document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); _ncRegion=b.dataset.r;
+ });
+ const q=document.getElementById('ncQ'); q.oninput=()=>_ncRenderResults(q.value);
+ document.getElementById('ncOverlay').classList.add('on');
+ if(_ncEditIdx!=null){ _ncOpenForm(DB.centers[_ncEditIdx]); }
+ else { _ncToSearch(); if(prefillName){ q.value=prefillName; _ncRenderResults(prefillName); } }
+}
+function _ncClose(){ document.getElementById('ncOverlay').classList.remove('on'); _ncCloseDup(); }
+function _ncShow(scr){ ['search','exist','form'].forEach(s=>{ const el=document.getElementById('nc-scr-'+s); if(el) el.hidden=(s!==scr); }); }
+function _ncToSearch(){
+ if(_ncEditIdx!=null){ _ncClose(); return; }
+ _ncShow('search');
+ const q=document.getElementById('ncQ'); q.value=''; _ncRenderResults(''); setTimeout(()=>{try{q.focus();}catch(_){}} ,50);
+}
+function _ncRenderResults(qstr){
+ const wrap=document.getElementById('ncResults'); wrap.innerHTML='';
+ const nq=_ncNorm(qstr);
+ const list = nq ? (DB.centers||[]).map((c,idx)=>({c,idx})).filter(o=>_ncNorm(o.c.name).includes(nq)) : [];
+ if(nq && !list.length){ wrap.innerHTML=`<div class="nc-empty">‘${esc(qstr)}’ (으)로 등록된 센터가 없어요.</div>`; }
+ list.slice(0,40).forEach(o=>{
+  const c=o.c, tnames=_ncCenterTeachers(c);
+  const tc = tnames.length? `강사 ${tnames.length}명` : `<span style="color:#9A968C">강사 없음</span>`;
+  const ad = c.address? `<div class="nc-addr">📍 ${esc(c.address)}</div>` : `<div class="nc-addr noaddr">📍 주소 미입력</div>`;
+  const b=document.createElement('button'); b.className='nc-result';
+  b.innerHTML=`<div class="grow"><div class="nm">${esc(c.name)}</div><div class="meta"><span class="nc-rbadge">${esc(c.region||'지역?')}</span><span>${tc}</span></div>${ad}</div><span class="pick">이 센터 쓰기 ›</span>`;
+  b.onclick=()=>_ncOpenExist(o.idx);
+  wrap.appendChild(b);
+ });
+ const nb=document.getElementById('ncNewbar'), btn=document.getElementById('ncNewBtn');
+ if(nq){ nb.style.display=''; const exact=(DB.centers||[]).some(c=>_ncNorm(c.name)===nq);
+  btn.innerHTML=`＋ ‘<b>${esc(qstr.trim())}</b>’ ${exact?'(이미 있음)':'새 센터로 등록'}`;
+ } else nb.style.display='none';
+}
+function _ncGyosiOf(center, sess){
+ for(const d of _NC_DAYS){
+  if(!(sess.days||[]).includes(d)) continue;
+  const sameDay=(center.schedule||[]).filter(x=>(x.days||[]).includes(d)).sort((a,b)=>String(a.time||'99').localeCompare(String(b.time||'99')));
+  const idx=sameDay.indexOf(sess); if(idx>=0) return idx+1;
+ }
+ return sess.gyosi||1;
+}
+function _ncOpenExist(idx){
+ _ncShow('exist');
+ const c=DB.centers[idx], card=document.getElementById('ncExistCard'), tnames=_ncCenterTeachers(c);
+ const addr = c.address? `📍 ${esc(c.address)}` : `<span style="color:#9A968C;font-style:italic;">📍 주소 미입력 — 나중에 채우면 여기에 표시돼요</span>`;
+ let blocks='';
+ if(!(c.schedule||[]).length){ blocks=`<div style="font-size:12.5px;color:#6A6760;padding:6px 0;">아직 배정된 수업이 없어요.</div>`; }
+ else {
+  tnames.forEach(tn=>{
+   const rows=(c.schedule||[]).filter(s=>s.teacher===tn);
+   const sess=rows.map(s=>{
+    const chips=(s.days||[]).slice().sort((a,b)=>_NC_DAYS.indexOf(a)-_NC_DAYS.indexOf(b)).map(d=>`<span class="nc-dchip">${d}</span>`).join('');
+    const g=s.gyosi||_ncGyosiOf(c,s);
+    const fee=s.fee||(DB.centerFees||{})[`${c.name}|${tn}`]||0;
+    return `<div class="nc-sess"><span class="nc-gtag">${g}교시</span><span style="display:flex;gap:3px;">${chips}</span><span class="nc-sess-time">${esc(s.time||'시간 미정')}</span><span class="nc-sess-fee">${fee?Number(fee).toLocaleString()+'원':'—'}</span></div>`;
+   }).join('');
+   const tint=_ncTintFor(tn);   // v16.33: 강사별 바탕색
+   blocks+=`<div class="nc-tblk" style="background:${tint.bg};border-color:${tint.br};"><div class="nc-tblk-name">${esc(tn)}</div>${sess||'<div style="font-size:12px;color:#9A968C;">수업 없음</div>'}</div>`;
+  });
+ }
+ card.innerHTML=`<div style="display:flex;align-items:center;gap:9px;"><span class="en">${esc(c.name)}</span><span class="nc-rbadge">${esc(c.region||'지역?')}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:#146142;background:#fff;border:1px solid #B8E0CC;border-radius:20px;padding:2px 9px;">${tnames.length?`강사 ${tnames.length}명 · 수업 ${(c.schedule||[]).length}개`:'수업 없음'}</span></div><div class="nc-addr" style="margin-top:7px;">${addr}</div><div style="font-size:12px;color:#6A6760;margin-top:12px;font-weight:700;">수업 배정</div>${blocks}`;
+ document.getElementById('ncExistEditBtn').onclick=()=>_ncOpen(idx);
+}
+function _ncOpenNew(){ _ncEditIdx=null; _ncOpenForm(null); }
+function _ncOpenForm(center){
+ _ncShow('form');
+ document.getElementById('ncFormBack').textContent = _ncEditIdx!=null ? '‹ 닫기' : '‹ 검색으로';
+ const isEdit=!!center;
+ document.getElementById('ncName').value = center? (center.name||'') : (document.getElementById('ncQ').value.trim()||'');
+ document.getElementById('ncAddr').value = center? (center.address||'') : '';
+ document.getElementById('ncEmail').value = center? (center.email||'') : '';
+ _ncRegion = center? (center.region||'') : '';
+ document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(b=>b.classList.toggle('on', b.dataset.r===_ncRegion));
+ document.getElementById('ncSaveBtn').textContent = isEdit? '수정 저장' : '센터 저장';
+ const list=document.getElementById('ncAsgList'); list.innerHTML='';
+ if(isEdit && (center.schedule||[]).length){
+  _ncCenterTeachers(center).forEach(tn=>{
+   const rows=(center.schedule||[]).filter(s=>s.teacher===tn);
+   const slots=rows.map(s=>({ days:(s.days||[]).slice(), time:s.time||'' }));
+   // v16.33: 강사별 수업료 하나 — 스케줄 fee 또는 centerFees 에서 가져옴
+   const tfee=(rows.find(s=>s.fee)||{}).fee || (DB.centerFees||{})[`${center.name}|${tn}`] || '';
+   _ncAddTeacherBlock(tn, slots.length?slots:[{days:[],time:''}], tfee);
+  });
+ }
+ _ncUpdateCount(); _ncBuildPreview();
+ setTimeout(()=>{try{document.getElementById('ncName').focus();}catch(_){}} ,50);
+}
+function _ncTeacherOptions(sel){
+ const regions=['서울','인천','수원']; let html='';
+ regions.forEach(r=>{
+  const ts=(DB.teachers||[]).filter(t=>t.region===r).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+  if(!ts.length) return;
+  html+=`<optgroup label="${r}">`+ts.map(t=>`<option ${t.name===sel?'selected':''}>${esc(t.name)}</option>`).join('')+`</optgroup>`;
+ });
+ const other=(DB.teachers||[]).filter(t=>!regions.includes(t.region)).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+ if(other.length) html+=`<optgroup label="기타">`+other.map(t=>`<option ${t.name===sel?'selected':''}>${esc(t.name)}</option>`).join('')+`</optgroup>`;
+ return html;
+}
+function _ncTintBlock(bl){
+ const name=bl.querySelector('.nc-tsel').value;
+ const t=_ncTintFor(name);
+ bl.style.background=t.bg; bl.style.borderColor=t.br;
+}
+function _ncAddTeacherBlock(teacher, slots, fee){
+ const list=document.getElementById('ncAsgList');
+ const bl=document.createElement('div'); bl.className='nc-tblock';
+ bl.innerHTML=`<div class="nc-tblock-head"><select class="nc-tsel"><option value="">강사 선택…</option>${_ncTeacherOptions(teacher)}</select><button type="button" class="nc-tblock-del" title="이 강사 배정 삭제">✕</button></div>`
+  +`<div class="nc-tfee-row"><span class="nc-tfee-lb">수업료 <span style="font-weight:500;color:#9A968C;">(이 강사 · 회당)</span></span><span class="nc-tfee-in"><input class="nc-tfee" inputmode="numeric" placeholder="예: 55000" value="${esc(String(fee||''))}"><span class="nc-tfee-won">원</span></span></div>`
+  +`<div class="nc-tslots"></div><button type="button" class="nc-add-slot">＋ 시간 추가 <span style="font-weight:500;font-size:11px;color:#9A968C;">(같은 날 오전·오후 따로면 여기)</span></button>`;
+ bl.querySelector('.nc-tblock-del').onclick=()=>{ bl.remove(); _ncUpdateCount(); _ncBuildPreview(); };
+ bl.querySelector('.nc-tsel').onchange=()=>{ _ncTintBlock(bl); _ncUpdateCount(); _ncBuildPreview(); };
+ bl.querySelector('.nc-tfee').addEventListener('input',_ncBuildPreview);
+ bl.querySelector('.nc-add-slot').onclick=()=>_ncAddSlot(bl,null);
+ list.appendChild(bl);
+ (slots&&slots.length?slots:[null]).forEach(s=>_ncAddSlot(bl,s));
+ _ncTintBlock(bl); _ncUpdateCount(); _ncBuildPreview();
+}
+function _ncAddSlot(bl, slot){
+ const slots=bl.querySelector('.nc-tslots');
+ const s=document.createElement('div'); s.className='nc-slot';
+ const time=slot?(slot.time||''):'', days=slot?(slot.days||[]):[];
+ s.innerHTML=`<div class="nc-days">${_NC_DAYS.map(d=>`<button type="button" class="nc-day${days.includes(d)?' on':''}">${d}</button>`).join('')}</div><div class="nc-slot-grid"><div><span class="nc-mini-lb">강의시간</span><input class="nc-mini tm nc-time" readonly placeholder="🕐 눌러서 선택" value="${esc(time||'')}"></div><button type="button" class="nc-slot-del" title="이 시간대 삭제">✕</button></div>`;
+ s.querySelectorAll('.nc-day').forEach(d=>d.onclick=()=>{ d.classList.toggle('on'); _ncBuildPreview(); });
+ const timeInp=s.querySelector('.nc-time');
+ timeInp.onclick=()=>_openTimePickerAt(timeInp, v=>{timeInp.value=v;}, v=>{timeInp.value=v; _ncBuildPreview();});
+ s.querySelector('.nc-slot-del').onclick=()=>{ s.remove(); _ncBuildPreview(); };
+ slots.appendChild(s); _ncBuildPreview();
+}
+function _ncUpdateCount(){
+ const n=[...document.querySelectorAll('#ncAsgList .nc-tblock .nc-tsel')].filter(s=>s.value).length;
+ document.getElementById('ncAsgCount').textContent=n+'명';
+}
+function _ncReadForm(){
+ return [...document.querySelectorAll('#ncAsgList .nc-tblock')].map(bl=>({
+  name: bl.querySelector('.nc-tsel').value,
+  fee: (bl.querySelector('.nc-tfee')?.value||'').replace(/[^0-9]/g,''),   // v16.33: 강사별 수업료(시간대 공통)
+  slots: [...bl.querySelectorAll('.nc-slot')].map(s=>({
+   days:[...s.querySelectorAll('.nc-day.on')].map(d=>d.textContent),
+   time:_normTime(s.querySelector('.nc-time').value)
+  }))
+ }));
+}
+function _ncBuildPreview(){
+ const pv=document.getElementById('ncPreview'); if(!pv) return;
+ const centerName=document.getElementById('ncName').value.trim()||'이 센터';
+ const forms=_ncReadForm().filter(t=>t.name);
+ if(!forms.length){ pv.innerHTML=`<div class="nc-pvhead">🗓️ 이 강사의 이번 주 스케줄</div><div class="nc-pv-empty">강사를 고르면, 그 강사가 지금 하는 수업 사이에 <b>어디에 들어가는지</b> 보여줘요</div>`; return; }
+ const editName = (_ncEditIdx!=null && DB.centers[_ncEditIdx]) ? DB.centers[_ncEditIdx].name : null;
+ let html='';
+ forms.forEach(t=>{
+  const byDay={};
+  const existRows=(typeof _teacherScheduleRows==='function')?_teacherScheduleRows(t.name):[];
+  existRows.forEach(r=>{
+   if(editName && r.center===editName) return;   // 편집 중인 이 센터의 기존 배정은 제외(중복 표시 방지)
+   (byDay[r.day]=byDay[r.day]||[]).push({center:r.center,time:r.time||'',other:true});
+  });
+  t.slots.forEach(s=>{ if(!s.days.length) return; s.days.forEach(d=>{ (byDay[d]=byDay[d]||[]).push({center:centerName,time:s.time||'',other:false}); }); });
+  const days=_NC_DAYS.filter(d=>byDay[d]); let body='';
+  days.forEach(d=>{
+   const items=byDay[d].sort((a,b)=>String(a.time||'99').localeCompare(String(b.time||'99')));
+   items.forEach((it,i)=>{
+    body+=`<tr class="${it.other?'':'newrow'}">`+(i===0?`<td class="day" rowspan="${items.length}">${d}</td>`:'')+`<td class="ctr">${esc(it.center)}${it.other?'':'<span class="nc-nowtag">지금 추가</span>'}</td><td class="tm">${esc(it.time||'—')}</td></tr>`;
+   });
+  });
+  const table= body? `<div class="nc-pvwrap"><table class="nc-sch"><colgroup><col style="width:40px"><col><col style="width:96px"></colgroup><thead><tr><th>요일</th><th>센터명</th><th>강의시간</th></tr></thead><tbody>${body}</tbody></table></div>` : `<div class="nc-pv-empty">요일을 켜면 여기에 표시돼요</div>`;
+  const tint=_ncTintFor(t.name);   // v16.33: 강사별 바탕색
+  html+=`<div class="nc-pv-teacher" style="border-left:4px solid ${tint.br};"><div class="nc-pv-tname" style="background:${tint.bg};">${esc(t.name)} <span>이번 주 전체</span></div>${table}</div>`;
+ });
+ pv.innerHTML=`<div class="nc-pvhead">🗓️ 강사별 이번 주 스케줄표 — <b style="color:#146142;">지금 추가</b>가 어디에 들어가는지</div>${html}<div class="nc-pvlegend"><span class="sw"></span> 초록 = 이번에 추가하는 수업 · 회색 = 이미 하는 다른 센터</div>`;
+}
+function _ncTrySave(){
+ const name=document.getElementById('ncName').value.trim();
+ if(!name){ showToast('⚠️ 센터명을 입력하세요'); try{document.getElementById('ncName').focus();}catch(_){} return; }
+ if(!_ncRegion){ showToast('⚠️ 지역을 골라주세요'); return; }
+ const nn=_ncNorm(name);
+ if(_ncEditIdx!=null){ _ncRealSave(); return; }
+ const sameIdx=(DB.centers||[]).findIndex(c=>_ncNorm(c.name)===nn && (c.region||'')===_ncRegion);
+ if(sameIdx>=0){ _ncOpenDup([sameIdx], true); return; }
+ const sim=(DB.centers||[]).map((c,idx)=>({c,idx})).filter(o=>{const cn=_ncNorm(o.c.name); return cn===nn||(nn.length>=2&&(cn.includes(nn)||nn.includes(cn)));});
+ if(sim.length){ _ncOpenDup(sim.map(o=>o.idx), false); return; }
+ _ncRealSave();
+}
+function _ncOpenDup(idxs, exact){
+ const list=document.getElementById('ncDupList'); list.innerHTML='';
+ idxs.slice(0,4).forEach(idx=>{
+  const c=DB.centers[idx], nt=_ncCenterTeachers(c).length;
+  const d=document.createElement('div'); d.className='nc-dup';
+  d.innerHTML=`<div style="flex:1;"><span class="dn">${esc(c.name)}</span> <span class="nc-rbadge">${esc(c.region||'?')}</span><div class="dd">강사 ${nt}명${c.address?` · 📍 ${esc(c.address)}`:''}</div></div>`;
+  d.onclick=()=>{ _ncCloseDup(); _ncOpenExist(idx); };
+  list.appendChild(d);
+ });
+ document.getElementById('ncDupTitle').textContent = exact?'이미 있는 센터예요':'혹시 이 센터인가요?';
+ document.getElementById('ncDupDesc').innerHTML = exact ? '같은 지역에 <b>똑같은 이름</b>의 센터가 이미 있어요. 새로 만들 수 없어요 — 아래 센터를 쓰세요.' : '비슷한 이름의 센터가 있어요. 같은 센터라면 새로 만들지 말고 <b>기존 것을 쓰는 게</b> 좋아요.';
+ document.getElementById('ncDupUseBtn').textContent = exact?'이 센터 쓰기':'네, 기존 센터 쓰기';
+ document.getElementById('ncDupNewBtn').style.display = exact?'none':'';
+ document.getElementById('ncDupUseBtn').onclick=()=>{ _ncCloseDup(); _ncOpenExist(idxs[0]); };
+ document.getElementById('ncDupScrim').classList.add('on');
+}
+function _ncCloseDup(){ const el=document.getElementById('ncDupScrim'); if(el) el.classList.remove('on'); }
+function _ncBuildObj(){
+ const name=document.getElementById('ncName').value.trim();
+ const address=document.getElementById('ncAddr').value.trim();
+ const email=document.getElementById('ncEmail').value.trim();
+ const forms=_ncReadForm().filter(t=>t.name);
+ const teachers=[]; forms.forEach(t=>{ if(!teachers.includes(t.name)) teachers.push(t.name); });
+ const orderOf={}; teachers.forEach((t,i)=>orderOf[t]=i+1);
+ const schedule=[];
+ teachers.forEach(tn=>{
+  const tforms=forms.filter(f=>f.name===tn);
+  const teacherFee=Number((tforms.find(f=>f.fee)||{}).fee)||0;   // v16.33: 수업료는 강사별 하나(모든 시간대 공통)
+  const slots=[];
+  tforms.forEach(f=>f.slots.forEach(s=>{ if((s.days&&s.days.length)||s.time) slots.push(s); }));
+  slots.sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')));
+  slots.forEach((s,gi)=>{ schedule.push({teacher:tn, days:s.days||[], order:orderOf[tn], fee:teacherFee, gyosi:gi+1, ...(s.time&&{time:s.time})}); });
+ });
+ const obj={name, region:_ncRegion, fee:0, address, email, teachers, schedule, source:(_ncEditIdx!=null&&DB.centers[_ncEditIdx]&&DB.centers[_ncEditIdx].source)||'수동'};
+ if(_ncEditIdx!=null && DB.centers[_ncEditIdx]){
+  const old=DB.centers[_ncEditIdx];
+  if(old.phone) obj.phone=old.phone;
+  if(old.contactName) obj.contactName=old.contactName;
+  if(old.memo) obj.memo=old.memo;
+ }
+ return obj;
+}
+function _ncRealSave(){
+ _ncCloseDup();
+ const obj=_ncBuildObj();
+ try{ _removeCenterTomb(obj.name, obj.region); }catch(_){}
+ if(_ncEditIdx!=null){
+  const prev=JSON.parse(JSON.stringify(DB.centers));
+  const old=DB.centers[_ncEditIdx];
+  const _renamed=(String(old.name).trim()!==String(obj.name).trim())||(String(old.region||'').trim()!==String(obj.region||'').trim());
+  try{ pushChangelog({type:'center_edit',desc:`센터 수정 — ${old.name}${_renamed?` → ${obj.name}`:''}`,snapshot:{centers:prev}}); }catch(_){}
+  DB.centers[_ncEditIdx]=obj;
+  gasPost({action:'saveCenter', center:obj}).catch(()=>{});
+  if(_renamed){
+   DB.centers=DB.centers.filter((c,idx)=> idx===_ncEditIdx || !(String(c.name).trim()===String(old.name).trim() && String(c.region||'').trim()===String(old.region||'').trim()));
+   try{ _addCenterTomb(old.name, old.region); }catch(_){}
+   try{ _gasPostRetry({action:'deleteCenter', name:old.name, region:old.region}); }catch(_){}
+  }
+ } else {
+  const already=(DB.centers||[]).find(c=>c.name.trim()===obj.name.trim()&&(c.region||'')===obj.region);
+  if(!already) DB.centers.push(obj);
+ }
+ try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+ try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+ try{ lsSave(); }catch(_){}
+ if(_ncEditIdx==null){ gasPost({action:'saveCenter', center:obj}).catch(()=>{}); }
+ try{ _refreshCenterView(); }catch(_){}
+ if(STATE.data){ try{ recompute(); }catch(_){} }
+ const nteach=obj.teachers.length, wasEdit=(_ncEditIdx!=null);
+ _ncClose();
+ showToast(`✅ ‘${obj.name}’ ${wasEdit?'수정됨':'저장됨'}${nteach?` · 강사 ${nteach}명`:''}`);
 }
 
 // v11.16: 좌측 트리에서 현재 선택된 강사 또는 지역을 읽어 객체로 반환
