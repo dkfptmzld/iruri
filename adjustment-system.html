@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.23">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.24">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.23">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.24">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.23</title>
+<title>수업기록표 정산 시스템 v16.24</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3738,7 +3738,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.23';
+const SYSTEM_VERSION='v16.24';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6462,18 +6462,16 @@ function renderLedger(ti){
    nd.forEach((n,ni)=>{ (groups[n.cat] = groups[n.cat]||[]).push({n,ni}); });
    rows = CAT_KEYS.filter(cat=>groups[cat]).map(cat=>{
     const [bg,col] = (catColor[cat]||'#F8F7F2|#555').split('|');
+    const _chipHtml=(lb,ni,ei)=>`<span onclick="_startNoteEdit(${ti},${ni},${ei})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${escH(lb||'(내용 없음)')}</span>`;
     const chips = groups[cat].map(({n,ni})=>{
-     const labels = [];
      if(n.entries?.length){
-      n.entries.filter(e=>e.date||e.center||e.text||e.amount).forEach(e=>{
-       labels.push([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '));
-      });
-     } else {
-      const ctr = (n.centers&&n.centers.length)?n.centers.join(','):(n.center||''); // 보강 자동노트는 center(단수)
-      const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
-      labels.push([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '));
+      // v16.24: 항목별 칩 — 클릭 시 그 항목(ei) 하나만 편집
+      return n.entries.map((e,ei)=>({e,ei})).filter(({e})=>e.date||e.center||e.text||e.amount)
+       .map(({e,ei})=>_chipHtml([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '), ni, ei)).join('');
      }
-     return labels.map(lb=>`<span onclick="_startNoteEdit(${ti},${ni})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${escH(lb||'(내용 없음)')}</span>`).join('');
+     const ctr = (n.centers&&n.centers.length)?n.centers.join(','):(n.center||''); // 보강 자동노트는 center(단수)
+     const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
+     return _chipHtml([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '), ni, 0);
     }).join('');
     const catTotal = groups[cat].reduce((s,{n})=> s + (n.entries?.length ? n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0) : (Number(n.amount)||0)), 0);
     const totalHtml = catTotal>0 ? `<span style="font-size:11px;font-weight:600;color:${col};white-space:nowrap;flex-shrink:0;margin-left:auto;">합계 ${catTotal.toLocaleString()}원</span>` : '';
@@ -7396,7 +7394,7 @@ function _saveOldNote(ti){
  showToast('✅ 특이사항 저장됨');
 }
 
-function _startNoteEdit(ti, ni){
+function _startNoteEdit(ti, ni, ei){
  const t = STATE.data?.teachers?.[ti];
  if(!t || !t.notesData) return;
  const n = t.notesData[ni];
@@ -7405,106 +7403,44 @@ function _startNoteEdit(ti, ni){
  if(!editorDiv) return;
  const catColor = {'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
  const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
- // v16.23: 물품·기타 포함(강사 _MULTI_ENTRY_CATS와 일치). 예전엔 제외돼 물품·기타 노트가
- //  entries에 내용을 담고 있는데 단일폼으로 열려 '클릭해도 내용이 안 뜨던' 문제가 있었음.
- const multiCats = ['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사'];
  const hasAmt = ['신규(모의) 수업','주차료','물품','기타','대상행사'].includes(n.cat);
- const isMulti = multiCats.includes(n.cat) || (Array.isArray(n.entries) && n.entries.length>0);
- // 센터 목록: 해당 강사의 이번 달 수업 센터
- const tCenters = [...new Set((t.lessons||[]).map(l=>l.center).filter(Boolean))];
- // entries 초기화
- if(isMulti && !Array.isArray(n.entries)) n.entries = [{date:n.date||'',center:n.center||'',text:n.text||'',amount:n.cat==='대상행사'?50000:(n.amount||0)}];
-
- const gridCols = isMulti ? (n.cat==='대상행사' ? '72px 1fr 90px 28px' : (hasAmt ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px')) : '62px 1fr 1fr';
- const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄'};
-
- function buildEntryRows(){
-  return (n.entries||[]).map((e,ei)=>{
-   const cOpts = tCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
-   const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
-   const isEventCat = n.cat === '대상행사';
-  const amtCell = hasAmt ? (isEventCat
-    ? `<div style="height:28px;width:80px;border:1px solid #5DCAA5;border-radius:5px;padding:0 6px;font-size:11px;font-weight:600;color:#0F6E56;background:#E1F5EE;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap;">50,000 고정</div>`
-    : `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries)nd.entries[${ei}].amount=Number(this.value)||0;const t=nd.entries?nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0):0;nd.amount=t;const el=document.getElementById('ne-total-${ti}');if(el)el.textContent=t.toLocaleString()+'원';}).call(this)">`)
-    : '';
-   if(isEventCat){
-    return `<div style="display:grid;grid-template-columns:72px 1fr 90px 28px;gap:5px;align-items:center;margin-bottom:4px;">
-     <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #EF9F27;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='#854F0B'" onblur="this.style.borderColor='#EF9F27'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
-     <input type="text" value="${(e.center||'').replace(/"/g,'&quot;')}" placeholder="센터명 직접 입력" style="height:28px;border:1px solid #EF9F27;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='#854F0B'" onblur="this.style.borderColor='#EF9F27'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].center=this.value">
-     <div style="height:28px;border:1px solid #5DCAA5;border-radius:5px;padding:0 7px;font-size:11px;font-weight:600;color:#0F6E56;background:#E1F5EE;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap;">50,000원</div>
-     <button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:50000}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
-    </div>`;
-   }
-   return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
-    <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
-    <select class="me-center" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',cv=>{if(nd.entries)nd.entries[${ei}].center=cv;},nd.entries?nd.entries[${ei}].center||'':'');this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
-    <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
-    <div class="me-amt">${amtCell}</div>
-    ${isMulti?`<button class="me-del" onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:nd.cat==='대상행사'?50000:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
-   </div>`;
-  }).join('');
+ const isEvent = n.cat==='대상행사';
+ const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄','대상행사':'예) 행사명'};
+ // v16.24: 구버전 top-level 노트를 entries로 승격(내용 보존)
+ if(!Array.isArray(n.entries) || !n.entries.length){
+  n.entries = [{date:n.date||'', center:n.center||'', text:n.text||'', amount: isEvent?50000:(Number(n.amount)||0)}];
  }
-
- const totalRow = (isMulti && hasAmt) ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid #EDE9DC;"><span style="font-size:12px;color:${col};font-weight:600;">합계</span><span id="ne-total-${ti}" style="font-size:13px;font-weight:700;color:${col};">${((n.entries||[]).reduce((s,e)=>s+(Number(e.amount)||0),0)).toLocaleString()}원</span></div>` : '';
- const addBtn = isMulti ? `<button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(!Array.isArray(nd.entries))nd.entries=[{date:'',center:'',text:'',amount:0}];const _defAmt=nd.cat==='대상행사'?50000:0;nd.entries.push({date:'',center:'',text:'',amount:_defAmt});document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="margin-top:8px;height:28px;padding:0 12px;border-radius:6px;border:1px dashed #C4C4C4;color:#888;background:transparent;font-size:12px;cursor:pointer;">＋ 항목 추가</button>` : '';
-
- // 물품/기타 단일 폼
- const singleForm = !isMulti ? `
-  <div style="display:grid;grid-template-columns:62px 1fr 1fr;gap:5px;margin-bottom:8px;">
-   <input type="text" id="ne-date-${ti}" value="${(n.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-   <select id="ne-center-${ti}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-    <option value="${n.center||''}">${n.center||'센터 선택...'}</option>
-    ${tCenters.filter(c=>c!==n.center).map(c=>`<option value="${c}">${c}</option>`).join('')}
-   </select>
-   <input type="text" id="ne-text-${ti}" value="${(n.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-  </div>
-  ${hasAmt?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="font-size:12px;color:${col};">금액</span><input type="number" id="ne-amt-${ti}" value="${n.amount||''}" placeholder="0" min="0" style="width:100px;height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'"><span style="font-size:12px;color:${col};">원</span></div>`:''}` : '';
-
- const headerRow = isMulti ? `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;margin-bottom:4px;padding:0 2px;">
-  ${n.cat==='대상행사'
-    ? '<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터명</span><span style="font-size:10px;color:#854F0B;text-align:right;">금액</span><span></span>'
-    : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span>${hasAmt?'<span style="font-size:10px;color:#B0A080;text-align:right;">금액</span>':''}<span></span>`
-  }</div>` : '';
-
+ if(ei==null || ei<0 || ei>=n.entries.length) ei = 0;   // v16.24: 클릭한 그 항목 하나만
+ const e = n.entries[ei];
+ // v16.24: 센터 선택칸 제거(강사 입력폼과 동일). 대상행사는 금액 5만원 고정.
+ const amtField = !hasAmt ? '' : (isEvent
+  ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><span style="font-size:12px;color:${col};">금액</span><span style="height:30px;display:flex;align-items:center;padding:0 10px;border:1px solid #5DCAA5;border-radius:6px;font-size:12px;font-weight:600;color:#0F6E56;background:#E1F5EE;">50,000원 고정</span></div>`
+  : `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><span style="font-size:12px;color:${col};">금액</span><input type="number" id="ne1-amt-${ti}" value="${e.amount||''}" placeholder="0" min="0" style="width:110px;height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'"><span style="font-size:12px;color:${col};">원</span></div>`);
  editorDiv.innerHTML = `
   <div style="background:#FFFBEB;border:1.5px solid #DDD8B0;border-radius:8px;padding:10px 12px;margin-top:6px;">
    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};">${n.cat}</span>
-    <button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData;nd.splice(${ni},1);const ym=STATE.data.teachers[${ti}].yearMonth||STATE.data.teachers[0]?.yearMonth||'';if(ym)saveMonthlySnapshot(ym,STATE.data);_cancelNoteEdit(${ti});renderTeacher(${ti});showToast('삭제됨');})()" style="margin-left:auto;height:24px;padding:0 10px;border-radius:5px;border:1px solid #FEE2E2;background:#FEE2E2;color:#DC2626;font-size:11px;cursor:pointer;">항목 삭제</button>
+    <button onclick="_deleteNoteEntry(${ti},${ni},${ei})" style="margin-left:auto;height:24px;padding:0 10px;border-radius:5px;border:1px solid #FEE2E2;background:#FEE2E2;color:#DC2626;font-size:11px;cursor:pointer;">삭제</button>
    </div>
-   ${headerRow}
-   <div id="ne-entries-${ti}">${isMulti ? buildEntryRows() : singleForm}</div>
-   ${addBtn}
-   ${totalRow}
+   <div style="display:grid;grid-template-columns:84px 1fr;gap:6px;">
+    <input type="text" id="ne1-date-${ti}" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+    <input type="text" id="ne1-text-${ti}" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+   </div>
+   ${amtField}
    <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px;">
     <button onclick="_cancelNoteEdit(${ti})" style="height:28px;padding:0 12px;border-radius:6px;border:1px solid #D8D5CE;background:white;color:#888;font-size:12px;cursor:pointer;">취소</button>
-    <button onclick="_saveNoteEdit(${ti},${ni})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
+    <button onclick="_saveNoteEntry(${ti},${ni},${ei})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
    </div>
   </div>`;
  editorDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
+ const _d=document.getElementById(`ne1-date-${ti}`); if(_d) _d.focus();
 }
 
-/** 관리자 특이사항 인라인 편집 저장 */
-function _saveNoteEdit(ti, ni){
- const t = STATE.data?.teachers?.[ti];
- if(!t || !t.notesData) return;
- const n = t.notesData[ni];
- if(!n) return;
- // 단일 폼 값 반영 (물품/기타)
- const dateEl=document.getElementById(`ne-date-${ti}`);
- const textEl=document.getElementById(`ne-text-${ti}`);
- const centerEl=document.getElementById(`ne-center-${ti}`);
- const amtEl=document.getElementById(`ne-amt-${ti}`);
- if(dateEl) n.date=dateEl.value.trim();
- if(textEl) n.text=textEl.value.trim();
- if(centerEl) n.center=centerEl.value;
- if(amtEl) n.amount=Number(amtEl.value)||0;
- // entries 합계 반영
- if(Array.isArray(n.entries)) n.amount=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
- // t.note 재생성
+/* v16.24: notesData → t.note 텍스트 재생성 + 저장 + 재렌더 (공통) */
+function _persistNotes(t, ti){
  const _AMT=['신규(모의) 수업','주차료','물품','기타'];
- t.note=t.notesData.map(nd=>{
-  if(Array.isArray(nd.entries)&&nd.entries.length){   // v16.23: entries 기반이면(물품·기타 포함) 항상 entries로 직렬화
+ t.note=(t.notesData||[]).map(nd=>{
+  if(Array.isArray(nd.entries)&&nd.entries.length){
    const entryStr=nd.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
    const total=nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
    return `${nd.cat} [${entryStr}]${total?` · 합계 ${total.toLocaleString()}원`:''}`;
@@ -7521,7 +7457,37 @@ function _saveNoteEdit(ti, ni){
  document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
  document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
+}
+
+/* v16.24: 클릭한 항목 하나만 저장 */
+function _saveNoteEntry(ti, ni, ei){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n || !Array.isArray(n.entries) || !n.entries[ei]) return;
+ const e = n.entries[ei];
+ const dEl=document.getElementById(`ne1-date-${ti}`);
+ const tEl=document.getElementById(`ne1-text-${ti}`);
+ const aEl=document.getElementById(`ne1-amt-${ti}`);
+ if(dEl) e.date=dEl.value.trim();
+ if(tEl) e.text=tEl.value.trim();
+ if(n.cat==='대상행사') e.amount=50000; else if(aEl) e.amount=Number(aEl.value)||0;
+ n.amount = n.entries.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ _persistNotes(t, ti);
  showToast('✅ 특이사항 저장됨');
+}
+
+/* v16.24: 클릭한 항목 하나만 삭제(항목이 다 없어지면 노트 제거) */
+function _deleteNoteEntry(ti, ni, ei){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n) return;
+ if(Array.isArray(n.entries)) n.entries.splice(ei,1);
+ if(!Array.isArray(n.entries) || !n.entries.length) t.notesData.splice(ni,1);
+ else n.amount = n.entries.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ _persistNotes(t, ti);
+ showToast('삭제됨');
 }
 
 /** 관리자 특이사항 편집 취소 */
