@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.27">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.28">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.27">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.28">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.27</title>
+<title>수업기록표 정산 시스템 v16.28</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -408,6 +408,10 @@ body.edit-mode-active .ledger-wrap textarea {
 .save-toast{position:fixed;bottom:20px;left:20px;right:auto;background:var(--green);color:white;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100vw - 40px);box-shadow:0 4px 16px rgba(0,0,0,.18);}
 .save-toast.show{opacity:1;transform:translateY(0);}
 .save-toast.toast-error{background:#E53935;}
+/* v16.28: 액션 진행 중 표시 — 반영/승인/거절 등을 누르면 '처리 중'이 즉시 보인다 */
+.save-toast.toast-busy{background:#4B4B4B;}
+.toast-spin{display:inline-block;width:12px;height:12px;margin-right:7px;vertical-align:-1px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:toastSpin .7s linear infinite;}
+@keyframes toastSpin{to{transform:rotate(360deg);}}
 /* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
@@ -3738,7 +3742,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.27';
+const SYSTEM_VERSION='v16.28';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5193,7 +5197,7 @@ function _histFullRecord(h){
 }
 
 async function recoverSubmissionsFromHistory(){
- showToast('제출이력에서 불러오는 중...');
+ showBusyToast('제출이력 불러오는 중…');   // v16.28: 조회가 끝날 때까지 스피너 유지
  let r;
  try{ r = await gasGet({ action:'getHistory', teacher:'__all__' }); }
  catch(e){ showToast('제출이력 조회 실패 — 네트워크를 확인해주세요'); return; }
@@ -8450,6 +8454,7 @@ function _applyChangeToDB(teacher, c){
 async function _applySchedRequest(id){
  const req=_schReqCache.find(r=>String(r.id)===String(id));
  if(!req) return;
+ showBusyToast(`${req.teacher} 요청 반영 중…`);   // v16.28
  let ok=0, miss=0;
  (req.changes||[]).forEach(c=>{ if(_applyChangeToDB(req.teacher, c)) ok++; else miss++; });
  try{ lsSave(); }catch(_){}
@@ -8462,6 +8467,7 @@ async function _applySchedRequest(id){
 }
 async function _rejectSchedRequest(id){
  const req=_schReqCache.find(r=>String(r.id)===String(id));
+ showBusyToast(`${req?req.teacher:''} 요청 거절 처리 중…`);   // v16.28
  try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'rejected'}); }catch(_){}
  _schReqCache=_schReqCache.filter(r=>String(r.id)!==String(id));
  _renderSchedReqPanel(); _renderSchedReqBanner();
@@ -12144,8 +12150,19 @@ function showToast(msg){const el=document.getElementById('saveToast');
  const hasIcon=/^\s*(✓|✔|❌|⚠️?|⛔|🔴|🟡|⏳|🚫|ℹ️?|✅)/.test(msg);
  const isErr=/^\s*(❌|⚠️?|⛔|🔴|🚫)/.test(msg);
  el.textContent=hasIcon?msg:('✓ '+msg);
+ el.classList.remove('toast-busy');            // v16.28: '처리 중' 상태를 결과 토스트로 대체
  el.classList.toggle('toast-error',isErr);
  el.classList.add('show');if(_toastTimer)clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{el.classList.remove('show');_toastTimer=null;},2000);}
+/* v16.28: 액션 진행 표시 — 반영·승인·거절 등을 누르면 즉시 '처리 중…'(회색+스피너)이 뜨고,
+ *  작업이 끝나면 뒤이어 호출되는 showToast 가 '완료/실패'로 바꿔 준다. 자동으로 사라지지 않는다. */
+function showBusyToast(msg){
+ const el=document.getElementById('saveToast'); if(!el) return;
+ if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
+ el.classList.remove('toast-error');
+ el.classList.add('toast-busy');
+ el.innerHTML='<span class="toast-spin"></span>'+esc(msg||'처리 중…');
+ el.classList.add('show');
+}
 
 /* ═══ 커스텀 Confirm 모달 ═══ */
 let _confirmCallback = null;
@@ -12277,6 +12294,7 @@ function _doClearChangelog(){
 async function _doApplyAllSubs(){
  const btn = document.getElementById('applyAllBtn');
  if(btn){ btn.disabled=true; btn.textContent='반영 중...'; }
+ showBusyToast(`${_subPendingData.length}건 반영 중…`);   // v16.28
  _applySubmissions([..._subPendingData]);
  for(const s of _subPendingData){
   await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
@@ -12285,12 +12303,14 @@ async function _doApplyAllSubs(){
  renderSubmissionsView();
 }
 async function _doApplyOneSub(s){
+ showBusyToast(`${s.name} 반영 중…`);   // v16.28
  _applySubmissions([s]);
  await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`✅ ${s.name} ${s.yearMonth} 반영 완료`);
  renderSubmissionsView();
 }
 async function _doRejectOneSub(s){
+ showBusyToast(`${s.name} 거절 처리 중…`);   // v16.28
  await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`🗑 ${s.name} ${s.yearMonth} 거절됨`);
  renderSubmissionsView();
@@ -13306,6 +13326,7 @@ function renderSignupsView(){
 }
 function approveSignupRequest(name){
  showConfirm({icon:'✅',title:'가입 승인',desc:`<b>${esc(name)}</b> 강사의 가입을 승인할까요?<br><small style="color:var(--text3)">강사 명단에 추가되고 로그인할 수 있게 됩니다.</small>`,okText:'승인',okStyle:'primary',onOk:()=>{
+  showBusyToast(`${name} 승인 처리 중…`);   // v16.28
   gasPost({action:'approveSignup', name})
    .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast((r&&r.message)||'승인 실패'); })
    .catch(()=>showToast('서버 연결 실패'));
@@ -13313,6 +13334,7 @@ function approveSignupRequest(name){
 }
 function rejectSignupRequest(name){
  showConfirm({icon:'🗑',title:'가입 거절',desc:`<b>${esc(name)}</b> 강사의 가입 신청을 거절(삭제)할까요?`,okText:'거절',okStyle:'danger',onOk:()=>{
+  showBusyToast(`${name} 거절 처리 중…`);   // v16.28
   gasPost({action:'rejectSignup', name})
    .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast((r&&r.message)||'실패'); })
    .catch(()=>showToast('서버 연결 실패'));
