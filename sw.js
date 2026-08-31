@@ -3,7 +3,7 @@
    전략: 네트워크 우선 (항상 최신 버전)
    + Firebase Cloud Messaging 푸시 알림 지원
 ═══════════════════════════════════════════ */
-const CACHE_NAME = 'iruri-v22';
+const CACHE_NAME = 'iruri-v23';
 const STATIC_ASSETS = [
   '/iruri/icon-192.png',
   '/iruri/icon-512.png',
@@ -32,6 +32,11 @@ self.addEventListener('fetch', e => {
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
   if (url.includes('script.google.com')) return;
   if (e.request.method !== 'GET') return;
+  // 업데이트 확인용 version.json 은 항상 네트워크에서(캐시 금지) — 새 버전 감지
+  if (url.includes('version.json')) {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(() => caches.match(e.request)));
+    return;
+  }
   if (url.includes('.html')) {
     e.respondWith(
       fetch(e.request).catch(() => caches.match(e.request))

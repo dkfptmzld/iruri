@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.33">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.34">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.33">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.34">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.33</title>
+<title>수업기록표 정산 시스템 v16.34</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -425,6 +425,21 @@ body.edit-mode-active .ledger-wrap textarea {
 #actionFlash .af-sub{font-size:13px;font-weight:500;color:#8A8676;text-align:center;line-height:1.5;margin-top:-8px;max-width:280px;}
 #actionFlash.err .af-sub{color:#C0392B;background:#FDECEA;border-radius:9px;padding:8px 12px;margin-top:0;}
 @media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}#actionFlash .af-sub{font-size:12.5px;}}
+/* v16.34: 업데이트 알림 배너 */
+.upd-banner{position:fixed;top:0;left:0;right:0;z-index:12000;transform:translateY(-105%);transition:transform .32s cubic-bezier(.2,.9,.3,1);pointer-events:none;}
+.upd-banner.show{transform:translateY(0);pointer-events:auto;}
+.upd-inner{max-width:680px;margin:0 auto;display:flex;align-items:flex-start;gap:12px;background:linear-gradient(135deg,#166142,#1A7A50);color:#fff;padding:13px 16px;border-radius:0 0 16px 16px;box-shadow:0 8px 26px rgba(0,0,0,.28);}
+.upd-ico{font-size:22px;flex:0 0 auto;line-height:1.35;}
+.upd-text{flex:1;min-width:0;}
+.upd-title{font-size:14px;font-weight:800;margin-bottom:4px;letter-spacing:-.2px;}
+.upd-notes{margin:0;padding-left:16px;font-size:12.5px;line-height:1.6;color:#E7F5ED;}
+.upd-notes li{margin:1px 0;}
+.upd-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;}
+.upd-btn{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:filter .12s;}
+.upd-btn:hover{filter:brightness(1.05);}
+.upd-btn.primary{background:#fff;color:#146142;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.upd-btn.ghost{background:rgba(255,255,255,.18);color:#fff;}
+@media(max-width:600px){.upd-inner{flex-wrap:wrap;padding:12px 13px;gap:9px;}.upd-actions{flex-direction:row;width:100%;}.upd-btn{flex:1;}}
 /* v16.32: 새 센터 추가/수정 흐름 */
 .nc-scrim{position:fixed;inset:0;z-index:10040;background:rgba(20,18,12,.5);display:flex;align-items:flex-start;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .18s;}
 .nc-scrim.on{opacity:1;pointer-events:auto;}
@@ -2890,6 +2905,18 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  </div>
 </div>
 
+<!-- v16.34: 업데이트 알림 배너 — 새 버전 안내 + 원터치 강력 새로고침 -->
+<div id="updBanner" class="upd-banner">
+ <div class="upd-inner">
+  <div class="upd-ico" id="updIco">🎉</div>
+  <div class="upd-text">
+   <div class="upd-title" id="updTitle"></div>
+   <ul class="upd-notes" id="updNotes"></ul>
+  </div>
+  <div class="upd-actions" id="updActions"></div>
+ </div>
+</div>
+
 <!-- v16.32: 새 센터 추가/수정 — 검색 우선 흐름(중복 방지 · 강사별 배정 · 기본 수업료 없음) -->
 <div id="ncOverlay" class="nc-scrim">
  <div class="nc-sheet">
@@ -3958,7 +3985,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.33';
+const SYSTEM_VERSION='v16.34';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -22500,6 +22527,58 @@ if('serviceWorker' in navigator){
       .catch(e=>console.warn('SW 등록 실패:',e));
   });
 }
+
+/* ═══ v16.34: 앱 업데이트 알림 + 원터치 강력 새로고침 ═══
+ *  version.json(항상 네트워크) 의 버전을 지금 실행 중인 SYSTEM_VERSION 과 비교.
+ *  - 다르면(구버전 실행 중): '새 버전 나왔어요' + [지금 업데이트](강력 새로고침)
+ *  - 같은데 아직 안 본 버전이면: '업데이트 완료!' + 새로워진 점 간략 표시 */
+async function _checkAppUpdate(){
+  let data=null;
+  try{
+    const r=await fetch('version.json?t='+Date.now(), {cache:'no-store'});
+    if(r && r.ok) data=await r.json();
+  }catch(e){ return; }   // 오프라인/파일없음 → 조용히 넘어감
+  if(!data || !data.version) return;
+  const latest=String(data.version).trim();
+  const running=(typeof SYSTEM_VERSION!=='undefined')?String(SYSTEM_VERSION).trim():'';
+  const notes=Array.isArray(data.notes)?data.notes:[];
+  let seen=null; try{ seen=localStorage.getItem('iruri_seen_version'); }catch(_){}
+  if(latest && running && latest!==running){
+    _showUpdBanner('stale', {latest, notes});          // 구버전 실행 중 → 업데이트 권유
+  } else if(latest && latest===running){
+    if(seen && seen!==running) _showUpdBanner('fresh', {version:running, notes});   // 방금 새 버전으로 바뀜 → 뭐가 바뀌었는지
+    try{ localStorage.setItem('iruri_seen_version', running); }catch(_){}
+  }
+}
+function _showUpdBanner(mode, d){
+  const el=document.getElementById('updBanner'); if(!el) return;
+  const notes=(d.notes||[]).slice(0,3);
+  const _e=(typeof esc==='function')?esc:(s=>String(s));
+  document.getElementById('updNotes').innerHTML=notes.map(n=>`<li>${_e(n)}</li>`).join('');
+  const act=document.getElementById('updActions');
+  if(mode==='stale'){
+    document.getElementById('updIco').textContent='⬆️';
+    document.getElementById('updTitle').textContent=`새 버전(${_e(d.latest)})이 나왔어요`;
+    act.innerHTML=`<button class="upd-btn primary" id="updGo">지금 업데이트</button><button class="upd-btn ghost" id="updLater">나중에</button>`;
+    document.getElementById('updGo').onclick=_hardRefresh;
+    document.getElementById('updLater').onclick=_dismissUpd;
+  } else {
+    document.getElementById('updIco').textContent='🎉';
+    document.getElementById('updTitle').textContent=`${_e(d.version)} 업데이트 완료! 새로워진 점`;
+    act.innerHTML=`<button class="upd-btn primary" id="updRef">🔄 새로고침</button><button class="upd-btn ghost" id="updOk">확인</button>`;
+    document.getElementById('updRef').onclick=_hardRefresh;
+    document.getElementById('updOk').onclick=_dismissUpd;
+  }
+  el.classList.add('show');
+}
+function _dismissUpd(){ const el=document.getElementById('updBanner'); if(el) el.classList.remove('show'); }
+async function _hardRefresh(){
+  try{ if('serviceWorker' in navigator){ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister())); } }catch(_){}
+  try{ if(window.caches){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(_){}
+  try{ const u=new URL(location.href); u.searchParams.set('_v', Date.now()); location.replace(u.toString()); }
+  catch(_){ try{ location.reload(true); }catch(e){ location.reload(); } }
+}
+window.addEventListener('load', ()=>{ setTimeout(_checkAppUpdate, 1500); });
 
 /* ═══ 다크모드 + 글자 크기 조절 ═══ */
 (function _initTheme(){
