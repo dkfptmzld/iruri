@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.23">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.31">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.23">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.31">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.23</title>
+<title>수업기록표 정산 시스템 v16.31</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -408,6 +408,23 @@ body.edit-mode-active .ledger-wrap textarea {
 .save-toast{position:fixed;bottom:20px;left:20px;right:auto;background:var(--green);color:white;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none;max-width:calc(100vw - 40px);box-shadow:0 4px 16px rgba(0,0,0,.18);}
 .save-toast.show{opacity:1;transform:translateY(0);}
 .save-toast.toast-error{background:#E53935;}
+/* v16.28: 액션 진행 중 표시 — 반영/승인/거절 등을 누르면 '처리 중'이 즉시 보인다 */
+.save-toast.toast-busy{background:#4B4B4B;}
+.toast-spin{display:inline-block;width:12px;height:12px;margin-right:7px;vertical-align:-1px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:toastSpin .7s linear infinite;}
+@keyframes toastSpin{to{transform:rotate(360deg);}}
+/* v16.29: 화면 한가운데 큰 액션 표시(눈에 잘 띄게) */
+#actionFlash{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.28);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .18s;}
+#actionFlash.show{opacity:1;pointer-events:all;}
+#actionFlash .af-card{background:#fff;border-radius:20px;padding:34px 40px;min-width:220px;max-width:calc(100vw - 48px);display:flex;flex-direction:column;align-items:center;gap:18px;box-shadow:0 18px 60px rgba(0,0,0,.28);transform:scale(.9);transition:transform .2s cubic-bezier(.2,1.3,.5,1);}
+#actionFlash.show .af-card{transform:scale(1);}
+#actionFlash .af-ico{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:42px;font-weight:800;line-height:1;}
+#actionFlash .af-spin{width:52px;height:52px;border:5px solid #E8F5EE;border-top-color:#1A7A50;border-radius:50%;animation:spin .7s linear infinite;}
+#actionFlash.ok .af-ico{background:#E9F7EF;color:#1A7A50;}
+#actionFlash.err .af-ico{background:#FDECEA;color:#D93025;}
+#actionFlash .af-msg{font-size:17px;font-weight:700;color:#23211C;text-align:center;letter-spacing:-.2px;line-height:1.4;}
+#actionFlash .af-sub{font-size:13px;font-weight:500;color:#8A8676;text-align:center;line-height:1.5;margin-top:-8px;max-width:280px;}
+#actionFlash.err .af-sub{color:#C0392B;background:#FDECEA;border-radius:9px;padding:8px 12px;margin-top:0;}
+@media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}#actionFlash .af-sub{font-size:12.5px;}}
 /* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
@@ -2744,6 +2761,15 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  </div>
 </div>
 
+<!-- v16.29: 중앙 액션 표시 — 반영/승인 등을 누르면 화면 한가운데에 크게 '처리 중 → 완료/실패' 표시 -->
+<div id="actionFlash" aria-live="polite">
+ <div class="af-card">
+  <div class="af-ico" id="afIco"><div class="af-spin"></div></div>
+  <div class="af-msg" id="afMsg"></div>
+  <div class="af-sub" id="afSub" style="display:none;"></div>
+ </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ═══ DEFAULT MASTER DATA (엑셀에서 추출) ═══ */
@@ -3738,7 +3764,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.23';
+const SYSTEM_VERSION='v16.31';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5193,7 +5219,7 @@ function _histFullRecord(h){
 }
 
 async function recoverSubmissionsFromHistory(){
- showToast('제출이력에서 불러오는 중...');
+ showBusyToast('제출이력 불러오는 중…');   // v16.28: 조회가 끝날 때까지 스피너 유지
  let r;
  try{ r = await gasGet({ action:'getHistory', teacher:'__all__' }); }
  catch(e){ showToast('제출이력 조회 실패 — 네트워크를 확인해주세요'); return; }
@@ -6462,18 +6488,16 @@ function renderLedger(ti){
    nd.forEach((n,ni)=>{ (groups[n.cat] = groups[n.cat]||[]).push({n,ni}); });
    rows = CAT_KEYS.filter(cat=>groups[cat]).map(cat=>{
     const [bg,col] = (catColor[cat]||'#F8F7F2|#555').split('|');
+    const _chipHtml=(lb,ni,ei)=>`<span onclick="_startNoteEdit(${ti},${ni},${ei})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${escH(lb||'(내용 없음)')}</span>`;
     const chips = groups[cat].map(({n,ni})=>{
-     const labels = [];
      if(n.entries?.length){
-      n.entries.filter(e=>e.date||e.center||e.text||e.amount).forEach(e=>{
-       labels.push([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '));
-      });
-     } else {
-      const ctr = (n.centers&&n.centers.length)?n.centers.join(','):(n.center||''); // 보강 자동노트는 center(단수)
-      const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
-      labels.push([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '));
+      // v16.24: 항목별 칩 — 클릭 시 그 항목(ei) 하나만 편집
+      return n.entries.map((e,ei)=>({e,ei})).filter(({e})=>e.date||e.center||e.text||e.amount)
+       .map(({e,ei})=>_chipHtml([e.date,e.center,e.text,(Number(e.amount)>0?Number(e.amount).toLocaleString()+'원':'')].filter(Boolean).map(esc).join(' '), ni, ei)).join('');
      }
-     return labels.map(lb=>`<span onclick="_startNoteEdit(${ti},${ni})" style="font-size:11px;color:#333;background:white;border:0.5px solid #E0DDD4;border-radius:8px;padding:2px 8px;cursor:pointer;white-space:nowrap;transition:background .12s;" onmouseover="this.style.background='#FFF8DC'" onmouseout="this.style.background='white'">${escH(lb||'(내용 없음)')}</span>`).join('');
+     const ctr = (n.centers&&n.centers.length)?n.centers.join(','):(n.center||''); // 보강 자동노트는 center(단수)
+     const amt = Number(n.amount)>0?Number(n.amount).toLocaleString()+'원':'';
+     return _chipHtml([n.date,ctr,n.text,amt].filter(Boolean).map(esc).join(' '), ni, 0);
     }).join('');
     const catTotal = groups[cat].reduce((s,{n})=> s + (n.entries?.length ? n.entries.reduce((ss,e)=>ss+(Number(e.amount)||0),0) : (Number(n.amount)||0)), 0);
     const totalHtml = catTotal>0 ? `<span style="font-size:11px;font-weight:600;color:${col};white-space:nowrap;flex-shrink:0;margin-left:auto;">합계 ${catTotal.toLocaleString()}원</span>` : '';
@@ -7396,7 +7420,7 @@ function _saveOldNote(ti){
  showToast('✅ 특이사항 저장됨');
 }
 
-function _startNoteEdit(ti, ni){
+function _startNoteEdit(ti, ni, ei){
  const t = STATE.data?.teachers?.[ti];
  if(!t || !t.notesData) return;
  const n = t.notesData[ni];
@@ -7405,106 +7429,44 @@ function _startNoteEdit(ti, ni){
  if(!editorDiv) return;
  const catColor = {'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
  const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
- // v16.23: 물품·기타 포함(강사 _MULTI_ENTRY_CATS와 일치). 예전엔 제외돼 물품·기타 노트가
- //  entries에 내용을 담고 있는데 단일폼으로 열려 '클릭해도 내용이 안 뜨던' 문제가 있었음.
- const multiCats = ['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사'];
  const hasAmt = ['신규(모의) 수업','주차료','물품','기타','대상행사'].includes(n.cat);
- const isMulti = multiCats.includes(n.cat) || (Array.isArray(n.entries) && n.entries.length>0);
- // 센터 목록: 해당 강사의 이번 달 수업 센터
- const tCenters = [...new Set((t.lessons||[]).map(l=>l.center).filter(Boolean))];
- // entries 초기화
- if(isMulti && !Array.isArray(n.entries)) n.entries = [{date:n.date||'',center:n.center||'',text:n.text||'',amount:n.cat==='대상행사'?50000:(n.amount||0)}];
-
- const gridCols = isMulti ? (n.cat==='대상행사' ? '72px 1fr 90px 28px' : (hasAmt ? '62px 1fr 1fr 70px 28px' : '62px 1fr 1fr 28px')) : '62px 1fr 1fr';
- const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄'};
-
- function buildEntryRows(){
-  return (n.entries||[]).map((e,ei)=>{
-   const cOpts = tCenters.filter(c=>c!==e.center).map(c=>`<option value="${c}">${c}</option>`).join('');
-   const selOpts = `<option value="">${e.center||'센터 선택...'}</option>${e.center?`<option value="${e.center}" selected>${e.center}</option>`:''}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 직접 입력</option>${cOpts}`;
-   const isEventCat = n.cat === '대상행사';
-  const amtCell = hasAmt ? (isEventCat
-    ? `<div style="height:28px;width:80px;border:1px solid #5DCAA5;border-radius:5px;padding:0 6px;font-size:11px;font-weight:600;color:#0F6E56;background:#E1F5EE;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap;">50,000 고정</div>`
-    : `<input type="number" value="${e.amount||''}" placeholder="0" min="0" style="height:28px;width:70px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries)nd.entries[${ei}].amount=Number(this.value)||0;const t=nd.entries?nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0):0;nd.amount=t;const el=document.getElementById('ne-total-${ti}');if(el)el.textContent=t.toLocaleString()+'원';}).call(this)">`)
-    : '';
-   if(isEventCat){
-    return `<div style="display:grid;grid-template-columns:72px 1fr 90px 28px;gap:5px;align-items:center;margin-bottom:4px;">
-     <input type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #EF9F27;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='#854F0B'" onblur="this.style.borderColor='#EF9F27'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
-     <input type="text" value="${(e.center||'').replace(/"/g,'&quot;')}" placeholder="센터명 직접 입력" style="height:28px;border:1px solid #EF9F27;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='#854F0B'" onblur="this.style.borderColor='#EF9F27'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].center=this.value">
-     <div style="height:28px;border:1px solid #5DCAA5;border-radius:5px;padding:0 7px;font-size:11px;font-weight:600;color:#0F6E56;background:#E1F5EE;display:flex;align-items:center;justify-content:flex-end;white-space:nowrap;">50,000원</div>
-     <button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:50000}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>
-    </div>`;
-   }
-   return `<div class="me-row" style="display:grid;grid-template-columns:${gridCols};gap:5px;align-items:center;">
-    <input class="me-date" type="text" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].date=this.value">
-    <select class="me-center" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" onchange="(function(v){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(v==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',cv=>{if(nd.entries)nd.entries[${ei}].center=cv;},nd.entries?nd.entries[${ei}].center||'':'');this.value=nd.entries?nd.entries[${ei}].center||'':(nd.center||'');}else if(nd.entries)nd.entries[${ei}].center=v;}).call(this,this.value)">${selOpts}</select>
-    <input class="me-text" type="text" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'" oninput="if(STATE.data.teachers[${ti}].notesData[${ni}].entries)STATE.data.teachers[${ti}].notesData[${ni}].entries[${ei}].text=this.value">
-    <div class="me-amt">${amtCell}</div>
-    ${isMulti?`<button class="me-del" onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(nd.entries){nd.entries.splice(${ei},1);if(!nd.entries.length)nd.entries=[{date:'',center:'',text:'',amount:nd.cat==='대상행사'?50000:0}];}document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="width:28px;height:28px;border:none;background:#FEE2E2;color:#DC2626;border-radius:5px;cursor:pointer;font-size:12px;">✕</button>`:''}
-   </div>`;
-  }).join('');
+ const isEvent = n.cat==='대상행사';
+ const catPH = {'휴강':'예) 5주차로 인한 휴강','보강':'예) OOO센터 보강','신규(모의) 수업':'예) 모의수업 진행','주차료':'예) 공공주차장 이용','물품':'예) 손가락 집게 구매','기타':'예) 교재 인쇄','대상행사':'예) 행사명'};
+ // v16.24: 구버전 top-level 노트를 entries로 승격(내용 보존)
+ if(!Array.isArray(n.entries) || !n.entries.length){
+  n.entries = [{date:n.date||'', center:n.center||'', text:n.text||'', amount: isEvent?50000:(Number(n.amount)||0)}];
  }
-
- const totalRow = (isMulti && hasAmt) ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:6px;border-top:1px solid #EDE9DC;"><span style="font-size:12px;color:${col};font-weight:600;">합계</span><span id="ne-total-${ti}" style="font-size:13px;font-weight:700;color:${col};">${((n.entries||[]).reduce((s,e)=>s+(Number(e.amount)||0),0)).toLocaleString()}원</span></div>` : '';
- const addBtn = isMulti ? `<button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData[${ni}];if(!Array.isArray(nd.entries))nd.entries=[{date:'',center:'',text:'',amount:0}];const _defAmt=nd.cat==='대상행사'?50000:0;nd.entries.push({date:'',center:'',text:'',amount:_defAmt});document.getElementById('noteInlineEditor-${ti}').innerHTML='';_startNoteEdit(${ti},${ni});})()" style="margin-top:8px;height:28px;padding:0 12px;border-radius:6px;border:1px dashed #C4C4C4;color:#888;background:transparent;font-size:12px;cursor:pointer;">＋ 항목 추가</button>` : '';
-
- // 물품/기타 단일 폼
- const singleForm = !isMulti ? `
-  <div style="display:grid;grid-template-columns:62px 1fr 1fr;gap:5px;margin-bottom:8px;">
-   <input type="text" id="ne-date-${ti}" value="${(n.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-   <select id="ne-center-${ti}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 6px;font-size:12px;outline:none;background:white;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-    <option value="${n.center||''}">${n.center||'센터 선택...'}</option>
-    ${tCenters.filter(c=>c!==n.center).map(c=>`<option value="${c}">${c}</option>`).join('')}
-   </select>
-   <input type="text" id="ne-text-${ti}" value="${(n.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
-  </div>
-  ${hasAmt?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="font-size:12px;color:${col};">금액</span><input type="number" id="ne-amt-${ti}" value="${n.amount||''}" placeholder="0" min="0" style="width:100px;height:28px;border:1px solid #DDD8B0;border-radius:5px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'"><span style="font-size:12px;color:${col};">원</span></div>`:''}` : '';
-
- const headerRow = isMulti ? `<div style="display:grid;grid-template-columns:${gridCols};gap:5px;margin-bottom:4px;padding:0 2px;">
-  ${n.cat==='대상행사'
-    ? '<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터명</span><span style="font-size:10px;color:#854F0B;text-align:right;">금액</span><span></span>'
-    : `<span style="font-size:10px;color:#B0A080;">날짜</span><span style="font-size:10px;color:#B0A080;">센터</span><span style="font-size:10px;color:#B0A080;">내용</span>${hasAmt?'<span style="font-size:10px;color:#B0A080;text-align:right;">금액</span>':''}<span></span>`
-  }</div>` : '';
-
+ if(ei==null || ei<0 || ei>=n.entries.length) ei = 0;   // v16.24: 클릭한 그 항목 하나만
+ const e = n.entries[ei];
+ // v16.24: 센터 선택칸 제거(강사 입력폼과 동일). 대상행사는 금액 5만원 고정.
+ const amtField = !hasAmt ? '' : (isEvent
+  ? `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><span style="font-size:12px;color:${col};">금액</span><span style="height:30px;display:flex;align-items:center;padding:0 10px;border:1px solid #5DCAA5;border-radius:6px;font-size:12px;font-weight:600;color:#0F6E56;background:#E1F5EE;">50,000원 고정</span></div>`
+  : `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;"><span style="font-size:12px;color:${col};">금액</span><input type="number" id="ne1-amt-${ti}" value="${e.amount||''}" placeholder="0" min="0" style="width:110px;height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;text-align:right;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'"><span style="font-size:12px;color:${col};">원</span></div>`);
  editorDiv.innerHTML = `
   <div style="background:#FFFBEB;border:1.5px solid #DDD8B0;border-radius:8px;padding:10px 12px;margin-top:6px;">
    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
     <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${bg};color:${col};">${n.cat}</span>
-    <button onclick="(function(){const nd=STATE.data.teachers[${ti}].notesData;nd.splice(${ni},1);const ym=STATE.data.teachers[${ti}].yearMonth||STATE.data.teachers[0]?.yearMonth||'';if(ym)saveMonthlySnapshot(ym,STATE.data);_cancelNoteEdit(${ti});renderTeacher(${ti});showToast('삭제됨');})()" style="margin-left:auto;height:24px;padding:0 10px;border-radius:5px;border:1px solid #FEE2E2;background:#FEE2E2;color:#DC2626;font-size:11px;cursor:pointer;">항목 삭제</button>
+    <button onclick="_deleteNoteEntry(${ti},${ni},${ei})" style="margin-left:auto;height:24px;padding:0 10px;border-radius:5px;border:1px solid #FEE2E2;background:#FEE2E2;color:#DC2626;font-size:11px;cursor:pointer;">삭제</button>
    </div>
-   ${headerRow}
-   <div id="ne-entries-${ti}">${isMulti ? buildEntryRows() : singleForm}</div>
-   ${addBtn}
-   ${totalRow}
+   <div style="display:grid;grid-template-columns:84px 1fr;gap:6px;">
+    <input type="text" id="ne1-date-${ti}" value="${(e.date||'').replace(/"/g,'&quot;')}" placeholder="날짜" style="height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+    <input type="text" id="ne1-text-${ti}" value="${(e.text||'').replace(/"/g,'&quot;')}" placeholder="${catPH[n.cat]||'내용'}" style="height:30px;border:1px solid #DDD8B0;border-radius:6px;padding:0 8px;font-size:12px;outline:none;" onfocus="this.style.borderColor='${col}'" onblur="this.style.borderColor='#DDD8B0'">
+   </div>
+   ${amtField}
    <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:10px;">
     <button onclick="_cancelNoteEdit(${ti})" style="height:28px;padding:0 12px;border-radius:6px;border:1px solid #D8D5CE;background:white;color:#888;font-size:12px;cursor:pointer;">취소</button>
-    <button onclick="_saveNoteEdit(${ti},${ni})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
+    <button onclick="_saveNoteEntry(${ti},${ni},${ei})" style="height:28px;padding:0 14px;border-radius:6px;border:none;background:#1A7A50;color:white;font-size:12px;font-weight:600;cursor:pointer;">저장</button>
    </div>
   </div>`;
  editorDiv.scrollIntoView({behavior:'smooth',block:'nearest'});
+ const _d=document.getElementById(`ne1-date-${ti}`); if(_d) _d.focus();
 }
 
-/** 관리자 특이사항 인라인 편집 저장 */
-function _saveNoteEdit(ti, ni){
- const t = STATE.data?.teachers?.[ti];
- if(!t || !t.notesData) return;
- const n = t.notesData[ni];
- if(!n) return;
- // 단일 폼 값 반영 (물품/기타)
- const dateEl=document.getElementById(`ne-date-${ti}`);
- const textEl=document.getElementById(`ne-text-${ti}`);
- const centerEl=document.getElementById(`ne-center-${ti}`);
- const amtEl=document.getElementById(`ne-amt-${ti}`);
- if(dateEl) n.date=dateEl.value.trim();
- if(textEl) n.text=textEl.value.trim();
- if(centerEl) n.center=centerEl.value;
- if(amtEl) n.amount=Number(amtEl.value)||0;
- // entries 합계 반영
- if(Array.isArray(n.entries)) n.amount=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
- // t.note 재생성
+/* v16.24: notesData → t.note 텍스트 재생성 + 저장 + 재렌더 (공통) */
+function _persistNotes(t, ti){
  const _AMT=['신규(모의) 수업','주차료','물품','기타'];
- t.note=t.notesData.map(nd=>{
-  if(Array.isArray(nd.entries)&&nd.entries.length){   // v16.23: entries 기반이면(물품·기타 포함) 항상 entries로 직렬화
+ t.note=(t.notesData||[]).map(nd=>{
+  if(Array.isArray(nd.entries)&&nd.entries.length){
    const entryStr=nd.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
    const total=nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
    return `${nd.cat} [${entryStr}]${total?` · 합계 ${total.toLocaleString()}원`:''}`;
@@ -7521,7 +7483,37 @@ function _saveNoteEdit(ti, ni){
  document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
  document.getElementById(`ti-${ti}`)?.classList.add('active');
  renderTeacher(ti);
+}
+
+/* v16.24: 클릭한 항목 하나만 저장 */
+function _saveNoteEntry(ti, ni, ei){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n || !Array.isArray(n.entries) || !n.entries[ei]) return;
+ const e = n.entries[ei];
+ const dEl=document.getElementById(`ne1-date-${ti}`);
+ const tEl=document.getElementById(`ne1-text-${ti}`);
+ const aEl=document.getElementById(`ne1-amt-${ti}`);
+ if(dEl) e.date=dEl.value.trim();
+ if(tEl) e.text=tEl.value.trim();
+ if(n.cat==='대상행사') e.amount=50000; else if(aEl) e.amount=Number(aEl.value)||0;
+ n.amount = n.entries.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ _persistNotes(t, ti);
  showToast('✅ 특이사항 저장됨');
+}
+
+/* v16.24: 클릭한 항목 하나만 삭제(항목이 다 없어지면 노트 제거) */
+function _deleteNoteEntry(ti, ni, ei){
+ const t = STATE.data?.teachers?.[ti];
+ if(!t || !t.notesData) return;
+ const n = t.notesData[ni];
+ if(!n) return;
+ if(Array.isArray(n.entries)) n.entries.splice(ei,1);
+ if(!Array.isArray(n.entries) || !n.entries.length) t.notesData.splice(ni,1);
+ else n.amount = n.entries.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ _persistNotes(t, ti);
+ showToast('삭제됨');
 }
 
 /** 관리자 특이사항 편집 취소 */
@@ -8060,7 +8052,7 @@ function _schTableHTML(teacher, showFee, editable, edit){
  // v16.05: 강사 편집 모드 — 강의시간·주소·이메일을 입력칸으로
  const INP='width:100%;height:24px;border:1px solid #D8B25A;border-radius:6px;padding:0 5px;font-size:11px;font-family:inherit;outline:none;background:#FFFDF6;';
  const argK=(r)=>`'${escAttrJS(r.center)}','${escAttrJS(r.region)}','${r.day}',${r.gyosi}`;
- const timeCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="🕐 --:--" onclick="_openSchTimeInput(this,${argK(r)})" oninput="_schEditSet(${argK(r)},'time',this.value)" style="${INP}text-align:center;cursor:pointer;"></td>` : `<td style="${TD}"></td>`;
+ const timeCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="🕐 눌러서 선택" readonly onclick="_openSchTimeInput(this,${argK(r)})" style="${INP}text-align:center;cursor:pointer;background:#FFFDF6;"></td>` : `<td style="${TD}"></td>`;
  const addrCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.address||'').replace(/"/g,'&quot;')}" placeholder="주소 입력" oninput="_schEditSet(${argK(r)},'address',this.value)" style="${INP}text-align:left;"></td>` : `<td style="${TD}"></td>`;
  const emailCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.email||'').replace(/"/g,'&quot;')}" placeholder="이메일 입력" oninput="_schEditSet(${argK(r)},'email',this.value)" style="${INP}text-align:left;font-size:10.5px;color:#2C5AA0;"></td>` : `<td style="${TD}"></td>`;
  if(!rows.length){
@@ -8330,6 +8322,62 @@ function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(o
 /* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
 let _schReqCache=[];
 function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='email'?'이메일':f; }
+/* v16.27: 스케줄 수정 요청을 '강사 스케줄표'에 적용한 '요청 후' 표로 보여준다 — 바뀐 칸만 강조.
+ *  현재 스케줄(_teacherScheduleRows)을 복제 → 요청(changes) 적용 → 표로 렌더(요일별 rowspan). */
+function _schReqAfterRows(teacher, changes){
+ const rows = JSON.parse(JSON.stringify(_teacherScheduleRows(teacher)));
+ rows.forEach(r=>r._chg={});
+ const adds=[];
+ (changes||[]).forEach(c=>{
+  if(c.type==='add'){
+   adds.push({ day:c.day, center:c.center, region:c.region||'', area:_areaFromAddress(c.address),
+     time:c.time||'', address:c.address||'', email:c.email||'', _new:true, _chg:{} });
+   return;
+  }
+  if(c.field==='time'){
+   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ r._chg.time={from:r.time}; r.time=c.to; });
+  } else if(c.field==='address' || c.field==='email'){
+   rows.filter(r=>r.center===c.center).forEach(r=>{ r._chg[c.field]={from:r[c.field]}; r[c.field]=c.to;
+     if(c.field==='address') r.area=_areaFromAddress(c.to); });
+  }
+ });
+ const all=rows.concat(adds);
+ all.sort((a,b)=> _SCH_DAYS.indexOf(a.day)-_SCH_DAYS.indexOf(b.day) || _schMins(a.time)-_schMins(b.time));
+ return all;
+}
+function _schReqTableHTML(teacher, changes){
+ const rows=_schReqAfterRows(teacher, changes);
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ if(!rows.length) return '<div style="padding:20px;text-align:center;color:#9A968C;font-size:13px;">표시할 스케줄이 없어요</div>';
+ const TH='padding:6px 5px;font-size:11px;font-weight:700;border:1px solid #C8C6B8;background:#EDEBE1;text-align:center;white-space:nowrap;';
+ const TD='padding:5px 7px;font-size:11.5px;border:1px solid #DAD8CC;height:30px;vertical-align:middle;';
+ // 바뀐 칸: 옛값(취소선)→새값(초록), 셀 배경 연초록
+ const cell=(r, field, align)=>{
+  const chg=r._chg&&r._chg[field]; const val=r[field]||'';
+  const bg = (chg||r._new) ? 'background:#E9F7EF;' : '';
+  const inner = (chg && !r._new)
+   ? `${chg.from?`<span style="color:#B8B4A8;text-decoration:line-through;font-size:10px;">${e(chg.from)}</span> `:''}<span style="color:#0F7A4E;font-weight:700;">${e(val)||'—'}</span>`
+   : (r._new && val ? `<span style="color:#0F7A4E;font-weight:700;">${e(val)}</span>` : (e(val)||'<span style="color:#C8C4B8;">—</span>'));
+  return `<td style="${TD}${bg}text-align:${align||'left'};${field==='time'?"font-family:'DM Mono',monospace;white-space:nowrap;":''}">${inner}</td>`;
+ };
+ // 요일별 묶기(rowspan)
+ const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let body='';
+ _SCH_DAYS.forEach(day=>{ const list=byDay[day]; if(!list||!list.length) return;
+  list.forEach((r,i)=>{
+   const nameCell = `<td style="${TD}font-weight:600;${(r._new)?'background:#E9F7EF;':''}white-space:nowrap;">${r._new?'<span style="font-size:9px;font-weight:800;color:#0F7A4E;background:#D8F0E2;border:1px solid #A9DCC0;border-radius:5px;padding:0 4px;margin-right:4px;">새</span>':''}${e(r.center)}</td>`;
+   body += `<tr>`
+     + (i===0?`<td rowspan="${list.length}" style="${TD}text-align:center;font-weight:700;background:#F7F5EE;">${day}</td>`:'')
+     + nameCell + cell(r,'time','center') + cell(r,'address','left') + cell(r,'email','left')
+     + `</tr>`;
+  });
+ });
+ return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
+   <colgroup><col style="width:38px"><col style="width:19%"><col style="width:94px"><col><col style="width:26%"></colgroup>
+   <thead><tr><th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th><th style="${TH}">주소</th><th style="${TH}">이메일(사회복지사)</th></tr></thead>
+   <tbody>${body}</tbody></table></div>
+   <div style="font-size:11px;color:#9A968C;margin-top:6px;"><span style="display:inline-block;width:10px;height:10px;background:#E9F7EF;border:1px solid #A9DCC0;border-radius:3px;vertical-align:middle;"></span> 초록 칸 = 이번 요청으로 <b>바뀌는/새로 생기는</b> 부분</div>`;
+}
 async function _loadSchedRequests(silent){
  if(!(typeof _isAdminMode==='function' ? _isAdminMode() : false)) return;
  try{
@@ -8367,21 +8415,8 @@ function _renderSchedReqPanel(){
   list='<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">대기 중인 수정 요청이 없어요</div>';
  } else {
   _schReqCache.forEach(req=>{
-   const rows=(req.changes||[]).map(c=> c.type==='add'
-    ? `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px;flex-wrap:wrap;">
-        <span style="font-size:10px;font-weight:800;color:#1A7A50;background:#E1F5EA;border:1px solid #B8E0CC;border-radius:6px;padding:1px 6px;">새 센터</span>
-        <span style="font-weight:700;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
-        ${c.time?`<span style="color:#1A7A50;font-weight:700;font-family:'DM Mono',monospace;">${e(c.time)}</span>`:''}
-        ${c.address?`<span style="color:#6A6760;">· ${e(c.address)}</span>`:''}
-        ${c.email?`<span style="color:#2C5AA0;font-size:11px;">· ${e(c.email)}</span>`:''}
-       </div>`
-    : `<div style="display:flex;align-items:center;gap:9px;padding:4px 0;font-size:12.5px;flex-wrap:wrap;">
-     <span style="font-weight:700;min-width:130px;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
-     <span style="color:#9A968C;width:52px;font-size:11.5px;">${_fieldLabel(c.field)}</span>
-     <span style="color:#9A968C;${c.from?'text-decoration:line-through;':'font-style:italic;'}">${c.from?e(c.from):'빈칸'}</span>
-     <span style="color:#9A968C;">→</span>
-     <span style="color:#1A7A50;font-weight:700;">${e(c.to)}</span>
-    </div>`).join('');
+   // v16.27: 강사 스케줄표에 요청을 적용한 '요청 후' 표로 보여준다 (바뀌는 칸 강조)
+   const rows=_schReqTableHTML(req.teacher, req.changes);
    list+=`<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;">
      <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#FCFBF7;border-bottom:1px solid var(--border);">
       <span style="font-size:13.5px;font-weight:800;">${e(req.teacher)}</span>
@@ -8391,7 +8426,7 @@ function _renderSchedReqPanel(){
      <div style="padding:10px 14px;">${rows}</div>
      ${req.message?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.55;">✉️ <b>메시지</b> · ${e(req.message)}</div>`:''}
      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
-      <span style="flex:1;font-size:12px;color:var(--text2);"><b>${(req.changes||[]).length}개 항목</b> 변경 요청</span>
+      <span style="flex:1;font-size:12px;color:var(--text2);"><b>센터 ${new Set((req.changes||[]).map(c=>(c.center||'')+'|'+(c.day||''))).size}곳</b> · ${(req.changes||[]).length}개 항목 변경</span>
       <button class="btn sm" onclick="_rejectSchedRequest('${e(req.id)}')" style="border:1px solid #FCA5A5;color:#DC2626;">거절</button>
       <button class="btn sm primary" onclick="_applySchedRequest('${e(req.id)}')">✓ 전체 반영</button>
      </div>
@@ -8441,6 +8476,7 @@ function _applyChangeToDB(teacher, c){
 async function _applySchedRequest(id){
  const req=_schReqCache.find(r=>String(r.id)===String(id));
  if(!req) return;
+ showBusyToast(`${req.teacher} 요청 반영 중…`);   // v16.28
  let ok=0, miss=0;
  (req.changes||[]).forEach(c=>{ if(_applyChangeToDB(req.teacher, c)) ok++; else miss++; });
  try{ lsSave(); }catch(_){}
@@ -8453,6 +8489,7 @@ async function _applySchedRequest(id){
 }
 async function _rejectSchedRequest(id){
  const req=_schReqCache.find(r=>String(r.id)===String(id));
+ showBusyToast(`${req?req.teacher:''} 요청 거절 처리 중…`);   // v16.28
  try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'rejected'}); }catch(_){}
  _schReqCache=_schReqCache.filter(r=>String(r.id)!==String(id));
  _renderSchedReqPanel(); _renderSchedReqBanner();
@@ -9377,7 +9414,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
     const gy=(x&&x.gyosi)||1, tv=((x&&x.sched&&x.sched.time)||'').replace(/"/g,'&quot;');
     if(!x) return `<td style="padding:5px 6px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);"></td>`;
     return `<td style="padding:4px 6px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;" onclick="event.stopPropagation();">
-     <input type="text" value="${tv}" placeholder="🕐 --:--" title="눌러서 고르거나 직접 입력하세요"
+     <input type="text" value="${tv}" placeholder="🕐 눌러서 선택" readonly title="눌러서 시간을 고르세요"
       onclick="event.stopPropagation();_openCenterTimePicker(this,'${escAttrJS(cn)}','${escAttrJS(cr)}','${escAttrJS(teacher)}','${day}',${gy})"
       onblur="if(!document.getElementById('timePickerPop')||document.getElementById('timePickerPop').style.display==='none')_saveCenterTime('${escAttrJS(cn)}','${escAttrJS(cr)}','${escAttrJS(teacher)}','${day}',${gy},this.value)"
       style="width:96px;height:24px;border:1px solid var(--border);border-radius:6px;padding:0 4px;font-size:11px;font-family:inherit;text-align:center;outline:none;background:#fff;cursor:pointer;">
@@ -10295,7 +10332,7 @@ function renderChips(){
    return `<div style="display:flex;align-items:center;gap:5px;padding:4px 0 4px 10px;border-left:2px solid var(--green-light, #9FE1CB);flex-wrap:wrap;">
     <span style="font-size:11px;color:var(--text3);width:34px;flex-shrink:0;">${gi+1}수업</span>
     <div style="display:flex;gap:3px;flex-wrap:wrap;">${dayBtns}</div>
-    <input type="text" value="${tVal}" placeholder="🕐 10:30~11:30" title="눌러서 고르거나 직접 입력하세요. 비워두면 스케줄표에도 빈칸으로 나옵니다."
+    <input type="text" value="${tVal}" placeholder="🕐 눌러서 선택" readonly title="눌러서 시간을 고르세요. 비워두면 빈칸으로 나옵니다."
      onclick="_openTimePicker('${safeT}',${gi},this)"
      oninput="_setGyosiTime('${safeT}',${gi},this.value)"
      onblur="if(!document.getElementById('timePickerPop')||document.getElementById('timePickerPop').style.display==='none')_setGyosiTime('${safeT}',${gi},this.value,true)"
@@ -10318,137 +10355,57 @@ function renderChips(){
  }).join('')||'<div style="color:var(--text3);font-size:12px;padding:4px 0;">담당 강사를 추가하고 수업 요일을 선택하세요</div>';
  return result;
 }
-/* ═══ v15.95: 강의시간 고르기 팝업 ═══
- *  시간 칸을 누르면 시작·끝 시각을 눈으로 고를 수 있는 창이 뜬다.
- *  칸에 직접 타이핑하는 것도 그대로 된다(둘 다 쓸 수 있게).
- *  보내주신 스케줄표가 전부 60분 수업이라, 시작만 고르면 끝은 +1시간으로 자동으로 채운다. */
-const _TP_STARTS = ['09:00','09:30','10:00','10:30','10:40','10:50',
-                    '13:00','13:30','13:40','14:00','15:00','15:10','15:30','16:00'];
-const _TP_LEN = 60;          // v15.96: 수업은 60분으로 통일 (끝 시각은 항상 시작 +1시간)
-let _tpCtx = null;           // {teacher, gi, input, h, m, pm, mode}
-
-function _tpParse(v){
- const m = String(v||'').match(/(\d{1,2}):(\d{2})/);
- if(!m) return null;
- let h=+m[1], mi=+m[2];
- if(h>23||mi>59) return null;
- return {h, m:mi};
-}
-function _tpAdd(hhmm, mins){
- const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})$/); if(!m) return '';
- let t=(+m[1])*60+(+m[2])+mins; t=((t%1440)+1440)%1440;
- return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
-}
-function _tpStart(){                 // 현재 고른 시작 시각 "HH:MM"
- if(!_tpCtx || _tpCtx.h==null) return '';
- let h=_tpCtx.h % 12; if(_tpCtx.pm) h+=12;
- return String(h).padStart(2,'0')+':'+String(_tpCtx.m).padStart(2,'0');
-}
-function _tpValue(){
- const st=_tpStart();
- return st ? st+'~'+_tpAdd(st,_TP_LEN) : '';
-}
-function _tpApply(){                 // 입력칸에 즉시 반영 (저장은 닫을 때)
+/* ═══ v16.25: 강의시간 고르기 팝업 — [시]:[분] 24시간·5분 단위, 시작·끝 ═══
+ *  시작을 고르면 끝은 +1시간 자동(수정 가능). 값은 항상 "HH:MM~HH:MM" 로 통일.
+ *  4곳(강사 스케줄표·수정요청·센터관리 표·센터 편집창)이 이 피커를 공유한다. */
+const _TP_LEN = 60;                 // 시작만 고르면 끝은 +1시간 자동
+let _tpCtx = null;                  // {input, live, commit, teacher, gi, start, end, endAuto}
+function _tpParse(v){ const m=String(v||'').match(/(\d{1,2}):(\d{2})/); if(!m) return null; let h=+m[1],mi=+m[2]; if(h>23||mi>59) return null; return {h,m:mi}; }
+function _tpFmt(p){ return p? String(p.h).padStart(2,'0')+':'+String(p.m).padStart(2,'0') : ''; }
+function _tpAdd(hhmm, mins){ const m=String(hhmm||'').match(/^(\d{1,2}):(\d{2})$/); if(!m) return ''; let t=(+m[1])*60+(+m[2])+mins; t=((t%1440)+1440)%1440; return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); }
+function _tpValue(){ if(!_tpCtx) return ''; return _tpCtx.start && _tpCtx.end ? _tpCtx.start+'~'+_tpCtx.end : (_tpCtx.start||''); }
+function _tpApply(){ if(!_tpCtx) return; const v=_tpValue(); if(_tpCtx.input) _tpCtx.input.value=v; try{ if(_tpCtx.live) _tpCtx.live(v); }catch(_){} _tpRender(); }
+function _tpClear(){ if(!_tpCtx) return; _tpCtx.start=''; _tpCtx.end=''; _tpCtx.endAuto=true; _tpApply(); }
+function _tpSet(which, part, val){
  if(!_tpCtx) return;
- const v=_tpValue();
- if(_tpCtx.input) _tpCtx.input.value=v;
- try{ if(_tpCtx.live) _tpCtx.live(v); }catch(_){}
- _tpRender();
-}
-function _tpClear(){ if(!_tpCtx) return; _tpCtx.h=null; _tpCtx.m=0; _tpApply(); }
-function _tpPickPreset(t){
- const p=_tpParse(t); if(!p||!_tpCtx) return;
- _tpCtx.pm = p.h>=12; _tpCtx.h = (p.h%12)||12; _tpCtx.m = p.m; _tpCtx.mode='m';
+ const cur = which==='start' ? _tpCtx.start : _tpCtx.end;
+ let h='', m='00'; const mm=String(cur||'').match(/^(\d{2}):(\d{2})$/); if(mm){ h=mm[1]; m=mm[2]; }
+ if(part==='h') h=val; else m=val;
+ const combined = (h!=='') ? (h+':'+(m||'00')) : '';
+ if(which==='start'){ _tpCtx.start=combined; if(_tpCtx.endAuto && combined) _tpCtx.end=_tpAdd(combined,_TP_LEN); }
+ else { _tpCtx.end=combined; _tpCtx.endAuto=false; }
  _tpApply();
 }
-function _tpSetMode(md){ if(_tpCtx){ _tpCtx.mode=md; _tpRender(); } }
-function _tpSetPm(v){ if(_tpCtx){ _tpCtx.pm=!!v; _tpApply(); } }
-
-/* ── 다이얼(시계판) ──
- *  숫자를 눌러도 되고, 원 안 아무 데나 눌러도 가장 가까운 눈금으로 붙는다.
- *  시를 고르면 자동으로 분 화면으로 넘어간다. */
-function _tpDial(){
- if(!_tpCtx) return '';
- const R=104, CX=120, CY=120, NR=84;          // 판 반지름 / 중심 / 숫자 반지름
- const isH = _tpCtx.mode!=='m';
- const vals = isH ? [12,1,2,3,4,5,6,7,8,9,10,11]
-                  : [0,5,10,15,20,25,30,35,40,45,50,55];
- const sel = isH ? ((_tpCtx.h==null?12:_tpCtx.h)%12) : (Math.round(_tpCtx.m/5)%12);
- let nodes='';
- vals.forEach((v,i)=>{
-  const a=(i*30-90)*Math.PI/180;
-  const x=CX+NR*Math.cos(a), y=CY+NR*Math.sin(a);
-  const on = i===sel && !(isH && _tpCtx.h==null);
-  const label = isH ? String(v) : String(v).padStart(2,'0');
-  nodes += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="17" fill="${on?'var(--green)':'transparent'}"/>`
-        +  `<text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="${on?'700':'500'}" fill="${on?'#fff':'#3a3a38'}" style="pointer-events:none;user-select:none;">${label}</text>`;
- });
- let hand='';
- if(!(isH && _tpCtx.h==null)){
-  const a=(sel*30-90)*Math.PI/180;
-  hand = `<line x1="${CX}" y1="${CY}" x2="${(CX+(NR-17)*Math.cos(a)).toFixed(1)}" y2="${(CY+(NR-17)*Math.sin(a)).toFixed(1)}" stroke="var(--green)" stroke-width="2"/>`;
- }
- return `<svg id="tpDial" width="240" height="240" viewBox="0 0 240 240" style="touch-action:none;display:block;margin:0 auto;cursor:pointer;"
-   onpointerdown="_tpDialPick(event)" onpointermove="if(event.buttons)_tpDialPick(event)">
-  <circle cx="${CX}" cy="${CY}" r="${R}" fill="var(--surface2,#F7F5EE)"/>
-  ${hand}<circle cx="${CX}" cy="${CY}" r="3" fill="var(--green)"/>
-  ${nodes}
- </svg>`;
+const _TP_HOURS = Array.from({length:24},(_,h)=>String(h).padStart(2,'0'));
+const _TP_MINS  = Array.from({length:12},(_,i)=>String(i*5).padStart(2,'0'));   // 00,05,...,55 (5분)
+function _tpSelHTML(which, cur){
+ const mm=String(cur||'').match(/^(\d{2}):(\d{2})$/); const h=mm?mm[1]:'', m=mm?mm[2]:'';
+ const SS="height:34px;border:1.5px solid var(--border);border-radius:8px;padding:0 4px;font-size:14px;font-family:inherit;text-align:center;background:#fff;outline:none;cursor:pointer;flex:1;";
+ const hOpts='<option value="">시</option>'+_TP_HOURS.map(x=>`<option value="${x}" ${x===h?'selected':''}>${x}</option>`).join('');
+ const mOpts='<option value="">분</option>'+_TP_MINS.map(x=>`<option value="${x}" ${x===m?'selected':''}>${x}</option>`).join('');
+ return `<select onchange="_tpSet('${which}','h',this.value)" style="${SS}">${hOpts}</select>`
+      + `<span style="font-weight:800;color:var(--text2);">:</span>`
+      + `<select onchange="_tpSet('${which}','m',this.value)" style="${SS}">${mOpts}</select>`;
 }
-function _tpDialPick(ev){
- if(!_tpCtx) return;
- const svg=document.getElementById('tpDial'); if(!svg) return;
- const r=svg.getBoundingClientRect();
- const x=ev.clientX-r.left-(r.width/2), y=ev.clientY-r.top-(r.height/2);
- if(Math.abs(x)<6 && Math.abs(y)<6) return;
- let deg=Math.atan2(y,x)*180/Math.PI + 90;      // 12시 방향이 0도
- deg=((deg%360)+360)%360;
- const idx=Math.round(deg/30)%12;
- if(_tpCtx.mode!=='m'){
-  _tpCtx.h = idx===0 ? 12 : idx;
-  _tpCtx.mode='m';                               // 시를 고르면 바로 분 화면으로
- } else {
-  _tpCtx.m = idx*5;
- }
- _tpApply();
-}
-
 function _tpRender(){
  const box=document.getElementById('timePickerPop'); if(!box||!_tpCtx) return;
- const st=_tpStart();
- const end= st ? _tpAdd(st,_TP_LEN) : '';
- const isH=_tpCtx.mode!=='m';
- const big=(txt,on,fn)=>`<span onclick="${fn}" style="cursor:pointer;font-size:26px;font-weight:800;color:${on?'var(--green)':'#B8B4A8'};">${txt}</span>`;
- const ampm=(t,on,v)=>`<button type="button" onclick="_tpSetPm(${v})" style="height:26px;padding:0 12px;border-radius:13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--green)':'#fff'};color:${on?'#fff':'var(--text2)'};">${t}</button>`;
- const chip=(t)=>`<button type="button" onclick="_tpPickPreset('${t}')" style="height:25px;padding:0 8px;border-radius:13px;font-size:11px;font-weight:${st===t?'700':'500'};cursor:pointer;font-family:inherit;border:1px solid ${st===t?'var(--green)':'var(--border)'};background:${st===t?'var(--green)':'#fff'};color:${st===t?'#fff':'var(--text2)'};">${t}</button>`;
- box.querySelector('#tpBody').innerHTML = `
-  <div style="text-align:center;margin-bottom:6px;">
-   ${big(_tpCtx.h==null?'--':String(_tpCtx.h).padStart(2,'0'), isH, "_tpSetMode('h')")}
-   <span style="font-size:26px;font-weight:800;color:#B8B4A8;">:</span>
-   ${big(String(_tpCtx.m).padStart(2,'0'), !isH, "_tpSetMode('m')")}
-   <div style="display:flex;gap:5px;justify-content:center;margin-top:6px;">${ampm('오전',!_tpCtx.pm,false)}${ampm('오후',_tpCtx.pm,true)}</div>
-  </div>
-  <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:2px;">${isH?'시(時)를 고르세요':'분(分)을 고르세요'}</div>
-  ${_tpDial()}
-  <div style="text-align:center;font-size:13px;font-weight:700;color:${st?'var(--green)':'var(--text3)'};margin:4px 0 10px;">
-   ${st? st+' ~ '+end+'  <span style="font-size:11px;font-weight:500;color:var(--text3);">(60분)</span>' : '아직 안 정함'}
-  </div>
-  <div style="font-size:10.5px;color:var(--text3);margin-bottom:5px;font-weight:600;">자주 쓰는 시작 시각</div>
-  <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:11px;">${_TP_STARTS.map(chip).join('')}</div>
-  <div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;">
-   <button type="button" onclick="_tpClear()" style="flex:1;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">지우기</button>
-   <button type="button" onclick="_closeTimePicker()" style="flex:2;height:32px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button>
-  </div>`;
+ const rowCss='display:flex;align-items:center;gap:5px;';
+ const lbl='font-size:11px;font-weight:700;color:var(--text2);width:30px;flex-shrink:0;';
+ const val=_tpValue();
+ box.querySelector('#tpBody').innerHTML =
+  `<div style="${rowCss}margin-bottom:7px;"><span style="${lbl}">시작</span>${_tpSelHTML('start',_tpCtx.start)}</div>`
+ +`<div style="${rowCss}margin-bottom:9px;"><span style="${lbl}">끝</span>${_tpSelHTML('end',_tpCtx.end)}</div>`
+ +`<div style="text-align:center;font-size:14px;font-weight:800;color:${_tpCtx.start?'var(--green)':'var(--text3)'};margin:2px 0 8px;font-family:'DM Mono',monospace;">${val || '아직 안 정함'}</div>`
+ +`<div style="font-size:10.5px;color:var(--text3);margin-bottom:9px;line-height:1.5;">시작을 고르면 끝은 1시간 뒤로 자동 채워져요. 끝만 따로 바꿀 수도 있어요.</div>`
+ +`<div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;">`
+ +`<button type="button" onclick="_tpClear()" style="flex:1;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">지우기</button>`
+ +`<button type="button" onclick="_closeTimePicker()" style="flex:2;height:32px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">확인</button></div>`;
 }
-/* v15.97: 어디서든 쓸 수 있게 — live(고르는 중) / commit(확인) 만 넘기면 된다.
- *  센터 편집창은 STATE.modalSchedule 에, 센터관리 표는 DB.centers 에 바로 저장한다. */
+/* 어디서든 쓸 수 있게 — live(고르는 중) / commit(확인) 만 넘기면 된다. */
 function _openTimePickerAt(input, live, commit){
- const cur=_tpParse(input?input.value:'');
- _tpCtx={input, live, commit,
-   h: cur? ((cur.h%12)||12) : null,
-   m: cur? cur.m : 0,
-   pm: cur? cur.h>=12 : true,
-   mode: cur? 'm' : 'h'};
+ const parts=String(input?input.value:'').split('~');
+ const st=_tpFmt(_tpParse(parts[0])); const en=_tpFmt(_tpParse(parts[1]));
+ _tpCtx={input, live, commit, start:st, end:en, endAuto: !en};
  _tpShow(input);
 }
 function _openTimePicker(teacher, gi, input){
@@ -10463,7 +10420,7 @@ function _tpShow(input){
   box.id='timePickerPop';
   // 센터 편집창(z-index 9999) 위에 떠야 한다
   box.style.cssText='position:fixed;z-index:10050;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 10px 34px rgba(0,0,0,.22);padding:12px 14px;width:272px;max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);overflow-y:auto;font-family:inherit;';
-  box.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:6px;">🕐 강의시간 <span style="font-weight:400;color:var(--text3);">— 60분 수업</span></div><div id="tpBody"></div>';
+  box.innerHTML='<div style="font-size:12px;font-weight:700;margin-bottom:6px;">🕐 강의시간 <span style="font-weight:400;color:var(--text3);">— 시작·끝 (24시간)</span></div><div id="tpBody"></div>';
   document.body.appendChild(box);
  }
  box.style.display='block';
@@ -10741,10 +10698,11 @@ function saveModal(){
   const entryFee = chipFee || fee || 0;
   const timeList = STATE.modalSchedule[t+'__timeList'] || [];
   const weeksList = STATE.modalSchedule[t+'__weeksList'] || [];   // v16.03
-  gyosiList.forEach((days,gi)=>{
-   const time = _normTime(timeList[gi]);   // v15.94: 강의시간 (예: 10:30~11:30)
-   const wk = (weeksList[gi]===5?5:0);      // v16.03: 5주차만 저장(기본 4는 생략)
-   schedule.push({teacher:t, days:days, order:i+1, fee:entryFee, gyosi:gi+1, ...(time && {time}), ...(wk && {weeks:wk})});
+  // v16.25: 교시는 '시간 순서'로 자동 배치 — 이른 시간이 1교시. (직접 안 정함)
+  const blocks = gyosiList.map((days,gi)=>({ days, time:_normTime(timeList[gi]), wk:(weeksList[gi]===5?5:0) }));
+  blocks.sort((a,b)=> String(a.time||'99:99').localeCompare(String(b.time||'99:99')) );   // 시간 없으면 뒤로
+  blocks.forEach((blk,gi)=>{
+   schedule.push({teacher:t, days:blk.days, order:i+1, fee:entryFee, gyosi:gi+1, ...(blk.time && {time:blk.time}), ...(blk.wk && {weeks:blk.wk})});
   });
  });
  const phone = document.getElementById('fi_phone')?.value.trim()||'';
@@ -12209,13 +12167,63 @@ function removeAdminAutoLogoutUI(){
 }
 
 let _toastTimer=null;
+let _actionActive=false, _afTimer=null;   // v16.29: 중앙 액션 표시 상태(TDZ 방지 위해 showToast 앞에 선언)
 function showToast(msg){const el=document.getElementById('saveToast');
  // 메시지가 이미 상태 아이콘(❌⚠️⛔🔴 등)으로 시작하면 ✓ 를 덧붙이지 않는다 (성공/실패 아이콘 혼용 방지)
  const hasIcon=/^\s*(✓|✔|❌|⚠️?|⛔|🔴|🟡|⏳|🚫|ℹ️?|✅)/.test(msg);
  const isErr=/^\s*(❌|⚠️?|⛔|🔴|🚫)/.test(msg);
+ // v16.29: 액션 진행 중(중앙 표시)이면, 이 완료 메시지를 화면 한가운데 큰 ✓/✕ 로 승격해서 보여준다
+ if(_actionActive){
+  _actionActive=false;
+  const raw = String(msg||'').replace(/^\s*(✓|✔|✅|❌|⚠️?|⛔|🔴|🚫)\s*/,'').trim();
+  const promotErr = isErr || /실패|오류|에러|안\s*됐|못\s/.test(raw);
+  // ' — '(또는 '—')로 이유를 붙였으면 앞은 제목, 뒤는 설명으로 분리해서 보여준다
+  const parts = raw.split(/\s*[—-]\s+|\s+—\s*/);
+  let main = parts.shift().trim();
+  let sub  = parts.join(' — ').trim();
+  if(promotErr && !sub){ sub = _afErrHint(raw); }   // 이유가 없으면 상황에 맞는 안내 자동 생성
+  _afResult(main || (promotErr?'실패했어요':'완료됐어요'), !promotErr, sub);
+  return;   // 중앙 표시로 대체 — 하단 토스트는 생략
+ }
  el.textContent=hasIcon?msg:('✓ '+msg);
+ el.classList.remove('toast-busy');
  el.classList.toggle('toast-error',isErr);
  el.classList.add('show');if(_toastTimer)clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{el.classList.remove('show');_toastTimer=null;},2000);}
+/* v16.29: 액션 진행 표시 — 반영·승인·거절 등을 누르면 화면 한가운데에 크게 '처리 중…'(스피너)이 뜨고,
+ *  작업이 끝나면 뒤이어 호출되는 showToast 가 중앙의 '완료(✓)/실패(✕)' 로 바꿔 준다. */
+function showBusyToast(msg){
+ const el=document.getElementById('actionFlash'); if(!el) return;
+ if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; }
+ _actionActive=true;
+ el.classList.remove('ok','err');
+ const ico=document.getElementById('afIco'); if(ico) ico.innerHTML='<div class="af-spin"></div>';
+ const m=document.getElementById('afMsg'); if(m) m.textContent=msg||'처리 중…';
+ const s=document.getElementById('afSub'); if(s){ s.textContent=''; s.style.display='none'; }
+ el.classList.add('show');
+ // 안전장치: 완료 신호가 안 오면 20초 뒤 자동으로 닫힘(화면이 잠기지 않도록)
+ _afTimer=setTimeout(()=>{ _actionActive=false; el.classList.remove('show'); _afTimer=null; }, 20000);
+}
+function _afResult(msg, ok, sub){
+ const el=document.getElementById('actionFlash'); if(!el) return;
+ if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; }
+ el.classList.remove('ok','err'); el.classList.add(ok?'ok':'err');
+ const ico=document.getElementById('afIco'); if(ico) ico.textContent = ok?'✓':'✕';
+ const m=document.getElementById('afMsg'); if(m) m.textContent = msg||(ok?'완료됐어요':'실패했어요');
+ const s=document.getElementById('afSub');
+ if(s){ if(sub){ s.innerHTML=esc(sub).replace(/\s*계속되면/,'<br>계속되면'); s.style.display=''; } else { s.innerHTML=''; s.style.display='none'; } }   // v16.31: '계속되면…'은 둘째 줄로
+ el.classList.add('show');
+ // 실패는 이유를 읽을 시간이 필요 → 더 오래 띄운다
+ _afTimer=setTimeout(()=>{ el.classList.remove('show'); _afTimer=null; }, ok?1300:(sub?3600:2600));
+}
+/* v16.30: 실패 메시지에 이유가 없을 때, 문구를 보고 상황에 맞는 안내를 자동으로 붙인다 */
+function _afErrHint(msg){
+ const s=String(msg||'');
+ if(/연결|네트워크|접속|시간\s*초과|타임아웃|timeout/i.test(s)) return '인터넷 연결을 확인하고 잠시 후 다시 눌러 주세요';
+ if(/조회|불러|가져오/.test(s)) return '구글 서버가 잠깐 붐빌 수 있어요. 잠시 후 다시 시도해 주세요';
+ if(/권한|로그인|세션/.test(s)) return '다시 로그인한 뒤 시도해 주세요';
+ if(/중복|이미/.test(s)) return '이미 처리된 항목일 수 있어요. 목록을 새로고침해 확인해 주세요';
+ return '잠시 후 다시 시도해 주세요. 계속되면 새로고침(F5) 후 다시 해 주세요';
+}
 
 /* ═══ 커스텀 Confirm 모달 ═══ */
 let _confirmCallback = null;
@@ -12347,6 +12355,7 @@ function _doClearChangelog(){
 async function _doApplyAllSubs(){
  const btn = document.getElementById('applyAllBtn');
  if(btn){ btn.disabled=true; btn.textContent='반영 중...'; }
+ showBusyToast(`${_subPendingData.length}건 반영 중…`);   // v16.28
  _applySubmissions([..._subPendingData]);
  for(const s of _subPendingData){
   await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
@@ -12355,12 +12364,14 @@ async function _doApplyAllSubs(){
  renderSubmissionsView();
 }
 async function _doApplyOneSub(s){
+ showBusyToast(`${s.name} 반영 중…`);   // v16.28
  _applySubmissions([s]);
  await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`✅ ${s.name} ${s.yearMonth} 반영 완료`);
  renderSubmissionsView();
 }
 async function _doRejectOneSub(s){
+ showBusyToast(`${s.name} 거절 처리 중…`);   // v16.28
  await gasPost({ action:'deleteSubmission', teacher:s.name, yearMonth:s.yearMonth, submittedAt:s.submittedAt }).catch(()=>{});
  showToast(`🗑 ${s.name} ${s.yearMonth} 거절됨`);
  renderSubmissionsView();
@@ -12532,6 +12543,8 @@ function showInputModal(title, placeholder, onOk, defaultValue=''){
 }
 
 function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle='danger', cancelText='취소', onOk=null, onCancel=null }={}) {
+ // v16.30: 진행 중 액션 표시가 떠 있으면 먼저 치운다(확인창과 동시에 뜨지 않도록)
+ try{ if(_actionActive || document.getElementById('actionFlash')?.classList.contains('show')){ _actionActive=false; if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; } document.getElementById('actionFlash')?.classList.remove('show'); } }catch(_){}
  // v14.69: manualLoadDraft 전용 동적 삭제 버튼이 다른 확인창에 새어 나오지 않도록 숨김
  const _delBtn = document.getElementById('_draftDelBtn');
  if(_delBtn) _delBtn.style.display = 'none';
@@ -13376,16 +13389,18 @@ function renderSignupsView(){
 }
 function approveSignupRequest(name){
  showConfirm({icon:'✅',title:'가입 승인',desc:`<b>${esc(name)}</b> 강사의 가입을 승인할까요?<br><small style="color:var(--text3)">강사 명단에 추가되고 로그인할 수 있게 됩니다.</small>`,okText:'승인',okStyle:'primary',onOk:()=>{
+  showBusyToast(`${name} 승인 처리 중…`);   // v16.28
   gasPost({action:'approveSignup', name})
-   .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast((r&&r.message)||'승인 실패'); })
-   .catch(()=>showToast('서버 연결 실패'));
+   .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast(`승인 실패 — ${(r&&r.message)||'서버가 요청을 처리하지 못했어요'}`); })
+   .catch(()=>showToast('승인 실패 — 서버에 연결하지 못했어요'));
  }});
 }
 function rejectSignupRequest(name){
  showConfirm({icon:'🗑',title:'가입 거절',desc:`<b>${esc(name)}</b> 강사의 가입 신청을 거절(삭제)할까요?`,okText:'거절',okStyle:'danger',onOk:()=>{
+  showBusyToast(`${name} 거절 처리 중…`);   // v16.28
   gasPost({action:'rejectSignup', name})
-   .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast((r&&r.message)||'실패'); })
-   .catch(()=>showToast('서버 연결 실패'));
+   .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast(`거절 실패 — ${(r&&r.message)||'서버가 요청을 처리하지 못했어요'}`); })
+   .catch(()=>showToast('거절 실패 — 서버에 연결하지 못했어요'));
  }});
 }
 
