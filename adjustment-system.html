@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.20">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.21">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.20">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.21">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.20</title>
+<title>수업기록표 정산 시스템 v16.21</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -359,7 +359,8 @@ body.edit-mode-active .ledger-wrap textarea {
 .mgr-cell{padding:9px 14px;font-size:13px;}
 .mgr-head-row{background:var(--surface2)!important;}
 .mgr-head-row .mgr-cell{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
-.t-mgr-row{grid-template-columns:1fr 1fr 200px 200px 200px 200px 200px 200px 56px;}
+.mgr-hscroll{overflow-x:auto;}
+.t-mgr-row{grid-template-columns:minmax(88px,1fr) minmax(150px,1.4fr) 72px 122px 96px 116px 132px 212px 96px;min-width:1090px;}
 .c-mgr-row{grid-template-columns:160px 70px 100px 180px 1fr 56px;}
 .addr-text{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
 /* 주소 검색 자동완성 */
@@ -745,10 +746,12 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
   /* ── 강사 관리: 8열 → 콤팩트 카드 ── */
   /* 헤더행 숨김 — 3클래스로 명시도를 올려 아래 .mgr-row.t-mgr-row(grid) 규칙에 안 덮이게 */
   .mgr-head-row.mgr-row.t-mgr-row { display:none!important; }
+  .mgr-hscroll { overflow-x:visible!important; }   /* 모바일은 카드형이라 가로 스크롤 불필요 */
   .mgr-row.t-mgr-row {
     display:grid!important;
     grid-template-columns:1fr auto!important;
     grid-template-rows:auto auto!important;
+    min-width:0!important;   /* PC용 min-width(1060) 해제 — 카드가 화면 폭에 맞게 */
     gap:0!important;
     padding:12px 14px!important;
     border-bottom:0.5px solid var(--border)!important;
@@ -2420,10 +2423,12 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  </div>
  <button onclick="recoverAccountsUI()" class="btn" title="저장된 정산 기록에서 비어있는 계좌번호를 채웁니다" style="font-size:12px;white-space:nowrap;background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">📋 정산기록에서 계좌 복구</button>
  </div>
+ <div class="mgr-hscroll">
  <div class="mgr-head-row mgr-row t-mgr-row">
  <div class="mgr-cell">이름</div><div class="mgr-cell">계좌번호</div><div class="mgr-cell">지역</div><div class="mgr-cell">강사료</div><div class="mgr-cell">유형</div><div class="mgr-cell">첫 수업 예정일</div><div class="mgr-cell">인상예정일</div><div class="mgr-cell">자격증 발급비용</div><div class="mgr-cell"></div>
  </div>
  <div id="tRows"></div>
+ </div>
  </div>
  <div class="panel" style="padding:16px 20px;">
  <div style="font-size:13px;font-weight:600;margin-bottom:10px;">강사료 유형 안내</div>
@@ -3728,7 +3733,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.20';
+const SYSTEM_VERSION='v16.21';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
