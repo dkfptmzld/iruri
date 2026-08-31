@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.26">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.27">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.26">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.27">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.26</title>
+<title>수업기록표 정산 시스템 v16.27</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3738,7 +3738,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.26';
+const SYSTEM_VERSION='v16.27';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8296,6 +8296,62 @@ function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(o
 /* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
 let _schReqCache=[];
 function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='email'?'이메일':f; }
+/* v16.27: 스케줄 수정 요청을 '강사 스케줄표'에 적용한 '요청 후' 표로 보여준다 — 바뀐 칸만 강조.
+ *  현재 스케줄(_teacherScheduleRows)을 복제 → 요청(changes) 적용 → 표로 렌더(요일별 rowspan). */
+function _schReqAfterRows(teacher, changes){
+ const rows = JSON.parse(JSON.stringify(_teacherScheduleRows(teacher)));
+ rows.forEach(r=>r._chg={});
+ const adds=[];
+ (changes||[]).forEach(c=>{
+  if(c.type==='add'){
+   adds.push({ day:c.day, center:c.center, region:c.region||'', area:_areaFromAddress(c.address),
+     time:c.time||'', address:c.address||'', email:c.email||'', _new:true, _chg:{} });
+   return;
+  }
+  if(c.field==='time'){
+   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ r._chg.time={from:r.time}; r.time=c.to; });
+  } else if(c.field==='address' || c.field==='email'){
+   rows.filter(r=>r.center===c.center).forEach(r=>{ r._chg[c.field]={from:r[c.field]}; r[c.field]=c.to;
+     if(c.field==='address') r.area=_areaFromAddress(c.to); });
+  }
+ });
+ const all=rows.concat(adds);
+ all.sort((a,b)=> _SCH_DAYS.indexOf(a.day)-_SCH_DAYS.indexOf(b.day) || _schMins(a.time)-_schMins(b.time));
+ return all;
+}
+function _schReqTableHTML(teacher, changes){
+ const rows=_schReqAfterRows(teacher, changes);
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ if(!rows.length) return '<div style="padding:20px;text-align:center;color:#9A968C;font-size:13px;">표시할 스케줄이 없어요</div>';
+ const TH='padding:6px 5px;font-size:11px;font-weight:700;border:1px solid #C8C6B8;background:#EDEBE1;text-align:center;white-space:nowrap;';
+ const TD='padding:5px 7px;font-size:11.5px;border:1px solid #DAD8CC;height:30px;vertical-align:middle;';
+ // 바뀐 칸: 옛값(취소선)→새값(초록), 셀 배경 연초록
+ const cell=(r, field, align)=>{
+  const chg=r._chg&&r._chg[field]; const val=r[field]||'';
+  const bg = (chg||r._new) ? 'background:#E9F7EF;' : '';
+  const inner = (chg && !r._new)
+   ? `${chg.from?`<span style="color:#B8B4A8;text-decoration:line-through;font-size:10px;">${e(chg.from)}</span> `:''}<span style="color:#0F7A4E;font-weight:700;">${e(val)||'—'}</span>`
+   : (r._new && val ? `<span style="color:#0F7A4E;font-weight:700;">${e(val)}</span>` : (e(val)||'<span style="color:#C8C4B8;">—</span>'));
+  return `<td style="${TD}${bg}text-align:${align||'left'};${field==='time'?"font-family:'DM Mono',monospace;white-space:nowrap;":''}">${inner}</td>`;
+ };
+ // 요일별 묶기(rowspan)
+ const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let body='';
+ _SCH_DAYS.forEach(day=>{ const list=byDay[day]; if(!list||!list.length) return;
+  list.forEach((r,i)=>{
+   const nameCell = `<td style="${TD}font-weight:600;${(r._new)?'background:#E9F7EF;':''}white-space:nowrap;">${r._new?'<span style="font-size:9px;font-weight:800;color:#0F7A4E;background:#D8F0E2;border:1px solid #A9DCC0;border-radius:5px;padding:0 4px;margin-right:4px;">새</span>':''}${e(r.center)}</td>`;
+   body += `<tr>`
+     + (i===0?`<td rowspan="${list.length}" style="${TD}text-align:center;font-weight:700;background:#F7F5EE;">${day}</td>`:'')
+     + nameCell + cell(r,'time','center') + cell(r,'address','left') + cell(r,'email','left')
+     + `</tr>`;
+  });
+ });
+ return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
+   <colgroup><col style="width:38px"><col style="width:19%"><col style="width:94px"><col><col style="width:26%"></colgroup>
+   <thead><tr><th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th><th style="${TH}">주소</th><th style="${TH}">이메일(사회복지사)</th></tr></thead>
+   <tbody>${body}</tbody></table></div>
+   <div style="font-size:11px;color:#9A968C;margin-top:6px;"><span style="display:inline-block;width:10px;height:10px;background:#E9F7EF;border:1px solid #A9DCC0;border-radius:3px;vertical-align:middle;"></span> 초록 칸 = 이번 요청으로 <b>바뀌는/새로 생기는</b> 부분</div>`;
+}
 async function _loadSchedRequests(silent){
  if(!(typeof _isAdminMode==='function' ? _isAdminMode() : false)) return;
  try{
@@ -8333,36 +8389,8 @@ function _renderSchedReqPanel(){
   list='<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">대기 중인 수정 요청이 없어요</div>';
  } else {
   _schReqCache.forEach(req=>{
-   // v16.26: 센터별로 묶어서 보기 — 한 센터의 주소·이메일·강의시간을 한 블록으로 정리
-   const rows=(()=>{
-    const chs=req.changes||[];
-    const adds=chs.filter(c=>c.type==='add');
-    const edits=chs.filter(c=>c.type!=='add');
-    const gmap={}, order=[];
-    edits.forEach(c=>{ const k=(c.center||'')+'|'+(c.day||''); if(!gmap[k]){gmap[k]=[];order.push(k);} gmap[k].push(c); });
-    let out='';
-    adds.forEach(c=>{ out+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:12.5px;flex-wrap:wrap;border-bottom:1px solid #F0EEE7;">
-      <span style="font-size:10px;font-weight:800;color:#1A7A50;background:#E1F5EA;border:1px solid #B8E0CC;border-radius:6px;padding:1px 6px;">새 센터</span>
-      <span style="font-weight:700;">${e(c.center)} <span style="font-weight:500;color:#9A968C;">(${e(c.day)})</span></span>
-      ${c.time?`<span style="color:#1A7A50;font-weight:700;font-family:'DM Mono',monospace;">${e(c.time)}</span>`:''}
-      ${c.address?`<span style="color:#6A6760;">· ${e(c.address)}</span>`:''}
-      ${c.email?`<span style="color:#2C5AA0;font-size:11px;">· ${e(c.email)}</span>`:''}
-     </div>`; });
-    order.forEach(k=>{
-     const list=gmap[k], f=list[0];
-     const fieldRows=list.map(c=>`<div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;font-size:12px;">
-        <span style="color:#9A968C;width:58px;flex-shrink:0;">${_fieldLabel(c.field)}</span>
-        <span style="color:#B8B4A8;${c.from?'text-decoration:line-through;':'font-style:italic;'}">${c.from?e(c.from):'빈칸'}</span>
-        <span style="color:#C8C4B8;flex-shrink:0;">→</span>
-        <span style="color:#1A7A50;font-weight:700;word-break:break-all;">${e(c.to)}</span>
-       </div>`).join('');
-     out+=`<div style="padding:7px 0;border-bottom:1px solid #F0EEE7;">
-       <div style="font-size:13px;font-weight:700;margin-bottom:3px;">${e(f.center)} <span style="font-weight:500;color:#9A968C;font-size:11.5px;">(${e(f.day)})</span> <span style="font-size:10.5px;font-weight:600;color:#B8B4A8;">· ${list.length}건</span></div>
-       ${fieldRows}
-      </div>`;
-    });
-    return out;
-   })();
+   // v16.27: 강사 스케줄표에 요청을 적용한 '요청 후' 표로 보여준다 (바뀌는 칸 강조)
+   const rows=_schReqTableHTML(req.teacher, req.changes);
    list+=`<div style="border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden;">
      <div style="display:flex;align-items:center;gap:9px;padding:11px 14px;background:#FCFBF7;border-bottom:1px solid var(--border);">
       <span style="font-size:13.5px;font-weight:800;">${e(req.teacher)}</span>
