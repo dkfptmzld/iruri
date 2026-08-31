@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.29">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.30">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.29">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.30">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.29</title>
+<title>수업기록표 정산 시스템 v16.30</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -422,7 +422,9 @@ body.edit-mode-active .ledger-wrap textarea {
 #actionFlash.ok .af-ico{background:#E9F7EF;color:#1A7A50;}
 #actionFlash.err .af-ico{background:#FDECEA;color:#D93025;}
 #actionFlash .af-msg{font-size:17px;font-weight:700;color:#23211C;text-align:center;letter-spacing:-.2px;line-height:1.4;}
-@media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}}
+#actionFlash .af-sub{font-size:13px;font-weight:500;color:#8A8676;text-align:center;line-height:1.5;margin-top:-8px;max-width:280px;}
+#actionFlash.err .af-sub{color:#C0392B;background:#FDECEA;border-radius:9px;padding:8px 12px;margin-top:0;}
+@media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}#actionFlash .af-sub{font-size:12.5px;}}
 /* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
 
@@ -2764,6 +2766,7 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  <div class="af-card">
   <div class="af-ico" id="afIco"><div class="af-spin"></div></div>
   <div class="af-msg" id="afMsg"></div>
+  <div class="af-sub" id="afSub" style="display:none;"></div>
  </div>
 </div>
 
@@ -3761,7 +3764,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.29';
+const SYSTEM_VERSION='v16.30';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12172,8 +12175,14 @@ function showToast(msg){const el=document.getElementById('saveToast');
  // v16.29: 액션 진행 중(중앙 표시)이면, 이 완료 메시지를 화면 한가운데 큰 ✓/✕ 로 승격해서 보여준다
  if(_actionActive){
   _actionActive=false;
-  const promotErr = isErr || /실패|오류|에러/.test(String(msg||''));
-  _afResult(String(msg||'').replace(/^\s*(✓|✔|✅)\s*/,''), !promotErr);
+  const raw = String(msg||'').replace(/^\s*(✓|✔|✅|❌|⚠️?|⛔|🔴|🚫)\s*/,'').trim();
+  const promotErr = isErr || /실패|오류|에러|안\s*됐|못\s/.test(raw);
+  // ' — '(또는 '—')로 이유를 붙였으면 앞은 제목, 뒤는 설명으로 분리해서 보여준다
+  const parts = raw.split(/\s*[—-]\s+|\s+—\s*/);
+  let main = parts.shift().trim();
+  let sub  = parts.join(' — ').trim();
+  if(promotErr && !sub){ sub = _afErrHint(raw); }   // 이유가 없으면 상황에 맞는 안내 자동 생성
+  _afResult(main || (promotErr?'실패했어요':'완료됐어요'), !promotErr, sub);
   return;   // 중앙 표시로 대체 — 하단 토스트는 생략
  }
  el.textContent=hasIcon?msg:('✓ '+msg);
@@ -12189,18 +12198,31 @@ function showBusyToast(msg){
  el.classList.remove('ok','err');
  const ico=document.getElementById('afIco'); if(ico) ico.innerHTML='<div class="af-spin"></div>';
  const m=document.getElementById('afMsg'); if(m) m.textContent=msg||'처리 중…';
+ const s=document.getElementById('afSub'); if(s){ s.textContent=''; s.style.display='none'; }
  el.classList.add('show');
  // 안전장치: 완료 신호가 안 오면 20초 뒤 자동으로 닫힘(화면이 잠기지 않도록)
  _afTimer=setTimeout(()=>{ _actionActive=false; el.classList.remove('show'); _afTimer=null; }, 20000);
 }
-function _afResult(msg, ok){
+function _afResult(msg, ok, sub){
  const el=document.getElementById('actionFlash'); if(!el) return;
  if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; }
  el.classList.remove('ok','err'); el.classList.add(ok?'ok':'err');
  const ico=document.getElementById('afIco'); if(ico) ico.textContent = ok?'✓':'✕';
  const m=document.getElementById('afMsg'); if(m) m.textContent = msg||(ok?'완료됐어요':'실패했어요');
+ const s=document.getElementById('afSub');
+ if(s){ if(sub){ s.textContent=sub; s.style.display=''; } else { s.textContent=''; s.style.display='none'; } }
  el.classList.add('show');
- _afTimer=setTimeout(()=>{ el.classList.remove('show'); _afTimer=null; }, ok?1300:2400);
+ // 실패는 이유를 읽을 시간이 필요 → 더 오래 띄운다
+ _afTimer=setTimeout(()=>{ el.classList.remove('show'); _afTimer=null; }, ok?1300:(sub?3600:2600));
+}
+/* v16.30: 실패 메시지에 이유가 없을 때, 문구를 보고 상황에 맞는 안내를 자동으로 붙인다 */
+function _afErrHint(msg){
+ const s=String(msg||'');
+ if(/연결|네트워크|접속|시간\s*초과|타임아웃|timeout/i.test(s)) return '인터넷 연결을 확인하고 잠시 후 다시 눌러 주세요';
+ if(/조회|불러|가져오/.test(s)) return '구글 서버가 잠깐 붐빌 수 있어요. 잠시 후 다시 시도해 주세요';
+ if(/권한|로그인|세션/.test(s)) return '다시 로그인한 뒤 시도해 주세요';
+ if(/중복|이미/.test(s)) return '이미 처리된 항목일 수 있어요. 목록을 새로고침해 확인해 주세요';
+ return '잠시 후 다시 시도해 주세요. 계속되면 새로고침(F5) 후 다시 해 주세요';
 }
 
 /* ═══ 커스텀 Confirm 모달 ═══ */
@@ -12521,6 +12543,8 @@ function showInputModal(title, placeholder, onOk, defaultValue=''){
 }
 
 function showConfirm({ icon='🗑', title='', desc='', okText='삭제', okStyle='danger', cancelText='취소', onOk=null, onCancel=null }={}) {
+ // v16.30: 진행 중 액션 표시가 떠 있으면 먼저 치운다(확인창과 동시에 뜨지 않도록)
+ try{ if(_actionActive || document.getElementById('actionFlash')?.classList.contains('show')){ _actionActive=false; if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; } document.getElementById('actionFlash')?.classList.remove('show'); } }catch(_){}
  // v14.69: manualLoadDraft 전용 동적 삭제 버튼이 다른 확인창에 새어 나오지 않도록 숨김
  const _delBtn = document.getElementById('_draftDelBtn');
  if(_delBtn) _delBtn.style.display = 'none';
@@ -13367,16 +13391,16 @@ function approveSignupRequest(name){
  showConfirm({icon:'✅',title:'가입 승인',desc:`<b>${esc(name)}</b> 강사의 가입을 승인할까요?<br><small style="color:var(--text3)">강사 명단에 추가되고 로그인할 수 있게 됩니다.</small>`,okText:'승인',okStyle:'primary',onOk:()=>{
   showBusyToast(`${name} 승인 처리 중…`);   // v16.28
   gasPost({action:'approveSignup', name})
-   .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast((r&&r.message)||'승인 실패'); })
-   .catch(()=>showToast('서버 연결 실패'));
+   .then(r=>{ if(r&&r.ok){ showToast(`✅ ${name} 승인 완료`); try{ _syncDBOnTabSwitch('teachers', ()=>{}); }catch(e){} renderSignupsView(); } else showToast(`승인 실패 — ${(r&&r.message)||'서버가 요청을 처리하지 못했어요'}`); })
+   .catch(()=>showToast('승인 실패 — 서버에 연결하지 못했어요'));
  }});
 }
 function rejectSignupRequest(name){
  showConfirm({icon:'🗑',title:'가입 거절',desc:`<b>${esc(name)}</b> 강사의 가입 신청을 거절(삭제)할까요?`,okText:'거절',okStyle:'danger',onOk:()=>{
   showBusyToast(`${name} 거절 처리 중…`);   // v16.28
   gasPost({action:'rejectSignup', name})
-   .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast((r&&r.message)||'실패'); })
-   .catch(()=>showToast('서버 연결 실패'));
+   .then(r=>{ if(r&&r.ok){ showToast(`${name} 신청 삭제됨`); renderSignupsView(); } else showToast(`거절 실패 — ${(r&&r.message)||'서버가 요청을 처리하지 못했어요'}`); })
+   .catch(()=>showToast('거절 실패 — 서버에 연결하지 못했어요'));
  }});
 }
 
