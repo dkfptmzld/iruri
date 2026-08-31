@@ -72,9 +72,19 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  var body, action;
+  try { body = JSON.parse(e.postData.contents); action = body.action; }
+  catch (err) { return response({ ok: false, message: '요청 파싱 실패' }); }
+  // [안전 2단계] 쓰기 잠금 — 저장을 한 번에 하나씩만 처리(동시 저장 충돌 방지).
+  //  접속현황·영수증 업로드처럼 '줄 추가만 하는(충돌 무해)' 동작은 잠금 없이 통과 → 강사 활동은 안 느려짐.
+  var _NO_LOCK = { updatePresence: 1, removePresence: 1, uploadReceipt: 1 };
+  var _lock = null;
+  if (!_NO_LOCK[action]) {
+    _lock = LockService.getScriptLock();
+    try { _lock.waitLock(30000); }
+    catch (e2) { return response({ ok: false, busy: true, message: '다른 저장이 처리 중이에요. 잠시 후 다시 시도해 주세요' }); }
+  }
   try {
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
     if (action === 'submitRecord')          return response(submitRecord(body.data));
     if (action === 'signupAccount')         return response(signupAccount(body.teacher, body.hashedPw));
     if (action === 'loginCheck')            return response(loginCheck(body.teacher, body.hashedPw, body.legacyPw));
@@ -83,7 +93,7 @@ function doPost(e) {
     if (action === 'saveTeacher')           return response(saveTeacher(body.teacher));
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
-    if (action === 'deleteCenter')          return response(deleteCenter(body.name));
+    if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
     if (action === 'syncCenters')           return response(syncCenters(body.centers, body.force));
     if (action === 'saveMonthlySnapshot')   return response(saveMonthlySnapshot(body.yearMonth, body.data, body.force, body.savedAt));
@@ -101,6 +111,7 @@ function doPost(e) {
     if (action === 'resolveScheduleRequest')return response(resolveScheduleRequest(body.id, body.status));   // v16.05
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
+  finally { if (_lock) { try { _lock.releaseLock(); } catch (_e) {} } }
 }
 
 /* ════════ [속도] DB 버전 · 내용 지문 ════════
@@ -292,6 +303,13 @@ function resolveScheduleRequest(id, status){
 function DB_DROP_BLOCK(curCount, newCount){
   return curCount >= 6 && newCount < curCount && (curCount - newCount) >= Math.max(3, Math.ceil(curCount * 0.05));
 }
+/* [안전 2단계] 대량 유실 하드 차단 — force(강제)로도 못 넘는다.
+ *  70% 넘게 줄거나(=대부분 사라짐) 3개 미만이 되면 무조건 거부.
+ *  실수/오래된 캐시로 인한 '센터·강사 전체 날아감'을 원천 차단.
+ *  (정상 편집·소수 삭제는 걸리지 않음. 자동백업이 있어 걸려도 데이터는 안전) */
+function DB_HARD_WIPE(curCount, newCount){
+  return curCount >= 10 && newCount < Math.max(3, Math.ceil(curCount * 0.30));
+}
 function backupSheetSnapshot_(srcName){
   try{
     const ss = ss_();
@@ -354,6 +372,11 @@ function getTeachers(requesterName, isAdmin, clientVer) {
 function syncTeachers(teachers, force) {
   const sheet = getSheet(SHEET_TEACHERS);
   const curCount = Math.max(0, sheet.getLastRow() - 1);
+  // [안전 2단계] force로도 못 넘는 대량 유실 하드 차단
+  if (DB_HARD_WIPE(curCount, (teachers||[]).length)) {
+    return { ok: false, blocked: true, reason: 'wipe', curCount: curCount,
+             message: '강사 대량 유실 차단: 현재 '+curCount+'명 → 요청 '+(teachers||[]).length+'명. 자동백업에서 복구 가능하며, 정말 맞다면 잠시 후 다시 시도하세요' };
+  }
   if (!force && DB_DROP_BLOCK(curCount, teachers.length)) {
     return { ok: false, blocked: true, reason: 'drop', curCount: curCount,
              message: '강사 급감 차단: 현재 '+curCount+'명 → 요청 '+teachers.length+'명 (정상이면 force로 재요청)' };
@@ -389,6 +412,7 @@ function syncTeachers(teachers, force) {
   }
 
   backupSheetSnapshot_(SHEET_TEACHERS);
+  try { autoBackupDB(); } catch (_e) {}   // [안전 2단계] 덮어쓰기 직전 버전 백업(복원 지점)
   sheet.clearContents();
   const header = [['강사명','지역','급여유형','급여액','입사일','인상일','계좌정보','JSON전체']];
   const all = header.concat(rows);
@@ -451,8 +475,10 @@ function saveCenter(center) {
   const values = sheet.getDataRange().getValues();
   const t = center.teachers || [];
   const row = [center.name, center.region||'', center.fee||0, t[0]||'', t[1]||'', t[2]||'', t[3]||'', center.address||'', center.source||'수동', JSON.stringify(center.schedule||[]), center.phone||'', center.email||'', center.contactName||'', JSON.stringify(center)];
+  // v16.19: 이름+지역으로 행을 찾는다(동명이센터를 잘못 덮지 않게)
+  const rg = String(center.region||'');
   for (let i = 1; i < values.length; i++) {
-    if (String(values[i][0]) === center.name) {
+    if (String(values[i][0]) === String(center.name) && String(values[i][1]||'') === rg) {
       sheet.getRange(i+1,1,1,14).setValues([row]);
       touchDb_('centers');
       return { ok: true, message: '수정 완료' };
@@ -463,11 +489,16 @@ function saveCenter(center) {
   return { ok: true, message: '추가 완료' };
 }
 
-function deleteCenter(name) {
+function deleteCenter(name, region) {
   const sheet = getSheet(SHEET_CENTERS);
   const values = sheet.getDataRange().getValues();
+  // v16.19: region 이 오면 이름+지역으로, 없으면(구버전 호출) 이름만으로 매칭
+  const hasRg = (region !== undefined && region !== null);
+  const rg = String(region||'');
   for (let i = 1; i < values.length; i++) {
-    if (values[i][0] === name) { sheet.deleteRow(i+1); touchDb_('centers'); return { ok: true, message: '삭제 완료' }; }
+    if (String(values[i][0]) === String(name) && (!hasRg || String(values[i][1]||'') === rg)) {
+      sheet.deleteRow(i+1); touchDb_('centers'); return { ok: true, message: '삭제 완료' };
+    }
   }
   return { ok: false, message: '해당 센터 없음' };
 }
@@ -475,6 +506,11 @@ function deleteCenter(name) {
 function syncCenters(centers, force) {
   const sheet = getSheet(SHEET_CENTERS);
   const curCount = Math.max(0, sheet.getLastRow() - 1);
+  // [안전 2단계] force로도 못 넘는 대량 유실 하드 차단
+  if (DB_HARD_WIPE(curCount, (centers||[]).length)) {
+    return { ok: false, blocked: true, reason: 'wipe', curCount: curCount,
+             message: '센터 대량 유실 차단: 현재 '+curCount+'개 → 요청 '+(centers||[]).length+'개. 자동백업에서 복구 가능하며, 정말 맞다면 잠시 후 다시 시도하세요' };
+  }
   if (!force && DB_DROP_BLOCK(curCount, centers.length)) {
     return { ok: false, blocked: true, reason: 'drop', curCount: curCount,
              message: '센터 급감 차단: 현재 '+curCount+'개 → 요청 '+centers.length+'개 (정상이면 force로 재요청)' };
@@ -517,6 +553,7 @@ function syncCenters(centers, force) {
   }
 
   backupSheetSnapshot_(SHEET_CENTERS);
+  try { autoBackupDB(); } catch (_e) {}   // [안전 2단계] 덮어쓰기 직전 버전 백업(복원 지점)
   sheet.clearContents();
   const header = [['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']];
   const all = header.concat(rows);
@@ -919,4 +956,125 @@ function getSettlementStatus(teacher) {
     if (!finalized.find(f => f.yearMonth === ymStr)) finalized.push({ yearMonth: ymStr, finalizedAt: atStr });
   }
   return { ok: true, data: finalized };
+}
+
+
+/* ═══════════ [안전망 1단계] 자동 버전 백업 (v1) ═══════════
+ *  목적: 정산 기간에도 센터·강사·정산 데이터가 '실질적으로' 사라지지 않게 —
+ *        무슨 일이 있어도 되돌릴 수 있는 복원 지점을 자동으로 쌓아둔다.
+ *
+ *  ★ 안전성: 이 코드는 실데이터를 '읽어서 복사본만' 만든다. 기존 시트/파일을
+ *            지우거나 바꾸지 않으므로, 그 자체로는 어떤 손실도 낼 수 없다.
+ *            (저장 로직도 전혀 안 건드림 — 옆에서 조용히 스냅샷만 뜬다)
+ *
+ *  설치(딱 한 번): 편집기에서 함수 목록 → setupAutoBackup 선택 → ▶실행 → 권한 허용.
+ *                  이후 '매시간' 자동으로 백업된다.
+ *  확인: 구글 드라이브 → 이루리 → 이루리_자동백업 폴더에 backup_날짜시각.json 이 쌓임.
+ *  복구: 편집기에서 listBackups() 실행(목록 확인) → restoreFromBackup('파일명') 실행.
+ *
+ *  ※ 아래 이름들은 기존 Code.gs 의 것을 그대로 씁니다:
+ *     ss_(), props_(), getIruriRoot(), getSnapshotRoot(), SHEET_TEACHERS, SHEET_CENTERS
+ *     (기존 Code.gs 끝에 이 블록을 붙여넣기만 하면 됩니다) */
+
+const BACKUP_FOLDER = '이루리_자동백업';
+const BACKUP_KEEP   = 150;  // 최근 150개 보관(정기+저장직전 백업 포함)
+
+function backupRoot_() {
+  const root = getIruriRoot();
+  const it = root.getFoldersByName(BACKUP_FOLDER);
+  return it.hasNext() ? it.next() : root.createFolder(BACKUP_FOLDER);
+}
+
+/* 매시간 트리거가 부르는 함수 — 복사본만 만든다(비파괴) */
+function autoBackupDB() {
+  try {
+    const ss = ss_();
+    const pick = (name) => { const sh = ss.getSheetByName(name); return sh ? sh.getDataRange().getValues() : []; };
+    const now = new Date();
+    const stamp = Utilities.formatDate(now, 'Asia/Seoul', 'yyyyMMdd_HHmmss');
+    const payload = {
+      backedUpAt: now.toISOString(),
+      teachers: pick(SHEET_TEACHERS),
+      centers:  pick(SHEET_CENTERS)
+    };
+    // 이번 달 정산 스냅샷도 함께 보관(있으면)
+    try {
+      const ym = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy년 M월');
+      const f = getSnapshotRoot().getFilesByName(ym.replace(/\s/g, '_') + '.json');
+      if (f.hasNext()) payload.snapshot = { yearMonth: ym, json: f.next().getBlob().getDataAsString() };
+    } catch (e) {}
+    const folder = backupRoot_();
+    folder.createFile('backup_' + stamp + '.json', JSON.stringify(payload), 'application/json');
+    pruneBackups_(folder);
+    return { ok: true, file: 'backup_' + stamp };
+  } catch (err) {
+    return { ok: false, message: err.toString() };
+  }
+}
+
+/* 오래된 백업 자동 정리(휴지통으로) — 최근 BACKUP_KEEP개만 남김 */
+function pruneBackups_(folder) {
+  const files = [];
+  const all = folder.getFiles();
+  while (all.hasNext()) { const f = all.next(); if (/^backup_.*\.json$/.test(f.getName())) files.push(f); }
+  files.sort((a, b) => b.getName().localeCompare(a.getName()));   // 최신 먼저
+  for (let i = BACKUP_KEEP; i < files.length; i++) files[i].setTrashed(true);
+}
+
+/* 설치 — 딱 한 번 실행하면 매시간 자동 백업 */
+function setupAutoBackup() {
+  ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'autoBackupDB') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('autoBackupDB').timeBased().everyHours(1).create();
+  const r = autoBackupDB();   // 지금 즉시 1개 만들어 확인
+  Logger.log('✅ 자동 백업 설치 완료 — 매시간 실행. 폴더: ' + BACKUP_FOLDER + ' / 첫 백업: ' + JSON.stringify(r));
+}
+
+/* ── 복구 도구 (문제 생겼을 때 편집기에서 수동 실행) ── */
+
+/* 백업 목록 보기 */
+function listBackups() {
+  const folder = backupRoot_();
+  const all = folder.getFiles();
+  const out = [];
+  while (all.hasNext()) {
+    const f = all.next();
+    if (/^backup_.*\.json$/.test(f.getName()))
+      out.push(f.getName() + '   (' + f.getLastUpdated().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) + ')');
+  }
+  out.sort().reverse();
+  Logger.log(out.length ? ('백업 ' + out.length + '개:\n' + out.join('\n')) : '백업 없음');
+  return out;
+}
+
+/* 특정 백업으로 되돌리기.
+ *   restoreFromBackup('backup_20260830_140000.json')            → 강사·센터 둘 다 복구
+ *   restoreFromBackup('backup_20260830_140000.json', 'centers') → 센터만
+ *   restoreFromBackup('backup_20260830_140000.json', 'teachers')→ 강사만
+ *  ※ 복구 직전에 '지금 상태'도 한 번 더 백업하므로, 복구가 잘못돼도 되돌릴 수 있음. */
+function restoreFromBackup(fileName, what) {
+  what = what || 'both';
+  const folder = backupRoot_();
+  const it = folder.getFilesByName(fileName);
+  if (!it.hasNext()) { Logger.log('❌ 파일 없음: ' + fileName + '  → listBackups() 로 이름 확인'); return; }
+  const data = JSON.parse(it.next().getBlob().getDataAsString());
+  autoBackupDB();   // 복구 전에 현재 상태부터 백업(안전)
+  const ss = ss_();
+  const writeBack = (name, rows) => {
+    if (!rows || !rows.length) { Logger.log('⚠️ ' + name + ' 백업 내용이 비어 건너뜀'); return; }
+    const sh = ss.getSheetByName(name); if (!sh) return;
+    sh.clearContents();
+    sh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+    Logger.log('↩ ' + name + ' 복구: ' + (rows.length - 1) + '행');
+  };
+  if (what === 'teachers' || what === 'both') writeBack(SHEET_TEACHERS, data.teachers);
+  if (what === 'centers'  || what === 'both') writeBack(SHEET_CENTERS,  data.centers);
+  // 앱이 새 데이터를 다시 받아가도록 버전 무효화
+  try {
+    ['teachers', 'centers'].forEach(k => {
+      props_().deleteProperty('DBHASH_' + k);
+      props_().deleteProperty('DBROWS_' + k);
+      props_().setProperty('DBVER_' + k, String((Number(props_().getProperty('DBVER_' + k) || 0) || 0) + 1));
+    });
+  } catch (e) {}
+  Logger.log('✅ 복구 완료: ' + fileName + ' (' + what + ') — 앱에서 동기화 버튼 누르면 반영됨');
 }
