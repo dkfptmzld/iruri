@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.19">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.20">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.19">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.20">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.19</title>
+<title>수업기록표 정산 시스템 v16.20</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3728,7 +3728,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.19';
+const SYSTEM_VERSION='v16.20';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4215,6 +4215,7 @@ window.addEventListener('load', ()=>{
     const dedupMap1 = new Map();
     r.data.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap1.has(key)) dedupMap1.set(key,c); });
     const dedupedCenters1 = Array.from(dedupMap1.values());
+    try{ _applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
     // v15.52: 병합(union) — 사람이 삭제(도장)한 것만 빠지고, GAS에 없던 로컬 센터는 살려서 재저장. 구조적으로 유실 불가.
     const _mrg1 = _mergeCenters(dedupedCenters1);
     DB.centers = _mrg1.merged;
@@ -4418,6 +4419,8 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     console.warn('[센터탭 동기화] 스케줄 없는 GAS 데이터 → 무시');
     return;
    }
+   let _tombRemoved2=0; try{ _tombRemoved2=_applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
+   if(_tombRemoved2){ try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); _initCenterShadow(); renderFn(); }catch(_){} }
    if(JSON.stringify(r.data) !== JSON.stringify(DB.centers)){
     // v15.52: 병합(union) + 삭제 도장 반영 + 로컬 전용 센터 재저장 (앱 시작 동기화와 동일 정책)
     const _mrg2 = _mergeCenters(r.data);
@@ -8650,14 +8653,26 @@ function _canWriteCenters(){
 function _persistCentersAfterMerge(localOnly, tombedOnGas){
  if(!_canWriteCenters()) return;   // 강사 기기·로그인 전 → 서버에 쓰지 않음(부활 차단)
  try{
-  if(localOnly && localOnly.length){
-   const _snapshot = JSON.parse(JSON.stringify(DB.centers));
-   _gasPostRetry({action:'syncCenters', centers:_snapshot, force:true}).then(ok=>{
-    if(!ok){ try{ pushErrorLog('센터 서버 재저장 실패', `서버에 없던 로컬 센터 ${localOnly.length}곳 저장을 3회 시도했으나 실패 — 로컬엔 안전 보관, 다음 접속 때 재시도됩니다.`); }catch(_){} }
-   });
-  }
-  (tombedOnGas||[]).forEach(c=>{ _gasPostRetry({action:'deleteCenter', name:c.name}); });
+  // v16.20: 전체 통(syncCenters force) 대신 '진짜 로컬에만 있는 센터'만 건별 저장.
+  //  서버 삭제기록으로 걸러진 뒤라 여기 남는 건 정말 새 로컬 센터뿐 → 부활 없음.
+  (localOnly||[]).forEach(c=>{ try{ _gasPostRetry({action:'saveCenter', center: JSON.parse(JSON.stringify(c))}); }catch(_){} });
+  (tombedOnGas||[]).forEach(c=>{ try{ _gasPostRetry({action:'deleteCenter', name:c.name, region:c.region}); }catch(_){} });
  }catch(_){}
+}
+
+/* v16.20: 서버 공용 삭제기록을 로컬에 반영.
+ *  서버가 "이 센터 삭제됨"이라고 알려주면 → 로컬 삭제도장에 추가하고, 캐시에 남은 그 센터를 조용히 제거.
+ *  → 삭제한 기기가 아니어도 부활을 막는다(핵심). 다시 추가된 센터는 서버가 삭제기록을 지워 보내므로 영향 없음. */
+function _applyServerCenterTombs(tombs){
+ if(!Array.isArray(tombs) || !tombs.length) return 0;
+ tombs.forEach(t=>{ if(t && t.name!=null) try{ _addCenterTomb(t.name, t.region); }catch(_){} });
+ let removed=0;
+ if(DB.centers && DB.centers.length){
+  const before=DB.centers.length;
+  DB.centers = DB.centers.filter(c=> !(c && _isCenterTombed(c.name, c.region)));
+  removed = before - DB.centers.length;
+ }
+ return removed;
 }
 /* v15.52: 전체 센터를 서버에 한 번에 안전 저장 (297개 동시전송 대신 1요청 + 재시도)
  *  v15.54: force:true — 사용자 조작(드래그 등) 후의 '현재 전체 목록'을 확실히 저장(막힘 방지).

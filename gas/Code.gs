@@ -43,6 +43,7 @@ const SHEET_CENTERS    = '센터DB';
 const SHEET_PRESENCE   = '접속현황';
 const SHEET_PENDING    = '가입대기';
 const SHEET_SCHEDREQ   = '스케줄요청';   // v16.05: 강사 스케줄 수정요청
+const SHEET_CTOMB      = '센터삭제기록';  // v16.20: 서버 공용 삭제기록(묘비) — 삭제한 센터가 다른 기기 캐시로 부활하는 것 방지
 
 function response(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
@@ -57,6 +58,7 @@ function doGet(e) {
     if (action === 'getReceipts')          return response(getReceipts(p.teacher, p.yearMonth));
     if (action === 'getTeachers')          return response(getTeachers(p.teacher, p.isAdmin, p.v));   // [속도] v = 앱이 가진 버전
     if (action === 'getCenters')           return response(getCenters(p.v));                          // [속도]
+    if (action === 'getCenterTombs')       return response(getCenterTombs());                         // v16.20: 서버 삭제기록
     if (action === 'getMonthlySnapshot')   return response(getMonthlySnapshot(p.yearMonth));
     if (action === 'getMonthlySnapshots')  return response(getMonthlySnapshots());
     if (action === 'listMonthlySnapshots') return response(getMonthlySnapshots());
@@ -94,6 +96,7 @@ function doPost(e) {
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
     if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
+    if (action === 'removeCenterTomb')      { try { _removeCenterTombGas(body.name, body.region); } catch (e) {} return response({ ok: true }); }   // v16.20: 삭제기록 해제(관리/테스트용)
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
     if (action === 'syncCenters')           return response(syncCenters(body.centers, body.force));
     if (action === 'saveMonthlySnapshot')   return response(saveMonthlySnapshot(body.yearMonth, body.data, body.force, body.savedAt));
@@ -182,6 +185,7 @@ function getSheet(name) {
     if (name === SHEET_CENTERS)  sheet.appendRow(['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']);
     if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태']);
     if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','메시지','요청시각','상태','처리시각']);
+    if (name === SHEET_CTOMB)    sheet.appendRow(['센터명','지역','삭제시각']);
   }
   return sheet;
 }
@@ -467,10 +471,49 @@ function getCenters(clientVer) {
     if (scheduleJson) { try { schedule = JSON.parse(String(scheduleJson)); } catch(e) {} }
     centers.push({ name: String(name), region: String(region||''), fee: Number(fee)||0, teachers, address: String(address||''), source: String(source||'수동'), schedule, phone: String(phone||''), email: String(email||''), contactName: String(contactName||'') });
   }
-  return { ok: true, data: centers, version: ver };
+  let tombs = [];
+  try { tombs = getCenterTombs().data; } catch (e) {}   // v16.20: 삭제기록 동봉 → 클라이언트가 부활 방지
+  return { ok: true, data: centers, version: ver, tombs: tombs };
+}
+
+/* ══════ v16.20: 서버 공용 삭제기록(묘비) ══════
+ *  어느 기기에서 센터를 삭제하든 서버에 '삭제됨'을 남긴다.
+ *  다른 기기는 접속할 때 이 목록을 받아 → 자기 캐시에 남은 그 센터를 부활시키지 않고 조용히 지운다.
+ *  (삭제 도장이 삭제한 기기에만 있어 다른 기기가 부활시키던 문제의 근본 해결) */
+function _addCenterTombGas(name, region) {
+  if (!name) return;
+  const sh = getSheet(SHEET_CTOMB);
+  const v = sh.getDataRange().getValues();
+  const rg = String(region || '');
+  for (let i = 1; i < v.length; i++) {
+    if (String(v[i][0]) === String(name) && String(v[i][1] || '') === rg) {
+      sh.getRange(i + 1, 3).setValue(new Date().toISOString());   // 이미 있으면 시각만 갱신
+      return;
+    }
+  }
+  sh.appendRow([String(name), rg, new Date().toISOString()]);
+}
+function _removeCenterTombGas(name, region) {
+  if (!name) return;
+  const sh = getSheet(SHEET_CTOMB);
+  const v = sh.getDataRange().getValues();
+  const rg = String(region || '');
+  for (let i = v.length - 1; i >= 1; i--) {   // 뒤에서부터 삭제(행 밀림 방지)
+    if (String(v[i][0]) === String(name) && String(v[i][1] || '') === rg) sh.deleteRow(i + 1);
+  }
+}
+function getCenterTombs() {
+  const sh = getSheet(SHEET_CTOMB);
+  const v = sh.getDataRange().getValues();
+  const out = [];
+  for (let i = 1; i < v.length; i++) {
+    if (v[i][0]) out.push({ name: String(v[i][0]), region: String(v[i][1] || ''), at: String(v[i][2] || '') });
+  }
+  return { ok: true, data: out };
 }
 
 function saveCenter(center) {
+  try { _removeCenterTombGas(center.name, center.region); } catch (e) {}   // v16.20: 다시 추가 → 삭제기록 해제
   const sheet = getSheet(SHEET_CENTERS);
   const values = sheet.getDataRange().getValues();
   const t = center.teachers || [];
@@ -495,12 +538,14 @@ function deleteCenter(name, region) {
   // v16.19: region 이 오면 이름+지역으로, 없으면(구버전 호출) 이름만으로 매칭
   const hasRg = (region !== undefined && region !== null);
   const rg = String(region||'');
+  try { _addCenterTombGas(name, rg); } catch (e) {}   // v16.20: 삭제기록 남김(다른 기기 부활 방지) — 행이 이미 없어도 기록
   for (let i = 1; i < values.length; i++) {
     if (String(values[i][0]) === String(name) && (!hasRg || String(values[i][1]||'') === rg)) {
       sheet.deleteRow(i+1); touchDb_('centers'); return { ok: true, message: '삭제 완료' };
     }
   }
-  return { ok: false, message: '해당 센터 없음' };
+  touchDb_('centers');   // v16.20: 행은 없었어도 삭제기록이 생겼으니 버전 올려 다른 기기가 받아가게
+  return { ok: true, message: '삭제기록만 남김(행 없음)' };
 }
 
 function syncCenters(centers, force) {
