@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.22">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.23">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.22">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.23">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.22</title>
+<title>수업기록표 정산 시스템 v16.23</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3738,7 +3738,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.22';
+const SYSTEM_VERSION='v16.23';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7329,13 +7329,13 @@ function _addAdminNote(ti, cat){
    const dateM=rest.match(/^\[([^\]]*)\]/);
    const date=dateM?dateM[1].trim():'';
    const text=(dateM?rest.slice(dateM[0].length):rest).replace(/^[:\s]+/,'').trim();
-   const multiCats=['휴강','보강','신규(모의) 수업','주차료','대상행사'];
+   const multiCats=['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사'];
    return multiCats.includes(c)
     ? {cat:c,date,text,entries:[{date,center:'',text,amount:0}]}
     : {cat:c,date,text,amount:0};
   });
  }
- const multiCats=['휴강','보강','신규(모의) 수업','주차료','대상행사'];
+ const multiCats=['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사'];
  const newNote={cat,date:'',text:'',center:'',amount:0};
  if(multiCats.includes(cat)){
   const defaultAmt = cat==='대상행사' ? 50000 : 0;
@@ -7405,9 +7405,11 @@ function _startNoteEdit(ti, ni){
  if(!editorDiv) return;
  const catColor = {'휴강':'#FCEBEB|#A32D2D','보강':'#FAEEDA|#633806','신규(모의) 수업':'#E8F5EE|#0F6E56','주차료':'#EEE8FA|#5A3AB0','물품':'#CCFBF1|#0F766E','기타':'#F0F9FF|#0369A1','대상행사':'#FDF3DC|#854F0B'};
  const [bg,col] = (catColor[n.cat]||'#F8F7F2|#555').split('|');
- const multiCats = ['휴강','보강','신규(모의) 수업','주차료','대상행사'];
+ // v16.23: 물품·기타 포함(강사 _MULTI_ENTRY_CATS와 일치). 예전엔 제외돼 물품·기타 노트가
+ //  entries에 내용을 담고 있는데 단일폼으로 열려 '클릭해도 내용이 안 뜨던' 문제가 있었음.
+ const multiCats = ['휴강','보강','신규(모의) 수업','주차료','물품','기타','대상행사'];
  const hasAmt = ['신규(모의) 수업','주차료','물품','기타','대상행사'].includes(n.cat);
- const isMulti = multiCats.includes(n.cat);
+ const isMulti = multiCats.includes(n.cat) || (Array.isArray(n.entries) && n.entries.length>0);
  // 센터 목록: 해당 강사의 이번 달 수업 센터
  const tCenters = [...new Set((t.lessons||[]).map(l=>l.center).filter(Boolean))];
  // entries 초기화
@@ -7500,10 +7502,9 @@ function _saveNoteEdit(ti, ni){
  // entries 합계 반영
  if(Array.isArray(n.entries)) n.amount=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
  // t.note 재생성
- const _MULTI=['휴강','보강','신규(모의) 수업','주차료','대상행사'];
  const _AMT=['신규(모의) 수업','주차료','물품','기타'];
  t.note=t.notesData.map(nd=>{
-  if(_MULTI.includes(nd.cat)&&nd.entries?.length){
+  if(Array.isArray(nd.entries)&&nd.entries.length){   // v16.23: entries 기반이면(물품·기타 포함) 항상 entries로 직렬화
    const entryStr=nd.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
    const total=nd.entries.reduce((s,e)=>s+(Number(e.amount)||0),0);
    return `${nd.cat} [${entryStr}]${total?` · 합계 ${total.toLocaleString()}원`:''}`;
