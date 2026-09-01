@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.37">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.38">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.37">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.38">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.37</title>
+<title>수업기록표 정산 시스템 v16.38</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3992,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.37';
+const SYSTEM_VERSION='v16.38';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17200,15 +17200,12 @@ function getTeacherSchedule(teacher){
  const result = {}; // {요일: [{name, region, order}, ...]}
  const unscheduled = []; // schedule 없거나 본인 days 없는 센터 (v11.19)
  DB.centers.forEach(c=>{
-  if(c.teachers && !c.teachers.includes(teacher)) return;
-  if(!c.schedule){
-   // schedule 자체 없음 → 미등록 그룹으로
-   unscheduled.push({name:c.name, region:c.region||''});
-   return;
-  }
-  // v16.37: 이 강사의 '모든' 스케줄 항목(여러 교시)에서 요일을 모은다.
+  // v16.37: 이 강사의 스케줄 항목을 먼저 모은다 (담당강사 목록과 스케줄이 어긋나도 스케줄이 있으면 인정)
+  const mine = Array.isArray(c.schedule) ? c.schedule.filter(s=>s.teacher===teacher) : [];
+  const inTeachers = Array.isArray(c.teachers) && c.teachers.includes(teacher);
+  if(!inTeachers && !mine.length) return;   // 이 강사와 전혀 무관한 센터만 제외
+  // v16.37: 이 강사의 '모든' 스케줄 항목(여러 교시)에서 요일을 합친다.
   //  (기존엔 find로 첫 항목만 봐서, 여러 교시거나 첫 항목 요일이 비면 나머지가 통째로 '미등록'으로 잘못 처리되던 버그)
-  const mine = c.schedule.filter(s=>s.teacher===teacher);
   const days = new Set(); let ord = 99;
   mine.forEach(s=>{ if(Array.isArray(s.days)) s.days.forEach(d=>{ if(d) days.add(d); }); if(s.order!=null) ord=Math.min(ord, s.order); });
   if(!days.size){
