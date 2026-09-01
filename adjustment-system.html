@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.38">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.39">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.38">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.39">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.38</title>
+<title>수업기록표 정산 시스템 v16.39</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3992,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.38';
+const SYSTEM_VERSION='v16.39';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13188,17 +13188,53 @@ function _confirmCancel(){
 /* v15.71: 이미 제출한 달의 '내가 낸 내용' 읽기전용 보기.
  *  - 데이터 출처: 제출 시 저장되는 로컬 사본 ti_submit_history_<강사> (관리자 정산완료와 무관하게 항상 존재)
  *  - 표시: 출석 O/X 표 · 특이사항 · 정산 미리보기(_calcTiSettlement) */
-function _showMySubmissionView(teacher, month){
- let entry=null;
+/* v16.39: '제출한 내용'이 실제 제출과 어긋나(로컬이 비거나 빈 항목) 비어 보이던 문제 해결.
+ *  - 로컬 이력 중 '데이터 있는' 최신 항목을 고르고, 그래도 비면 서버(getHistory)에서 실제 제출을 가져온다. */
+function _subEntryHasData(e){
+ if(!e) return false;
+ const dg=Array.isArray(e.dayGroups)?e.dayGroups:[];
+ const hasCenter=dg.some(g=>g&&g.day!=='미등록'&&Array.isArray(g.centers)&&g.centers.some(c=>c&&c.name&&c.name!=='__custom__'));
+ const hasLessons=Array.isArray(e.lessons)&&e.lessons.length>0;
+ const hasNotes=Array.isArray(e.notes)&&e.notes.some(n=>n&&n.cat);
+ return !!(hasCenter||hasLessons||hasNotes);
+}
+function _pickLocalSubEntry(teacher, month){
  try{
   const hist=JSON.parse(localStorage.getItem('ti_submit_history_'+teacher)||'[]');
-  if(Array.isArray(hist) && hist.length){
-   const byMonth = month ? hist.filter(h=>{ const m=/(\d+)\s*월/.exec(h.yearMonth||''); return m && (+m[1])===(+month); }) : [];
-   const pool = byMonth.length?byMonth:hist;
-   entry = pool[pool.length-1];
-  }
- }catch(_){}
- if(!entry){ try{ showToast('이 기기에 저장된 제출 내용이 없어요 (다른 기기에서 제출했을 수 있어요)'); }catch(_){} return; }
+  if(!Array.isArray(hist)||!hist.length) return null;
+  const byMonth = month ? hist.filter(h=>{ const m=/(\d+)\s*월/.exec(h.yearMonth||''); return m && (+m[1])===(+month); }) : hist.slice();
+  const pool = byMonth.length?byMonth:hist;
+  const withData = pool.filter(_subEntryHasData);   // 데이터 있는 것 우선
+  const arr = withData.length?withData:pool;
+  return arr[arr.length-1];
+ }catch(_){ return null; }
+}
+function _pickServerSubRecord(data, month){
+ const recs=data.map(h=>{ try{ return _histFullRecord(h); }catch(_){ return h; } });
+ const match = month ? recs.filter(h=>{ const m=/(\d+)\s*월/.exec(h.yearMonth||''); return m && (+m[1])===(+month); }) : recs;
+ const pool = match.length?match:recs;
+ return pool.length?pool[pool.length-1]:null;
+}
+function _serverRecToSubEntry(rec){
+ // 서버 제출 레코드(lessons/dayGroups/notesData) → 뷰용 entry(요일별 센터 포함)로 복원
+ const byDay={};
+ (rec.dayGroups||[]).forEach(g=>{ if(g&&g.day) byDay[g.day]={day:g.day, dates:Array.isArray(g.dates)?g.dates:[], centers:[]}; });
+ (rec.lessons||[]).forEach(l=>{ const d=l.day||'?'; if(!byDay[d]) byDay[d]={day:d, dates:[], centers:[]}; byDay[d].centers.push({name:l.center, region:l.region||'', attend:Array.isArray(l.attend)?l.attend:[], isSubstitute:l.isSubstitute}); });
+ return { yearMonth:rec.yearMonth, submittedAt:rec.submittedAt, account:rec.account, dayGroups:Object.values(byDay), notes:Array.isArray(rec.notesData)?rec.notesData:[], pendingCenters:Array.isArray(rec.pendingCenters)?rec.pendingCenters:[] };
+}
+async function _showMySubmissionView(teacher, month){
+ let entry=_pickLocalSubEntry(teacher, month);
+ if(!_subEntryHasData(entry)){
+  // 로컬이 비었거나 데이터가 없으면 서버(실제 제출)에서 가져온다
+  try{
+   const r=await gasGet({action:'getHistory', teacher});
+   if(r && r.ok && Array.isArray(r.data)){
+    const rec=_pickServerSubRecord(r.data, month);
+    if(rec){ const se=_serverRecToSubEntry(rec); if(_subEntryHasData(se)) entry=se; }
+   }
+  }catch(_){}
+ }
+ if(!entry){ try{ showToast('제출 내용을 찾을 수 없어요 (네트워크 확인 후 다시 시도해 주세요)'); }catch(_){} return; }
 
  const dayGroups = Array.isArray(entry.dayGroups)?entry.dayGroups:[];
  const notes = Array.isArray(entry.notes)?entry.notes:[];
