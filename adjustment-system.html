@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.35">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.36">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.35">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.36">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.35</title>
+<title>수업기록표 정산 시스템 v16.36</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -487,7 +487,10 @@ body.edit-mode-active .ledger-wrap textarea {
 .nc-sec-head .nc-st{font-size:14px;font-weight:800;color:#20201C;}
 .nc-sec-head .nc-sc{font-size:11px;font-weight:700;color:#1A7A50;background:#E8F5EE;border-radius:20px;padding:1px 8px;}
 .nc-sec-sub{font-size:12px;color:#6A6760;margin-bottom:12px;}
-.nc-tblock{border:1px solid #E4E1D6;border-radius:13px;padding:12px;margin-bottom:10px;background:#FAF9F4;}
+.nc-tblock{border:1px solid #E4E1D6;border-radius:13px;padding:12px;margin-bottom:10px;background:#FAF9F4;transition:opacity .18s,filter .18s,box-shadow .18s,transform .18s;}
+/* v16.36: 수정 중인 강사 카드만 돋보이게, 나머지는 흐리게 */
+#ncAsgList.nc-hasactive .nc-tblock{opacity:.42;filter:saturate(.55);}
+#ncAsgList.nc-hasactive .nc-tblock.nc-active{opacity:1;filter:none;box-shadow:0 8px 24px rgba(26,122,80,.20);position:relative;z-index:1;}
 .nc-tblock-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .nc-tsel{flex:1;font-weight:700;border:1.5px solid #D6D2C6;border-radius:9px;padding:8px 10px;font:inherit;color:#20201C;background:#fff;outline:none;cursor:pointer;}
 .nc-tsel:focus{border-color:#1A7A50;}
@@ -3989,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.35';
+const SYSTEM_VERSION='v16.36';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11015,7 +11018,18 @@ const _NC_TINTS=[
 function _ncTintAt(i){ return _NC_TINTS[((i%_NC_TINTS.length)+_NC_TINTS.length)%_NC_TINTS.length]; }
 let _ncPvSel=0;   // 미리보기에서 보고 있는 강사(순서)
 function _ncRetintAll(){
- [...document.querySelectorAll('#ncAsgList .nc-tblock')].forEach((bl,i)=>{ const t=_ncTintAt(i); bl.style.background=t.bg; bl.style.borderColor=t.br; });
+ const list=document.getElementById('ncAsgList'); if(!list) return;
+ [...list.querySelectorAll('.nc-tblock')].forEach((bl,i)=>{ const t=_ncTintAt(i); bl.style.background=t.bg; bl.style.borderColor=t.br; });
+ if(!list.querySelector('.nc-tblock.nc-active')) list.classList.remove('nc-hasactive');   // 활성 카드가 사라지면 흐림 해제
+}
+/* v16.36: 수정 중인 강사 카드를 돋보이게(나머지는 흐리게) + 미리보기도 그 강사로 */
+function _ncSetActiveBlock(bl){
+ const list=document.getElementById('ncAsgList'); if(!list||!bl) return;
+ const blocks=[...list.querySelectorAll('.nc-tblock')];
+ blocks.forEach(b=>b.classList.toggle('nc-active', b===bl));
+ list.classList.add('nc-hasactive');
+ const i=blocks.indexOf(bl);
+ if(i>=0 && i!==_ncPvSel){ _ncPvSel=i; _ncBuildPreview(); }
 }
 function _ncNorm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
 function _ncCenterTeachers(c){
@@ -11033,6 +11047,9 @@ function _ncOpen(editIdx=null, prefillName=''){
   b.classList.add('on'); _ncRegion=b.dataset.r;
  });
  const q=document.getElementById('ncQ'); q.oninput=()=>_ncRenderResults(q.value);
+ // v16.36: 강사 카드 안을 누르거나 포커스하면 그 카드를 활성(돋보이게)
+ const asg=document.getElementById('ncAsgList');
+ if(asg){ asg.onpointerdown=asg.onfocusin=(e)=>{ const bl=e.target.closest && e.target.closest('.nc-tblock'); if(bl) _ncSetActiveBlock(bl); }; }
  document.getElementById('ncOverlay').classList.add('on');
  if(_ncEditIdx!=null){ _ncOpenForm(DB.centers[_ncEditIdx]); }
  else { _ncToSearch(); if(prefillName){ q.value=prefillName; _ncRenderResults(prefillName); } }
@@ -11105,7 +11122,7 @@ function _ncOpenForm(center){
  _ncRegion = center? (center.region||'') : '';
  document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(b=>b.classList.toggle('on', b.dataset.r===_ncRegion));
  document.getElementById('ncSaveBtn').textContent = isEdit? '수정 저장' : '센터 저장';
- const list=document.getElementById('ncAsgList'); list.innerHTML='';
+ const list=document.getElementById('ncAsgList'); list.innerHTML=''; list.classList.remove('nc-hasactive');   // v16.36: 흐림 초기화
  if(isEdit && (center.schedule||[]).length){
   _ncCenterTeachers(center).forEach(tn=>{
    const rows=(center.schedule||[]).filter(s=>s.teacher===tn);
@@ -11168,7 +11185,11 @@ function _ncReadForm(){
   }))
  }));
 }
-function _ncPvPick(i){ _ncPvSel=i; _ncBuildPreview(); }
+function _ncPvPick(i){
+ const bl=[...document.querySelectorAll('#ncAsgList .nc-tblock')][i];
+ if(bl){ _ncSetActiveBlock(bl); }   // 탭 누르면 그 강사 카드도 활성
+ else { _ncPvSel=i; _ncBuildPreview(); }
+}
 function _ncBuildPreview(){
  const pv=document.getElementById('ncPreview'); if(!pv) return;
  const centerName=document.getElementById('ncName').value.trim()||'이 센터';
