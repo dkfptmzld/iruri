@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.39">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.40">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.39">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.40">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.39</title>
+<title>수업기록표 정산 시스템 v16.40</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3992,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.39';
+const SYSTEM_VERSION='v16.40';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7691,8 +7691,23 @@ function _startNoteEdit(ti, ni, ei){
 }
 
 /* v16.24: notesData → t.note 텍스트 재생성 + 저장 + 재렌더 (공통) */
+/* v16.40: 특이사항(주차료·물품·기타·모의) 금액을 정산 카테고리 합계에 자동 반영.
+ *  관리자가 특이사항을 추가/수정/삭제하면 그 카테고리 합계(parkingCost 등)를 notesData 기준으로 다시 계산.
+ *  (자격증 자동 반환은 '기타' auto 노트로 들어있어 함께 합산되므로 이중합산 없음) */
+function _recalcNoteCosts(t){
+ if(!t) return;
+ const sumCat=(cat)=>(t.notesData||[]).filter(n=>n&&n.cat===cat).reduce((s,n)=>{
+  if(Array.isArray(n.entries)&&n.entries.length) return s+n.entries.reduce((a,e)=>a+(Number(e&&e.amount)||0),0);
+  return s+(Number(n.amount)||0);
+ },0);
+ t.parkingCost=sumCat('주차료');
+ t.supplyCost=sumCat('물품');
+ t.etcCost=sumCat('기타');
+ t.mockLesson=sumCat('신규(모의) 수업');
+}
 function _persistNotes(t, ti){
  const _AMT=['신규(모의) 수업','주차료','물품','기타'];
+ _recalcNoteCosts(t);   // v16.40: 특이사항 금액 → 정산 카테고리 합계 자동 반영
  t.note=(t.notesData||[]).map(nd=>{
   if(Array.isArray(nd.entries)&&nd.entries.length){
    const entryStr=nd.entries.filter(e=>e.date||e.center||e.text).map(e=>[e.date,e.center,e.text,e.amount?Number(e.amount).toLocaleString()+'원':''].filter(Boolean).join(' ')).join(' / ');
@@ -7710,6 +7725,7 @@ function _persistNotes(t, ti){
  STATE.cur = ti;
  document.querySelectorAll('.t-item').forEach(el=>el.classList.remove('active'));
  document.getElementById(`ti-${ti}`)?.classList.add('active');
+ try{ if(typeof recalcTeacher==='function') recalcTeacher(ti); }catch(_){}   // v16.40: 확정 월급까지 재계산
  renderTeacher(ti);
 }
 
