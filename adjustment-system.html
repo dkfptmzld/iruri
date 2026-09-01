@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.34">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.35">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.34">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.35">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.34</title>
+<title>수업기록표 정산 시스템 v16.35</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -533,6 +533,10 @@ body.edit-mode-active .ledger-wrap textarea {
 .nc-sess-fee{margin-left:auto;font-size:12.5px;font-weight:700;color:#20201C;}
 /* 미리보기 스케줄표 */
 .nc-pvhead{background:#FAF9F4;font-size:11.5px;font-weight:800;color:#6A6760;padding:8px 12px;border:1px solid #E4E1D6;border-bottom:0;border-radius:11px 11px 0 0;}
+.nc-pvtabs{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 2px;border-left:1px solid #E4E1D6;border-right:1px solid #E4E1D6;background:#fff;}
+.nc-pvtab{border:1.5px solid #D6D2C6;background:#fff;color:#6A6760;border-radius:20px;padding:5px 12px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .1s;}
+.nc-pvtab:hover{border-color:#B8E0CC;}
+.nc-pvtab.on{font-weight:800;}
 .nc-pv-teacher{border:1px solid #E4E1D6;border-top:0;}
 .nc-pv-tname{font-weight:800;font-size:13px;padding:9px 12px 5px;background:#FAF9F4;color:#20201C;}
 .nc-pv-tname span{font-weight:500;font-size:11px;color:#9A968C;margin-left:4px;}
@@ -3985,7 +3989,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.34';
+const SYSTEM_VERSION='v16.35';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11003,14 +11007,15 @@ let _ncEditIdx=null, _ncRegion='';
 const _NC_DAYS=['월','화','수','목','금','토','일'];
 // v16.33: 강사별 구분용 바탕색 팔레트 (이름 기준으로 항상 같은 색)
 const _NC_TINTS=[
- {bg:'#EAF3FF',br:'#BBD6F2'},{bg:'#EAF7EF',br:'#B7E0C8'},{bg:'#FBEEF5',br:'#EDC2DA'},
- {bg:'#FEF3E2',br:'#F0D6A6'},{bg:'#F0ECFB',br:'#D2C4F0'},{bg:'#E6F6F4',br:'#B2E0DB'},
- {bg:'#FDEEEC',br:'#F2C4BE'},{bg:'#EEF6E3',br:'#CDE3A8'}
+ {bg:'#E3EEFF',br:'#B7D2F0'},{bg:'#E2F5EA',br:'#B2DEC5'},{bg:'#FCE9F2',br:'#EFBDD6'},
+ {bg:'#FEEFD8',br:'#F1D19B'},{bg:'#EDE7FB',br:'#CDBEEE'},{bg:'#E0F5F2',br:'#AEDDD7'},
+ {bg:'#FDE8E5',br:'#F2BDB6'},{bg:'#EEF6DE',br:'#CFE3A2'}
 ];
-function _ncTintFor(name){
- if(!name) return {bg:'#FAF9F4',br:'#E4E1D6'};
- let h=0; const s=String(name); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0;
- return _NC_TINTS[h%_NC_TINTS.length];
+// v16.35: 색은 '센터 안 순서'로 배정 → 같은 센터의 강사끼리 항상 다른 색(겹침 없음)
+function _ncTintAt(i){ return _NC_TINTS[((i%_NC_TINTS.length)+_NC_TINTS.length)%_NC_TINTS.length]; }
+let _ncPvSel=0;   // 미리보기에서 보고 있는 강사(순서)
+function _ncRetintAll(){
+ [...document.querySelectorAll('#ncAsgList .nc-tblock')].forEach((bl,i)=>{ const t=_ncTintAt(i); bl.style.background=t.bg; bl.style.borderColor=t.br; });
 }
 function _ncNorm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
 function _ncCenterTeachers(c){
@@ -11073,7 +11078,7 @@ function _ncOpenExist(idx){
  let blocks='';
  if(!(c.schedule||[]).length){ blocks=`<div style="font-size:12.5px;color:#6A6760;padding:6px 0;">아직 배정된 수업이 없어요.</div>`; }
  else {
-  tnames.forEach(tn=>{
+  tnames.forEach((tn,ti)=>{
    const rows=(c.schedule||[]).filter(s=>s.teacher===tn);
    const sess=rows.map(s=>{
     const chips=(s.days||[]).slice().sort((a,b)=>_NC_DAYS.indexOf(a)-_NC_DAYS.indexOf(b)).map(d=>`<span class="nc-dchip">${d}</span>`).join('');
@@ -11081,7 +11086,7 @@ function _ncOpenExist(idx){
     const fee=s.fee||(DB.centerFees||{})[`${c.name}|${tn}`]||0;
     return `<div class="nc-sess"><span class="nc-gtag">${g}교시</span><span style="display:flex;gap:3px;">${chips}</span><span class="nc-sess-time">${esc(s.time||'시간 미정')}</span><span class="nc-sess-fee">${fee?Number(fee).toLocaleString()+'원':'—'}</span></div>`;
    }).join('');
-   const tint=_ncTintFor(tn);   // v16.33: 강사별 바탕색
+   const tint=_ncTintAt(ti);   // v16.35: 센터 안 순서로 색 배정(겹침 없음)
    blocks+=`<div class="nc-tblk" style="background:${tint.bg};border-color:${tint.br};"><div class="nc-tblk-name">${esc(tn)}</div>${sess||'<div style="font-size:12px;color:#9A968C;">수업 없음</div>'}</div>`;
   });
  }
@@ -11091,6 +11096,7 @@ function _ncOpenExist(idx){
 function _ncOpenNew(){ _ncEditIdx=null; _ncOpenForm(null); }
 function _ncOpenForm(center){
  _ncShow('form');
+ _ncPvSel=0;   // v16.35: 미리보기는 첫 강사부터
  document.getElementById('ncFormBack').textContent = _ncEditIdx!=null ? '‹ 닫기' : '‹ 검색으로';
  const isEdit=!!center;
  document.getElementById('ncName').value = center? (center.name||'') : (document.getElementById('ncQ').value.trim()||'');
@@ -11123,24 +11129,19 @@ function _ncTeacherOptions(sel){
  if(other.length) html+=`<optgroup label="기타">`+other.map(t=>`<option ${t.name===sel?'selected':''}>${esc(t.name)}</option>`).join('')+`</optgroup>`;
  return html;
 }
-function _ncTintBlock(bl){
- const name=bl.querySelector('.nc-tsel').value;
- const t=_ncTintFor(name);
- bl.style.background=t.bg; bl.style.borderColor=t.br;
-}
 function _ncAddTeacherBlock(teacher, slots, fee){
  const list=document.getElementById('ncAsgList');
  const bl=document.createElement('div'); bl.className='nc-tblock';
  bl.innerHTML=`<div class="nc-tblock-head"><select class="nc-tsel"><option value="">강사 선택…</option>${_ncTeacherOptions(teacher)}</select><button type="button" class="nc-tblock-del" title="이 강사 배정 삭제">✕</button></div>`
   +`<div class="nc-tfee-row"><span class="nc-tfee-lb">수업료 <span style="font-weight:500;color:#9A968C;">(이 강사 · 회당)</span></span><span class="nc-tfee-in"><input class="nc-tfee" inputmode="numeric" placeholder="예: 55000" value="${esc(String(fee||''))}"><span class="nc-tfee-won">원</span></span></div>`
   +`<div class="nc-tslots"></div><button type="button" class="nc-add-slot">＋ 시간 추가 <span style="font-weight:500;font-size:11px;color:#9A968C;">(같은 날 오전·오후 따로면 여기)</span></button>`;
- bl.querySelector('.nc-tblock-del').onclick=()=>{ bl.remove(); _ncUpdateCount(); _ncBuildPreview(); };
- bl.querySelector('.nc-tsel').onchange=()=>{ _ncTintBlock(bl); _ncUpdateCount(); _ncBuildPreview(); };
+ bl.querySelector('.nc-tblock-del').onclick=()=>{ bl.remove(); _ncRetintAll(); _ncUpdateCount(); _ncBuildPreview(); };
+ bl.querySelector('.nc-tsel').onchange=()=>{ _ncUpdateCount(); _ncBuildPreview(); };
  bl.querySelector('.nc-tfee').addEventListener('input',_ncBuildPreview);
  bl.querySelector('.nc-add-slot').onclick=()=>_ncAddSlot(bl,null);
  list.appendChild(bl);
  (slots&&slots.length?slots:[null]).forEach(s=>_ncAddSlot(bl,s));
- _ncTintBlock(bl); _ncUpdateCount(); _ncBuildPreview();
+ _ncRetintAll(); _ncUpdateCount(); _ncBuildPreview();
 }
 function _ncAddSlot(bl, slot){
  const slots=bl.querySelector('.nc-tslots');
@@ -11167,33 +11168,35 @@ function _ncReadForm(){
   }))
  }));
 }
+function _ncPvPick(i){ _ncPvSel=i; _ncBuildPreview(); }
 function _ncBuildPreview(){
  const pv=document.getElementById('ncPreview'); if(!pv) return;
  const centerName=document.getElementById('ncName').value.trim()||'이 센터';
  const forms=_ncReadForm().filter(t=>t.name);
  if(!forms.length){ pv.innerHTML=`<div class="nc-pvhead">🗓️ 이 강사의 이번 주 스케줄</div><div class="nc-pv-empty">강사를 고르면, 그 강사가 지금 하는 수업 사이에 <b>어디에 들어가는지</b> 보여줘요</div>`; return; }
+ if(_ncPvSel>=forms.length || _ncPvSel<0) _ncPvSel=0;   // 강사 수 바뀌면 보정
  const editName = (_ncEditIdx!=null && DB.centers[_ncEditIdx]) ? DB.centers[_ncEditIdx].name : null;
- let html='';
- forms.forEach(t=>{
-  const byDay={};
-  const existRows=(typeof _teacherScheduleRows==='function')?_teacherScheduleRows(t.name):[];
-  existRows.forEach(r=>{
-   if(editName && r.center===editName) return;   // 편집 중인 이 센터의 기존 배정은 제외(중복 표시 방지)
-   (byDay[r.day]=byDay[r.day]||[]).push({center:r.center,time:r.time||'',other:true});
+ // v16.35: 강사 탭 — 선택한 강사 한 명만 표로 보여준다
+ const tabs=forms.map((t,i)=>{ const tint=_ncTintAt(i); const on=(i===_ncPvSel);
+   return `<button type="button" class="nc-pvtab${on?' on':''}" style="${on?`background:${tint.bg};border-color:${tint.br};color:#20201C;`:''}" onclick="_ncPvPick(${i})">${esc(t.name)}</button>`; }).join('');
+ const t=forms[_ncPvSel]; const tint=_ncTintAt(_ncPvSel);
+ const byDay={};
+ const existRows=(typeof _teacherScheduleRows==='function')?_teacherScheduleRows(t.name):[];
+ existRows.forEach(r=>{ if(editName && r.center===editName) return; (byDay[r.day]=byDay[r.day]||[]).push({center:r.center,time:r.time||'',other:true}); });
+ t.slots.forEach(s=>{ if(!s.days.length) return; s.days.forEach(d=>{ (byDay[d]=byDay[d]||[]).push({center:centerName,time:s.time||'',other:false}); }); });
+ const days=_NC_DAYS.filter(d=>byDay[d]); let body='';
+ days.forEach(d=>{
+  const items=byDay[d].sort((a,b)=>String(a.time||'99').localeCompare(String(b.time||'99')));
+  items.forEach((it,i)=>{
+   body+=`<tr class="${it.other?'':'newrow'}">`+(i===0?`<td class="day" rowspan="${items.length}">${d}</td>`:'')+`<td class="ctr">${esc(it.center)}${it.other?'':'<span class="nc-nowtag">지금 추가</span>'}</td><td class="tm">${esc(it.time||'—')}</td></tr>`;
   });
-  t.slots.forEach(s=>{ if(!s.days.length) return; s.days.forEach(d=>{ (byDay[d]=byDay[d]||[]).push({center:centerName,time:s.time||'',other:false}); }); });
-  const days=_NC_DAYS.filter(d=>byDay[d]); let body='';
-  days.forEach(d=>{
-   const items=byDay[d].sort((a,b)=>String(a.time||'99').localeCompare(String(b.time||'99')));
-   items.forEach((it,i)=>{
-    body+=`<tr class="${it.other?'':'newrow'}">`+(i===0?`<td class="day" rowspan="${items.length}">${d}</td>`:'')+`<td class="ctr">${esc(it.center)}${it.other?'':'<span class="nc-nowtag">지금 추가</span>'}</td><td class="tm">${esc(it.time||'—')}</td></tr>`;
-   });
-  });
-  const table= body? `<div class="nc-pvwrap"><table class="nc-sch"><colgroup><col style="width:40px"><col><col style="width:96px"></colgroup><thead><tr><th>요일</th><th>센터명</th><th>강의시간</th></tr></thead><tbody>${body}</tbody></table></div>` : `<div class="nc-pv-empty">요일을 켜면 여기에 표시돼요</div>`;
-  const tint=_ncTintFor(t.name);   // v16.33: 강사별 바탕색
-  html+=`<div class="nc-pv-teacher" style="border-left:4px solid ${tint.br};"><div class="nc-pv-tname" style="background:${tint.bg};">${esc(t.name)} <span>이번 주 전체</span></div>${table}</div>`;
  });
- pv.innerHTML=`<div class="nc-pvhead">🗓️ 강사별 이번 주 스케줄표 — <b style="color:#146142;">지금 추가</b>가 어디에 들어가는지</div>${html}<div class="nc-pvlegend"><span class="sw"></span> 초록 = 이번에 추가하는 수업 · 회색 = 이미 하는 다른 센터</div>`;
+ const table= body? `<div class="nc-pvwrap"><table class="nc-sch"><colgroup><col style="width:40px"><col><col style="width:96px"></colgroup><thead><tr><th>요일</th><th>센터명</th><th>강의시간</th></tr></thead><tbody>${body}</tbody></table></div>` : `<div class="nc-pv-empty">요일을 켜면 여기에 표시돼요</div>`;
+ const teacherBlock=`<div class="nc-pv-teacher" style="border-left:4px solid ${tint.br};"><div class="nc-pv-tname" style="background:${tint.bg};">${esc(t.name)} <span>이번 주 전체</span></div>${table}</div>`;
+ pv.innerHTML=`<div class="nc-pvhead">🗓️ 강사별 이번 주 스케줄표 — <b style="color:#146142;">지금 추가</b>가 어디에 들어가는지</div>`
+  +(forms.length>1?`<div class="nc-pvtabs">${tabs}</div>`:'')
+  +teacherBlock
+  +`<div class="nc-pvlegend"><span class="sw"></span> 초록 = 이번에 추가하는 수업 · 회색 = 이미 하는 다른 센터</div>`;
 }
 function _ncTrySave(){
  const name=document.getElementById('ncName').value.trim();
