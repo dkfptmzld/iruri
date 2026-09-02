@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.40">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.41">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.40">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.41">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.40</title>
+<title>수업기록표 정산 시스템 v16.41</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1486,12 +1486,12 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
   <div id="landingCustomCards" style="display:contents;"></div>
  </div>
 
- <!-- v15.90: 업무 매뉴얼 링크 (전용 페이지 manual.html) -->
+ <!-- v16.41: 업무 메뉴얼 (앱 내장 뷰어 — 카드 캐주얼 / 문서 원문) -->
  <div style="margin-top:22px;text-align:center;">
-  <a href="manual.html" style="position:relative;display:inline-flex;align-items:center;gap:7px;padding:12px 26px;border:1.5px solid #7FC2E8;border-radius:24px;background:#EAF4FB;color:#1F6FA8;font-size:14.5px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(33,118,182,.18);transition:all .15s;font-family:inherit;" onmouseover="this.style.background='#DCEEFA';this.style.boxShadow='0 6px 18px rgba(33,118,182,.26)';" onmouseout="this.style.background='#EAF4FB';this.style.boxShadow='0 4px 14px rgba(33,118,182,.18)';">
+  <button type="button" onclick="openMenual()" style="position:relative;display:inline-flex;align-items:center;gap:7px;padding:12px 26px;border:1.5px solid #7FC2E8;border-radius:24px;background:#EAF4FB;color:#1F6FA8;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(33,118,182,.18);transition:all .15s;font-family:inherit;" onmouseover="this.style.background='#DCEEFA';this.style.boxShadow='0 6px 18px rgba(33,118,182,.26)';" onmouseout="this.style.background='#EAF4FB';this.style.boxShadow='0 4px 14px rgba(33,118,182,.18)';">
    <span style="position:absolute;top:-10px;right:-8px;background:#2176B6;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;box-shadow:0 2px 6px rgba(33,118,182,.35);">NEW</span>
-   📋 업무 매뉴얼 보기
-  </a>
+   📖 업무 메뉴얼 보기
+  </button>
  </div>
 
  <!-- 홈 편집 버튼 (PC 전용, 편집모드 시 표시) -->
@@ -3992,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.40';
+const SYSTEM_VERSION='v16.41';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14110,6 +14110,10 @@ function _showLandingUI(){
  document.getElementById('landing-user-name').textContent = teacher;
  userInfo.style.display='flex';
  if(noUser) noUser.style.display='none';
+ // v16.41: 승인 후 첫 로그인 강사에게 업무 메뉴얼 자동 표시 (계정별 1회)
+ if(!sessionStorage.getItem('iruri_admin_session')){
+   try{ if(typeof _mnlMaybeAutoShow==='function') _mnlMaybeAutoShow(teacher); }catch(e){}
+ }
  } else {
  if(userInfo) userInfo.style.display='none';
  if(noUser) noUser.style.display='block';
@@ -22717,6 +22721,278 @@ function changeFontSize(dir){
   showToast(`🔤 글자 크기: ${labels[next]}`);
 }
 </script>
+
+<!-- ═══ v16.41 업무 메뉴얼 뷰어 (카드 캐주얼 / 문서 원문) ═══ -->
+<style id="mnlStyle">
+.mnl-ov{position:fixed;inset:0;z-index:13000;display:none;flex-direction:column;font-family:inherit;}
+.mnl-ov.mnl-show{display:flex;animation:mnlFade .3s ease;}
+@keyframes mnlFade{from{opacity:0}to{opacity:1}}
+#mnlChooser{background:linear-gradient(160deg,#1A7A50,#0F5A38);color:#fff;align-items:center;justify-content:center;padding:26px;}
+#mnlChooser .mnl-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.16);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer;}
+#mnlChooser h2{font-size:24px;font-weight:800;margin-bottom:6px;text-align:center;}
+#mnlChooser .mnl-sub{font-size:14px;opacity:.85;margin-bottom:26px;text-align:center;line-height:1.6;}
+.mnl-pick{width:100%;max-width:420px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:20px;margin-bottom:14px;cursor:pointer;display:flex;gap:15px;align-items:center;text-align:left;color:#fff;font-family:inherit;}
+.mnl-pick:active{transform:scale(.98);}
+.mnl-pick .mnl-pe{font-size:38px;flex-shrink:0;}
+.mnl-pick .mnl-pt b{display:block;font-size:17px;font-weight:800;margin-bottom:3px;}
+.mnl-pick .mnl-pt span{font-size:13px;opacity:.82;line-height:1.5;}
+#mnlCards{background:linear-gradient(160deg,#1A7A50,#0F5A38);color:#fff;overflow:hidden;}
+#mnlCards::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0,rgba(255,255,255,.03) 1px,transparent 1px,transparent 13px);pointer-events:none;}
+.mnl-ctop{display:flex;align-items:center;gap:8px;padding:16px 18px 4px;position:relative;z-index:2;}
+.mnl-dots{display:flex;gap:5px;flex:1;}
+.mnl-dot{height:4px;flex:1;background:rgba(255,255,255,.28);border-radius:2px;overflow:hidden;}
+.mnl-dot span{display:block;height:100%;width:0;background:#fff;border-radius:2px;transition:width .35s;}
+.mnl-dot.mnl-done span,.mnl-dot.mnl-active span{width:100%;}
+.mnl-ctop .mnl-tbtn{background:none;border:none;color:rgba(255,255,255,.85);font-size:13px;font-weight:600;cursor:pointer;padding:5px;white-space:nowrap;font-family:inherit;}
+.mnl-slides{flex:1;position:relative;z-index:2;overflow:hidden;max-width:560px;width:100%;margin:0 auto;}
+.mnl-slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:14px 24px 6px;opacity:0;transform:translateX(40px);pointer-events:none;transition:opacity .45s,transform .45s;overflow-y:auto;}
+.mnl-slide.mnl-active{opacity:1;transform:translateX(0);pointer-events:auto;}
+.mnl-slide.mnl-prev{transform:translateX(-40px);}
+.mnl-slide.mnl-mid{justify-content:flex-start;padding-top:18px;}
+.mnl-emoji{font-size:50px;margin-bottom:8px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.25));}
+.mnl-slide h2{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.28;margin-bottom:4px;}
+.mnl-lead{font-size:13.5px;opacity:.85;line-height:1.55;margin-bottom:14px;}
+.mnl-item{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.18);border-radius:13px;padding:12px 14px;margin-bottom:10px;display:flex;gap:11px;align-items:flex-start;opacity:0;transform:translateY(14px);}
+.mnl-slide.mnl-active .mnl-item{animation:mnlPop .45s ease forwards;}
+.mnl-slide.mnl-active .mnl-item:nth-child(1){animation-delay:.12s}
+.mnl-slide.mnl-active .mnl-item:nth-child(2){animation-delay:.22s}
+.mnl-slide.mnl-active .mnl-item:nth-child(3){animation-delay:.32s}
+.mnl-slide.mnl-active .mnl-item:nth-child(4){animation-delay:.42s}
+.mnl-slide.mnl-active .mnl-item:nth-child(5){animation-delay:.52s}
+.mnl-slide.mnl-active .mnl-item:nth-child(6){animation-delay:.62s}
+@keyframes mnlPop{to{opacity:1;transform:translateY(0)}}
+.mnl-item .mnl-ic{font-size:19px;flex-shrink:0;}
+.mnl-item .mnl-tx{font-size:13px;line-height:1.5;}
+.mnl-item .mnl-tx b{font-weight:800;color:#EAFBF2;}
+.mnl-item .mnl-big{font-size:15.5px;font-weight:800;color:#fff;display:block;margin-bottom:1px;}
+.mnl-item .mnl-ex{display:block;margin-top:4px;font-size:11.5px;color:#FFD9D2;opacity:.95;}
+.mnl-center{align-items:center;text-align:center;justify-content:center;}
+.mnl-center .mnl-logo{width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:16px;box-shadow:0 12px 30px rgba(0,0,0,.25);animation:mnlFloat 3s ease-in-out infinite;}
+@keyframes mnlFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.mnl-center h2{font-size:26px;}
+.mnl-badge{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 15px;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:14px;}
+.mnl-cbottom{padding:10px 22px 8px;position:relative;z-index:2;display:flex;gap:10px;max-width:560px;width:100%;margin:0 auto;}
+.mnl-btn{flex:1;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
+.mnl-btn:active{transform:scale(.97);}
+.mnl-btn.mnl-primary{background:#fff;color:#0F5A38;}
+.mnl-btn.mnl-ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4);flex:0 0 auto;padding:14px 18px;}
+.mnl-hint{text-align:center;font-size:11.5px;opacity:.6;padding:0 0 12px;position:relative;z-index:2;}
+#mnlDoc{background:#F7F6F2;color:#1C1C1C;}
+.mnl-dhead{background:#1A7A50;color:#fff;padding:15px 16px;display:flex;align-items:center;gap:9px;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.12);}
+.mnl-dhead .mnl-dt{flex:1;}
+.mnl-dhead .mnl-dt b{display:block;font-size:15px;font-weight:800;}
+.mnl-dhead .mnl-dt span{font-size:11px;opacity:.8;}
+.mnl-dhead button{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:8px;padding:8px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+.mnl-dhead .mnl-x{width:34px;height:34px;border-radius:50%;font-size:18px;padding:0;}
+.mnl-dbody{flex:1;overflow-y:auto;padding:18px 16px 30px;max-width:720px;width:100%;margin:0 auto;}
+.mnl-dsec{margin-bottom:22px;}
+.mnl-dsec>h3{font-size:16.5px;font-weight:800;color:#1A7A50;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid #E8F5EE;}
+.mnl-dcl{display:flex;gap:9px;padding:9px 0;border-top:1px dashed #E5E3DC;font-size:13.5px;line-height:1.7;}
+.mnl-dcl:first-of-type{border-top:none;}
+.mnl-dcl .mnl-no{flex-shrink:0;min-width:28px;font-weight:800;color:#1A7A50;font-size:13px;}
+.mnl-dcl .mnl-subl{list-style:none;margin:5px 0 0;padding:0;}
+.mnl-dcl .mnl-subl li{position:relative;padding-left:13px;margin-bottom:3px;color:#444;}
+.mnl-dcl .mnl-subl li::before{content:'·';position:absolute;left:2px;}
+.mnl-dcl .mnl-exc{margin-top:6px;background:#FCEBEB;border-left:3px solid #C0392B;border-radius:6px;padding:7px 10px;font-size:12px;color:#C0392B;line-height:1.55;}
+.mnl-dfoot{padding:10px 15px;background:#E8F5EE;border-top:1px solid #E5E3DC;display:flex;gap:8px;flex-shrink:0;}
+.mnl-dfoot button{flex:1;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;}
+.mnl-dfoot .mnl-tocard{background:#fff;color:#1A7A50;border:1.5px solid #1A7A50;}
+.mnl-dfoot .mnl-img{background:#1A7A50;color:#fff;}
+</style>
+<div class="mnl-ov" id="mnlChooser">
+  <button class="mnl-close" onclick="_mnlHide()">×</button>
+  <h2>업무 메뉴얼</h2>
+  <div class="mnl-sub">어떤 방식으로 볼까요?</div>
+  <button class="mnl-pick" onclick="_mnlOpenCards(false)"><span class="mnl-pe">🎬</span><span class="mnl-pt"><b>카드로 보기</b><span>핵심만 친근하게 · 애니메이션</span></span></button>
+  <button class="mnl-pick" onclick="_mnlOpenDoc()"><span class="mnl-pe">📄</span><span class="mnl-pt"><b>전체로 보기</b><span>정식 문서 전문 · 이미지 저장</span></span></button>
+</div>
+<div class="mnl-ov" id="mnlCards">
+  <div class="mnl-ctop"><div class="mnl-dots" id="mnlDots"></div>
+    <button class="mnl-tbtn" onclick="_mnlOpenDoc()">전체 ▸</button>
+    <button class="mnl-tbtn" onclick="_mnlFinish()">건너뛰기</button>
+  </div>
+  <div class="mnl-slides" id="mnlSlides"></div>
+  <div class="mnl-cbottom" id="mnlCBottom"></div>
+  <div class="mnl-hint" id="mnlHint"></div>
+</div>
+<div class="mnl-ov" id="mnlDoc">
+  <div class="mnl-dhead"><div class="mnl-dt"><b>이루리 실버 아카데미 업무 메뉴얼</b><span>최종 수정일 2026.07.27</span></div>
+    <button onclick="_mnlOpenCards(false)">🎬 카드</button>
+    <button class="mnl-x" onclick="_mnlHide()">×</button>
+  </div>
+  <div class="mnl-dbody" id="mnlDocBody"></div>
+  <div class="mnl-dfoot">
+    <button class="mnl-tocard" onclick="_mnlOpenCards(false)">🎬 카드로 보기</button>
+    <button class="mnl-img" onclick="_mnlSaveImage(this)">🖼️ 이미지 저장</button>
+  </div>
+</div>
+<script>
+(function(){
+ /* 카드용 캐주얼 내용 */
+ var INTRO={intro:true,title:'환영합니다!',lead:'시작 전에 꼭 알아두실 <b>업무 내용</b>을 정리했어요.'};
+ var OUTRO={outro:true,title:'준비 완료!',lead:'이제 정산 시스템을 시작해볼까요?<br>자세한 전문은 <b>전체 문서</b>에서 볼 수 있어요.'};
+ var CARD_SECTIONS=[
+  {emoji:'📌',title:'총칙',lead:'계약 관계의 기본이에요.',clauses:[
+    {ic:'📖',text:'이 메뉴얼은 강사의 <b>업무·계약 전반</b>에 적용돼요.'},
+    {ic:'🧾',text:'강사는 회사와 <b>프리랜서(위촉) 계약을 맺은 사업소득자</b>예요.'},
+    {ic:'🔔',text:'최종 수정일부터 적용, <b>개정 시 강사에게 고지</b>해요.'}
+  ]},
+  {emoji:'💰',title:'임금·지급',lead:'기본 급여와 지급일이에요.',clauses:[
+    {ic:'💵',big:'회당 40,000원',text:'월별 정산 후 <b>익월 10일</b> 지급 · 사업소득세 <b>3.3% 원천징수</b>.'},
+    {ic:'📈',text:'입사 <b>7개월째부터 회당 42,000원</b>으로 인상.'},
+    {ic:'📅',text:'퇴사 후 월급도 정기 지급일(<b>익월 10일</b>)에 지급.'}
+  ]},
+  {emoji:'🎁',title:'이런 것도 지급돼요',lead:'놓치기 쉬운 추가 지급 항목.',clauses:[
+    {ic:'🧑‍🏫',text:'<b>모의수업</b> 진행 시 (계약 여부 무관) <b>20,000원</b> 지급.'},
+    {ic:'🚶',text:'소통 착오로 사전 연락 없이 취소돼 <b>헛걸음</b> 시 <b>20,000원</b> 지급.'},
+    {ic:'🅿️',text:'<b>주차료 등 부대비용</b> 지원 가능.',ex:'수업과 무관한 개인 사건·사고 비용(주차장 파손 등)은 제외.'},
+    {ic:'🔊',text:'<b>장비(스피커) 1회 제공</b>.',ex:'고장 시 대여 제공, 수리비는 강사 부담.'}
+  ]},
+  {emoji:'🤝',title:'근로 시 당부',lead:'현장에서 꼭 지켜주세요.',clauses:[
+    {ic:'🙇',text:'동료 강사와 친분이 있어도 <b>반말 금지, 상호 존대·존중</b>.'},
+    {ic:'🚫',text:'어르신께 <b>금품 받는 행위 엄격 금지</b> — 즉시 관리자에게 전달·반환.'},
+    {ic:'📝',text:'보충수업 시 <b>본 수업 강사가 그 센터 일지 작성</b>.'}
+  ]},
+  {emoji:'🧰',title:'수업 도구',lead:'도구 관리 원칙이에요.',clauses:[
+    {ic:'🎓',text:'도구 <b>사용법 숙지까지 선임·관리자 교육</b> 이수.'},
+    {ic:'🔁',text:'분실 시 <b>같은 물품으로 보충</b> (볼풀공·밴드·스펀지공 등 소모품 제외).'},
+    {ic:'🛠️',text:'도구 <b>파손 시 관리자에게 보고</b>.'}
+  ]},
+  {emoji:'📅',title:'휴강·보강',lead:'일정 변동 시 이렇게.',clauses:[
+    {ic:'🗣️',text:'휴강·보강은 <b>센터와 협의 우선</b>, 보강 자체 해결 노력.',ex:'부득이한 경우에만 관리자와 논의.'},
+    {ic:'🗓️',text:'5주 있는 달은 <b>4주만</b> 수업 가능 (센터 협의 우선).',ex:'본인 휴강 보충을 위해 5주 모두 가능.'},
+    {ic:'🎌',text:'공휴일 휴강 가능, <b>센터 요청·보강 시 진행</b> 가능.'},
+    {ic:'🏥',text:'건강상 휴강 시 <b>진료확인서 제출</b>.'}
+  ]},
+  {emoji:'📦',title:'퇴사·계약',lead:'미리 알아두면 좋아요.',clauses:[
+    {ic:'🗓️',text:'퇴사 시 <b>최소 2달 전</b> 회사와 상의.',ex:'후임 채용 여부에 따라 단축 가능.'},
+    {ic:'⚠️',text:'무단 계약 중단으로 <b>실제 손해 발생 시</b> 손해액 범위 내 배상 청구 가능.'},
+    {ic:'🤲',text:'퇴사 시 후임자 <b>인수인계에 최대한 협조</b>.'},
+    {ic:'📤',text:'제공 장비는 퇴사 시 <b>완전 반납</b> (고의 미반납 시 법적 책임).',ex:'개인이 구매한 장비는 제외.'},
+    {ic:'🔄',text:'무단·이유 없는 <b>연 2회 이상 결강 시 퇴사 권고</b> 가능.'}
+  ]}
+ ];
+ var CARDS=[INTRO].concat(CARD_SECTIONS).concat([OUTRO]);
+ /* 문서용 원문 그대로 (매뉴얼→메뉴얼, 1.4 삭제·번호 정리) */
+ var DOC_SECTIONS=[
+  {emoji:'📌',num:'0',title:'총칙',clauses:[
+    {text:'이 메뉴얼은 이루리 실버 아카데미 강사의 업무 수행 및 계약 관계 전반에 적용된다.'},
+    {text:'강사는 회사와 프리랜서(위촉) 계약을 맺은 사업소득자이다. (급여의 세금·지급 방식은 1장에 따른다.)'},
+    {text:'이 메뉴얼은 최종 수정일부터 적용하며, 개정 시 강사에게 고지한다.'}
+  ]},
+  {emoji:'💰',num:'1',title:'임금 및 기타 비용',clauses:[
+    {text:'기본 급여',sub:['강사의 기본 수업료는 회당 40,000원으로 한다.','급여는 월별로 정산하며, 익월 10일에 지급한다.','지급액은 전체 수업료에서 사업소득세 3.3%를 원천징수한 후 지급한다.']},
+    {text:'강사의 수업료는 입사 후 7개월째부터 회당 42,000원으로 인상된다.'},
+    {text:'퇴사 후 월급도 정기 지급일(익월 10일)에 지급한다.'},
+    {text:'강사의 모의수업 진행 시 계약 여부와 상관없이 회사에서 20,000원을 지급한다.'},
+    {text:'센터·회사의 소통 오류나 실수로, 강사에게 사전 연락 없이 취소된 수업 장소에 헛걸음할 경우, 회사가 수업료 20,000원을 지급한다.'},
+    {text:'회사는 강사에게 주차료 등 기타 부대비용을 제공할 수 있다.',exc:'단, 수업 수행과 무관한 개인 사건·사고 비용(주차장 파손, 식사 중 차량 긁힘 등)은 제외한다.'},
+    {text:'회사는 강사에게 장비(스피커)를 1회 제공한다. (퇴사 시 반납 기준은 3.4에 따른다.)',exc:'단, 고장 시 반납 가능하며 신규 구매·수리 기간 중 대여를 제공하되, 수리비는 강사가 부담한다.'}
+  ]},
+  {emoji:'🤝',num:'2',title:'근로 시 당부 사항',clauses:[
+    {text:'다른 강사의 보충수업을 할 때, 본 수업의 강사가 그 센터의 수업 일지를 작성한다.'},
+    {text:'한 달에 5주의 수업이 있을 시엔 4주만 수업할 수 있지만, 센터와의 협의가 우선이며 강사 본인 일정상의 휴강으로 인한 보충수업을 진행하기 위해서 5주 모두 수업을 할 수 있다.'},
+    {text:'법정 공휴일엔 휴강할 수 있지만, 센터에서 수업을 요청하거나 강사가 본인의 보강 수업 일정을 수행하기 위해선 수업을 진행할 수 있다.'},
+    {text:'개인 일정이나 공휴일로 인하여 생기는 휴강은 일차적으로 강사 자신이 센터와 협의를 우선하며, 보충수업 일정을 자체적으로 해결하도록 노력한다.',exc:'단, 부득이한 경우에만 관리자를 통하여 보강 일정을 논의한다.'},
+    {text:'질병 혹은 강사의 건강상의 문제로 휴강 시 회사에 진료확인서를 제출한다.'},
+    {text:'강사는 모든 수업 도구의 사용법을 숙지할 때까지 선임자나 관리자를 만나 도구에 대한 교육을 받는다.'},
+    {text:'강사는 수업 도구 분실 시 같은 물품으로 구매하여 보충해 놓는다. (볼풀공, 근력 밴드, 스펀지 공 같은 분실하기 쉬운 도구 제외)'},
+    {text:'강사는 수업 도구가 파손되었을 시 관리자에게 보고한다.'},
+    {text:'강사는 동료 강사와 아무리 친분이 있더라도 반말을 하지 않고, 서로 존대하며 상호 존중한다.'},
+    {text:'업무 중 어르신 등으로부터 금전적 선물을 받는 행위는 엄격히 금지한다. 금액의 크기와 관계없이 금품을 받은 즉시 센터장 또는 직급이 있는 관리자에게 전달하고 반환 절차를 진행한다. 규정을 따르지 않을 경우 내부 규정에 따른 조치가 있을 수 있다.'}
+  ]},
+  {emoji:'📦',num:'3',title:'기타 근로 조건',clauses:[
+    {text:'강사는 퇴사 시 최소 2달 전에 회사와 상의해야 한다.',exc:'단, 후임 강사 채용 여부에 따라 그 기간은 단축될 수 있다.'},
+    {text:'강사가 사전 통보(3.1) 없이 무단으로 계약을 중단하여 회사에 실제 손해(센터 계약 해지 등)가 발생한 경우, 회사는 실제 발생한 손해액의 범위 내에서 배상을 청구할 수 있다.'},
+    {text:'강사는 퇴사 시 후임자의 인수인계에 최대한 협조한다.'},
+    {text:'강사에게 제공된 장비는 퇴사 시 “완전 반납”을 해야 한다. 고의로 반납하지 않을 경우 현 시세 가격을 기준으로 회사는 퇴사한 강사에게 법적 책임을 물을 수 있다.',exc:'단, 개인이 구매한 장비는 반납 기준에 부합하지 않는다.'},
+    {text:'강사의 개인적인 사유로 결강 시(보고 없는 휴강, 연락 두절 등) 결강된 센터에 한하여 강사 교체가 이루어질 수 있으며, 무단 혹은 명확한 이유 없이 연 2회 이상 결강 시 퇴사를 권고할 수 있다.'}
+  ]}
+ ];
+
+ var TOTAL=CARDS.length, idx=0, built=false, autoActive=false, slides=[], dots=[];
+ function $(id){return document.getElementById(id);}
+ function build(){
+  if(built) return; built=true;
+  $('mnlSlides').innerHTML=CARDS.map(function(c){
+   if(c.intro||c.outro) return '<div class="mnl-slide mnl-center"><div class="mnl-logo">'+(c.intro?'🌿':'🚀')+'</div>'+(c.intro?'<div class="mnl-badge">이루리 실버 아카데미</div>':'')+'<h2>'+c.title+'</h2><p class="mnl-lead">'+c.lead+'</p></div>';
+   var items=c.clauses.map(function(cl){return '<div class="mnl-item"><span class="mnl-ic">'+cl.ic+'</span><span class="mnl-tx">'+(cl.big?'<b class="mnl-big">'+cl.big+'</b>':'')+cl.text+(cl.ex?'<span class="mnl-ex">※ '+cl.ex+'</span>':'')+'</span></div>';}).join('');
+   return '<div class="mnl-slide mnl-mid"><div class="mnl-emoji">'+c.emoji+'</div><h2>'+c.title+'</h2><p class="mnl-lead">'+c.lead+'</p>'+items+'</div>';
+  }).join('');
+  slides=[].slice.call($('mnlSlides').querySelectorAll('.mnl-slide'));
+  var dw=$('mnlDots'); dw.innerHTML='';
+  for(var i=0;i<TOTAL;i++){var d=document.createElement('div');d.className='mnl-dot';d.innerHTML='<span></span>';dw.appendChild(d);}
+  dots=[].slice.call(dw.querySelectorAll('.mnl-dot'));
+  $('mnlDocBody').innerHTML=DOC_SECTIONS.map(function(s){
+   var cls=s.clauses.map(function(c,ci){
+    var sub=c.sub?'<ul class="mnl-subl">'+c.sub.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>':'';
+    var exc=c.exc?'<div class="mnl-exc">'+c.exc+'</div>':'';
+    return '<div class="mnl-dcl"><span class="mnl-no">'+s.num+'.'+(ci+1)+'</span><span>'+c.text+sub+exc+'</span></div>';
+   }).join('');
+   return '<div class="mnl-dsec"><h3>'+s.emoji+' '+s.num+'. '+s.title+'</h3>'+cls+'</div>';
+  }).join('')+'<div style="text-align:center;color:#999;font-size:11.5px;padding:8px 0;">— 이루리 실버 아카데미 · 업무 메뉴얼 —</div>';
+ }
+ function renderCards(){
+  slides.forEach(function(s,i){s.classList.remove('mnl-active','mnl-prev');if(i===idx){s.classList.add('mnl-active');s.scrollTop=0;}else if(i<idx)s.classList.add('mnl-prev');});
+  dots.forEach(function(d,i){d.classList.remove('mnl-active','mnl-done');if(i<idx)d.classList.add('mnl-done');else if(i===idx)d.classList.add('mnl-active');});
+  var prevBtn=idx>0?'<button class="mnl-btn mnl-ghost" onclick="_mnlPrev()">← 이전</button>':'';
+  if(idx===TOTAL-1){$('mnlCBottom').innerHTML=prevBtn+'<button class="mnl-btn mnl-primary" onclick="_mnlFinish()">시작하기 →</button>';}
+  else{$('mnlCBottom').innerHTML=prevBtn+'<button class="mnl-btn mnl-primary" onclick="_mnlNext()">'+(idx===0?'알아보기 →':'다음 →')+'</button>';}
+ }
+ function hideAll(){['mnlChooser','mnlCards','mnlDoc'].forEach(function(id){$(id).classList.remove('mnl-show');});}
+ function lock(){document.body.style.overflow='hidden';}
+ function unlock(){document.body.style.overflow='';}
+
+ window.openMenual=function(){build();hideAll();$('mnlChooser').classList.add('mnl-show');lock();};
+ window._mnlOpenCards=function(auto){build();autoActive=!!auto;hideAll();idx=0;renderCards();$('mnlHint').textContent=auto?'이 안내는 처음 한 번만 자동으로 떠요':'좌우로 넘기거나 버튼으로 이동하세요';$('mnlCards').classList.add('mnl-show');lock();};
+ window._mnlOpenDoc=function(){build();hideAll();$('mnlDoc').classList.add('mnl-show');$('mnlDocBody').scrollTop=0;lock();};
+ window._mnlNext=function(){if(idx<TOTAL-1){idx++;renderCards();}};
+ window._mnlPrev=function(){if(idx>0){idx--;renderCards();}};
+ window._mnlHide=function(){var c=$('mnlCards');c.style.transition='';c.style.opacity='';c.style.transform='';hideAll();unlock();autoActive=false;};
+ window._mnlFinish=function(){var c=$('mnlCards');if(c.classList.contains('mnl-show')){c.style.transition='opacity .35s,transform .35s';c.style.opacity='0';c.style.transform='scale(1.04)';setTimeout(function(){hideAll();c.style.opacity='';c.style.transform='';c.style.transition='';unlock();},350);}else{hideAll();unlock();}autoActive=false;};
+ window._mnlSaveImage=function(btn){
+  var body=$('mnlDocBody');
+  function fail(){if(typeof showToast==='function')showToast('이미지 저장을 지원하지 않는 환경이에요');}
+  function cap(){
+   try{
+    html2canvas(body,{backgroundColor:'#F7F6F2',scale:2,height:body.scrollHeight,windowHeight:body.scrollHeight}).then(function(canvas){
+     try{var a=document.createElement('a');a.download='이루리_업무메뉴얼.png';a.href=canvas.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();if(typeof showToast==='function')showToast('🖼️ 이미지로 저장했어요');}catch(e){fail();}
+    }).catch(fail);
+   }catch(e){fail();}
+  }
+  if(typeof html2canvas==='undefined'){
+   if(typeof showToast==='function')showToast('이미지 준비 중…');
+   var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=cap;s.onerror=fail;document.head.appendChild(s);
+  }else cap();
+ };
+
+ /* 첫 로그인 자동 표시 (계정별 1회) */
+ function seen(name){
+  try{if(localStorage.getItem('iruri_menual_seen_'+name))return true;}catch(e){}
+  try{var t=(window.DB&&DB.teachers||[]).filter(function(x){return x.name===name;})[0];if(t&&t.menualSeen)return true;}catch(e){}
+  return false;
+ }
+ function markSeen(name){
+  try{localStorage.setItem('iruri_menual_seen_'+name,'1');}catch(e){}
+  try{var t=(window.DB&&DB.teachers||[]).filter(function(x){return x.name===name;})[0];if(t){t.menualSeen=true;if(typeof gasPost==='function')gasPost({action:'saveTeacher',teacher:t}).catch(function(){});}}catch(e){}
+ }
+ window._mnlMaybeAutoShow=function(name){
+  if(!name||window._mnlAutoDone)return;
+  try{if(sessionStorage.getItem('iruri_admin_session'))return;}catch(e){}
+  if(seen(name))return;
+  window._mnlAutoDone=true;
+  setTimeout(function(){try{_mnlOpenCards(true);markSeen(name);}catch(e){}},600);
+ };
+
+ /* 스와이프 */
+ var sx=null,sl=$('mnlSlides');
+ if(sl){
+  sl.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;},{passive:true});
+  sl.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>45){dx<0?window._mnlNext():window._mnlPrev();}sx=null;});
+ }
+})();
+</script>
+<!-- ═══ /업무 메뉴얼 뷰어 ═══ -->
 
 <!-- v15.90: 여기 있던 오버레이 정적 스냅샷 제거.
      렌더된 DOM 이 파일에 저장되면서 month-selector·sbYear·sbMonth·teacherList 의 id 가
