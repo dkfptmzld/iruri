@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.44">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.45">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.44">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.45">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.44</title>
+<title>수업기록표 정산 시스템 v16.45</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4030,7 +4030,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.44';
+const SYSTEM_VERSION='v16.45';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7400,11 +7400,16 @@ function _almInitTeachers(myName){
  const myOpt = document.createElement('option');
  myOpt.value = myName; myOpt.textContent = myName + ' (본인)';
  sel.appendChild(myOpt);
- // 나머지 강사 (가나다순)
- (window.DB?.teachers||[])
-  .filter(t=>t.name !== myName)
-  .sort((a,b)=>a.name.localeCompare(b.name,'ko'))
-  .forEach(t=>{ const o=document.createElement('option'); o.value=t.name; o.textContent=t.name; sel.appendChild(o); });
+ // v16.45: 강사 목록 = 마스터 명단(DB.teachers) ∪ 정산 데이터(STATE.data.teachers) 합집합.
+ //   정산(월 스냅샷) 편집 화면에선 DB.teachers 가 비어 본인만 뜨던 버그 수정
+ //   (_almUpdateCenters 는 이미 STATE.data 폴백이 있었음 — 강사 목록에도 동일 적용).
+ const _names = new Set();
+ (window.DB?.teachers||[]).forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
+ (STATE.data?.teachers||[]).forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
+ [..._names]
+  .filter(n=>n !== myName)
+  .sort((a,b)=>a.localeCompare(b,'ko'))
+  .forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
 }
 
 function _almToggleSub(ti){
