@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.45">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.46">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.45">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.46">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.45</title>
+<title>수업기록표 정산 시스템 v16.46</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4030,7 +4030,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.45';
+const SYSTEM_VERSION='v16.46';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8239,7 +8239,7 @@ function renderTeacherMgr(){
   certCell=`<span style="font-family:'DM Mono',monospace;font-size:12px;">${_certAmt.toLocaleString()}원</span>${_tag} ${_payBadge}<div style="font-size:10px;color:#8a5a1c;margin-top:2px;">🎓 ${_cym||'-'} 정산 반영 · 50% ${_half.toLocaleString()}${_rdShort?` <span style="color:#b08a4a;">(반환일 ${_rdShort})</span>`:''}</div>`;
  }
  return`<div class="mgr-row t-mgr-row" style="cursor:pointer;" onclick="openModal('teacher',${i})">
- <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}</div>
+ <div class="mgr-cell" style="font-weight:500;">${escH(t.name)}${t.subject?`<div style="font-size:10px;font-weight:400;color:#0F6E56;margin-top:2px;background:#E1F5EE;padding:1px 6px;border-radius:4px;display:inline-block;">${escH(t.subject)}</div>`:''}${(t.phone||t.address)?`<div style="font-size:10px;font-weight:400;color:var(--text3);margin-top:3px;line-height:1.5;">${t.phone?`📞 ${escH(t.phone)}`:''}${t.phone&&t.address?'<br>':''}${t.address?`🏠 ${escH(t.address)}`:''}</div>`:''}</div>
  <div class="mgr-cell" style="font-size:12px;line-height:1.6;">${formatAccountHtml(t.account)}</div>
  <div class="mgr-cell"><span class="badge ${regionColor}">${t.region||'-'}</span></div>
  <div class="mgr-cell"><span style="font-family:'DM Mono',monospace;">${t.feeType==='pct'?t.feeVal+'%':Number(t.feeVal).toLocaleString()+'원/회'}</span></div>
@@ -10435,6 +10435,10 @@ function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=n
    <input class="form-input" id="fi_accname" value="${parseAccount(item?.account).name}" placeholder="예금주 (예: 박기남)">
  </div>
  <div class="form-hint">강사 모드에서 이름 선택 시 자동으로 채워집니다</div>
+ </div>
+ <div class="form-row-2" style="align-items:start;">
+ <div><label class="form-label">휴대폰</label><input class="form-input" id="fi_tphone" value="${String(item?.phone||'').replace(/"/g,'&quot;')}" placeholder="010-1234-5678" oninput="_fmtPhoneInput(this)"></div>
+ <div><label class="form-label">주소</label><input class="form-input" id="fi_taddr" value="${String(item?.address||'').replace(/"/g,'&quot;')}" placeholder="예: 서울시 강남구 테헤란로 123"></div>
  </div>`;
  // 입사일 변경 시 인상예정일 + 자격증 반환일 자동 계산
  setTimeout(()=>{
@@ -10944,7 +10948,10 @@ function saveModal(){
  const account=[bank,accnum,accname].filter(Boolean).join(' ');
  // v12.11: 과목 추가
  const subject=document.getElementById('fi_subject')?.value||'';
- const obj={name,region,feeType,feeVal,hireDate,raiseDate,certFee,certReturnDate,account,subject};
+ // v16.46: 휴대폰·주소 (강사별 연락처)
+ const phone=(document.getElementById('fi_tphone')?.value||'').trim();
+ const address=(document.getElementById('fi_taddr')?.value||'').trim();
+ const obj={name,region,feeType,feeVal,hireDate,raiseDate,certFee,certReturnDate,account,subject,phone,address};
  if(STATE.editIdx!==null){
   const prev=JSON.parse(JSON.stringify(DB.teachers));
   const old=DB.teachers[STATE.editIdx];
