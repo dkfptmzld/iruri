@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.42">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.43">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.42">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.43">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.42</title>
+<title>수업기록표 정산 시스템 v16.43</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1368,6 +1368,14 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">지역</label>
  <select id="signup-region" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">지역 선택</option><option value="서울">서울</option><option value="수원">수원</option><option value="인천">인천</option></select>
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">휴대폰 번호</label>
+ <input id="signup-phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" oninput="_fmtPhoneInput(this)">
+ </div>
+ <div style="margin-bottom:14px;">
+ <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">주소</label>
+ <input id="signup-address" type="text" autocomplete="street-address" placeholder="예: 서울시 강남구 테헤란로 123, 4층" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
  </div>
  <div style="margin-bottom:14px;">
  <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌 정보</label>
@@ -3992,7 +4000,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.42';
+const SYSTEM_VERSION='v16.43';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13793,6 +13801,14 @@ function loginSuccess(name){
  _maybeShowNoticeOnLogin(name);
 }
 
+// v16.43: 휴대폰 번호 자동 하이픈 (010-1234-5678)
+function _fmtPhoneInput(el){
+ let d=(el.value||'').replace(/\D/g,'').slice(0,11);
+ let out=d;
+ if(d.length>=8) out=d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7);
+ else if(d.length>=4) out=d.slice(0,3)+'-'+d.slice(3);
+ el.value=out;
+}
 async function doSignup(){
  // v14.64: 전 항목 필수 + 신규(명단에 없음)는 관리자 승인 대기
  const name = document.getElementById('signup-name').value.trim();
@@ -13804,6 +13820,8 @@ async function doSignup(){
  const accnum = (document.getElementById('signup-accnum')?.value || '').trim();
  const accname = (document.getElementById('signup-accname')?.value || '').trim();
  const account = [bank, accnum, accname].filter(Boolean).join(' ');
+ const phone = (document.getElementById('signup-phone')?.value || '').trim();
+ const address = (document.getElementById('signup-address')?.value || '').trim();
  const subject = document.getElementById('signup-subject')?.value || '';
  const err = document.getElementById('signup-err');
  const showErr=(m,c)=>{ err.textContent=m; err.style.color=c||'#e53935'; err.style.display='block'; };
@@ -13826,6 +13844,9 @@ async function doSignup(){
  if(!bank){ need('signup-bank','은행명을 입력해주세요'); return; }
  if(!accnum){ need('signup-accnum','계좌번호를 입력해주세요'); return; }
  if(!accname){ need('signup-accname','예금주를 입력해주세요'); return; }
+ if(!phone){ need('signup-phone','휴대폰 번호를 입력해주세요'); return; }
+ if(phone.replace(/\D/g,'').length<10){ need('signup-phone','휴대폰 번호를 정확히 입력해주세요'); return; }
+ if(!address){ need('signup-address','주소를 입력해주세요'); return; }
  if(!subject){ need('signup-subject','과목을 선택해주세요'); return; }
 
  const dbTeacher = DB.teachers.find(t=>t.name===name);
@@ -13864,7 +13885,7 @@ async function doSignup(){
  }
 
  // 신규(명단에 없음) → 관리자 승인 대기 신청
- gasPost({ action:'signupRequest', data:{ name, hashedPw:_newHash, region, hireDate, account, subject } })
+ gasPost({ action:'signupRequest', data:{ name, hashedPw:_newHash, region, hireDate, account, phone, address, subject } })
   .then(r=>{
    if(r && r.existing){ _signupClearAndGoLogin(name, '✅ 기존 강사로 확인됐어요. 로그인해주세요', false); return; }
    if(r && r.ok){ _signupClearAndGoLogin(name, '✅ 가입 신청 완료! 관리자 승인 후 로그인할 수 있어요', true); return; }
@@ -13876,7 +13897,7 @@ async function doSignup(){
 
 // 회원가입 후 폼 초기화 + 로그인 탭 이동 + 안내
 function _signupClearAndGoLogin(name, msg, pending){
- ['signup-name','signup-pw','signup-pw2','signup-bank','signup-accnum','signup-accname','signup-hireDate'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+ ['signup-name','signup-pw','signup-pw2','signup-bank','signup-accnum','signup-accname','signup-hireDate','signup-phone','signup-address'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
  const rg=document.getElementById('signup-region'); if(rg) rg.value='';
  const sj=document.getElementById('signup-subject'); if(sj) sj.value='';
  switchLoginTab('login'); initLoginScreen();
@@ -13965,6 +13986,8 @@ function renderSignupsView(){
        <div style="display:flex;flex-direction:column;gap:4px;">
         <div style="font-size:15px;font-weight:700;">${e(it.name)} <span style="font-size:11px;font-weight:500;color:var(--text3);">${e(it.region)}</span></div>
         <div style="font-size:12px;color:var(--text2);">첫 수업 예정일 ${e(it.hireDate)||'-'} · 과목 ${e(it.subject)||'-'}</div>
+        <div style="font-size:12px;color:var(--text3);">📞 ${e(it.phone)||'번호 미입력'}</div>
+        <div style="font-size:12px;color:var(--text3);">🏠 ${e(it.address)||'주소 미입력'}</div>
         <div style="font-size:12px;color:var(--text3);">${e(it.account)||'계좌 미입력'}</div>
         <div style="font-size:11px;color:var(--text3);">신청 ${e(it.requestedAt)}</div>
        </div>
