@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.43">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.44">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.43">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.44">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.43</title>
+<title>수업기록표 정산 시스템 v16.44</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1346,52 +1346,82 @@ body.ti-mode #mgr-teacher-bar, body.ti-mode #mgr-month-bar, body.ti-mode #mgr-si
  </div>
  </div>
 
- <!-- 회원가입 폼 -->
- <div id="signup-form" style="display:none;background:white;border-radius:16px;padding:24px;box-shadow:0 4px 20px rgba(26,122,80,.1);">
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">강사 이름</label>
- <input id="signup-name" type="text" autocomplete="username" name="new-username" placeholder="이름을 정확히 입력하세요 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')document.getElementById('signup-pw').focus()">
- <div style="font-size:11px;color:#9B9888;margin-top:4px;">신규 강사는 가입 신청 후 관리자 승인을 받으면 로그인할 수 있어요</div>
+ <!-- 회원가입 폼 (v16.44 리디자인: 그룹화 + 등장 애니메이션) -->
+ <style id="suStyle">
+ .su-sec{background:#fff;border:1px solid #E2E0D8;border-radius:14px;padding:14px 13px 5px;margin-bottom:12px;box-shadow:0 2px 10px rgba(26,122,80,.05);opacity:0;transform:translateY(16px);animation:suRise .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--d,1)*.09s);}
+ .su-sh{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:#1A7A50;margin-bottom:11px;letter-spacing:.2px;}
+ .su-sh .ico{width:22px;height:22px;border-radius:7px;background:#E8F5EE;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+ .su-field{margin-bottom:11px;}
+ .su-field>label{display:block;font-size:11px;font-weight:600;color:#6B6860;margin-bottom:5px;padding-left:2px;}
+ .su-iw{position:relative;display:flex;align-items:center;}
+ .su-iw .pre{position:absolute;left:11px;font-size:14px;opacity:.5;pointer-events:none;transition:.2s;z-index:1;}
+ .su-in{width:100%;height:44px;border:1.5px solid #E2E0D8;border-radius:11px;padding:0 12px 0 36px;font-size:14px;outline:none;background:#fff;color:#1C1C1C;transition:border-color .2s,box-shadow .2s;font-family:inherit;box-sizing:border-box;}
+ select.su-in{appearance:none;-webkit-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239B9888' stroke-width='2.5' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;}
+ .su-in:focus{border-color:#1A7A50;box-shadow:0 0 0 4px rgba(26,122,80,.12);}
+ .su-iw:focus-within .pre{opacity:1;transform:scale(1.12);}
+ .su-in::placeholder{color:#C2BFB2;}
+ .su-two{display:flex;gap:8px;}.su-two .su-field{flex:1;min-width:0;}
+ .su-hint{font-size:10.5px;color:#9B9888;margin-top:4px;padding-left:2px;line-height:1.5;}
+ .su-submit{width:100%;height:50px;background:linear-gradient(135deg,#1A7A50,#12633f);color:#fff;border:none;border-radius:13px;font-size:15.5px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(26,122,80,.26);transition:transform .12s;opacity:0;transform:translateY(16px);animation:suRise .5s ease .5s both;font-family:inherit;}
+ .su-submit:active{transform:scale(.98);}
+ .su-submit::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:suShine 3.4s ease-in-out 1.2s infinite;}
+ .su-foot{text-align:center;margin-top:14px;font-size:12px;color:#9B9888;opacity:0;animation:suRise .5s ease .55s both;}
+ @keyframes suRise{to{opacity:1;transform:translateY(0);}}
+ @keyframes suShine{0%{left:-60%}42%{left:130%}100%{left:130%}}
+ @media(prefers-reduced-motion:reduce){.su-sec,.su-submit,.su-foot{animation:none!important;opacity:1!important;transform:none!important;}.su-submit::after{display:none;}}
+ </style>
+ <div id="signup-form" style="display:none;">
+ <div class="su-sec" style="--d:1">
+  <div class="su-sh"><span class="ico">👤</span> 계정 정보</div>
+  <div class="su-field"><label>강사 이름</label>
+   <div class="su-iw"><span class="pre">🧑</span><input id="signup-name" class="su-in" type="text" autocomplete="username" name="new-username" placeholder="이름을 정확히 입력 (예: 홍길동)" onkeydown="if(event.key==='Enter')document.getElementById('signup-pw').focus()"></div>
+   <div class="su-hint">신규 강사는 가입 신청 후 관리자 승인을 받으면 로그인할 수 있어요</div>
+  </div>
+  <div class="su-field"><label>비밀번호 설정</label>
+   <div class="su-iw"><span class="pre">🔒</span><input id="signup-pw" class="su-in" type="password" autocomplete="new-password" name="new-password" placeholder="4자리 이상"></div>
+  </div>
+  <div class="su-field"><label>비밀번호 확인</label>
+   <div class="su-iw"><span class="pre">🔑</span><input id="signup-pw2" class="su-in" type="password" autocomplete="new-password" name="confirm-password" placeholder="동일하게 입력" onkeydown="if(event.key==='Enter')doSignup()"></div>
+  </div>
  </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 설정</label>
- <input id="signup-pw" type="password" autocomplete="new-password" name="new-password" placeholder="4자리 이상" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <div class="su-sec" style="--d:2">
+  <div class="su-sh"><span class="ico">📋</span> 근무 정보</div>
+  <div class="su-field"><label>첫 수업 예정일</label>
+   <div class="su-iw"><span class="pre">📅</span><input id="signup-hireDate" class="su-in" type="date"></div>
+  </div>
+  <div class="su-two">
+   <div class="su-field"><label>지역</label>
+    <div class="su-iw"><span class="pre">📍</span><select id="signup-region" class="su-in"><option value="">지역 선택</option><option value="서울">서울</option><option value="수원">수원</option><option value="인천">인천</option></select></div>
+   </div>
+   <div class="su-field"><label>과목</label>
+    <div class="su-iw"><span class="pre">🎯</span><select id="signup-subject" class="su-in"><option value="">과목 선택</option></select></div>
+   </div>
+  </div>
  </div>
- <div style="margin-bottom:20px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">비밀번호 확인</label>
- <input id="signup-pw2" type="password" autocomplete="new-password" name="confirm-password" placeholder="동일하게 입력" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onkeydown="if(event.key==='Enter')doSignup()">
+ <div class="su-sec" style="--d:3">
+  <div class="su-sh"><span class="ico">📞</span> 연락처</div>
+  <div class="su-field"><label>휴대폰 번호</label>
+   <div class="su-iw"><span class="pre">📱</span><input id="signup-phone" class="su-in" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" oninput="_fmtPhoneInput(this)"></div>
+  </div>
+  <div class="su-field"><label>주소</label>
+   <div class="su-iw"><span class="pre">🏠</span><input id="signup-address" class="su-in" type="text" autocomplete="street-address" placeholder="예: 서울시 강남구 테헤란로 123, 4층"></div>
+  </div>
  </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">첫 수업 예정일</label>
- <input id="signup-hireDate" type="date" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
+ <div class="su-sec" style="--d:4">
+  <div class="su-sh"><span class="ico">💳</span> 정산 계좌</div>
+  <div class="su-field"><label>은행명</label>
+   <div class="su-iw"><span class="pre">🏦</span><input id="signup-bank" class="su-in" type="text" placeholder="예: 국민은행"></div>
+  </div>
+  <div class="su-field"><label>계좌번호</label>
+   <div class="su-iw"><span class="pre">#️⃣</span><input id="signup-accnum" class="su-in" type="text" placeholder="예: 597302-04-146046"></div>
+  </div>
+  <div class="su-field"><label>예금주</label>
+   <div class="su-iw"><span class="pre">✍️</span><input id="signup-accname" class="su-in" type="text" placeholder="예: 홍길동"></div>
+  </div>
  </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">지역</label>
- <select id="signup-region" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">지역 선택</option><option value="서울">서울</option><option value="수원">수원</option><option value="인천">인천</option></select>
- </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">휴대폰 번호</label>
- <input id="signup-phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" oninput="_fmtPhoneInput(this)">
- </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">주소</label>
- <input id="signup-address" type="text" autocomplete="street-address" placeholder="예: 서울시 강남구 테헤란로 123, 4층" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
- </div>
- <div style="margin-bottom:14px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">계좌 정보</label>
- <input id="signup-bank" type="text" placeholder="은행명 (예: 국민은행)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:8px;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
- <input id="signup-accnum" type="text" placeholder="계좌번호 (예: 597302-04-146046)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;margin-bottom:8px;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
- <input id="signup-accname" type="text" placeholder="예금주 (예: 홍길동)" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 12px;font-size:14px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'">
- </div>
- <div style="margin-bottom:20px;">
- <label style="font-size:12px;font-weight:600;color:#6B6860;display:block;margin-bottom:6px;">과목</label>
- <select id="signup-subject" style="width:100%;height:42px;border:1.5px solid #E2E0D8;border-radius:10px;padding:0 10px;font-size:14px;outline:none;box-sizing:border-box;background:white;"><option value="">과목 선택</option></select>
- </div>
- <div id="signup-err" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none;"></div>
- <button onclick="doSignup()" style="width:100%;height:44px;background:#1A7A50;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">가입하기</button>
- <div style="text-align:center;margin-top:14px;font-size:12px;color:#9B9888;">
- 이미 계정이 있나요? <span onclick="switchLoginTab('login')" style="color:#1A7A50;font-weight:600;cursor:pointer;">로그인</span>
- </div>
+ <div id="signup-err" style="color:#e53935;font-size:12px;margin:2px 0 12px;display:none;"></div>
+ <button class="su-submit" onclick="doSignup()">가입하기</button>
+ <div class="su-foot">이미 계정이 있나요? <span onclick="switchLoginTab('login')" style="color:#1A7A50;font-weight:700;cursor:pointer;">로그인</span></div>
  <div style="text-align:center;margin-top:8px;">
  <span onclick="showConfirm({icon:'⚠️',title:'계정 초기화',desc:'모든 강사 계정을 초기화할까요?',okText:'초기화',okStyle:'danger',onOk:()=&gt;{localStorage.removeItem('iruri_teacher_accounts');initLoginScreen();showToast('계정 초기화 완료');}});" style="font-size:11px;color:#C8C6B8;cursor:pointer;">계정 초기화 (오류 시)</span>
  </div>
@@ -4000,7 +4030,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.43';
+const SYSTEM_VERSION='v16.44';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**

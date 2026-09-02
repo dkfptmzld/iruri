@@ -183,7 +183,7 @@ function getSheet(name) {
     sheet = ss.insertSheet(name);
     if (name === SHEET_TEACHERS) sheet.appendRow(['강사명','지역','급여유형','급여액','입사일','인상일','계좌정보','JSON전체']);
     if (name === SHEET_CENTERS)  sheet.appendRow(['센터명','지역','수업료','강사1','강사2','강사3','강사4','주소','출처','스케줄JSON','전화','이메일','담당자','JSON전체']);
-    if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태']);
+    if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태','휴대폰','주소']);
     if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','메시지','요청시각','상태','처리시각']);
     if (name === SHEET_CTOMB)    sheet.appendRow(['센터명','지역','삭제시각']);
   }
@@ -203,10 +203,10 @@ function signupRequest(d){
   const sheet = getSheet(SHEET_PENDING);
   const vals = sheet.getDataRange().getValues();
   const now = new Date().toLocaleString('ko-KR', { timeZone:'Asia/Seoul' });
-  const row = [d.name, d.hashedPw, d.region||'', d.hireDate||'', d.account||'', d.subject||'', now, '대기'];
+  const row = [d.name, d.hashedPw, d.region||'', d.hireDate||'', d.account||'', d.subject||'', now, '대기', d.phone||'', d.address||''];
   for(let i=1;i<vals.length;i++){
     if(String(vals[i][0]).trim() === String(d.name).trim()){
-      sheet.getRange(i+1,1,1,8).setValues([row]);
+      sheet.getRange(i+1,1,1,10).setValues([row]);
       return { ok:true, pending:true, message:'가입 신청 갱신(승인 대기)' };
     }
   }
@@ -219,10 +219,11 @@ function getPendingSignups(){
   const vals = sheet.getDataRange().getValues();
   const list = [];
   for(let i=1;i<vals.length;i++){
-    const [name,,region,hireDate,account,subject,requestedAt,status] = vals[i];
+    const [name,,region,hireDate,account,subject,requestedAt,status,phone,address] = vals[i];
     if(!name || status === '승인') continue;
     list.push({ name:String(name), region:String(region||''), hireDate:String(hireDate||''),
-                account:String(account||''), subject:String(subject||''), requestedAt:String(requestedAt||'') });
+                account:String(account||''), subject:String(subject||''), requestedAt:String(requestedAt||''),
+                phone:String(phone||''), address:String(address||'') });
   }
   return { ok:true, data:list };
 }
@@ -232,9 +233,10 @@ function approveSignup(name){
   const vals = sheet.getDataRange().getValues();
   for(let i=1;i<vals.length;i++){
     if(String(vals[i][0]).trim() === String(name).trim()){
-      const [nm, hash, region, hireDate, account, subject] = vals[i];
+      const [nm, hash, region, hireDate, account, subject, requestedAt, status, phone, address] = vals[i];
       saveTeacher({ name:String(nm), region:String(region||''), feeType:'pct', feeVal:0,
-                    hireDate:String(hireDate||''), raiseDate:'', account:String(account||''), subject:String(subject||'') });
+                    hireDate:String(hireDate||''), raiseDate:'', account:String(account||''), subject:String(subject||''),
+                    phone:String(phone||''), address:String(address||'') });
       signupAccount(String(nm), String(hash));
       sheet.deleteRow(i+1);
       return { ok:true, message:nm + ' 승인 완료' };
