@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.41">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.42">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.41">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.42">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.41</title>
+<title>수업기록표 정산 시스템 v16.42</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3992,7 +3992,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.41';
+const SYSTEM_VERSION='v16.42';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -22798,6 +22798,36 @@ function changeFontSize(dir){
 .mnl-dfoot button{flex:1;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;}
 .mnl-dfoot .mnl-tocard{background:#fff;color:#1A7A50;border:1.5px solid #1A7A50;}
 .mnl-dfoot .mnl-img{background:#1A7A50;color:#fff;}
+/* v16.42: PC(넓은 화면) — 글씨 확대 + 내용 영역을 분리된 패널처럼 */
+@media(min-width:700px){
+ .mnl-ctop{max-width:700px;width:100%;margin:0 auto;padding-top:22px;}
+ .mnl-slides{max-width:680px;background:rgba(0,0,0,.13);border:1px solid rgba(255,255,255,.15);border-radius:24px;box-shadow:0 22px 60px rgba(0,0,0,.30);margin:6px auto 4px;}
+ .mnl-slide{padding:30px 34px 16px;}
+ .mnl-slide.mnl-mid{padding-top:32px;}
+ .mnl-emoji{font-size:62px;margin-bottom:12px;}
+ .mnl-slide h2{font-size:30px;margin-bottom:6px;}
+ .mnl-lead{font-size:15.5px;margin-bottom:22px;}
+ .mnl-item{padding:16px 20px;border-radius:16px;margin-bottom:13px;gap:13px;}
+ .mnl-item .mnl-ic{font-size:23px;}
+ .mnl-item .mnl-tx{font-size:15.5px;line-height:1.62;}
+ .mnl-item .mnl-big{font-size:19px;margin-bottom:2px;}
+ .mnl-item .mnl-ex{font-size:13.5px;margin-top:6px;}
+ .mnl-center h2{font-size:34px;}
+ .mnl-center .mnl-logo{width:108px;height:108px;font-size:52px;}
+ .mnl-badge{font-size:13px;}
+ .mnl-cbottom{max-width:680px;padding-top:14px;}
+ .mnl-btn{font-size:16.5px;padding:16px;}
+ .mnl-hint{font-size:12.5px;padding-bottom:16px;}
+ .mnl-dbody{max-width:780px;padding:26px 22px 40px;}
+ .mnl-dhead{padding:18px 22px;}
+ .mnl-dhead .mnl-dt b{font-size:18px;}
+ .mnl-dsec>h3{font-size:20px;}
+ .mnl-dcl{font-size:15.5px;line-height:1.75;padding:11px 0;}
+ .mnl-dcl .mnl-no{font-size:15px;min-width:34px;}
+ .mnl-dcl .mnl-exc{font-size:14px;}
+ .mnl-dfoot{padding:14px 22px;}
+ .mnl-dfoot button{font-size:15px;padding:14px;}
+}
 </style>
 <div class="mnl-ov" id="mnlChooser">
   <button class="mnl-close" onclick="_mnlHide()">×</button>
