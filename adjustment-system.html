@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.46">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.47">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.46">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.47">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.46</title>
+<title>수업기록표 정산 시스템 v16.47</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4030,7 +4030,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.46';
+const SYSTEM_VERSION='v16.47';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7335,7 +7335,7 @@ function openAddLessonModal(ti, day){
    <div style="border:1px solid #E2E0D8;border-radius:10px;overflow:hidden;margin-bottom:14px;">
     <table style="width:100%;border-collapse:collapse;font-size:13px;">
      <tr>
-      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;width:75px;font-size:12px;">보강</td>
+      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;width:82px;font-size:12px;white-space:nowrap;">보강</td>
       <td style="padding:9px 12px;border-bottom:1px solid #E2E0D8;">
        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;color:#333;">
         <input type="checkbox" id="alm_isSub" onchange="_almToggleSub(${ti})"
@@ -7345,7 +7345,7 @@ function openAddLessonModal(ti, day){
       </td>
      </tr>
      <tr id="alm_subfor_row" style="display:none;">
-      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;">누구 수업?</td>
+      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;white-space:nowrap;">누구 수업?</td>
       <td style="padding:9px 12px;border-bottom:1px solid #E2E0D8;">
        <select id="alm_subfor" onchange="_almUpdateCenters(${ti})"
         style="width:100%;height:30px;border:1px solid #E2E0D8;border-radius:6px;padding:0 6px;font-size:12px;outline:none;">
@@ -7354,7 +7354,7 @@ function openAddLessonModal(ti, day){
       </td>
      </tr>
      <tr>
-      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;">센터</td>
+      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;white-space:nowrap;">센터</td>
       <td style="padding:9px 12px;border-bottom:1px solid #E2E0D8;">
        <select id="alm_center" onchange="_almAutoFee()"
         style="width:100%;height:30px;border:1px solid #E2E0D8;border-radius:6px;padding:0 6px;font-size:12px;outline:none;">
@@ -7363,14 +7363,14 @@ function openAddLessonModal(ti, day){
       </td>
      </tr>
      <tr id="alm_custom_row" style="display:none;">
-      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;">센터명</td>
+      <td style="padding:9px 12px;color:#888;border-bottom:1px solid #E2E0D8;font-size:12px;white-space:nowrap;">센터명</td>
       <td style="padding:9px 12px;border-bottom:1px solid #E2E0D8;">
        <input id="alm_custom_center" type="text" placeholder="센터명 입력"
         style="width:100%;height:30px;border:1px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;box-sizing:border-box;outline:none;">
       </td>
      </tr>
      <tr>
-      <td style="padding:9px 12px;color:#888;font-size:12px;">수업료</td>
+      <td style="padding:9px 12px;color:#888;font-size:12px;white-space:nowrap;">수업료</td>
       <td style="padding:9px 12px;">
        <input id="alm_fee" type="number" placeholder="자동 입력"
         style="width:100%;height:30px;border:1px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;box-sizing:border-box;outline:none;">
@@ -7401,15 +7401,36 @@ function _almInitTeachers(myName){
  myOpt.value = myName; myOpt.textContent = myName + ' (본인)';
  sel.appendChild(myOpt);
  // v16.45: 강사 목록 = 마스터 명단(DB.teachers) ∪ 정산 데이터(STATE.data.teachers) 합집합.
- //   정산(월 스냅샷) 편집 화면에선 DB.teachers 가 비어 본인만 뜨던 버그 수정
- //   (_almUpdateCenters 는 이미 STATE.data 폴백이 있었음 — 강사 목록에도 동일 적용).
+ //   정산(월 스냅샷) 편집 화면에선 DB.teachers 가 비어 본인만 뜨던 버그 수정.
+ // v16.47: 다른 드롭다운(_cpickerInitSub)과 동일하게 지역별 그룹(optgroup)+색상 구분, 본인 지역 맨 위.
+ const _dbRegion = new Map();
+ (window.DB?.teachers||[]).forEach(t=>{ if(t && t.name) _dbRegion.set(String(t.name), String(t.region||'')); });
  const _names = new Set();
  (window.DB?.teachers||[]).forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
- (STATE.data?.teachers||[]).forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
- [..._names]
-  .filter(n=>n !== myName)
-  .sort((a,b)=>a.localeCompare(b,'ko'))
-  .forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+ (STATE.data?.teachers||[]).forEach(t=>{ if(t && t.name){ _names.add(String(t.name)); if(t.region && !_dbRegion.get(String(t.name))) _dbRegion.set(String(t.name), String(t.region)); } });
+ const _all = [..._names].filter(n=>n!==myName).map(n=>({ name:n, region:_dbRegion.get(n)||'' }));
+ const _REGIONS = ['서울','인천','수원'];
+ const _selfRegion = _dbRegion.get(myName)||'';
+ const _orderedRegions = (_selfRegion && _REGIONS.includes(_selfRegion))
+  ? [_selfRegion, ..._REGIONS.filter(r=>r!==_selfRegion)]
+  : _REGIONS.slice();
+ const _regionStyle = { '서울':{bg:'#EFF6FF',color:'#1E40AF'}, '인천':{bg:'#E1F5EE',color:'#0F6E56'}, '수원':{bg:'#F0EAFA',color:'#5A3AB0'} };
+ const _addGroup = (label, list, st)=>{
+  if(!list.length) return;
+  const og=document.createElement('optgroup');
+  og.label=label;
+  og.style.textAlign='center';                                  // v16.47: 지역 가운데 정렬
+  if(st){ og.style.background=st.bg; og.style.color=st.color; og.style.fontWeight='600'; }
+  list.sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(t=>{
+   const o=document.createElement('option');
+   o.value=t.name; o.textContent=t.name;
+   o.style.background='white'; o.style.color='#333'; o.style.fontWeight='400'; o.style.textAlign='left';
+   og.appendChild(o);
+  });
+  sel.appendChild(og);
+ };
+ _orderedRegions.forEach(region=>{ _addGroup(region, _all.filter(t=>t.region===region), _regionStyle[region]); });
+ _addGroup('기타', _all.filter(t=>!_REGIONS.includes(t.region)), null);
 }
 
 function _almToggleSub(ti){
