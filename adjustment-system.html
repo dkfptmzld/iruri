@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.47">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.48">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.47">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.48">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.47</title>
+<title>수업기록표 정산 시스템 v16.48</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4030,7 +4030,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.47';
+const SYSTEM_VERSION='v16.48';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7402,15 +7402,26 @@ function _almInitTeachers(myName){
  sel.appendChild(myOpt);
  // v16.45: 강사 목록 = 마스터 명단(DB.teachers) ∪ 정산 데이터(STATE.data.teachers) 합집합.
  //   정산(월 스냅샷) 편집 화면에선 DB.teachers 가 비어 본인만 뜨던 버그 수정.
- // v16.47: 다른 드롭다운(_cpickerInitSub)과 동일하게 지역별 그룹(optgroup)+색상 구분, 본인 지역 맨 위.
- const _dbRegion = new Map();
- (window.DB?.teachers||[]).forEach(t=>{ if(t && t.name) _dbRegion.set(String(t.name), String(t.region||'')); });
+ // v16.47: 지역별 그룹(optgroup)+색상 구분, 본인 지역 맨 위.
+ // v16.48: DB 는 const 라 window.DB 는 undefined → bareword DB 사용(사이드바 buildTeacherListHtml 과 동일).
+ //   지역 = DB 마스터 → 정산레코드 region → _dropRegion(강사가 드롭한 지역) 순으로 조회.
+ const _dbT = (typeof DB!=='undefined' && Array.isArray(DB.teachers)) ? DB.teachers : [];
+ const _stT = (STATE.data && Array.isArray(STATE.data.teachers)) ? STATE.data.teachers : [];
+ const _stByName = new Map();
+ _stT.forEach(t=>{ if(t && t.name) _stByName.set(String(t.name), t); });
+ const _regionOf = (name)=>{
+  const d = _dbT.find(x=>x && x.name===name);
+  if(d && d.region) return String(d.region);
+  const s = _stByName.get(name);
+  if(s){ if(s.region) return String(s.region); if(s._dropRegion) return String(s._dropRegion); }
+  return '';
+ };
  const _names = new Set();
- (window.DB?.teachers||[]).forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
- (STATE.data?.teachers||[]).forEach(t=>{ if(t && t.name){ _names.add(String(t.name)); if(t.region && !_dbRegion.get(String(t.name))) _dbRegion.set(String(t.name), String(t.region)); } });
- const _all = [..._names].filter(n=>n!==myName).map(n=>({ name:n, region:_dbRegion.get(n)||'' }));
+ _dbT.forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
+ _stT.forEach(t=>{ if(t && t.name) _names.add(String(t.name)); });
+ const _all = [..._names].filter(n=>n!==myName).map(n=>({ name:n, region:_regionOf(n) }));
  const _REGIONS = ['서울','인천','수원'];
- const _selfRegion = _dbRegion.get(myName)||'';
+ const _selfRegion = _regionOf(myName);
  const _orderedRegions = (_selfRegion && _REGIONS.includes(_selfRegion))
   ? [_selfRegion, ..._REGIONS.filter(r=>r!==_selfRegion)]
   : _REGIONS.slice();
@@ -7447,7 +7458,8 @@ function _almUpdateCenters(ti){
  const forTeacher = document.getElementById('alm_subfor')?.value;
 
  // DB에서 센터 목록 (없으면 STATE.data 전체 강사의 lessons에서 추출)
- let dbCenters = window.DB?.centers||[];
+ // v16.48: DB 는 const → window.DB 는 undefined. bareword DB.centers 사용(사본).
+ let dbCenters = (typeof DB!=='undefined' && Array.isArray(DB.centers)) ? DB.centers.slice() : [];
  if(!dbCenters.length){
   const nameSet = new Set();
   (STATE.data?.teachers||[]).forEach(tt=>{
