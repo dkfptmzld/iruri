@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.50">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.51">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.50">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.51">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.50</title>
+<title>수업기록표 정산 시스템 v16.51</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4047,7 +4047,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.50';
+const SYSTEM_VERSION='v16.51';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6972,7 +6972,11 @@ function renderCenterPickerList(q, teacherName, cur){
  const t=_cpTi>=0?STATE.data?.teachers[_cpTi]:null;
  const teacherRegion=(DB.teachers.find(x=>x.name===teacherName)?.region)||'';
  // 강사 이력 센터(이미 파싱된 lessons에서)
- const lessonCenters=t?[...new Set(t.lessons.map(l=>l.center).filter(Boolean))]:[];
+ // 담당센터 = 강사 수업 센터 (수업 레코드의 지역·수업료를 그대로 사용)
+ const lessonInfo=new Map();
+ if(t) t.lessons.forEach(l=>{ if(l.center && !lessonInfo.has(l.center)) lessonInfo.set(l.center,{region:l.region||'', fee:l.feePer||0}); });
+ const lessonCenters=[...lessonInfo.keys()];
+ const ownRegionOf=nm=>lessonInfo.get(nm)?.region||teacherRegion||'';
 
  const pickerRegion=_cpRegion||'전체';
  const passFilter=c=>{
@@ -6982,22 +6986,21 @@ function renderCenterPickerList(q, teacherName, cur){
  };
  const allCenters=DB.centers.filter(passFilter);
 
- // 담당(이력 + DB 배정) 이름 집합
- const dbAssigned=DB.centers.filter(c=>(c.teachers||[]).includes(teacherName)).map(c=>c.name);
- const knownNames=new Set([...lessonCenters, ...dbAssigned]);
+ // 담당 = 강사 수업 센터만 (DB 배정으로 부풀리지 않음)
+ const knownNames=new Set(lessonCenters);
 
- // 지역 룩업 + 담당 유사키(이름+지역)
- const regionOf=name=>(DB.centers.find(c=>c.name===name)?.region)||teacherRegion||'';
+ // 동명이지역 센터: 강사 지역 우선 조회 (배지·수업료·강사 오염 방지)
+ const centerBy=(name,region)=>(region&&DB.centers.find(c=>c.name===name&&c.region===region))||DB.centers.find(c=>c.name===name&&c.region===teacherRegion)||DB.centers.find(c=>c.name===name)||null;
  const fuzKey=(name,region)=>_cpFuzzy(name)+'|'+(region||teacherRegion||'');
- const knownFuzzy=new Set(); knownNames.forEach(nm=>knownFuzzy.add(fuzKey(nm,regionOf(nm))));
+ const knownFuzzy=new Set(); lessonCenters.forEach(nm=>knownFuzzy.add(fuzKey(nm,ownRegionOf(nm))));
 
- const feeOf=name=>DB.centerFees[`${name}|${teacherName}`]||(DB.centers.find(c=>c.name===name&&(c.teachers||[]).includes(teacherName))?.fee)||(DB.centers.find(c=>c.name===name)?.fee)||0;
- const staffOf=name=>{ const c=DB.centers.find(x=>x.name===name); return (c&&Array.isArray(c.teachers))?c.teachers:[]; };
+ const feeOf=(name,region)=>DB.centerFees[`${name}|${teacherName}`]||centerBy(name,region)?.fee||0;
+ const staffOf=(name,region)=>{ const c=centerBy(name,region); return (c&&Array.isArray(c.teachers))?c.teachers:[]; };
  const rgStyleOf=r=>({'서울':'background:#EFF6FF;color:#1E40AF','인천':'background:#E1F5EE;color:#0F6E56','수원':'background:#F0EAFA;color:#5A3AB0'}[r]||'background:#F0EEE8;color:#7a756a');
 
- const mkItem=(name,region,kind,alias)=>{
-  const fee=feeOf(name);
-  const staff=staffOf(name);
+ const mkItem=(name,region,kind,alias,feeVal)=>{
+  const fee=(feeVal!=null&&feeVal>0)?feeVal:feeOf(name,region);
+  const staff=staffOf(name,region);
   const staffHtml=staff.length?`<div class="cp-staff">👤 ${staff.map(s=>`<span class="who">${escH(s)}</span>`).join('')}</div>`:'';
   const aliasHtml=(alias&&alias!==name)?`<div class="cp-alias">≈ 내 기록: ${escH(alias)}</div>`:'';
   return `<div class="cpicker-item${kind==='rec'?' rec':''}${name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(name)}',${fee})">
@@ -7015,18 +7018,17 @@ function renderCenterPickerList(q, teacherName, cur){
    if(rec.length){
     html+=`<div class="cpicker-section rec">⭐ AI 추천 센터 <span class="cpicker-count">${rec.length}개</span><span class="cpicker-hint">이름·지역이 비슷한 내 센터</span></div>`;
     rec.forEach(c=>{
-     const alias=[...knownNames].find(nm=>fuzKey(nm,regionOf(nm))===fuzKey(c.name,c.region));
+     const alias=lessonCenters.find(nm=>fuzKey(nm,ownRegionOf(nm))===fuzKey(c.name,c.region));
      html+=mkItem(c.name,c.region,'rec',alias);
     });
    }
   }
-  // 2. 📌 담당센터 (이력 + DB 배정)
-  const ownDb=allCenters.filter(c=>knownNames.has(c.name));
-  const ownExtra=lessonCenters.filter(nm=>!DB.centers.find(c=>c.name===nm)&&(pickerRegion==='전체'||regionOf(nm)===pickerRegion));
-  if(ownDb.length+ownExtra.length){
-   html+=`<div class="cpicker-section own">📌 담당센터 <span class="cpicker-count">${ownDb.length+ownExtra.length}개</span></div>`;
-   ownDb.forEach(c=>html+=mkItem(c.name,c.region,'own'));
-   ownExtra.forEach(nm=>html+=mkItem(nm,regionOf(nm),'own'));
+  // 2. 📌 담당센터 — 강사 수업 센터만 (현재 센터를 맨 앞으로)
+  let ownNames=lessonCenters.filter(nm=>pickerRegion==='전체'||ownRegionOf(nm)===pickerRegion);
+  if(cur&&ownNames.includes(cur)) ownNames=[cur,...ownNames.filter(n=>n!==cur)];
+  if(ownNames.length){
+   html+=`<div class="cpicker-section own">📌 담당센터 <span class="cpicker-count">${ownNames.length}개</span></div>`;
+   ownNames.forEach(nm=>{ const info=lessonInfo.get(nm)||{}; html+=mkItem(nm,info.region||teacherRegion,'own',null,info.fee); });
   }
   // 3. 🏢 전체 센터
   const rest=allCenters.filter(c=>!knownNames.has(c.name)&&!(pickerRegion==='전체'&&knownFuzzy.has(fuzKey(c.name,c.region))));
