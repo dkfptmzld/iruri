@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.51">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.52">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.51">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.52">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.51</title>
+<title>수업기록표 정산 시스템 v16.52</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4047,7 +4047,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.51';
+const SYSTEM_VERSION='v16.52';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6960,6 +6960,13 @@ function _cpickerToggleSub(){
   const sel = document.getElementById('cpicker_subfor');
   if(sel) sel.value = '';
  }
+ // 보강 기준강사가 바뀌므로 목록 다시 그림
+ _cpickerRerender();
+}
+// 보강 체크/원래강사 변경 시 담당·AI추천 기준을 다시 잡아 재렌더
+function _cpickerRerender(){
+ const s=document.getElementById('cpickerSearch');
+ filterCenterPicker(s?s.value:'');
 }
 
 function closeCenterPicker(){
@@ -6970,13 +6977,11 @@ function closeCenterPicker(){
 function renderCenterPickerList(q, teacherName, cur){
  const list=document.getElementById('cpickerList');
  const t=_cpTi>=0?STATE.data?.teachers[_cpTi]:null;
- const teacherRegion=(DB.teachers.find(x=>x.name===teacherName)?.region)||'';
- // 강사 이력 센터(이미 파싱된 lessons에서)
- // 담당센터 = 강사 수업 센터 (수업 레코드의 지역·수업료를 그대로 사용)
- const lessonInfo=new Map();
- if(t) t.lessons.forEach(l=>{ if(l.center && !lessonInfo.has(l.center)) lessonInfo.set(l.center,{region:l.region||'', fee:l.feePer||0}); });
- const lessonCenters=[...lessonInfo.keys()];
- const ownRegionOf=nm=>lessonInfo.get(nm)?.region||teacherRegion||'';
+ // 보강이면 기준강사 = 원래 강사(누구 수업?). 아니면 로그인 강사.
+ const isSub=document.getElementById('cpicker_isSub')?.checked;
+ const subFor=(document.getElementById('cpicker_subfor')?.value||'').trim();
+ const baseTeacher=(isSub&&subFor)?subFor:teacherName;
+ const baseRegion=(DB.teachers.find(x=>x.name===baseTeacher)?.region)||'';
 
  const pickerRegion=_cpRegion||'전체';
  const passFilter=c=>{
@@ -6986,14 +6991,16 @@ function renderCenterPickerList(q, teacherName, cur){
  };
  const allCenters=DB.centers.filter(passFilter);
 
- // 담당 = 강사 수업 센터만 (DB 배정으로 부풀리지 않음)
- const knownNames=new Set(lessonCenters);
+ // 담당 = 센터 관리에서 기준강사가 배정된 센터
+ const assigned=DB.centers.filter(c=>(c.teachers||[]).includes(baseTeacher));
+ const knownNames=new Set(assigned.map(c=>c.name));
 
- // 동명이지역 센터: 강사 지역 우선 조회 (배지·수업료·강사 오염 방지)
- const centerBy=(name,region)=>(region&&DB.centers.find(c=>c.name===name&&c.region===region))||DB.centers.find(c=>c.name===name&&c.region===teacherRegion)||DB.centers.find(c=>c.name===name)||null;
- const fuzKey=(name,region)=>_cpFuzzy(name)+'|'+(region||teacherRegion||'');
- const knownFuzzy=new Set(); lessonCenters.forEach(nm=>knownFuzzy.add(fuzKey(nm,ownRegionOf(nm))));
+ // 동명이지역 센터: 기준강사 지역 우선 조회
+ const centerBy=(name,region)=>(region&&DB.centers.find(c=>c.name===name&&c.region===region))||DB.centers.find(c=>c.name===name&&c.region===baseRegion)||DB.centers.find(c=>c.name===name)||null;
+ const fuzKey=(name,region)=>_cpFuzzy(name)+'|'+(region||baseRegion||'');
+ const knownFuzzy=new Set(); assigned.forEach(c=>knownFuzzy.add(fuzKey(c.name,c.region)));
 
+ // 수업료는 항상 로그인 강사(내 정산) 기준 조합키
  const feeOf=(name,region)=>DB.centerFees[`${name}|${teacherName}`]||centerBy(name,region)?.fee||0;
  const staffOf=(name,region)=>{ const c=centerBy(name,region); return (c&&Array.isArray(c.teachers))?c.teachers:[]; };
  const rgStyleOf=r=>({'서울':'background:#EFF6FF;color:#1E40AF','인천':'background:#E1F5EE;color:#0F6E56','수원':'background:#F0EAFA;color:#5A3AB0'}[r]||'background:#F0EEE8;color:#7a756a');
@@ -7002,7 +7009,8 @@ function renderCenterPickerList(q, teacherName, cur){
   const fee=(feeVal!=null&&feeVal>0)?feeVal:feeOf(name,region);
   const staff=staffOf(name,region);
   const staffHtml=staff.length?`<div class="cp-staff">👤 ${staff.map(s=>`<span class="who">${escH(s)}</span>`).join('')}</div>`:'';
-  const aliasHtml=(alias&&alias!==name)?`<div class="cp-alias">≈ 내 기록: ${escH(alias)}</div>`:'';
+  const aliasWho=(baseTeacher===teacherName)?'내':escH(baseTeacher);
+  const aliasHtml=(alias&&alias!==name)?`<div class="cp-alias">≈ ${aliasWho} 센터: ${escH(alias)}</div>`:'';
   return `<div class="cpicker-item${kind==='rec'?' rec':''}${name===cur?' selected':''}" onclick="selectCenter('${escAttrJS(name)}',${fee})">
    <span class="cp-star">⭐</span>
    <span class="cp-rg" style="${rgStyleOf(region)}">${escH(region||'-')}</span>
@@ -7010,28 +7018,41 @@ function renderCenterPickerList(q, teacherName, cur){
    <span class="fee-tag">${fee?fee.toLocaleString()+'원':'-'}</span></div>`;
  };
 
+ // 현재 편집 중인 센터(레코드값) — 보강이 아닐 때만 담당 맨 위로 고정
+ const curL=t?.lessons?.[_cpLi];
+ const curRegion=(curL?.region)||centerBy(cur,'')?.region||baseRegion;
+ const curFronted=!!(cur && baseTeacher===teacherName && (pickerRegion==='전체'||curRegion===pickerRegion));
+
  let html='';
  if(!q){
-  // 1. ⭐ AI 추천 센터 — 전체 지역일 때만
+  // 1. ⭐ AI 추천 센터 — 전체 지역일 때만 (기준강사 배정과 이름·지역이 비슷한 미배정 센터)
   if(pickerRegion==='전체'){
-   const rec=allCenters.filter(c=>!knownNames.has(c.name)&&knownFuzzy.has(fuzKey(c.name,c.region)));
+   const rec=allCenters.filter(c=>!knownNames.has(c.name)&&(!curFronted||c.name!==cur)&&knownFuzzy.has(fuzKey(c.name,c.region)));
    if(rec.length){
-    html+=`<div class="cpicker-section rec">⭐ AI 추천 센터 <span class="cpicker-count">${rec.length}개</span><span class="cpicker-hint">이름·지역이 비슷한 내 센터</span></div>`;
+    const who=(baseTeacher===teacherName)?'이름·지역이 비슷한 내 센터':`${escH(baseTeacher)} 센터와 비슷`;
+    html+=`<div class="cpicker-section rec">⭐ AI 추천 센터 <span class="cpicker-count">${rec.length}개</span><span class="cpicker-hint">${who}</span></div>`;
     rec.forEach(c=>{
-     const alias=lessonCenters.find(nm=>fuzKey(nm,ownRegionOf(nm))===fuzKey(c.name,c.region));
+     const alias=(assigned.find(a=>fuzKey(a.name,a.region)===fuzKey(c.name,c.region))||{}).name;
      html+=mkItem(c.name,c.region,'rec',alias);
     });
    }
   }
-  // 2. 📌 담당센터 — 강사 수업 센터만 (현재 센터를 맨 앞으로)
-  let ownNames=lessonCenters.filter(nm=>pickerRegion==='전체'||ownRegionOf(nm)===pickerRegion);
-  if(cur&&ownNames.includes(cur)) ownNames=[cur,...ownNames.filter(n=>n!==cur)];
+  // 2. 📌 담당센터 — 센터 관리 배정 (보강이 아니면 현재 센터를 맨 앞에)
+  let ownNames=[...new Set(assigned.filter(c=>pickerRegion==='전체'||c.region===pickerRegion).map(c=>c.name))];
+  if(curFronted) ownNames=[cur,...ownNames.filter(n=>n!==cur)];
   if(ownNames.length){
-   html+=`<div class="cpicker-section own">📌 담당센터 <span class="cpicker-count">${ownNames.length}개</span></div>`;
-   ownNames.forEach(nm=>{ const info=lessonInfo.get(nm)||{}; html+=mkItem(nm,info.region||teacherRegion,'own',null,info.fee); });
+   const label=(baseTeacher===teacherName)?'📌 담당센터':`📌 ${escH(baseTeacher)} 담당센터`;
+   html+=`<div class="cpicker-section own">${label} <span class="cpicker-count">${ownNames.length}개</span></div>`;
+   ownNames.forEach(nm=>{
+    const isCur=(nm===cur);
+    const c=centerBy(nm,isCur?curRegion:'');
+    const region=isCur?curRegion:(c?.region||baseRegion);
+    const feeVal=(isCur&&curL?.feePer)?curL.feePer:undefined;
+    html+=mkItem(nm,region,'own',null,feeVal);
+   });
   }
   // 3. 🏢 전체 센터
-  const rest=allCenters.filter(c=>!knownNames.has(c.name)&&!(pickerRegion==='전체'&&knownFuzzy.has(fuzKey(c.name,c.region))));
+  const rest=allCenters.filter(c=>!knownNames.has(c.name)&&(!curFronted||c.name!==cur)&&!(pickerRegion==='전체'&&knownFuzzy.has(fuzKey(c.name,c.region))));
   html+=`<div class="cpicker-section">🏢 전체 센터${pickerRegion!=='전체'?' ('+pickerRegion+')':''} <span class="cpicker-count">${rest.length}개</span></div>`;
   rest.slice(0,60).forEach(c=>html+=mkItem(c.name,c.region,'all'));
  } else {
@@ -7062,12 +7083,9 @@ function selectCenter(centerName, fee){
  if(oldCenter&&oldCenter!==centerName) CENTER_ALIAS[oldCenter]=centerName;
  const comboKey=`${centerName}|${t.name}`;
  if(fee>0) DB.centerFees[comboKey]=fee;
- // 강사 지역 기준으로 센터 찾기 (동명 다지역 센터 오염 방지)
- const _tRegion3 = DB.teachers.find(d=>d.name===t.name)?.region;
- const dbCenter = _tRegion3
-  ? (DB.centers.find(c=>c.name===centerName&&c.region===_tRegion3)||DB.centers.find(c=>c.name===centerName))
-  : DB.centers.find(c=>c.name===centerName);
- if(dbCenter&&dbCenter.teachers&&!dbCenter.teachers.includes(t.name)) dbCenter.teachers.push(t.name);
+ // v16.52: 센터 선택만으로는 센터 관리 배정에 자동 추가하지 않음
+ //  (담당센터 기준을 센터 관리 배정으로 잡으므로, 슬쩍 눌러본 센터가 담당에 쌓이는 것 방지)
+ //  강사 배정은 센터 관리 UI / 스케줄 수정 요청 승인으로만 이뤄짐.
  // 보강 정보 저장
  const isSub = document.getElementById('cpicker_isSub')?.checked || false;
  const subFor = document.getElementById('cpicker_subfor')?.value?.trim() || '';
@@ -22410,7 +22428,7 @@ function _pushToGAS(){
    보강 수업이에요
   </label>
   <div id="cpicker_subfor_wrap" style="display:none;margin-top:6px;">
-   <select id="cpicker_subfor" style="width:100%;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none;background:var(--surface);color:var(--text);">
+   <select id="cpicker_subfor" onchange="_cpickerRerender()" style="width:100%;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;outline:none;background:var(--surface);color:var(--text);">
     <option value="">원래 강사 선택</option>
    </select>
   </div>
