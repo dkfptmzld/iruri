@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.52">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.53">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.52">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.53">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.52</title>
+<title>수업기록표 정산 시스템 v16.53</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -308,6 +308,60 @@ body.edit-mode-active .ledger-wrap textarea {
 .cpicker-region-chips{display:flex;gap:5px;margin-top:6px;}
 .cpicker-region-chips .rchip{flex:1;height:30px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;}
 .cpicker-region-chips .rchip.on{background:var(--green);border-color:var(--green);color:#fff;}
+/* ── 영수증 뷰어(라이트박스) v16.53 ── */
+#receiptLightbox{display:none;position:fixed;inset:0;background:rgba(20,22,20,.82);z-index:10000;align-items:center;justify-content:center;padding:18px;}
+#receiptLightbox.open{display:flex;}
+.rcv-box{background:#fff;border-radius:16px;width:1000px;max-width:96vw;height:88vh;max-height:680px;display:flex;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5);}
+.rcv-view{flex:1.7;min-width:0;background:#23261F;display:flex;flex-direction:column;position:relative;}
+.rcv-top{display:flex;align-items:center;gap:10px;padding:11px 14px;color:#fff;background:rgba(0,0,0,.25);}
+.rcv-top .rcv-fn{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rcv-top .rcv-cnt{font-family:'DM Mono',monospace;font-size:12px;color:#cfeadd;background:rgba(255,255,255,.12);padding:2px 9px;border-radius:20px;}
+.rcv-top .rcv-obtn{font-size:11px;color:#fff;background:rgba(255,255,255,.15);border:none;border-radius:7px;padding:5px 9px;cursor:pointer;white-space:nowrap;}
+.rcv-top .rcv-x{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:14px;cursor:pointer;flex-shrink:0;}
+.rcv-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:zoom-in;}
+.rcv-imgwrap{transition:transform .06s linear;will-change:transform;display:flex;align-items:center;justify-content:center;}
+.rcv-img{max-width:80vw;max-height:74vh;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.4);background:#fff;color:#fff;font-size:12px;user-select:none;-webkit-user-drag:none;}
+.rcv-zoombadge{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;pointer-events:none;}
+.rcv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.9);border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#333;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:2;}
+.rcv-nav.prev{left:12px;} .rcv-nav.next{right:12px;}
+.rcv-strip{display:flex;gap:6px;padding:9px 12px;background:rgba(0,0,0,.3);overflow-x:auto;flex-shrink:0;}
+.rcv-strip .rcv-t{width:46px;height:46px;flex-shrink:0;border-radius:7px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:#3a3e34;overflow:hidden;opacity:.6;}
+.rcv-strip .rcv-t.on{border-color:#7fe3b0;opacity:1;}
+.rcv-side{flex:1;min-width:270px;max-width:350px;display:flex;flex-direction:column;border-left:1px solid var(--border);background:var(--surface);}
+.rcv-sidehead{padding:12px 14px 9px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.rcv-sidehead .t{font-size:14px;font-weight:800;color:var(--text);}
+.rcv-editbtn{font-size:11px;border:1px solid var(--border);background:var(--surface);border-radius:7px;padding:4px 9px;cursor:pointer;font-weight:600;color:var(--text2);}
+.rcv-editbtn.on{background:var(--green);color:#fff;border-color:var(--green);}
+.rcv-notelist{flex:1;overflow-y:auto;padding:8px;}
+.rcv-note{border:1px solid var(--border);border-radius:10px;padding:8px 9px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;background:var(--surface);}
+.rcv-note.ok{background:var(--green-bg);border-color:#B8E0CC;}
+.rcv-chk{width:22px;height:22px;flex-shrink:0;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;cursor:pointer;margin-top:2px;}
+.rcv-note.ok .rcv-chk{background:var(--green);border-color:var(--green);}
+.rcv-body{flex:1;min-width:0;}
+.rcv-cat{font-size:10px;font-weight:700;color:#B9770E;background:#FFF3D6;border-radius:5px;padding:1px 6px;display:inline-block;}
+.rcv-meta{font-size:11.5px;color:var(--text2);margin-top:4px;line-height:1.5;word-break:keep-all;}
+.rcv-amt{font-family:'DM Mono',monospace;font-size:15px;font-weight:700;margin-top:3px;color:var(--text);}
+.rcv-note.ok .rcv-amt{color:var(--green);}
+.rcv-ed{display:none;margin-top:5px;}
+.rcv-notelist.editing .rcv-ed{display:block;}
+.rcv-notelist.editing .rcv-meta,.rcv-notelist.editing .rcv-amt{display:none;}
+.rcv-ed input{width:100%;height:26px;border:1px solid var(--border);border-radius:6px;padding:0 7px;font-size:11.5px;margin-top:4px;outline:none;background:var(--surface);color:var(--text);}
+.rcv-ed input:focus{border-color:var(--green);}
+.rcv-ed .rcv-amt-in{font-family:'DM Mono',monospace;text-align:right;font-weight:700;}
+.rcv-sidefoot{padding:11px 13px;border-top:1px solid var(--border);background:var(--surface2);}
+.rcv-row{display:flex;justify-content:space-between;font-size:12.5px;margin:2px 0;color:var(--text);}
+.rcv-big{font-size:14px;font-weight:800;color:var(--green);}
+.rcv-matchbar{margin:7px 0;border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:800;text-align:center;}
+.rcv-matchbar.ok{background:var(--green);color:#fff;}
+.rcv-matchbar.diff{background:#FDEEDA;color:#9A5B12;border:1px solid #EFC98A;}
+.rcv-savebtn{width:100%;height:40px;border:none;border-radius:10px;background:var(--green);color:#fff;font-size:13.5px;font-weight:800;cursor:pointer;}
+.rcv-savebtn:disabled{background:#C9C7BF;cursor:default;}
+@media(max-width:640px){
+ .rcv-box{flex-direction:column;height:92vh;max-height:none;}
+ .rcv-side{max-width:none;border-left:none;border-top:1px solid var(--border);max-height:44%;}
+ .rcv-view{flex:none;height:52%;}
+ .rcv-img{max-width:94vw;max-height:44vh;}
+}
 .cpicker-footer{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;}
 .cpicker-footer .btn{flex:1;justify-content:center;font-size:12px;}
 .attend-cell{width:34px;cursor:pointer;font-weight:700;font-size:13px;transition:background .1s;padding:5px 2px !important;}
@@ -4047,7 +4101,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.52';
+const SYSTEM_VERSION='v16.53';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6393,6 +6447,9 @@ function renderTab(tab,i){
  else b.innerHTML=renderAllPane();
 }
 /* ═══ 강사별 영수증 탭 ═══ */
+// ── 영수증 뷰어(라이트박스) 상태 (v16.53) ──
+let _rcvTi=-1, _rcvList=[], _rcvIdx=0, _rcvIsPdf=false, _rcvEditing=false, _rcvDirty=false, _rcvZoom=1, _rcvOx=0, _rcvOy=0;
+
 function renderTeacherReceiptsTab(ti){
  const b = document.getElementById('tabBody');
  if(!b) return;
@@ -6426,25 +6483,26 @@ function renderTeacherReceiptsTab(ti){
  grid.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:16px;grid-column:1/-1;">첨부된 영수증이 없어요</div>`;
  return;
  }
- grid.innerHTML = receipts.map(r=>{
+ _rcvTi = ti; _rcvList = receipts;
+ grid.innerHTML = receipts.map((r,i)=>{
  const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(r.fileName);
  const isPdf = /\.pdf$/i.test(r.fileName);
  const icon = isPdf ? '📄' : isImg ? '🖼️' : '📎';
- const fileId = r.url.match(/\/d\/([^/]+)\//)?.[1] || '';
+ const fileId = (r.url||'').match(/\/d\/([^/]+)\//)?.[1] || '';
  const thumbUrl = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w160` : '';
  return `
- <a href="${r.url}" target="_blank" style="text-decoration:none;">
+ <div onclick="openReceiptViewer(${i})" style="text-decoration:none;cursor:pointer;">
  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;"
  onmouseover="this.style.boxShadow='0 3px 10px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow=''">
  <div style="height:100px;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;">
  ${isImg && thumbUrl ? `<img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML='<span style=font-size:32px>${icon}</span>'">` : `<span style="font-size:32px;">${icon}</span>`}
  </div>
  <div style="padding:6px 8px;">
- <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.fileName}">${r.fileName}</div>
+ <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escH(r.fileName)}">${escH(r.fileName)}</div>
  <div style="font-size:10px;color:var(--text3);margin-top:2px;">${r.uploadedAt?.slice(0,10)||''}</div>
  </div>
  </div>
- </a>`;
+ </div>`;
  }).join('');
  })
  .catch(()=>{
@@ -6452,6 +6510,168 @@ function renderTeacherReceiptsTab(ti){
  if(grid) grid.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:16px;">서버 연결 실패</div>`;
  });
 }
+
+/* ═══════ 영수증 뷰어(라이트박스) — v16.53 ═══════ */
+function _rcvFileId(r){ return (r&&r.url||'').match(/\/d\/([^/]+)\//)?.[1] || ''; }
+
+function openReceiptViewer(i){
+ if(!_rcvList.length) return;
+ _rcvIdx = Math.max(0, Math.min(i, _rcvList.length-1));
+ _rcvEditing=false; _rcvDirty=false;
+ const box=document.getElementById('receiptLightbox');
+ if(!box) return;
+ box.classList.add('open');
+ const eb=document.getElementById('rcvEditBtn'); if(eb){ eb.classList.remove('on'); eb.textContent='✏️ 편집'; }
+ _rcvResetZoom();
+ _rcvRender();
+}
+function closeReceiptViewer(){
+ if(_rcvDirty && !confirm('저장하지 않은 특이사항 수정이 있어요. 그냥 닫을까요?')) return;
+ document.getElementById('receiptLightbox')?.classList.remove('open');
+}
+function _rcvMove(d){ _rcvIdx=(_rcvIdx+d+_rcvList.length)%_rcvList.length; _rcvResetZoom(); _rcvRender(); }
+function _rcvResetZoom(){ _rcvZoom=1; _rcvOx=0; _rcvOy=0; _rcvApplyZoom(); }
+function _rcvApplyZoom(){
+ const wrap=document.getElementById('rcvWrap'); if(!wrap) return;
+ wrap.style.transform=`translate(${_rcvOx}px,${_rcvOy}px) scale(${_rcvZoom})`;
+ const zb=document.getElementById('rcvZoomBadge'); if(zb) zb.textContent=Math.round(_rcvZoom*100)+'%';
+ const st=document.getElementById('rcvStage'); if(st && !_rcvIsPdf) st.style.cursor=_rcvZoom>1?'grab':'zoom-in';
+}
+function _rcvOpenOriginal(){ const r=_rcvList[_rcvIdx]; if(r&&r.url) window.open(r.url,'_blank'); }
+function _rcvRender(){
+ const r=_rcvList[_rcvIdx]; if(!r) return;
+ const fid=_rcvFileId(r);
+ _rcvIsPdf=/\.pdf$/i.test(r.fileName||'');
+ const fnEl=document.getElementById('rcvFn'); if(fnEl) fnEl.textContent=r.fileName||'';
+ const cntEl=document.getElementById('rcvCnt'); if(cntEl) cntEl.textContent=`${_rcvIdx+1} / ${_rcvList.length}`;
+ const wrap=document.getElementById('rcvWrap');
+ if(wrap){
+  if(_rcvIsPdf){
+   wrap.innerHTML=`<iframe src="https://drive.google.com/file/d/${fid}/preview" style="width:min(70vw,720px);height:74vh;border:none;background:#fff;border-radius:6px;"></iframe>`;
+  } else {
+   const src=fid?`https://drive.google.com/thumbnail?id=${fid}&sz=w1600`:(r.url||'');
+   wrap.innerHTML=`<img class="rcv-img" src="${src}" alt="미리보기를 불러오지 못했어요 — ‘원본 열기’로 확인하세요" draggable="false">`;
+  }
+ }
+ // 썸네일 스트립
+ const strip=document.getElementById('rcvStrip');
+ if(strip){
+  strip.innerHTML=_rcvList.map((x,i)=>{
+   const xf=_rcvFileId(x); const isP=/\.pdf$/i.test(x.fileName||'');
+   const inner=(!isP&&xf)?`<img src="https://drive.google.com/thumbnail?id=${xf}&sz=w80" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.textContent='${i+1}'">`:(isP?'📄':(i+1));
+   return `<div class="rcv-t${i===_rcvIdx?' on':''}" title="${escH(x.fileName||'')}" onclick="_rcvIdx=${i};_rcvResetZoom();_rcvRender()">${inner}</div>`;
+  }).join('');
+ }
+ _rcvApplyZoom();
+ _rcvRenderNotes();
+}
+function _rcvRows(){
+ const t=STATE.data?.teachers?.[_rcvTi]; const nd=(t&&t.notesData)||[];
+ const rows=[];
+ nd.forEach((n,ni)=>{
+  if(Array.isArray(n.entries)&&n.entries.length){
+   n.entries.forEach((e,ei)=>{ if(e.date||e.center||e.text||e.amount) rows.push({ni,ei,cat:n.cat,ref:e}); });
+  } else {
+   rows.push({ni,ei:null,cat:n.cat,ref:n});
+  }
+ });
+ return rows;
+}
+function _rcvTarget(ni,ei){
+ const t=STATE.data?.teachers?.[_rcvTi]; if(!t||!t.notesData) return null;
+ const n=t.notesData[ni]; if(!n) return null;
+ return (ei==null)? n : (Array.isArray(n.entries)? n.entries[ei] : null);
+}
+function _rcvEdit(ni,ei,field,val){
+ const tg=_rcvTarget(ni,ei); if(!tg) return;
+ if(field==='amount') tg.amount=Number(String(val).replace(/[^0-9]/g,''))||0;
+ else tg[field]=val;
+ _rcvDirty=true; const sb=document.getElementById('rcvSaveBtn'); if(sb) sb.disabled=false;
+ _rcvRecalcSums();
+}
+function _rcvToggleChk(ni,ei){
+ const tg=_rcvTarget(ni,ei); if(!tg) return;
+ tg._verified=!tg._verified;
+ _rcvDirty=true; const sb=document.getElementById('rcvSaveBtn'); if(sb) sb.disabled=false;
+ _rcvRenderNotes();
+}
+function _rcvToggleEdit(){
+ _rcvEditing=!_rcvEditing;
+ const eb=document.getElementById('rcvEditBtn'); if(eb){ eb.classList.toggle('on',_rcvEditing); eb.textContent=_rcvEditing?'✏️ 편집중':'✏️ 편집'; }
+ _rcvRenderNotes();
+}
+function _rcvRenderNotes(){
+ const list=document.getElementById('rcvNoteList'); if(!list) return;
+ list.className='rcv-notelist'+(_rcvEditing?' editing':'');
+ const rows=_rcvRows();
+ if(!rows.length){ list.innerHTML='<div style="padding:20px 14px;text-align:center;color:var(--text3);font-size:13px;">특이사항이 없어요</div>'; _rcvRecalcSums(); return; }
+ list.innerHTML=rows.map(row=>{
+  const n=row.ref; const ni=row.ni, ei=row.ei;
+  const amtRO=(row.cat==='대상행사');
+  const amt=Number(n.amount)||0;
+  return `<div class="rcv-note${n._verified?' ok':''}">
+   <div class="rcv-chk" onclick="_rcvToggleChk(${ni},${ei==null?'null':ei})">${n._verified?'✓':''}</div>
+   <div class="rcv-body">
+     <span class="rcv-cat">${escH(row.cat||'기타')}</span>
+     <div class="rcv-meta">${[n.date,n.center,n.text].filter(Boolean).map(escH).join(' · ')||'(내용 없음)'}</div>
+     <div class="rcv-amt">${amt.toLocaleString()}원</div>
+     <div class="rcv-ed">
+       <input value="${escH(n.date||'')}" placeholder="날짜(예: 08-05)" oninput="_rcvEdit(${ni},${ei==null?'null':ei},'date',this.value)">
+       <input value="${escH(n.center||'')}" placeholder="센터" oninput="_rcvEdit(${ni},${ei==null?'null':ei},'center',this.value)">
+       <input value="${escH(n.text||'')}" placeholder="내용" oninput="_rcvEdit(${ni},${ei==null?'null':ei},'text',this.value)">
+       <input class="rcv-amt-in" value="${amt}" placeholder="금액" ${amtRO?'readonly title="대상행사는 건당 5만원 고정"':''} oninput="_rcvEdit(${ni},${ei==null?'null':ei},'amount',this.value)">
+     </div>
+   </div></div>`;
+ }).join('');
+ _rcvRecalcSums();
+}
+function _rcvRecalcSums(){
+ const rows=_rcvRows();
+ const total=rows.reduce((s,r)=>s+(Number(r.ref.amount)||0),0);
+ const chk=rows.reduce((s,r)=>s+(r.ref._verified?(Number(r.ref.amount)||0):0),0);
+ const okN=rows.filter(r=>r.ref._verified).length;
+ const set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+ set('rcvOkCnt',`${okN} / ${rows.length}`);
+ set('rcvChkSum',chk.toLocaleString()+'원');
+ set('rcvSumAmt',total.toLocaleString()+'원');
+ const bar=document.getElementById('rcvMatchBar');
+ if(bar){
+  if(!rows.length){ bar.className='rcv-matchbar diff'; bar.textContent='특이사항 없음'; }
+  else if(okN===0){ bar.className='rcv-matchbar diff'; bar.textContent='영수증 확인하며 체크하세요'; }
+  else if(chk===total){ bar.className='rcv-matchbar ok'; bar.textContent='✅ 특이사항 합계와 일치!'; }
+  else { bar.className='rcv-matchbar diff'; bar.textContent=`남은 금액 ${(total-chk).toLocaleString()}원 (${rows.length-okN}건)`; }
+ }
+}
+function _rcvSave(){
+ const t=STATE.data?.teachers?.[_rcvTi]; if(!t){ return; }
+ (t.notesData||[]).forEach(n=>{ if(Array.isArray(n.entries)&&n.entries.length) n.amount=n.entries.reduce((s,e)=>s+(Number(e.amount)||0),0); });
+ try{ if(typeof _persistNotes==='function') _persistNotes(t,_rcvTi); else lsSave(); }
+ catch(e){ try{ lsSave(); }catch(_){} }
+ _rcvDirty=false; const sb=document.getElementById('rcvSaveBtn'); if(sb) sb.disabled=true;
+ try{ showToast('✅ 특이사항 저장됨'); }catch(_){}
+ _rcvRenderNotes();
+}
+// 휠 확대 · 드래그 이동 · 키보드 · 스와이프
+(function _rcvBindGestures(){
+ const bind=()=>{
+  const stage=document.getElementById('rcvStage'); if(!stage||stage._rcvBound) return; stage._rcvBound=true;
+  stage.addEventListener('wheel',e=>{ if(_rcvIsPdf) return; e.preventDefault(); _rcvZoom=Math.min(4,Math.max(1,_rcvZoom+(e.deltaY<0?0.2:-0.2))); if(_rcvZoom===1){_rcvOx=0;_rcvOy=0;} _rcvApplyZoom(); },{passive:false});
+  let dragging=false,px=0,py=0;
+  stage.addEventListener('mousedown',e=>{ if(_rcvIsPdf||_rcvZoom<=1) return; dragging=true; px=e.clientX; py=e.clientY; stage.style.cursor='grabbing'; });
+  window.addEventListener('mousemove',e=>{ if(!dragging) return; _rcvOx+=e.clientX-px; _rcvOy+=e.clientY-py; px=e.clientX; py=e.clientY; _rcvApplyZoom(); });
+  window.addEventListener('mouseup',()=>{ if(dragging){ dragging=false; if(_rcvZoom>1)stage.style.cursor='grab'; } });
+  let sx=0;
+  stage.addEventListener('touchstart',e=>{ sx=e.touches[0].clientX; },{passive:true});
+  stage.addEventListener('touchend',e=>{ const dx=e.changedTouches[0].clientX-sx; if(!_rcvIsPdf&&_rcvZoom<=1&&Math.abs(dx)>40) _rcvMove(dx<0?1:-1); },{passive:true});
+ };
+ document.addEventListener('keydown',e=>{
+  const box=document.getElementById('receiptLightbox'); if(!box||!box.classList.contains('open')) return;
+  if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { if(e.key==='Escape') e.target.blur(); return; }
+  if(e.key==='ArrowLeft') _rcvMove(-1); else if(e.key==='ArrowRight') _rcvMove(1); else if(e.key==='Escape') closeReceiptViewer();
+ });
+ if(document.readyState!=='loading') bind(); else document.addEventListener('DOMContentLoaded',bind);
+ setTimeout(bind, 1500);
+})();
 
 /**
  * v12.49: 관리자가 강사별 영수증 탭에서 영수증 사진 직접 추가
@@ -22446,6 +22666,41 @@ function _pushToGAS(){
  <div class="cpicker-footer">
  <button class="btn sm danger" onclick="closeCenterPicker()">취소</button>
  </div>
+ </div>
+</div>
+
+<!-- 영수증 뷰어(라이트박스) v16.53 -->
+<div id="receiptLightbox">
+ <div class="rcv-box">
+  <div class="rcv-view">
+   <div class="rcv-top">
+    <span class="rcv-fn" id="rcvFn"></span>
+    <span class="rcv-cnt" id="rcvCnt"></span>
+    <button class="rcv-obtn" onclick="_rcvOpenOriginal()">원본 열기 ↗</button>
+    <button class="rcv-x" onclick="closeReceiptViewer()">✕</button>
+   </div>
+   <div class="rcv-stage" id="rcvStage">
+    <button class="rcv-nav prev" onclick="_rcvMove(-1)">‹</button>
+    <div class="rcv-imgwrap" id="rcvWrap"></div>
+    <button class="rcv-nav next" onclick="_rcvMove(1)">›</button>
+    <div class="rcv-zoombadge" id="rcvZoomBadge">100%</div>
+   </div>
+   <div class="rcv-strip" id="rcvStrip"></div>
+  </div>
+  <div class="rcv-side">
+   <div class="rcv-sidehead">
+    <div class="t">📝 특이사항 대조</div>
+    <button class="rcv-editbtn" id="rcvEditBtn" onclick="_rcvToggleEdit()">✏️ 편집</button>
+   </div>
+   <div class="rcv-notelist" id="rcvNoteList"></div>
+   <div class="rcv-sidefoot">
+    <div class="rcv-row"><span>확인 개수</span><b id="rcvOkCnt">0 / 0</b></div>
+    <div class="rcv-row"><span>✓ 확인 합계</span><b class="rcv-big" id="rcvChkSum">0원</b></div>
+    <div class="rcv-row"><span>특이사항 합계</span><b id="rcvSumAmt">0원</b></div>
+    <div class="rcv-matchbar" id="rcvMatchBar"></div>
+    <button class="rcv-savebtn" id="rcvSaveBtn" onclick="_rcvSave()" disabled>저장</button>
+   </div>
+  </div>
  </div>
 </div>
 
