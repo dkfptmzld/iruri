@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.57">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.58">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.57">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.58">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.57</title>
+<title>수업기록표 정산 시스템 v16.58</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4146,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.57';
+const SYSTEM_VERSION='v16.58';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12658,6 +12658,7 @@ function _renderSubPendingList(list){
      <span style="font-size:15px;font-weight:700;color:var(--text);">${s.name}</span>
      <span style="font-size:13px;color:var(--text2);">${s.yearMonth}</span>
      ${badge}
+     ${s.byAdmin?`<span title="관리자가 대신 작성·제출" style="background:#FFF6E9;color:#9A6B12;border:1px solid #F0C98A;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;">🔑 관리자 대리작성${s.adminBy?` (${esc(s.adminBy)})`:''}</span>`:''}
     </div>
     <div style="font-size:11px;color:var(--text3);">제출 ${submittedAt}</div>
    </div>
@@ -12682,6 +12683,7 @@ function _renderSubDoneList(list){
     <span style="font-size:14px;font-weight:600;color:var(--text);">${s.name}</span>
     <span style="font-size:13px;color:var(--text2);">${s.yearMonth}</span>
     <span style="background:#E8F5EE;color:var(--green);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;">반영완료</span>
+    ${s.byAdmin?`<span title="관리자가 대신 작성·제출" style="background:#FFF6E9;color:#9A6B12;border:1px solid #F0C98A;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;">🔑 관리자 대리작성</span>`:''}
    </div>
    <div style="font-size:11px;color:var(--text3);">제출 ${submittedAt}</div>
   </div>`;
@@ -13655,7 +13657,7 @@ function _serverRecToSubEntry(rec){
  const byDay={};
  (rec.dayGroups||[]).forEach(g=>{ if(g&&g.day) byDay[g.day]={day:g.day, dates:Array.isArray(g.dates)?g.dates:[], centers:[]}; });
  (rec.lessons||[]).forEach(l=>{ const d=l.day||'?'; if(!byDay[d]) byDay[d]={day:d, dates:[], centers:[]}; byDay[d].centers.push({name:l.center, region:l.region||'', attend:Array.isArray(l.attend)?l.attend:[], isSubstitute:l.isSubstitute}); });
- return { yearMonth:rec.yearMonth, submittedAt:rec.submittedAt, account:rec.account, dayGroups:Object.values(byDay), notes:Array.isArray(rec.notesData)?rec.notesData:[], pendingCenters:Array.isArray(rec.pendingCenters)?rec.pendingCenters:[] };
+ return { yearMonth:rec.yearMonth, submittedAt:rec.submittedAt, account:rec.account, dayGroups:Object.values(byDay), notes:Array.isArray(rec.notesData)?rec.notesData:[], pendingCenters:Array.isArray(rec.pendingCenters)?rec.pendingCenters:[], byAdmin:rec.byAdmin, adminBy:rec.adminBy };
 }
 async function _showMySubmissionView(teacher, month){
  let entry=_pickLocalSubEntry(teacher, month);
@@ -13743,6 +13745,7 @@ async function _showMySubmissionView(teacher, month){
     <button onclick="document.getElementById('mySubViewOverlay').remove()" style="width:30px;height:30px;border:none;background:#F0EDE8;border-radius:8px;cursor:pointer;font-size:15px;color:#666;">✕</button>
    </div>
    <div style="font-size:12px;color:#8A8778;margin-bottom:12px;">${esc(entry.yearMonth||'')} · ${esc(teacher)}${entry.submittedAt?` · ${esc(entry.submittedAt)} 제출`:''}</div>
+   ${entry.byAdmin?`<div style="font-size:11px;color:#9A6B12;background:#FFF6E9;border:1px solid #F0C98A;border-radius:8px;padding:7px 10px;margin-bottom:12px;font-weight:700;">🔑 이 기록은 관리자가 대신 작성·제출했어요${entry.adminBy?` (${esc(entry.adminBy)})`:''}</div>`:''}
    <div style="font-size:11px;color:#8A6D1F;background:#FDF3DC;border:1px solid #E8CC80;border-radius:8px;padding:7px 10px;margin-bottom:12px;">아래는 <b>제출 당시 내가 입력한 내용</b>이에요. 최종 금액은 관리자 확인 후 확정됩니다.</div>
    <div style="font-size:12.5px;font-weight:800;color:#2a2a28;margin:2px 0 8px;">📅 출석 (O 수업 · X 결석/휴강 · △ 기타)</div>
    ${daySections}
@@ -18235,6 +18238,9 @@ function _doSubmitTiData(teacher, year, month, account, validGroups, unregCenter
  supplyCost: _supplyCost,
  etcCost: _etcCost,
  submittedAt: new Date().toLocaleString('ko-KR'),
+ // v16.58: 관리자 대리작성 여부 표시 (누가 대신 냈는지)
+ byAdmin: (typeof _tiAdminMode!=='undefined' && !!_tiAdminMode),
+ adminBy: (typeof _tiAdminMode!=='undefined' && _tiAdminMode) ? (_tiAdminOrigTeacher||'관리자') : '',
  _dropRegion: dbT?.region || '',
  pendingCenters: Array.isArray(unregCenters)?unregCenters:[],   // v16.37: 요일 미등록 → 관리자 확인 후 반영
  isRevision: (()=>{ // 이미 이력이 있으면 재제출
@@ -18263,6 +18269,8 @@ function _doSubmitTiData(teacher, year, month, account, validGroups, unregCenter
  account: submitData.account,
  dayGroups: tiDayGroups,
  notes: tiNotes,
+ byAdmin: submitData.byAdmin,   // v16.58: 관리자 대리작성 표시
+ adminBy: submitData.adminBy,
  teacher
  };
  if(hIdx>=0) history[hIdx] = historyEntry;
