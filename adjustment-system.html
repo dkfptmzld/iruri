@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.56">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.57">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.56">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.57">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.56</title>
+<title>수업기록표 정산 시스템 v16.57</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4146,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.56';
+const SYSTEM_VERSION='v16.57';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -16501,6 +16501,10 @@ function _tiAdminUnlock(){
  document.getElementById('ti-admin-flag').classList.add('on');
  const b=document.getElementById('ti-admin-btn');
  b.textContent='🔓 관리자 ON'; b.style.background='#1A7A50'; b.style.borderColor='#1A7A50'; b.style.color='#fff';
+ // v16.56: 강사 임시저장 보호 — 관리자 모드에선 자동저장 정지
+ if(typeof stopAutoSave==='function') stopAutoSave();
+ const st=document.getElementById('ti-draft-status');
+ if(st){ st.textContent='🔑 관리자 모드 · 자동저장 꺼짐(강사 임시저장 보호)'; st.style.color='#9A6B12'; }
  showToast('🔑 관리자 모드 — 강사를 선택하세요');
 }
 function _tiAdminLock(){
@@ -17009,6 +17013,8 @@ function _buildCombinedDraftList(){
 }
 
 function saveTiDraft(){
+ // v16.56: 관리자 대리작성 모드에서는 강사의 임시저장을 절대 덮어쓰지 않음
+ if(typeof _tiAdminMode!=='undefined' && _tiAdminMode) return;
  const teacher = document.getElementById('ti-teacher').value;
  const year = document.getElementById('ti-year').value;
  const month = document.getElementById('ti-month').value;
@@ -17208,6 +17214,11 @@ function restoreDraft(){
 
 /** v14.66: 수동 임시저장 버튼 — 자동저장과 별개로 즉시 저장 + 토스트 피드백 */
 function manualSaveDraft(){
+ // v16.56: 관리자 대리작성 모드에서는 강사 임시저장을 건드리지 않음 (제출만)
+ if(typeof _tiAdminMode!=='undefined' && _tiAdminMode){
+  showToast('🔑 관리자 모드에서는 임시저장이 비활성화돼요 — 작성 후 "관리자에게 제출"을 눌러주세요');
+  return;
+ }
  const teacher = document.getElementById('ti-teacher')?.value;
  if(!teacher){ showLoginAreaToast('강사 이름이 없어요. 다시 로그인해주세요.'); return; }
  saveTiDraft();
