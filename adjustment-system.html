@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.58">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.59">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.58">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.59">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.58</title>
+<title>수업기록표 정산 시스템 v16.59</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4146,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.58';
+const SYSTEM_VERSION='v16.59';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -18279,7 +18279,20 @@ function _doSubmitTiData(teacher, year, month, account, validGroups, unregCenter
  if(history.length > 10) history = history.slice(-10);
  localStorage.setItem(historyKey, JSON.stringify(history));
 
- clearTiDraft(); // 임시저장 삭제
+ // v16.59: 제출한 내용을 임시저장으로도 남겨 둠 (제출이 잘못되는 상황 대비 복구용).
+ //  기존엔 clearTiDraft()로 지웠지만, 마지막 제출본을 '복원 지점'으로 보존.
+ //  관리자 대리작성 모드에서는 강사 임시저장 보호를 위해 남기지 않음.
+ if(!(typeof _tiAdminMode!=='undefined' && _tiAdminMode)){
+  try{
+   const _subDraft={ teacher, year, month, account,
+    dayGroups: tiDayGroups, notes: tiNotes,
+    savedAt: new Date().toLocaleString('ko-KR')+' · 제출본',
+    savedTs: Date.now(), fromSubmit:true };
+   localStorage.setItem(getDraftKey(), JSON.stringify(_subDraft));       // 자동 임시저장 슬롯 = 마지막 제출본
+   const _list=_getDraftList(); _list.unshift(JSON.parse(JSON.stringify(_subDraft))); _saveDraftList(_list); // 복원 지점 목록에도 추가
+  }catch(_){}
+ }
+ // 관리자 대리작성 모드에서는 강사의 임시저장을 건드리지 않음(지우지도 남기지도 않음)
  stopAutoSave(); // v11.20: 제출 완료 후 자동저장 중단
  // v11.20 fix: 제출 성공 시 applied 목록에서 해당 항목 제거 (삭제 후 재제출해도 관리자에게 표시되도록)
  try{
