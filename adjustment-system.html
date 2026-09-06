@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.59">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.60">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.59">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.60">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.59</title>
+<title>수업기록표 정산 시스템 v16.60</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4146,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.59';
+const SYSTEM_VERSION='v16.60';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -16497,8 +16497,26 @@ function _tiAdminUnlock(){
  // 강사 이름 → 전체 강사 드롭다운
  const sel=document.getElementById('ti-teacher-select');
  const cur=document.getElementById('ti-teacher')?.value||'';
- const list=((typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.slice():[]).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
- sel.innerHTML=list.map(t=>`<option value="${escH(t.name)}"${t.name===cur?' selected':''}>${escH(t.name)}</option>`).join('');
+ // v16.60: 지역별 그룹 + 색상 + 이름 옆 지역 표시
+ const all=((typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.slice():[]);
+ sel.innerHTML='';
+ const _REGIONS=['서울','인천','수원'];
+ const _rs={'서울':{bg:'#EFF6FF',c:'#1E40AF'},'인천':{bg:'#E1F5EE',c:'#0F6E56'},'수원':{bg:'#F0EAFA',c:'#5A3AB0'}};
+ const _addGroup=(label,items,st)=>{
+  if(!items.length) return;
+  const og=document.createElement('optgroup'); og.label=label; og.style.textAlign='center';
+  if(st){ og.style.background=st.bg; og.style.color=st.c; og.style.fontWeight='600'; }
+  items.sort((a,b)=>a.name.localeCompare(b.name,'ko')).forEach(t=>{
+   const o=document.createElement('option'); o.value=t.name;
+   o.textContent = t.region ? `${t.name} · ${t.region}` : t.name;
+   o.style.background='#fff'; o.style.color='#333'; o.style.textAlign='left'; o.style.fontWeight='400';
+   if(t.name===cur) o.selected=true;
+   og.appendChild(o);
+  });
+  sel.appendChild(og);
+ };
+ _REGIONS.forEach(r=>_addGroup(r, all.filter(t=>t.region===r), _rs[r]));
+ _addGroup('기타', all.filter(t=>!_REGIONS.includes(t.region)), null);
  document.getElementById('ti-teacher-display').style.display='none';
  sel.style.display='block';
  document.getElementById('ti-admin-flag').classList.add('on');
