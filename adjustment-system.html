@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.55">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.56">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.55">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.56">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.55</title>
+<title>수업기록표 정산 시스템 v16.56</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1820,11 +1820,53 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  </div>
  <div class="ti-mode-actions" style="margin-left:auto;display:flex;gap:8px;align-items:center;">
  <span class="ti-mode-badge" style="font-size:12px;padding:4px 10px;border-radius:20px;background:#E8F5EE;color:#1A7A50;border:1px solid #B8E0CC;">강사 모드</span>
+ <button id="ti-admin-btn" onclick="_tiAdminBtnClick()" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #F0C98A;background:#FFF6E9;color:#9A6B12;font-size:12px;font-weight:600;cursor:pointer;">🔑 관리자</button>
  <button id="ti-help-btn" onclick="startTeacherTutorial()" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #B8E0CC;background:#F8FDF8;color:#5a8a6a;font-size:12px;font-weight:600;cursor:pointer;">❓ 도움말</button>
  <button onclick="showHistoryModal(window._loggedInTeacher)" style="height:32px;padding:0 14px;border-radius:8px;border:1px solid #C8A020;background:#FFFBEC;color:#856404;font-size:12px;font-weight:600;cursor:pointer;">📋 내 제출 내역</button>
  <button onclick="exitTeacherMode()" style="height:32px;padding:0 14px;border-radius:8px;border:1px solid #ddd;background:white;font-size:12px;cursor:pointer;color:#666;">← 처음으로</button>
  </div>
  </div>
+
+ <!-- v16.56: 관리자 PIN 로그인 (강사 모드에서 모든 강사 대신 작성) -->
+ <style>
+ #tiPinOverlay{position:fixed;inset:0;background:rgba(20,22,20,.55);display:none;align-items:center;justify-content:center;z-index:14000;padding:20px;}
+ #tiPinOverlay.open{display:flex;}
+ .tipin-box{background:#fff;border-radius:20px;width:320px;max-width:92vw;padding:26px 24px 22px;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;}
+ .tipin-box .ic{width:52px;height:52px;border-radius:50%;background:#E8F5EE;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px;}
+ .tipin-box h4{font-size:16px;font-weight:800;margin:0;}
+ .tipin-box p{font-size:12.5px;color:#6B6860;margin:4px 0 0;}
+ .tipin-dots{display:flex;gap:12px;justify-content:center;margin:20px 0 18px;}
+ .tipin-dots .d{width:14px;height:14px;border-radius:50%;background:#E5E3DC;transition:.12s;}
+ .tipin-dots .d.on{background:#1A7A50;transform:scale(1.1);}
+ .tipin-dots.err .d{background:#E3675A;}
+ .tipin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+ .tipin-pad button{height:56px;border:none;border-radius:14px;background:#F4F3EE;font-size:22px;font-weight:700;font-family:'DM Mono',monospace;color:#1C1C1C;cursor:pointer;transition:.08s;}
+ .tipin-pad button:active{background:#E5E3DC;transform:scale(.96);}
+ .tipin-pad .fn{background:transparent;font-size:14px;font-weight:600;color:#6B6860;font-family:'Noto Sans KR',sans-serif;}
+ .tipin-shake{animation:tipinsh .35s;}
+ @keyframes tipinsh{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+ .tipin-msg{font-size:12px;font-weight:700;color:#C0392B;min-height:16px;margin-top:12px;}
+ #ti-admin-flag{display:none;margin:0 20px 16px;font-size:12px;font-weight:700;color:#9A6B12;background:#FFF6E9;border:1px solid #F0C98A;border-radius:8px;padding:8px 12px;}
+ #ti-admin-flag.on{display:block;}
+ </style>
+ <div id="tiPinOverlay">
+  <div class="tipin-box" id="tiPinBox">
+   <div class="ic">🔑</div>
+   <h4>관리자 로그인</h4>
+   <p>비밀번호 4자리를 입력하세요</p>
+   <div class="tipin-dots" id="tiPinDots"><div class="d"></div><div class="d"></div><div class="d"></div><div class="d"></div></div>
+   <div class="tipin-pad">
+    <button type="button" onclick="_tiPinTap('1')">1</button><button type="button" onclick="_tiPinTap('2')">2</button><button type="button" onclick="_tiPinTap('3')">3</button>
+    <button type="button" onclick="_tiPinTap('4')">4</button><button type="button" onclick="_tiPinTap('5')">5</button><button type="button" onclick="_tiPinTap('6')">6</button>
+    <button type="button" onclick="_tiPinTap('7')">7</button><button type="button" onclick="_tiPinTap('8')">8</button><button type="button" onclick="_tiPinTap('9')">9</button>
+    <button type="button" class="fn" onclick="_tiPinClose()">취소</button>
+    <button type="button" onclick="_tiPinTap('0')">0</button>
+    <button type="button" class="fn" onclick="_tiPinBack()">⌫</button>
+   </div>
+   <div class="tipin-msg" id="tiPinMsg"></div>
+  </div>
+ </div>
+
  <div style="max-width:780px;margin:0 auto;padding:24px 20px;display:flex;flex-direction:column;gap:16px;">
 
  <!-- Step 1: 기본 정보 -->
@@ -1838,6 +1880,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div>
  <label style="font-size:11px;font-weight:600;color:#9B9888;display:block;margin-bottom:6px;">강사 이름</label>
  <div id="ti-teacher-display" style="width:100%;height:38px;border:1.5px solid #E2E0D8;border-radius:8px;padding:0 10px;font-size:13px;background:#F8F7F2;color:#333;font-weight:600;display:flex;align-items:center;">—</div>
+ <select id="ti-teacher-select" onchange="_tiAdminPickTeacher(this.value)" style="display:none;width:100%;height:38px;border:1.5px solid #F0C98A;border-radius:8px;padding:0 8px;font-size:13px;background:#FFFDF7;color:#333;font-weight:600;outline:none;"></select>
  <input type="hidden" id="ti-teacher" value="">
  </div>
  <div>
@@ -1851,6 +1894,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  </select>
  </div>
  </div>
+ <div id="ti-admin-flag">🔑 관리자 모드 — 위에서 강사를 선택하면 그 강사의 수업기록표를 대신 작성할 수 있어요</div>
  </div>
 
  <!-- Step 2+3: 수업 기록표 (관리자 형태와 동일) -->
@@ -4102,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.55';
+const SYSTEM_VERSION='v16.56';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15974,6 +16018,9 @@ function enterTeacherMode(){
 }
 
 function exitTeacherMode(){
+ // v16.56: 관리자 대리작성 모드였으면 원래(로그인) 강사로 되돌린 뒤 정리
+ if(_tiAdminMode && _tiAdminOrigTeacher){ window._loggedInTeacher=_tiAdminOrigTeacher; }
+ if(typeof _tiAdminReset==='function') _tiAdminReset();
  stopAutoSave(); // v11.20: 자동저장 중단
  closeHistoryModal(); // v11.54: 모달 자동 정리 (spec v3.3 이슈 13)
  _closeTeacherTutorial(); // v11.62: 튜토리얼 정리
@@ -16351,6 +16398,7 @@ function tiAutoFillDates(){
 }
 
 function initTeacherInput(){
+ if(typeof _tiAdminReset==='function') _tiAdminReset();   // v16.56: 관리자 대리작성 UI 초기화
  // 로그인한 강사 이름 고정 표시
  const teacher = window._loggedInTeacher || '';
  const hiddenInput = document.getElementById('ti-teacher');
@@ -16422,7 +16470,92 @@ function initTeacherInput(){
  }
 }
 
-// 연월 변경 시 날짜 재계산
+/* ═══ v16.56: 강사 모드 관리자 PIN 로그인 — 모든 강사 대신 작성 ═══ */
+const TI_ADMIN_PIN='1199';
+let _tiAdminMode=false, _tiAdminOrigTeacher=null, _tiPinBuf='';
+function _tiAdminBtnClick(){ if(_tiAdminMode) _tiAdminLock(); else _tiPinOpen(); }
+function _tiPinOpen(){ _tiPinBuf=''; _tiPinSync(); document.getElementById('tiPinMsg').textContent=''; document.getElementById('tiPinOverlay').classList.add('open'); }
+function _tiPinClose(){ document.getElementById('tiPinOverlay').classList.remove('open'); }
+function _tiPinSync(){ document.querySelectorAll('#tiPinDots .d').forEach((d,i)=>d.classList.toggle('on', i<_tiPinBuf.length)); }
+function _tiPinTap(n){ if(_tiPinBuf.length>=4) return; _tiPinBuf+=n; _tiPinSync(); if(_tiPinBuf.length===4) setTimeout(_tiPinCheck,120); }
+function _tiPinBack(){ _tiPinBuf=_tiPinBuf.slice(0,-1); _tiPinSync(); }
+function _tiPinCheck(){
+ if(_tiPinBuf===TI_ADMIN_PIN){ _tiPinClose(); _tiAdminUnlock(); }
+ else {
+  const dots=document.getElementById('tiPinDots'), box=document.getElementById('tiPinBox');
+  dots.classList.add('err'); box.classList.add('tipin-shake');
+  document.getElementById('tiPinMsg').textContent='비밀번호가 달라요';
+  setTimeout(()=>{ dots.classList.remove('err'); box.classList.remove('tipin-shake'); _tiPinBuf=''; _tiPinSync(); }, 500);
+ }
+}
+function _tiAdminUnlock(){
+ _tiAdminMode=true;
+ _tiAdminOrigTeacher = window._loggedInTeacher || (document.getElementById('ti-teacher')?.value||'');
+ // 강사 이름 → 전체 강사 드롭다운
+ const sel=document.getElementById('ti-teacher-select');
+ const cur=document.getElementById('ti-teacher')?.value||'';
+ const list=((typeof DB!=='undefined'&&Array.isArray(DB.teachers))?DB.teachers.slice():[]).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+ sel.innerHTML=list.map(t=>`<option value="${escH(t.name)}"${t.name===cur?' selected':''}>${escH(t.name)}</option>`).join('');
+ document.getElementById('ti-teacher-display').style.display='none';
+ sel.style.display='block';
+ document.getElementById('ti-admin-flag').classList.add('on');
+ const b=document.getElementById('ti-admin-btn');
+ b.textContent='🔓 관리자 ON'; b.style.background='#1A7A50'; b.style.borderColor='#1A7A50'; b.style.color='#fff';
+ showToast('🔑 관리자 모드 — 강사를 선택하세요');
+}
+function _tiAdminLock(){
+ _tiAdminMode=false;
+ document.getElementById('ti-teacher-select').style.display='none';
+ document.getElementById('ti-teacher-display').style.display='flex';
+ document.getElementById('ti-admin-flag').classList.remove('on');
+ const b=document.getElementById('ti-admin-btn');
+ b.textContent='🔑 관리자'; b.style.background='#FFF6E9'; b.style.borderColor='#F0C98A'; b.style.color='#9A6B12';
+ // 원래(로그인) 강사로 복귀
+ if(_tiAdminOrigTeacher){ window._loggedInTeacher=_tiAdminOrigTeacher; _tiAdminLoadFor(_tiAdminOrigTeacher); }
+}
+/* 선택한 강사의 스케줄·계좌를 현재 연/월 기준으로 다시 로드 (initTeacherInput 핵심부 재사용) */
+function _tiAdminLoadFor(name){
+ const hi=document.getElementById('ti-teacher'); if(hi) hi.value=name;
+ const disp=document.getElementById('ti-teacher-display'); if(disp) disp.textContent=name||'—';
+ const y=Number(document.getElementById('ti-year')?.value)||new Date().getFullYear();
+ const m=Number(document.getElementById('ti-month')?.value)||(new Date().getMonth()+1);
+ const dates=calcDatesForMonth(y,m);
+ const schedule=getTeacherSchedule(name);
+ if(schedule&&schedule.length){
+  tiDayGroups=schedule.map(s=>({day:s.day, dates:s.day==='미등록'?[]:(dates[s.day]||[]), centers:s.centers.map(c=>({name:c.name,region:c.region||'',attend:_tiAttend(dates[s.day])}))}));
+ } else {
+  tiDayGroups=['월','화','수','목','금'].map(day=>({day,dates:dates[day]||[],centers:[{name:'',attend:_tiAttend(dates[day])}]}));
+ }
+ tiNotes=[]; const nl=document.getElementById('ti-note-list'); if(nl) nl.innerHTML='';
+ tiImages=[]; const ip=document.getElementById('ti-image-preview'); if(ip) ip.innerHTML=''; const imf=document.getElementById('ti-images'); if(imf) imf.value='';
+ renderTiLedger();
+ const dbT=DB.teachers.find(t=>t.name===name);
+ const acc=document.getElementById('ti-account'); if(acc) acc.value=dbT?.account||'';
+ tiUpdateSettleSummary(name);
+}
+/* 관리자가 드롭다운에서 강사 선택 */
+function _tiAdminPickTeacher(name){
+ if(!name) return;
+ window._loggedInTeacher=name;   // 제출·임시저장·요약이 이 강사 기준으로 동작
+ _tiAdminLoadFor(name);
+}
+/* 강사 모드 진입/종료 시 관리자 UI 초기화 */
+function _tiAdminReset(){
+ _tiAdminMode=false; _tiPinBuf='';
+ const sel=document.getElementById('ti-teacher-select'); if(sel) sel.style.display='none';
+ const disp=document.getElementById('ti-teacher-display'); if(disp) disp.style.display='flex';
+ const flag=document.getElementById('ti-admin-flag'); if(flag) flag.classList.remove('on');
+ const ov=document.getElementById('tiPinOverlay'); if(ov) ov.classList.remove('open');
+ const b=document.getElementById('ti-admin-btn'); if(b){ b.textContent='🔑 관리자'; b.style.background='#FFF6E9'; b.style.borderColor='#F0C98A'; b.style.color='#9A6B12'; }
+}
+// PIN 키패드 키보드 입력
+document.addEventListener('keydown', function(e){
+ const ov=document.getElementById('tiPinOverlay');
+ if(!ov || !ov.classList.contains('open')) return;
+ if(/^[0-9]$/.test(e.key)){ e.preventDefault(); _tiPinTap(e.key); }
+ else if(e.key==='Backspace'){ e.preventDefault(); _tiPinBack(); }
+ else if(e.key==='Escape'){ _tiPinClose(); }
+});
 document.addEventListener('change', function(e){
  if(e.target.id==='ti-year'||e.target.id==='ti-month'){
  const year = parseInt(document.getElementById('ti-year').value);
