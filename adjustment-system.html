@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.72">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.73">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.72">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.73">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.72</title>
+<title>수업기록표 정산 시스템 v16.73</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4148,7 +4148,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.72';
+const SYSTEM_VERSION='v16.73';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9177,15 +9177,34 @@ function printAllSchedules(){
  _printSchedules(names, true);
 }
 function _printSchedules(names, showFee){
+ const E=(v)=>{try{return esc(String(v==null?'':v));}catch(_){return String(v==null?'':v);}};
+ const regOf=(n)=>{ const t=(DB.teachers||[]).find(x=>x&&x.name===n); return (t&&t.region)||''; };
+ // 지역별 → 이름순 정렬 (지역 없는 강사는 맨 뒤)
+ names=(names||[]).slice().sort((a,b)=>{
+  const ra=regOf(a), rb=regOf(b);
+  if(ra!==rb){ if(!ra) return 1; if(!rb) return -1; return ra.localeCompare(rb,'ko'); }
+  return a.localeCompare(b,'ko');
+ });
+ // 지역별 색상 배정 (등장 순서대로 팔레트 순환)
+ const REG_PALETTE=[
+  {line:'#1A7A50',bg:'#E8F5EE',ink:'#136844'},
+  {line:'#2563EB',bg:'#E7EEFD',ink:'#1E50C0'},
+  {line:'#C2410C',bg:'#FBEADF',ink:'#A5370B'},
+  {line:'#7C3AED',bg:'#F0E9FC',ink:'#6A2BC9'},
+  {line:'#0E7490',bg:'#E1F2F6',ink:'#0B5F76'},
+  {line:'#B91C1C',bg:'#FBE7E7',ink:'#9F1818'},
+  {line:'#B45309',bg:'#FAF0DC',ink:'#8F420A'}
+ ];
+ const regColor={}; let _ci=0;
+ names.forEach(n=>{ const r=regOf(n)||'__none'; if(!(r in regColor)){ regColor[r]=REG_PALETTE[_ci%REG_PALETTE.length]; _ci++; } });
  const _hdr=(n)=>{
-  const t=(DB.teachers||[]).find(x=>x&&x.name===n);
-  const br=(t&&t.region)?`${t.region}지사`:'';
+  const r=regOf(n); const c=regColor[r||'__none'];
+  const br=r?`${r}지사`:'';
   const d=new Date();
   const ymd=`${String(d.getFullYear()).slice(2)}. ${d.getMonth()+1}. ${d.getDate()}. 기준`;
-  const E=(v)=>{try{return esc(String(v==null?'':v));}catch(_){return String(v==null?'':v);}};
-  return `<div class="sch-head">
-    <div class="sch-brand">🌳 이루리 실버 아카데미 <span class="sch-doc">강사 스케줄표</span></div>
-    <div class="sch-who"><b>${E(n)}</b> 강사 <span class="sch-meta">${E(ymd)}${br?` · ${E(br)}`:''}</span></div>
+  return `<div class="sch-head" style="border-bottom-color:${c.line}">
+    <div class="sch-brand" style="color:${c.line}">🌳 이루리 실버 아카데미 <span class="sch-doc">강사 스케줄표</span></div>
+    <div class="sch-who"><b>${E(n)}</b> 강사 <span class="sch-meta">${E(ymd)}</span>${br?`<span class="sch-reg" style="background:${c.bg};color:${c.ink}">${E(br)}</span>`:''}</div>
   </div>`;
  };
  const pages=(names||[]).map(n=>`<div class="page"><div class="page-fit">
@@ -9206,6 +9225,7 @@ function _printSchedules(names, showFee){
   .sch-who{font-size:14px;color:#2A2A28;white-space:nowrap;}
   .sch-who b{font-size:19px;font-weight:800;}
   .sch-who .sch-meta{font-size:11.5px;color:#8A8778;font-weight:500;margin-left:8px;}
+  .sch-who .sch-reg{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:20px;margin-left:8px;vertical-align:middle;}
   /* v16.72: 인쇄본은 잘림(…) 없이 전체가 보이도록 셀 줄바꿈 허용 */
   .page td{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;word-break:keep-all;overflow-wrap:anywhere;line-height:1.45;}
   /* 강의시간·수업료는 값이 통째로 보이도록 줄바꿈 금지 */
