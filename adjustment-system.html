@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.64">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.65">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.64">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.65">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.64</title>
+<title>수업기록표 정산 시스템 v16.65</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4147,7 +4147,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.64';
+const SYSTEM_VERSION='v16.65';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8712,6 +8712,7 @@ function _schTableHTML(teacher, showFee, editable, edit){
  const timeCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="🕐 눌러서 선택" readonly onclick="_openSchTimeInput(this,${argK(r)})" style="${INP}text-align:center;cursor:pointer;background:#FFFDF6;"></td>` : `<td style="${TD}"></td>`;
  const addrCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.address||'').replace(/"/g,'&quot;')}" placeholder="주소 입력" oninput="_schEditSet(${argK(r)},'address',this.value)" style="${INP}text-align:left;"></td>` : `<td style="${TD}"></td>`;
  const emailCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.email||'').replace(/"/g,'&quot;')}" placeholder="이메일 입력" oninput="_schEditSet(${argK(r)},'email',this.value)" style="${INP}text-align:left;font-size:10.5px;color:#2C5AA0;"></td>` : `<td style="${TD}"></td>`;
+ const phoneCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.phone||'').replace(/"/g,'&quot;')}" placeholder="센터 번호" oninput="_schEditSet(${argK(r)},'phone',this.value)" style="${INP}text-align:center;font-family:'DM Mono',monospace;"></td>` : `<td style="${TD}"></td>`;
  if(!rows.length){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
@@ -8742,25 +8743,25 @@ function _schTableHTML(teacher, showFee, editable, edit){
    const r=list[i]||null;
    body += `<tr>`
      + (i===0 ? `<td rowspan="${maxPerDay}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
-     + `<td style="${TD}font-weight:600;">${r?e(r.center):''}</td>`
+     + `<td style="${TD}font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.center||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.center):''}</td>`
      + (edit ? timeCellEdit(r) : `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`)
      + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
-     + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;">${r?e(r.address):''}</td>`)
-     + phoneCell(r)
-     + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;word-break:break-all;">${r?e(r.email):''}</td>`)
-     + (showFee ? (wonCell(r)+specialCell(r)) : '')
+     + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.address||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.address):''}</td>`)
+     + (edit ? phoneCellEdit(r) : phoneCell(r))
+     + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.email||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.email):''}</td>`)
+     + (showFee ? (specialCell(r)+wonCell(r)) : '')
      + `</tr>`;
   }
   body += `<tr><td colspan="${NC}" style="height:6px;padding:0;border:none;"></td></tr>`;
  });
  const cols = showFee
-  ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:104px"><col style="width:13%"><col style="width:84px"><col style="width:92px">`
+  ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:104px"><col style="width:13%"><col style="width:92px"><col style="width:84px">`
   : `<col style="width:56px"><col style="width:16%"><col style="width:96px"><col style="width:48px"><col><col style="width:110px"><col style="width:20%">`;
  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
   <colgroup>${cols}</colgroup>
   <thead><tr>
    <th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th>
-   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일주소(사회복지사)</th>${showFee?`<th style="${TH}">수업료</th><th style="${TH}">특이사항</th>`:''}
+   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일주소</th>${showFee?`<th style="${TH}">특이사항</th><th style="${TH}">수업료</th>`:''}
   </tr></thead>
   <tbody>${body}</tbody>
  </table>`;
@@ -8840,7 +8841,7 @@ function _schRenderOverlay(name, showFee){
     </div>` : ''}
   ${edit
     ? `<div id="schEditBar" style="margin-top:12px;padding:12px 14px;background:#F7F5EE;border:1px solid var(--border);border-radius:10px;">
-        <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px;"><span id="schEditCount">고친 곳이 없어요. 강의시간·주소·이메일을 채워보세요.</span></div>
+        <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px;"><span id="schEditCount">고친 곳이 없어요. 강의시간·주소·센터번호·이메일을 채워보세요.</span></div>
         <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
          <div style="flex:1;min-width:200px;">
           <div style="font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:4px;">✉️ 관리자에게 전할 메시지 <span style="font-weight:400;color:#9A968C;">(선택)</span></div>
@@ -8927,7 +8928,7 @@ function _schBeginEdit(name){
  _schEditTeacher=name;
  _schEdits={}; _schEditBase={}; _schAdds=[];
  _teacherScheduleRows(name).forEach(r=>{
-  _schEditBase[[r.center,r.region,r.day,r.gyosi].join('\u0001')] = {time:r.time||'', address:r.address||'', email:r.email||''};
+  _schEditBase[[r.center,r.region,r.day,r.gyosi].join('\u0001')] = {time:r.time||'', address:r.address||'', phone:r.phone||'', email:r.email||''};
  });
 }
 function _schEditSet(center,region,day,gyosi,field,value){
@@ -8956,7 +8957,7 @@ function _schUpdateEditBar(){
   const parts=[];
   if(ch.length) parts.push(`<b style="color:#B45309;">${ch.length}곳</b> 수정`);
   if(adds.length) parts.push(`<b style="color:#1A7A50;">새 센터 ${adds.length}곳</b> 추가`);
-  cnt.innerHTML = total ? `${parts.join(' · ')} — 확인 후 요청을 보내세요.` : '고친 곳이 없어요. 강의시간·주소·이메일을 채우거나 새 센터를 추가해 보세요.';
+  cnt.innerHTML = total ? `${parts.join(' · ')} — 확인 후 요청을 보내세요.` : '고친 곳이 없어요. 강의시간·주소·센터번호·이메일을 채우거나 새 센터를 추가해 보세요.';
  }
  if(btn){ btn.disabled=!total; btn.style.opacity=total?'1':'.5'; }
 }
@@ -8986,7 +8987,7 @@ function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(o
 
 /* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
 let _schReqCache=[];
-function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='email'?'이메일':f; }
+function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='phone'?'센터 번호':f==='email'?'이메일':f; }
 /* v16.27: 스케줄 수정 요청을 '강사 스케줄표'에 적용한 '요청 후' 표로 보여준다 — 바뀐 칸만 강조.
  *  현재 스케줄(_teacherScheduleRows)을 복제 → 요청(changes) 적용 → 표로 렌더(요일별 rowspan). */
 function _schReqAfterRows(teacher, changes){
@@ -8996,12 +8997,12 @@ function _schReqAfterRows(teacher, changes){
  (changes||[]).forEach(c=>{
   if(c.type==='add'){
    adds.push({ day:c.day, center:c.center, region:c.region||'', area:_areaFromAddress(c.address),
-     time:c.time||'', address:c.address||'', email:c.email||'', _new:true, _chg:{} });
+     time:c.time||'', address:c.address||'', phone:c.phone||'', email:c.email||'', _new:true, _chg:{} });
    return;
   }
   if(c.field==='time'){
    rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ r._chg.time={from:r.time}; r.time=c.to; });
-  } else if(c.field==='address' || c.field==='email'){
+  } else if(c.field==='address' || c.field==='email' || c.field==='phone'){
    rows.filter(r=>r.center===c.center).forEach(r=>{ r._chg[c.field]={from:r[c.field]}; r[c.field]=c.to;
      if(c.field==='address') r.area=_areaFromAddress(c.to); });
   }
@@ -9033,13 +9034,13 @@ function _schReqTableHTML(teacher, changes){
    const nameCell = `<td style="${TD}font-weight:600;${(r._new)?'background:#E9F7EF;':''}white-space:nowrap;">${r._new?'<span style="font-size:9px;font-weight:800;color:#0F7A4E;background:#D8F0E2;border:1px solid #A9DCC0;border-radius:5px;padding:0 4px;margin-right:4px;">새</span>':''}${e(r.center)}</td>`;
    body += `<tr>`
      + (i===0?`<td rowspan="${list.length}" style="${TD}text-align:center;font-weight:700;background:#F7F5EE;">${day}</td>`:'')
-     + nameCell + cell(r,'time','center') + cell(r,'address','left') + cell(r,'email','left')
+     + nameCell + cell(r,'time','center') + cell(r,'address','left') + cell(r,'phone','center') + cell(r,'email','left')
      + `</tr>`;
   });
  });
- return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;">
-   <colgroup><col style="width:38px"><col style="width:19%"><col style="width:94px"><col><col style="width:26%"></colgroup>
-   <thead><tr><th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th><th style="${TH}">주소</th><th style="${TH}">이메일(사회복지사)</th></tr></thead>
+ return `<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px;">
+   <colgroup><col style="width:38px"><col style="width:17%"><col style="width:92px"><col><col style="width:110px"><col style="width:22%"></colgroup>
+   <thead><tr><th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일</th></tr></thead>
    <tbody>${body}</tbody></table></div>
    <div style="font-size:11px;color:#9A968C;margin-top:6px;"><span style="display:inline-block;width:10px;height:10px;background:#E9F7EF;border:1px solid #A9DCC0;border-radius:3px;vertical-align:middle;"></span> 초록 칸 = 이번 요청으로 <b>바뀌는/새로 생기는</b> 부분</div>`;
 }
@@ -9130,6 +9131,7 @@ function _applyChangeToDB(teacher, c){
  if(!cc) return false;
  if(c.field==='address') cc.address=c.to;
  else if(c.field==='email') cc.email=c.to;
+ else if(c.field==='phone') cc.phone=c.to;
  else if(c.field==='time'){
   const cand=(cc.schedule||[]).filter(s=>s && s.teacher===teacher && (s.days||[]).includes(c.day));
   const s=cand.find(s=>(s.gyosi||1)===c.gyosi) || cand[0];
