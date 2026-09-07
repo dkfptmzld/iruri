@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.62">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.63">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.62">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.63">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.62</title>
+<title>수업기록표 정산 시스템 v16.63</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -724,7 +724,8 @@ body.edit-mode-active .ledger-wrap textarea {
   #loginScreen input[type="password"] { height:48px!important; border-radius:10px!important; }
   /* ── 랜딩: 카드 세로 배치 + 가이드 버튼 ── */
   #modeSelectScreen { padding:16px!important; overflow-y:auto!important; align-items:flex-start!important; }
-  #modeSelectScreen > div { width:100%!important; padding:20px 4px!important; }
+  /* v16.63: 하단 버튼(업무 메뉴얼 보기)이 홈 인디케이터에 짤리지 않게 하단 여백 확보 */
+  #modeSelectScreen > div { width:100%!important; padding:20px 4px calc(48px + env(safe-area-inset-bottom, 0px))!important; }
   /* 카드 컨테이너 → 세로 배치 */
   #modeSelectScreen div[style*="display:flex;gap:16px"] {
     flex-direction:column!important; gap:12px!important; align-items:stretch!important;
@@ -4146,7 +4147,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.62';
+const SYSTEM_VERSION='v16.63';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
