@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.75">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.76">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.75">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.76">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.75</title>
+<title>수업기록표 정산 시스템 v16.76</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4148,7 +4148,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.75';
+const SYSTEM_VERSION='v16.76';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6324,8 +6324,9 @@ function dlPDF(){
  .add-day-btn:hover{background:#FFF3CD;border-color:#A88010;}
  .add-day-btn:disabled{opacity:.5;cursor:not-allowed;}
 
+ @media screen{ body{padding:16px 0;} }
  @media print{
-  body{background:white;}
+  body{background:white;padding:0;}
   .page{box-shadow:none;margin:0;padding:0;}
  }
  </style></head><body>${pages}
@@ -6364,10 +6365,21 @@ function dlPDF(){
   });
  }
  window.fitPages = fitPages;
- fitPages();
+ /* 화면(미리보기)에서는 종이(가로 A4)가 창보다 넓어 잘려 보이므로,
+  *  창 폭에 맞춰 축소해 '인쇄 미리보기'처럼 보이게 한다. 인쇄에는 영향 없음(@media screen). */
+ function fitScreen(){
+  var st=document.getElementById('__scr'); if(st) st.textContent='';   // 측정 전 줌 해제
+  var pg=document.querySelector('.page'); if(!pg) return;
+  var pw=pg.offsetWidth||1000;
+  var z=Math.min(1,(window.innerWidth-28)/pw);
+  if(!st){ st=document.createElement('style'); st.id='__scr'; document.head.appendChild(st); }
+  st.textContent='@media screen{ body{ zoom:'+z+'; } }';
+ }
+ fitPages(); fitScreen();
+ window.addEventListener('resize', fitScreen);
  /* 웹폰트가 늦게 뜨면 글자 크기가 달라져 높이가 바뀐다 → 폰트 준비 후 한 번 더 */
  if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(function(){ fitPages(); window.__fitDone = 1; })
+  document.fonts.ready.then(function(){ fitPages(); fitScreen(); window.__fitDone = 1; })
                       .catch(function(){ window.__fitDone = 1; });
   setTimeout(function(){ window.__fitDone = 1; }, 2500);   // 폰트가 안 와도 진행
  } else { window.__fitDone = 1; }
@@ -9232,7 +9244,8 @@ function _printSchedules(names, showFee){
   /* v16.72: 인쇄본은 긴 텍스트(센터명·주소·이메일)를 잘림(…) 없이 전체가 보이도록 줄바꿈.
      강의시간·수업료·지역 등 짧은 값은 인라인 nowrap 그대로 두어 값이 중간에 끊기지 않게 함. */
   .page td.pw{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;word-break:keep-all;overflow-wrap:anywhere;line-height:1.45;}
-  @media print{ body{background:#fff;} .page{box-shadow:none;margin:0;} }
+  @media screen{ body{padding:16px 0;} }
+  @media print{ body{background:#fff;padding:0;} .page{box-shadow:none;margin:0;} }
  </style></head><body>${pages}
  <script>
  /* 종이를 최대한 꽉 채운다(여백은 @page margin 으로 유지).
@@ -9272,8 +9285,19 @@ function _printSchedules(names, showFee){
    }
   });
  }
- fitPages();
- if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){fitPages();window.__fitDone=1;}).catch(function(){window.__fitDone=1;});
+ /* 화면(미리보기)에서는 종이(가로 A4)가 창보다 넓어 잘려 보이므로,
+  *  창 폭에 맞춰 축소해 '인쇄 미리보기'처럼 보이게 한다. 인쇄에는 영향 없음(@media screen). */
+ function fitScreen(){
+  var st=document.getElementById('__scr'); if(st) st.textContent='';   // 측정 전 줌 해제
+  var pg=document.querySelector('.page'); if(!pg) return;
+  var pw=pg.offsetWidth||1000;
+  var z=Math.min(1,(window.innerWidth-28)/pw);
+  if(!st){ st=document.createElement('style'); st.id='__scr'; document.head.appendChild(st); }
+  st.textContent='@media screen{ body{ zoom:'+z+'; } }';
+ }
+ fitPages(); fitScreen();
+ window.addEventListener('resize', fitScreen);
+ if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(function(){fitPages();fitScreen();window.__fitDone=1;}).catch(function(){window.__fitDone=1;});
   setTimeout(function(){window.__fitDone=1;},2500); } else { window.__fitDone=1; }
  <\/script></body></html>`;
  const w=window.open('','_blank','width=900,height=1000');
