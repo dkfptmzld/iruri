@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.76">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.77">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.76">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.77">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.76</title>
+<title>수업기록표 정산 시스템 v16.77</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4148,7 +4148,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.76';
+const SYSTEM_VERSION='v16.77';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9194,10 +9194,16 @@ function printAllSchedules(){
 function _printSchedules(names, showFee){
  const E=(v)=>{try{return esc(String(v==null?'':v));}catch(_){return String(v==null?'':v);}};
  const regOf=(n)=>{ const t=(DB.teachers||[]).find(x=>x&&x.name===n); return (t&&t.region)||''; };
- // 지역별 → 이름순 정렬 (지역 없는 강사는 맨 뒤)
+ // v16.77: 지정 지역 순서(서울→인천→수원)로 정렬, 그 외 지역은 뒤에 한글순, 지역 없는 강사는 맨 뒤. 같은 지역은 이름순.
+ const _REG_ORDER=['서울','인천','수원'];
+ const _rank=(r)=>{ if(!r) return 9999; const i=_REG_ORDER.indexOf(r); return i>=0?i:999; };
  names=(names||[]).slice().sort((a,b)=>{
   const ra=regOf(a), rb=regOf(b);
-  if(ra!==rb){ if(!ra) return 1; if(!rb) return -1; return ra.localeCompare(rb,'ko'); }
+  if(ra!==rb){
+   const da=_rank(ra), db=_rank(rb);
+   if(da!==db) return da-db;
+   return ra.localeCompare(rb,'ko');   // 둘 다 '그 외' 지역이면 한글순
+  }
   return a.localeCompare(b,'ko');
  });
  // 지역별 색상 배정 (등장 순서대로 팔레트 순환)
