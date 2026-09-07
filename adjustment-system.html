@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.63">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.64">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.63">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.64">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.63</title>
+<title>수업기록표 정산 시스템 v16.64</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4147,7 +4147,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.63';
+const SYSTEM_VERSION='v16.64';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8669,7 +8669,7 @@ function _teacherScheduleRows(teacher){
    (sc.days||[]).forEach(day=>{
     if(_SCH_DAYS.indexOf(day)<0) return;
     out.push({ day, center:c.name, region:c.region||'', area:_areaFromAddress(c.address),
-      time:sc.time||'', address:c.address||'', email:c.email||'',
+      time:sc.time||'', address:c.address||'', phone:c.phone||c.contactPhone||'', email:c.email||'',
       fee:_schSessionFee(teacher, c.name, c.region),
       weeks:(sc.weeks===5?5:4),                 // v16.01: 4주차/5주차 (기본 4)
       order:sc.order||99, gyosi:sc.gyosi||1 });
@@ -8716,18 +8716,24 @@ function _schTableHTML(teacher, showFee, editable, edit){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
  }
- const NC = showFee ? 7 : 6;                       // 열 개수
+ const NC = showFee ? 9 : 7;                       // 열 개수 (v16.64: 센터번호 + 수업료/특이사항 분리)
  // 요일별로 묶고, 수업이 있는 요일은 모두 '가장 바쁜 요일 칸 수'로 맞춘다(빈 칸은 완전 빈칸)
  const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
  let maxPerDay=1; _SCH_DAYS.forEach(d=>{ if(byDay[d]) maxPerDay=Math.max(maxPerDay, byDay[d].length); });
- const feeCell=(r)=>{
+ // v16.64: 센터 번호(전화) 셀 + 수업료/특이사항 분리
+ const phoneCell=(r)=> `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;font-size:11px;">${r?e(r.phone):''}</td>`;
+ const wonCell=(r)=>{
+  if(!r) return `<td style="${TD}"></td>`;
+  const won = r.fee?Number(r.fee).toLocaleString()+'원':'';
+  return `<td style="${TD}white-space:nowrap;">${won?`<b style="font-family:'DM Mono',monospace;">${won}</b>`:''}</td>`;
+ };
+ const specialCell=(r)=>{
   if(!r) return `<td style="${TD}"></td>`;
   const w = r.weeks===5?5:4;
-  const won = r.fee?Number(r.fee).toLocaleString()+'원':'';
   const wtag = editable
    ? `<span onclick="_toggleSchedWeeks('${escAttrJS(r.center)}','${escAttrJS(r.region)}','${escAttrJS(teacher)}','${r.day}',${r.gyosi})" title="눌러서 4주차↔5주차 변경" style="cursor:pointer;text-decoration:underline dotted;">${w}주차 수업</span>`
    : `${w}주차 수업`;
-  return `<td style="${TD}white-space:nowrap;font-size:11px;text-align:center;">${wtag}${won?` / <b style="font-family:'DM Mono',monospace;">${won}</b>`:''}</td>`;
+  return `<td style="${TD}white-space:nowrap;font-size:11px;">${wtag}</td>`;
  };
  let body='';
  _SCH_DAYS.forEach(day=>{
@@ -8740,20 +8746,21 @@ function _schTableHTML(teacher, showFee, editable, edit){
      + (edit ? timeCellEdit(r) : `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`)
      + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
      + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;">${r?e(r.address):''}</td>`)
+     + phoneCell(r)
      + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;word-break:break-all;">${r?e(r.email):''}</td>`)
-     + (showFee ? feeCell(r) : '')
+     + (showFee ? (wonCell(r)+specialCell(r)) : '')
      + `</tr>`;
   }
   body += `<tr><td colspan="${NC}" style="height:6px;padding:0;border:none;"></td></tr>`;
  });
  const cols = showFee
-  ? `<col style="width:56px"><col style="width:15%"><col style="width:92px"><col style="width:48px"><col><col style="width:19%"><col style="width:132px">`
-  : `<col style="width:56px"><col style="width:18%"><col style="width:100px"><col style="width:52px"><col><col style="width:23%">`;
+  ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:104px"><col style="width:13%"><col style="width:84px"><col style="width:92px">`
+  : `<col style="width:56px"><col style="width:16%"><col style="width:96px"><col style="width:48px"><col><col style="width:110px"><col style="width:20%">`;
  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
   <colgroup>${cols}</colgroup>
   <thead><tr>
    <th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th>
-   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">이메일주소(사회복지사)</th>${showFee?`<th style="${TH}">특이사항 / 수업료</th>`:''}
+   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일주소(사회복지사)</th>${showFee?`<th style="${TH}">수업료</th><th style="${TH}">특이사항</th>`:''}
   </tr></thead>
   <tbody>${body}</tbody>
  </table>`;
@@ -8779,6 +8786,7 @@ function _schCardsHTML(teacher, showFee){
      ${showFee?`<span style="margin-left:auto;font-size:11px;color:#6A6760;white-space:nowrap;">${(r.weeks===5?5:4)}주차${r.fee?` · <b style="font-family:'DM Mono',monospace;">${Number(r.fee).toLocaleString()}원</b>`:''}</span>`:''}
     </div>
     ${r.address?`<div style="font-size:11.5px;color:#8A8778;margin-top:4px;line-height:1.5;">${e(r.address)}</div>`:''}
+    ${r.phone?`<div style="font-size:11.5px;color:#6A6760;margin-top:2px;">📞 ${e(r.phone)}</div>`:''}
     ${r.email?`<div style="font-size:11px;color:#2C5AA0;margin-top:2px;word-break:break-all;">${e(r.email)}</div>`:''}
    </div>`;
   });
