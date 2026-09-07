@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.79">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.80">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.79">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.80">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.79</title>
+<title>수업기록표 정산 시스템 v16.80</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4155,7 +4155,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.79';
+const SYSTEM_VERSION='v16.80';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14871,7 +14871,9 @@ function _cfApply(){
   const off1=Math.min(255,Math.max(120,W*0.33));
   const cardW=Math.min(220,Math.max(168,W*0.6));
   items.forEach((el,i)=>{
-    const d=i-_cf.sel, ad=Math.abs(d), sgn=d<0?-1:1, base='translate(-50%,-50%)';
+    // v16.80: 순환(circular) — 가장 가까운 쪽으로 위치시켜 양방향으로 계속 넘어가게
+    let d=i-_cf.sel; if(n>1){ if(d>n/2) d-=n; else if(d<-n/2) d+=n; }
+    const ad=Math.abs(d), sgn=d<0?-1:1, base='translate(-50%,-50%)';
     el.style.position='absolute'; el.style.top='50%'; el.style.left='50%'; el.style.margin='0';
     el.style.width=cardW+'px';
     el.style.transition='transform .5s cubic-bezier(.22,.85,.3,1),opacity .5s,filter .5s,box-shadow .5s';
@@ -14893,8 +14895,9 @@ function _cfApply(){
     [...dots.children].forEach((dd,i)=>dd.classList.toggle('on',i===_cf.sel));
   }
   const aL=document.getElementById('cfArrowL'), aR=document.getElementById('cfArrowR');
-  if(aL) aL.style.visibility=_cf.sel<=0?'hidden':'visible';
-  if(aR) aR.style.visibility=_cf.sel>=n-1?'hidden':'visible';
+  // v16.80: 순환이므로 양쪽 화살표 항상 표시(카드 2개 이상일 때)
+  if(aL) aL.style.visibility=n>1?'visible':'hidden';
+  if(aR) aR.style.visibility=n>1?'visible':'hidden';
 }
 // v14.99: 카드 회전 시 권총 실린더 '틱' 소리 (Web Audio 합성, 외부파일 X)
 var _cfAC=null;
@@ -14917,7 +14920,7 @@ function _cfTick(){
     osc.connect(og); og.connect(ctx.destination); osc.start(t); osc.stop(t+0.06);
   }catch(e){}
 }
-function _cfGo(dx){ const o=_cf.sel; _cf.sel=Math.max(0,Math.min(_cf.items.length-1,_cf.sel+dx)); if(_cf.sel!==o)_cfTick(); _cfApply(); }
+function _cfGo(dx){ const n=_cf.items.length; if(n<=1) return; const o=_cf.sel; _cf.sel=((_cf.sel+dx)%n+n)%n; if(_cf.sel!==o)_cfTick(); _cfApply(); }
 function _cfSelect(i){ const o=_cf.sel; _cf.sel=Math.max(0,Math.min(_cf.items.length-1,i)); if(_cf.sel!==o)_cfTick(); _cfApply(); }
 function _cardFlowEnable(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return;
