@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.66">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.67">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.66">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.67">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.66</title>
+<title>수업기록표 정산 시스템 v16.67</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4147,7 +4147,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.66';
+const SYSTEM_VERSION='v16.67';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8690,7 +8690,7 @@ function _toggleSchedWeeks(name, region, teacher, day, gyosi){
  s.weeks=((s.weeks===5)?4:5);
  try{ lsSave(); }catch(_){}
  try{ _saveAllCentersToGas(); }catch(_){}
- try{ openSchedule(teacher, true); }catch(_){}   // 보던 화면 다시 그림
+ try{ openSchedule(teacher, _schCurShowFee); }catch(_){}   // v16.67: 보던 화면(수업료 표시 여부) 그대로 다시 그림
 }
 function _schTitle(teacher){
  const t=(DB.teachers||[]).find(x=>x && x.name===teacher);
@@ -8717,7 +8717,7 @@ function _schTableHTML(teacher, showFee, editable, edit){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
    <span style="font-size:12px;">센터 관리에서 담당 강사와 요일을 등록하면 여기에 나옵니다</span></div>`;
  }
- const NC = showFee ? 9 : 7;                       // 열 개수 (v16.64: 센터번호 + 수업료/특이사항 분리)
+ const NC = showFee ? 9 : 8;                       // 열 개수 (v16.67: 특이사항은 강사 뷰에도 표시)
  // 요일별로 묶고, 수업이 있는 요일은 모두 '가장 바쁜 요일 칸 수'로 맞춘다(빈 칸은 완전 빈칸)
  const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
  let maxPerDay=1; _SCH_DAYS.forEach(d=>{ if(byDay[d]) maxPerDay=Math.max(maxPerDay, byDay[d].length); });
@@ -8731,8 +8731,10 @@ function _schTableHTML(teacher, showFee, editable, edit){
  const specialCell=(r)=>{
   if(!r) return `<td style="${TD}"></td>`;
   const w = r.weeks===5?5:4;
+  const other = w===5?4:5;
+  // v16.67: 눌러서 4↔5주차 바꾸는 걸 잘 보이게 — 알약형 버튼 + 🔄
   const wtag = editable
-   ? `<span onclick="_toggleSchedWeeks('${escAttrJS(r.center)}','${escAttrJS(r.region)}','${escAttrJS(teacher)}','${r.day}',${r.gyosi})" title="눌러서 4주차↔5주차 변경" style="cursor:pointer;text-decoration:underline dotted;">${w}주차 수업</span>`
+   ? `<button type="button" onclick="_toggleSchedWeeks('${escAttrJS(r.center)}','${escAttrJS(r.region)}','${escAttrJS(teacher)}','${r.day}',${r.gyosi})" title="눌러서 ${other}주차로 바꾸기" style="display:inline-flex;align-items:center;gap:3px;border:1px solid #D9B45A;background:#FFF7E3;color:#8A5A12;border-radius:14px;padding:2px 8px 2px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1.4;">${w}주차 <span style="font-size:10px;">🔄</span></button>`
    : `${w}주차 수업`;
   return `<td style="${TD}white-space:nowrap;font-size:11px;">${wtag}</td>`;
  };
@@ -8749,19 +8751,20 @@ function _schTableHTML(teacher, showFee, editable, edit){
      + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.address||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.address):''}</td>`)
      + (edit ? phoneCellEdit(r) : phoneCell(r))
      + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.email||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.email):''}</td>`)
-     + (showFee ? (specialCell(r)+wonCell(r)) : '')
+     + specialCell(r)
+     + (showFee ? wonCell(r) : '')
      + `</tr>`;
   }
   body += `<tr><td colspan="${NC}" style="height:6px;padding:0;border:none;"></td></tr>`;
  });
  const cols = showFee
   ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:104px"><col style="width:13%"><col style="width:92px"><col style="width:84px">`
-  : `<col style="width:56px"><col style="width:16%"><col style="width:96px"><col style="width:48px"><col><col style="width:110px"><col style="width:20%">`;
+  : `<col style="width:56px"><col style="width:15%"><col style="width:92px"><col style="width:46px"><col><col style="width:104px"><col style="width:17%"><col style="width:92px">`;
  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
   <colgroup>${cols}</colgroup>
   <thead><tr>
    <th style="${TH}">요일</th><th style="${TH}">센터명</th><th style="${TH}">강의시간</th>
-   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일주소</th>${showFee?`<th style="${TH}">특이사항</th><th style="${TH}">수업료</th>`:''}
+   <th style="${TH}">지역</th><th style="${TH}">주소</th><th style="${TH}">센터 번호</th><th style="${TH}">이메일주소</th><th style="${TH}">특이사항</th>${showFee?`<th style="${TH}">수업료</th>`:''}
   </tr></thead>
   <tbody>${body}</tbody>
  </table>`;
@@ -8784,7 +8787,10 @@ function _schCardsHTML(teacher, showFee){
      <span style="font-size:13.5px;font-weight:700;">${e(r.center)}</span>
      ${r.time?`<span style="font-size:12.5px;font-weight:700;color:#1A7A50;font-family:'DM Mono',monospace;">${e(r.time)}</span>`:'<span style="font-size:11.5px;color:#B8B4A8;">시간 미입력</span>'}
      ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;">${e(r.area)}</span>`:''}
-     ${showFee?`<span style="margin-left:auto;font-size:11px;color:#6A6760;white-space:nowrap;">${(r.weeks===5?5:4)}주차${r.fee?` · <b style="font-family:'DM Mono',monospace;">${Number(r.fee).toLocaleString()}원</b>`:''}</span>`:''}
+     <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+      <button type="button" onclick="_toggleSchedWeeks('${escAttrJS(r.center)}','${escAttrJS(r.region)}','${escAttrJS(teacher)}','${r.day}',${r.gyosi})" title="눌러서 ${(r.weeks===5?4:5)}주차로 바꾸기" style="border:1px solid #D9B45A;background:#FFF7E3;color:#8A5A12;border-radius:12px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${(r.weeks===5?5:4)}주차 🔄</button>
+      ${showFee&&r.fee?`<b style="font-size:11px;font-family:'DM Mono',monospace;color:#6A6760;">${Number(r.fee).toLocaleString()}원</b>`:''}
+     </span>
     </div>
     ${r.address?`<div style="font-size:11.5px;color:#8A8778;margin-top:4px;line-height:1.5;">${e(r.address)}</div>`:''}
     ${r.phone?`<div style="font-size:11.5px;color:#6A6760;margin-top:2px;">📞 ${e(r.phone)}</div>`:''}
@@ -8796,7 +8802,7 @@ function _schCardsHTML(teacher, showFee){
  return out;
 }
 /* 화면으로 보기 (강사·관리자 공용) */
-let _schEditMode=false, _schEdits={}, _schEditBase={}, _schEditTeacher='', _schAdds=[];
+let _schEditMode=false, _schEdits={}, _schEditBase={}, _schEditTeacher='', _schAdds=[], _schCurShowFee=false;
 function openSchedule(teacher, showFee){
  const name=teacher || window._loggedInTeacher || '';
  if(!name){ try{ showToast('강사를 알 수 없어요'); }catch(_){} return; }
@@ -8804,6 +8810,7 @@ function openSchedule(teacher, showFee){
  _schRenderOverlay(name, !!showFee);
 }
 function _schRenderOverlay(name, showFee){
+ _schCurShowFee = !!showFee;   // v16.67: 4↔5주차 토글 후 재렌더 시 현재 뷰(수업료 표시 여부) 유지
  let ov=document.getElementById('schedOverlay');
  if(!ov){
   ov=document.createElement('div');
