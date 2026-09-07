@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.61">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.62">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.61">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.62">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.61</title>
+<title>수업기록표 정산 시스템 v16.62</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4146,7 +4146,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.61';
+const SYSTEM_VERSION='v16.62';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9944,11 +9944,11 @@ function selectTreeRegion(region){
  }).join('');
 
  detail.innerHTML = `
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-   <span class="badge ${REGION_BADGE[region]}" style="font-size:14px;padding:5px 14px;">${region}</span>
-   <div style="flex:1;">
-    <span style="font-size:15px;font-weight:700;">${regionCenters.length}개 센터</span>
-    <span style="font-size:12px;color:var(--text2);margin-left:8px;">${teacherSet.size}명 강사 담당</span>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
+   <span class="badge ${REGION_BADGE[region]}" style="font-size:14px;padding:5px 14px;flex-shrink:0;white-space:nowrap;">${region}</span>
+   <div style="flex:1;min-width:0;">
+    <span style="font-size:15px;font-weight:700;white-space:nowrap;">${regionCenters.length}개 센터</span>
+    <span style="font-size:12px;color:var(--text2);margin-left:8px;white-space:nowrap;">${teacherSet.size}명 강사 담당</span>
    </div>
   </div>
   <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">센터를 클릭하면 수정할 수 있어요</div>
@@ -10139,17 +10139,17 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const detail = document.getElementById('cTreeDetail');
  if(!detail) return;
  detail.innerHTML = `
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);">
-   <div style="width:40px;height:40px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">${teacher[0]}</div>
-   <div style="flex:1;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
+   <div style="width:40px;height:40px;border-radius:50%;background:var(--green);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;">${teacher[0]}</div>
+   <div style="flex:1;min-width:140px;">
     <div style="font-size:16px;font-weight:700;">${teacher}</div>
-    <div style="display:flex;gap:6px;margin-top:3px;">
-     <span class="badge ${REGION_COLOR[region]}" style="font-size:11px;">${region}</span>
-     <span style="font-size:12px;color:var(--text2);">총 ${totalCenters}개 센터</span>
+    <div style="display:flex;gap:6px;margin-top:3px;align-items:center;flex-wrap:nowrap;">
+     <span class="badge ${REGION_COLOR[region]}" style="font-size:11px;flex-shrink:0;white-space:nowrap;">${region}</span>
+     <span style="font-size:12px;color:var(--text2);white-space:nowrap;">총 ${totalCenters}개 센터</span>
     </div>
    </div>
-   <button class="btn sm" onclick="openSchedule('${teacher.replace(/'/g,"\\'")}',true)" title="${escH(teacher)} 강사 스케줄표 보기·인쇄" style="flex-shrink:0;gap:4px;">📅 스케줄표 보기</button>
-   <button class="btn sm primary" onclick="_ncOpen(null)" style="flex-shrink:0;gap:4px;">
+   <button class="btn sm" onclick="openSchedule('${teacher.replace(/'/g,"\\'")}',true)" title="${escH(teacher)} 강사 스케줄표 보기·인쇄" style="flex-shrink:0;gap:4px;white-space:nowrap;">📅 스케줄표 보기</button>
+   <button class="btn sm primary" onclick="_ncOpen(null)" style="flex-shrink:0;gap:4px;white-space:nowrap;">
     <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>센터 추가
    </button>
   </div>
