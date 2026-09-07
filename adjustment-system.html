@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.67">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.68">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.67">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.68">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.67</title>
+<title>수업기록표 정산 시스템 v16.68</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4147,7 +4147,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.67';
+const SYSTEM_VERSION='v16.68';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8710,8 +8710,8 @@ function _schTableHTML(teacher, showFee, editable, edit){
  const INP='width:100%;height:24px;border:1px solid #D8B25A;border-radius:6px;padding:0 5px;font-size:11px;font-family:inherit;outline:none;background:#FFFDF6;';
  const argK=(r)=>`'${escAttrJS(r.center)}','${escAttrJS(r.region)}','${r.day}',${r.gyosi}`;
  const timeCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.time||'').replace(/"/g,'&quot;')}" placeholder="🕐 눌러서 선택" readonly onclick="_openSchTimeInput(this,${argK(r)})" style="${INP}text-align:center;cursor:pointer;background:#FFFDF6;"></td>` : `<td style="${TD}"></td>`;
- const addrCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.address||'').replace(/"/g,'&quot;')}" placeholder="주소 입력" oninput="_schEditSet(${argK(r)},'address',this.value)" style="${INP}text-align:left;"></td>` : `<td style="${TD}"></td>`;
- const emailCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.email||'').replace(/"/g,'&quot;')}" placeholder="이메일 입력" oninput="_schEditSet(${argK(r)},'email',this.value)" style="${INP}text-align:left;font-size:10.5px;color:#2C5AA0;"></td>` : `<td style="${TD}"></td>`;
+ const addrCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.address||'').replace(/"/g,'&quot;')}" placeholder="주소 입력" oninput="_schEditSet(${argK(r)},'address',this.value)" style="${INP}text-align:center;"></td>` : `<td style="${TD}"></td>`;
+ const emailCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.email||'').replace(/"/g,'&quot;')}" placeholder="이메일 입력" oninput="_schEditSet(${argK(r)},'email',this.value)" style="${INP}text-align:center;font-size:10.5px;color:#2C5AA0;"></td>` : `<td style="${TD}"></td>`;
  const phoneCellEdit=(r)=> r ? `<td style="${TD}"><input type="text" value="${(r.phone||'').replace(/"/g,'&quot;')}" placeholder="센터 번호" oninput="_schEditSet(${argK(r)},'phone',this.value)" style="${INP}text-align:center;font-family:'DM Mono',monospace;"></td>` : `<td style="${TD}"></td>`;
  if(!rows.length){
   return `<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">등록된 스케줄이 없어요<br>
@@ -8748,9 +8748,9 @@ function _schTableHTML(teacher, showFee, editable, edit){
      + `<td style="${TD}font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.center||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.center):''}</td>`
      + (edit ? timeCellEdit(r) : `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`)
      + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
-     + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.address||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.address):''}</td>`)
+     + (edit ? addrCellEdit(r) : `<td style="${TD}font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.address||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.address):''}</td>`)
      + (edit ? phoneCellEdit(r) : phoneCell(r))
-     + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.email||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.email):''}</td>`)
+     + (edit ? emailCellEdit(r) : `<td style="${TD}font-size:10.5px;color:#2C5AA0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.email||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.email):''}</td>`)
      + specialCell(r)
      + (showFee ? wonCell(r) : '')
      + `</tr>`;
@@ -8758,8 +8758,8 @@ function _schTableHTML(teacher, showFee, editable, edit){
   body += `<tr><td colspan="${NC}" style="height:6px;padding:0;border:none;"></td></tr>`;
  });
  const cols = showFee
-  ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:104px"><col style="width:13%"><col style="width:92px"><col style="width:84px">`
-  : `<col style="width:56px"><col style="width:15%"><col style="width:92px"><col style="width:46px"><col><col style="width:104px"><col style="width:17%"><col style="width:92px">`;
+  ? `<col style="width:52px"><col style="width:13%"><col style="width:86px"><col style="width:44px"><col><col style="width:118px"><col style="width:13%"><col style="width:92px"><col style="width:84px">`
+  : `<col style="width:56px"><col style="width:15%"><col style="width:92px"><col style="width:46px"><col><col style="width:118px"><col style="width:17%"><col style="width:92px">`;
  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
   <colgroup>${cols}</colgroup>
   <thead><tr>
