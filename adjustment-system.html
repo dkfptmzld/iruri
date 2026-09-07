@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.78">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.79">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.78">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.79">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.78</title>
+<title>수업기록표 정산 시스템 v16.79</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1592,6 +1592,12 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  </div>
  <div style="font-size:16px;font-weight:700;color:#8a5a1c;margin-bottom:8px;">자격증 발급</div>
  <div style="font-size:12px;color:#9B8A60;line-height:1.6;">협회 자격증을 발급하고<br>드라이브에 저장합니다</div>
+ </div>
+ <!-- v16.79: 비상연락망 (관리자 전용 — '관리자' 권한 필요, 별도 PIN 없음) -->
+ <div role="button" tabindex="0" id="card-emergency" aria-label="비상연락망 — 관리자 전용" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; _goEmergency()" style="background: white; border: 2px solid #F0C1AE; border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(194,65,12,.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(194,65,12,.22)';this.style.borderColor='#C2410C';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(194,65,12,.1)';this.style.borderColor='#F0C1AE';">
+ <div style="width:56px;height:56px;background:linear-gradient(135deg,#C2410C,#B23A1E);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;">📞</div>
+ <div style="font-size:16px;font-weight:700;color:#B23A1E;margin-bottom:8px;">비상연락망</div>
+ <div style="font-size:12px;color:#B08070;line-height:1.6;">강사 연락처 · 관리자 전용<br>눌러서 바로 전화</div>
  </div>
   <!-- 커스텀 앱 카드 동적 렌더 -->
   <div id="landingCustomCards" style="display:contents;"></div>
@@ -4149,7 +4155,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.78';
+const SYSTEM_VERSION='v16.79';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9095,8 +9101,7 @@ function openEmergencyContacts(){
     <button class="emg-close" onclick="closeEmergencyContacts()">✕ 닫기</button>
    </div>
    <div class="emg-body">
-    ${ceoHtml}
-    <div class="emg-regions">${regionsHtml}</div>
+    ${all.length ? `${ceoHtml}<div class="emg-regions">${regionsHtml}</div>` : `<div style="text-align:center;color:#9A968C;padding:34px 12px;font-size:13px;line-height:1.7;">강사 데이터를 아직 불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>`}
     <div class="emg-note">🔒 관리자 전용 · 강사 관리의 연락처와 자동 연동돼요</div>
    </div>
   </div>`;
@@ -15145,6 +15150,15 @@ function _clickCustomCard(idx){
   return;
  }
  if(typeof openLink==='function') openLink(app.url); else location.href=app.url;
+}
+// v16.79: 홈 '비상연락망' 카드 — '관리자' 권한 있으면 열고, 없으면 안내 팝업(별도 PIN 없음)
+function _goEmergency(){
+ if(!_hasCap('admin')){
+  showConfirm({icon:'🔒',title:'접근 권한이 없어요',desc:'비상연락망은 관리자 전용입니다.<br><small style="color:var(--text3)">박기남 관리자에게 권한을 요청하세요.</small>',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});
+  const cc=document.getElementById('confirmCancelBtn'); if(cc) cc.style.display='none';
+  return;
+ }
+ openEmergencyContacts();
 }
 // v15.41: 랜딩 카드는 항상 표시. 권한 없는 서비스는 클릭 시 안내 팝업으로 차단(showAdminLogin/_goCert/_clickCustomCard).
 //         카드 숨김을 없애 캐러셀 빈 슬롯/점 문제도 제거. 마스터에게만 권한관리 버튼 노출.
