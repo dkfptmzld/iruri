@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.74">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.75">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.74">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.75">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.74</title>
+<title>수업기록표 정산 시스템 v16.75</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4148,7 +4148,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.74';
+const SYSTEM_VERSION='v16.75';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8723,7 +8723,6 @@ function _schTableHTML(teacher, showFee, editable, edit){
  const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
  const _WEEK=['월','화','수','목','금'];
  const daysToShow=_WEEK.concat(['토','일'].filter(d=>byDay[d]&&byDay[d].length));
- let maxPerDay=4; daysToShow.forEach(d=>{ if(byDay[d]) maxPerDay=Math.max(maxPerDay, byDay[d].length); });
  // v16.64: 센터 번호(전화) 셀 + 수업료/특이사항 분리
  const phoneCell=(r)=> `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;font-size:11px;">${r?e(r.phone):''}</td>`;
  const wonCell=(r)=>{
@@ -8744,10 +8743,11 @@ function _schTableHTML(teacher, showFee, editable, edit){
  let body='';
  daysToShow.forEach(day=>{
   const list=byDay[day]||[];
-  for(let i=0;i<maxPerDay;i++){
+  const rpd=Math.max(4, list.length);   // v16.75: 그 요일만큼 — 기본 4교시, 5교시 이상인 날만 그만큼 늘림
+  for(let i=0;i<rpd;i++){
    const r=list[i]||null;
    body += `<tr>`
-     + (i===0 ? `<td rowspan="${maxPerDay}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
+     + (i===0 ? `<td rowspan="${rpd}" style="${TD}font-weight:700;background:#F7F5EE;white-space:nowrap;">${day}요일</td>` : '')
      + `<td class="pw" style="${TD}font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${r?` title="${(r.center||'').replace(/"/g,'&quot;')}"`:''}>${r?e(r.center):''}</td>`
      + (edit ? timeCellEdit(r) : `<td style="${TD}white-space:nowrap;font-family:'DM Mono',monospace;">${r?e(r.time):''}</td>`)
      + `<td style="${TD}white-space:nowrap;">${r?e(r.area):''}</td>`
