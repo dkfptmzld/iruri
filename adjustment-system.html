@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.77">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.78">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.77">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.78">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.77</title>
+<title>수업기록표 정산 시스템 v16.78</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2099,6 +2099,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div class="topbar-right" id="topbarRight">
  <button class="btn" onclick="printAllSchedules()" title="전체 강사 스케줄표 인쇄" style="gap:4px;">📅 스케줄</button>
  <button class="btn" onclick="dlPDF()" title="정산서 PDF"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"></path></svg>정산서</button>
+ <button class="btn" onclick="openEmergencyContacts()" title="비상연락망 (관리자 전용)" style="gap:4px;">📞 비상연락망</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button></div>
  <!-- v14.74: 알림 발송·GitHub 업로드 버튼 제거 (해당 기능 미사용) -->
  
@@ -4148,7 +4149,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.77';
+const SYSTEM_VERSION='v16.78';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5130,6 +5131,7 @@ function renderSettle(){
  document.getElementById('topbarRight').innerHTML=`
  <button class="btn" onclick="printAllSchedules()" title="전체 강사 스케줄표 인쇄" style="gap:4px;">📅 스케줄</button>
  <button class="btn" onclick="dlPDF()" title="정산서 PDF"><svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>정산서</button>
+ <button class="btn" onclick="openEmergencyContacts()" title="비상연락망 (관리자 전용)" style="gap:4px;">📞 비상연락망</button>
  <button class="btn" onclick="switchToTeacherMode()" style="background:#E8F5EE;color:#1A7A50;border-color:#B8E0CC;font-weight:600;">✏️ 강사 모드</button>`;
  STATE.cur = 0;
  STATE.tab = 'ledger';
@@ -9004,6 +9006,103 @@ async function _sendScheduleRequest(name){
  }
 }
 function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; _schEditMode=false; _schEdits={}; _schAdds=[]; }
+
+/* ═══ 비상연락망 (관리자 전용 — 관리자 모드에서만 접근, PIN 없음) ═══
+ *  강사 관리(DB.teachers)의 지역·연락처를 그대로 사용(자동 연동).
+ *  직급은 소수만 매핑, 나머지는 '강사'. 대표는 최상단에 별도 표시. */
+const EMG_TITLES={'이재하':'대표','김효민':'부장','박기남':'과장','정상준':'과장','안지훈':'과장','한수희':'대리','김유천':'대리','이인경':'주임'};
+const EMG_REG_ORDER=['서울','인천','수원'];
+const EMG_REG_COLOR={'서울':'#1A7A50','인천':'#2563EB','수원':'#C2410C'};
+const EMG_RANK={'대표':{c:'#9A6B12',b:'#FCF3D9'},'부장':{c:'#6D28D9',b:'#F1EAFC'},'과장':{c:'#1E50C0',b:'#E7EEFD'},'대리':{c:'#0E7490',b:'#E0F2F6'},'주임':{c:'#C2410C',b:'#FBEADF'},'강사':{c:'#5F6660',b:'#EFEEE8'}};
+const EMG_RANK_ORDER=['대표','부장','과장','대리','주임','강사'];
+function openEmergencyContacts(){
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ const tel=(p)=>String(p||'').replace(/[^0-9]/g,'');
+ let ov=document.getElementById('emgOverlay');
+ if(!ov){
+  ov=document.createElement('div');
+  ov.id='emgOverlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10000;display:flex;align-items:center;justify-content:center;padding:12px;';
+  ov.onclick=(ev)=>{ if(ev.target===ov) closeEmergencyContacts(); };
+  document.body.appendChild(ov);
+ }
+ const all=((typeof DB!=='undefined'&&DB.teachers)||[]).map(t=>({name:t.name,region:t.region||'',phone:t.phone||'',title:EMG_TITLES[t.name]||'강사'}));
+ const ceo=all.find(p=>p.title==='대표');
+ const seen=[]; all.forEach(p=>{ const r=p.region||'기타'; if(!seen.includes(r)) seen.push(r); });
+ const ordered=EMG_REG_ORDER.filter(r=>seen.includes(r)).concat(seen.filter(r=>!EMG_REG_ORDER.includes(r)).sort((a,b)=>a.localeCompare(b,'ko')));
+ const rowHtml=(p)=>{
+  const rk=EMG_RANK[p.title]||EMG_RANK['강사'];
+  const t=tel(p.phone);
+  const call=t?`<a class="emg-call" href="tel:${t}" title="${e(p.name)}에게 전화">📞</a>`:`<span class="emg-call off" title="번호 미등록">–</span>`;
+  return `<div class="emg-person">
+    <span class="emg-rk" style="color:${rk.c};background:${rk.b}">${e(p.title)}</span>
+    <div class="emg-info"><div class="emg-nm">${e(p.name)}</div><div class="emg-ph">${p.phone?e(p.phone):'번호 미등록'}</div></div>
+    ${call}
+  </div>`;
+ };
+ let regionsHtml='';
+ ordered.forEach(reg=>{
+  const color=EMG_REG_COLOR[reg]||'#6B7280';
+  const members=all.filter(p=>(p.region||'기타')===reg && p!==ceo)
+    .sort((a,b)=> EMG_RANK_ORDER.indexOf(a.title)-EMG_RANK_ORDER.indexOf(b.title) || a.name.localeCompare(b.name,'ko'));
+  if(!members.length) return;
+  const staff=members.filter(p=>p.title!=='강사');
+  const teachers=members.filter(p=>p.title==='강사');
+  const totalReg=all.filter(p=>(p.region||'기타')===reg).length;
+  let body=staff.map(rowHtml).join('');
+  if(teachers.length) body+=`<div class="emg-div">강사 ${teachers.length}명</div>`+teachers.map(rowHtml).join('');
+  regionsHtml+=`<div class="emg-region">
+    <div class="emg-reg-hd" style="background:${color}">📍 ${e(reg)}${reg==='기타'?'':'지사'} <span class="emg-cnt">${totalReg}명</span></div>
+    <div class="emg-reg-body">${body}</div>
+  </div>`;
+ });
+ const ceoHtml=ceo?`<div class="emg-ceo">
+    <span class="emg-rk" style="color:#9A6B12;background:#FCF3D9">👑 대표</span>
+    <div class="emg-info"><div class="emg-nm">${e(ceo.name)} <span style="font-size:11px;color:#9A6B12;font-weight:700;">· ${e(ceo.region)}지사</span></div><div class="emg-ph">${ceo.phone?e(ceo.phone):'번호 미등록'}</div></div>
+    ${ceo.phone?`<a class="emg-call" href="tel:${tel(ceo.phone)}" title="${e(ceo.name)}에게 전화" style="background:#B8860B;">📞</a>`:'<span class="emg-call off">–</span>'}
+  </div><div class="emg-spine"></div>`:'';
+ ov.innerHTML=`
+  <style>
+   #emgOverlay .emg-card{background:#fff;border-radius:16px;max-width:min(1100px,96vw);width:100%;max-height:calc(100vh - 24px);overflow:auto;}
+   #emgOverlay .emg-top{background:linear-gradient(135deg,#B23A1E,#C2410C);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:2;}
+   #emgOverlay .emg-top h3{font-size:18px;font-weight:800;}
+   #emgOverlay .emg-top .sub{font-size:12px;opacity:.92;margin-top:2px;}
+   #emgOverlay .emg-close{margin-left:auto;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;border-radius:9px;padding:8px 14px;cursor:pointer;font-family:inherit;}
+   #emgOverlay .emg-body{padding:16px 16px 22px;}
+   #emgOverlay .emg-ceo{background:linear-gradient(180deg,#FFFDF4,#FFF7E0);border:2px solid #E7CE86;border-radius:16px;padding:11px 15px;display:flex;align-items:center;gap:12px;max-width:380px;margin:0 auto;}
+   #emgOverlay .emg-spine{width:2px;height:18px;background:#CFCBBE;margin:0 auto;}
+   #emgOverlay .emg-regions{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+   #emgOverlay .emg-region{border:1px solid #E2E0D8;border-radius:14px;overflow:hidden;}
+   #emgOverlay .emg-reg-hd{padding:10px 13px;color:#fff;font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:7px;}
+   #emgOverlay .emg-cnt{margin-left:auto;font-size:11px;font-weight:700;background:rgba(255,255,255,.22);border-radius:20px;padding:2px 9px;}
+   #emgOverlay .emg-reg-body{padding:11px;}
+   #emgOverlay .emg-person{display:flex;align-items:center;gap:10px;border:1px solid #E2E0D8;border-radius:11px;padding:8px 10px;margin-bottom:7px;background:#fff;}
+   #emgOverlay .emg-rk{font-size:11px;font-weight:800;border-radius:7px;padding:3px 8px;min-width:40px;text-align:center;flex-shrink:0;}
+   #emgOverlay .emg-info{min-width:0;flex:1;}
+   #emgOverlay .emg-nm{font-size:15px;font-weight:700;}
+   #emgOverlay .emg-ph{font-size:12px;color:#6B6860;font-family:'DM Mono',monospace;margin-top:1px;letter-spacing:.2px;}
+   #emgOverlay .emg-call{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;text-decoration:none;background:#1A7A50;flex-shrink:0;box-shadow:0 2px 6px rgba(26,122,80,.22);}
+   #emgOverlay .emg-call:active{transform:scale(.92);}
+   #emgOverlay .emg-call.off{background:#EDEBE4;color:#B8B4A8;font-size:16px;box-shadow:none;}
+   #emgOverlay .emg-div{font-size:11.5px;font-weight:700;color:#6B6860;margin:9px 2px 7px;display:flex;align-items:center;gap:8px;}
+   #emgOverlay .emg-div::before,#emgOverlay .emg-div::after{content:'';flex:1;height:1px;background:#E2E0D8;}
+   #emgOverlay .emg-ceo .emg-nm{font-size:18px;}
+   #emgOverlay .emg-note{text-align:center;font-size:11px;color:#B8B4A8;margin-top:16px;line-height:1.6;}
+  </style>
+  <div class="emg-card">
+   <div class="emg-top">
+    <div><h3>📞 비상연락망</h3><div class="sub">지역·직급별 · 임직원 ${all.length}명 · 📞 를 누르면 전화</div></div>
+    <button class="emg-close" onclick="closeEmergencyContacts()">✕ 닫기</button>
+   </div>
+   <div class="emg-body">
+    ${ceoHtml}
+    <div class="emg-regions">${regionsHtml}</div>
+    <div class="emg-note">🔒 관리자 전용 · 강사 관리의 연락처와 자동 연동돼요</div>
+   </div>
+  </div>`;
+ ov.style.display='flex';
+}
+function closeEmergencyContacts(){ const ov=document.getElementById('emgOverlay'); if(ov) ov.style.display='none'; }
 
 /* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
 let _schReqCache=[];
@@ -13666,6 +13765,7 @@ function _confirmCancel(){
  const OVERLAYS=[
   ['schedReqOverlay',    el=>el.style.display='none'],
   ['schedOverlay',       ()=>{ try{ closeSchedule(); }catch(_){} }],
+  ['emgOverlay',         ()=>{ try{ closeEmergencyContacts(); }catch(_){} }],
   ['modalOverlay',       ()=>{ try{ closeModal(); }catch(_){} }],
   ['inputModalOverlay',  el=>el.style.display='none'],
   ['mySubViewOverlay',   el=>el.style.display='none'],
