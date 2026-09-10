@@ -591,9 +591,11 @@ function show(s){
 }
 const CLR=['pr-plan','pr-journal','pr-all','pr-intro','pr-annual','pr-monthly'];
 function docNameOf(s){ return {intro:'레크레이션_소개서',annual:'레크레이션_연간계획표',monthly:'레크레이션_월간계획서',journal:'레크레이션_활동일지'}[s]||'문서'; }
+function datePrefix(){ const d=(document.getElementById('startDate')||{}).value||''; const n=d.replace(/-/g,''); return n?n+'_':''; }
+function fileBase(s){ return datePrefix()+docNameOf(s); }
 const _origTitle=document.title;
-function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); document.title=docNameOf(CUR); window.print(); }
-function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title='레크레이션_계획서_전체'; window.print(); }
+function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); document.title=fileBase(CUR); window.print(); }
+function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title=datePrefix()+'레크레이션_계획서_전체'; window.print(); }
 // 페이지 요소를 화면 그대로 이미지로 렌더 (레이아웃·글꼴 유지)
 function nodeToPNG(el){
   return new Promise((resolve,reject)=>{
@@ -621,7 +623,7 @@ async function saveHWP(){
     for(const n of nodes){ const {data,w,h}=await nodeToPNG(n); const land=w>h; const pw=land?'277mm':'196mm'; imgs+=`<div style="text-align:center;page-break-after:always"><img src="${data}" style="width:${pw};max-width:100%"></div>`; }
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:6mm} img{display:block;margin:0 auto}</style></head><body>'+imgs+'</body></html>';
     const blob=new Blob(['﻿'+html],{type:'application/msword'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=docNameOf(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
   }catch(e){ alert('HWP(DOC) 저장 중 문제가 발생했어요: '+e.message); }
   btn.textContent=t0; btn.disabled=false;
 }
