@@ -24,6 +24,9 @@
        if (action === 'saveJournalRecord')
          return response(saveJournalRecord(body.data));
 
+       if (action === 'deleteJournalRecord')
+         return response(deleteJournalRecord(body.id));
+
    (doGet 은 e.parameter 를 p 로, doPost 는 JSON.parse(e.postData.contents) 를
     body 로 쓰는 기존 구조를 그대로 따릅니다. response() 도 기존 함수 사용.)
 ───────────────────────────────────────────────────────────────── */
@@ -135,4 +138,27 @@ function getJournalRecords(center, teacher, year, month, region) {
     });
   }
   return { ok:true, records:out };
+}
+
+// 삭제: 고유ID로 시트 줄 + 드라이브 파일(PDF·WORD) 함께 제거
+function deleteJournalRecord(id) {
+  if (!id) return { ok:false, message:'삭제할 ID가 없어요' };
+  const sh = _jSheet();
+  const last = sh.getLastRow();
+  if (last < 2) return { ok:true, deleted:false };
+  const ids = sh.getRange(2, 17, last - 1, 1).getValues();   // 17번째 열 = 고유ID
+  for (let i = 0; i < ids.length; i++) {
+    if ((ids[i][0] || '').toString() === id.toString()) {
+      try {
+        const urls = sh.getRange(i + 2, 19, 1, 2).getValues()[0];   // 19=PDF, 20=WORD
+        [urls[0], urls[1]].forEach(function (u) {
+          const m = u && u.toString().match(/\/d\/([^/]+)/);
+          if (m) { try { DriveApp.getFileById(m[1]).setTrashed(true); } catch (e) {} }
+        });
+      } catch (e) { /* 파일 삭제 실패해도 시트 줄은 지운다 */ }
+      sh.deleteRow(i + 2);
+      return { ok:true, deleted:true, id:id };
+    }
+  }
+  return { ok:true, deleted:false };
 }
