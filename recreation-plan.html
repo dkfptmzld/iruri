@@ -536,7 +536,7 @@ function monthlyHTML(){
     const dr=`${mi}월 ${list[0].date.getDate()}일 ~ ${mi}월 ${list[list.length-1].date.getDate()}일`;
     const chips=list.map(s=>`<span class="mchip">${esc(s.main)}</span>`).join('');
     const cards=list.map((s,ci)=>`<div class="wk-card">
-        <div class="wk-l"><div class="wk-date">📅 ${s.date.getMonth()+1}월 ${s.date.getDate()}일</div><div class="wk-dow">${DOW[s.date.getDay()]}요일</div><div class="wk-no">${ci+1}주차</div></div>
+        <div class="wk-l"><div class="wk-date">📅 ${s.date.getMonth()+1}월 ${s.date.getDate()}일</div><div class="wk-dow">${DOW[s.date.getDay()]}요일</div><div class="wk-no">${Math.ceil((s.date.getDate()+new Date(s.date.getFullYear(),s.date.getMonth(),1).getDay())/7)}주차</div></div>
         <div class="wk-r">
           <div class="wk-goal"><span class="wk-cat goal">🎯 목표</span>${esc(s.goal)}</div>
           <div class="wk-act wk-main"><span class="wk-cat main">메인활동</span><b>${esc(s.main)}</b>${s.desc?` <span class="wk-sd">${esc(s.desc)}</span>`:''}</div>
