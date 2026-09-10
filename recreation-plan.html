@@ -369,7 +369,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  </div>
  <!-- 편집 패널(접힘) -->
  <div class="editbar" id="editBar" hidden>
-  <div class="fld"><label>강사 이름</label><input id="teacher" value="박기남" oninput="onTeacher()"></div>
+  <div class="fld"><label>강사 이름</label><input id="teacher" type="hidden" value="박기남"><select id="teacherSel" onchange="onTeacherSel()"></select><input id="teacherEtc" placeholder="이름 직접 입력" oninput="onTeacherEtc()" hidden style="margin-top:6px"></div>
   <div class="fld"><label>메인활동</label><select id="startMain" onchange="onMain()"></select></div>
   <div class="fld sub jonly"><label>보조활동 ①</label><select id="sub1sel" onchange="onSub()"></select></div>
   <div class="fld sub jonly"><label>보조활동 ②</label><select id="sub2sel" onchange="onSub()"></select></div>
@@ -385,7 +385,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <div class="wz-bd">
      <div class="wz-row"><label>프로그램명</label><select id="wz-prog" onchange="wzProgChange()"><option value="rec">레크레이션 (도구 레크레이션)</option><option value="sports" disabled>실버 스포츠 — 준비 중</option><option value="cog" disabled>도구 인지 — 준비 중</option></select></div>
      <div class="wz-row"><label>담당 관리자</label><select id="wz-mgr"><option value="서울">서울 · 정상준 (010-2304-0324)</option><option value="인천">인천 · 한수희 (010-8311-1199)</option><option value="수원">수원 · 안지훈 (010-7239-0604)</option></select></div>
-     <div class="wz-2"><div class="wz-row"><label>진행자</label><input id="wz-teacher" value="박기남" oninput="wzPhoneSync()"></div><div class="wz-row"><label>연락처</label><input id="wz-phone" placeholder="예: 010-0000-0000"></div></div>
+     <div class="wz-2"><div class="wz-row"><label>진행자</label><select id="wz-teacher" onchange="wzTeacherSel()"></select><input id="wz-teacherEtc" placeholder="이름 직접 입력" oninput="wzPhoneSync()" hidden style="margin-top:6px"></div><div class="wz-row"><label>연락처</label><input id="wz-phone" placeholder="예: 010-0000-0000"></div></div>
      <div class="wz-2"><div class="wz-row"><label>진행일시</label><input type="date" id="wz-date"></div><div class="wz-row"><label>장소 (센터명)</label><input id="wz-place" placeholder="예: ○○ 노인복지관"></div></div>
      <div class="wz-row"><label>참여자 / 현원</label><input id="wz-people" placeholder="예: 15명 / 18명"></div>
      <div class="wz-row"><label>메인활동 (교구)</label><select id="wz-main" onchange="wzMainChange()"></select></div>
@@ -670,7 +670,33 @@ function buildAll(){
   resetSubsToMain(); fillJournalDefaults(); updateJournalAuto();
   show(CUR);
 }
+// ── 강사↔연락처 매칭(드롭다운) ──
+const TEACHERS=Object.keys(PHONE);
+function fillTeacherSelect(sel){ if(!sel) return; sel.innerHTML=TEACHERS.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')+'<option value="__etc__">직접 입력…</option>'; }
 function onTeacher(){ const nm=(document.getElementById('teacher').value||'').trim(); gPhone=PHONE[nm]||''; rebuildPlan(); show(CUR); }
+function onTeacherSel(){
+  const sel=document.getElementById('teacherSel'), etc=document.getElementById('teacherEtc');
+  if(sel.value==='__etc__'){ etc.hidden=false; etc.focus(); document.getElementById('teacher').value=(etc.value||'').trim(); }
+  else { etc.hidden=true; document.getElementById('teacher').value=sel.value; }
+  onTeacher();
+}
+function onTeacherEtc(){ document.getElementById('teacher').value=(document.getElementById('teacherEtc').value||'').trim(); onTeacher(); }
+// 이름을 강사 필드 전체(숨김 input + 드롭다운/직접입력)에 반영
+function setTeacherName(name){
+  name=(name||'').trim();
+  document.getElementById('teacher').value=name;
+  const sel=document.getElementById('teacherSel'), etc=document.getElementById('teacherEtc');
+  if(!sel) return;
+  if(name && TEACHERS.includes(name)){ sel.value=name; etc.hidden=true; etc.value=''; }
+  else if(name){ sel.value='__etc__'; etc.hidden=false; etc.value=name; }
+  else { sel.value=TEACHERS[0]; etc.hidden=true; }
+}
+function wzTeacherName(){ const s=document.getElementById('wz-teacher'); return s.value==='__etc__' ? (document.getElementById('wz-teacherEtc').value||'').trim() : s.value; }
+function wzTeacherSel(){
+  const sel=document.getElementById('wz-teacher'), etc=document.getElementById('wz-teacherEtc');
+  if(sel.value==='__etc__'){ etc.hidden=false; etc.focus(); document.getElementById('wz-phone').value=''; }
+  else { etc.hidden=true; document.getElementById('wz-phone').value=PHONE[sel.value]||''; }
+}
 function onDate(){ rebuildPlan(); show(CUR); }
 function onMain(){ rebuildPlan(); resetSubsToMain(); updateJournalAuto(); show(CUR); }
 function onSub(){ updateJournalAuto(); if(CUR==='journal'){fillA4();fitActivePage();} }
@@ -895,7 +921,7 @@ function loadJournalInto(r){
   document.getElementById('selectScreen').style.display='none';
   document.getElementById('planScreen').style.display='block';
   // 폼에 값 복원
-  if(r.teacher){ const te=document.getElementById('teacher'); if(te) te.value=r.teacher; }
+  if(r.teacher){ setTeacherName(r.teacher); }
   // 메인활동 인덱스 찾기
   const mi=RING.findIndex(x=>x.main===r.main); if(mi>=0){ document.getElementById('startMain').value=String(mi); }
   // 날짜 복원(년-월-일)
@@ -949,10 +975,12 @@ function renderEvals(){
   if(wzEvalIdx==='c'){ const ta=document.getElementById('wz-eval-custom'); if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);} }
 }
 function pickEval(i){ if(i==='c'){ wzEvalIdx='c'; } else { wzEvalIdx=(wzEvalIdx===i?-1:i); } renderEvals(); }
-function wzPhoneSync(){ const nm=(document.getElementById('wz-teacher').value||'').trim(); if(PHONE[nm]) document.getElementById('wz-phone').value=PHONE[nm]; }
+function wzPhoneSync(){ const nm=wzTeacherName(); if(PHONE[nm]) document.getElementById('wz-phone').value=PHONE[nm]; }
 function openWizard(){
   wzEvalIdx=-1; wzEvalCustom='';
+  fillTeacherSelect(document.getElementById('wz-teacher'));
   document.getElementById('wz-teacher').value='박기남';
+  document.getElementById('wz-teacherEtc').hidden=true; document.getElementById('wz-teacherEtc').value='';
   document.getElementById('wz-phone').value=PHONE['박기남']||'';
   const d=new Date(); document.getElementById('wz-date').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   document.getElementById('wz-place').value=''; document.getElementById('wz-people').value='';
@@ -999,7 +1027,7 @@ function closeWizard(){
 function dateKText(iso){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`; }
 let PENDING=null;
 function submitWizard(){
-  PENDING={ teacher:(document.getElementById('wz-teacher').value||'').trim(), phone:(document.getElementById('wz-phone').value||'').trim(), date:document.getElementById('wz-date').value,
+  PENDING={ teacher:wzTeacherName(), phone:(document.getElementById('wz-phone').value||'').trim(), date:document.getElementById('wz-date').value,
     place:(document.getElementById('wz-place').value||'').trim(), people:(document.getElementById('wz-people').value||'').trim(),
     main:wzMain.value, sub1:wzSub1.value, sub2:wzSub2.value, evalText:(wzEvalIdx==='c'?wzEvalCustom.trim():(wzEvalIdx>=0?EVAL[wzEvalIdx]:'')), mgr:document.getElementById('wz-mgr').value };
   // 스캔 라인이 질문지를 훑으며 '작성 완료' 문서로 바뀜
@@ -1015,7 +1043,7 @@ function finishWizard(){
   const P=PENDING; if(!P) return;
   gPhone=P.phone||PHONE[P.teacher]||'';
   gMgr=mgrOf(P.mgr);
-  document.getElementById('teacher').value=P.teacher;
+  setTeacherName(P.teacher);
   document.getElementById('startMain').value=P.main;
   if(P.date) document.getElementById('startDate').value=P.date;
   document.getElementById('selectScreen').style.display='none';
@@ -1031,6 +1059,8 @@ function finishWizard(){
   _hubReturn=false;
   show('intro');
 }
+// 강사 드롭다운 초기화(편집 패널)
+try{ fillTeacherSelect(document.getElementById('teacherSel')); setTeacherName('박기남'); }catch(e){}
 // 계획서 진입 시 작업 선택 팝업(작성 / 불러오기)
 try{ openMenu(); }catch(e){}
 </script></body></html>
