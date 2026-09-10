@@ -138,17 +138,16 @@ td.c{text-align:center;} .wk{text-align:center;font-weight:800;color:var(--green
 .mon-weeks{flex:1;display:flex;flex-direction:column;gap:9px;min-height:0;margin-bottom:11px;}
 .wk-card{flex:1;display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:#fff;min-height:0;}
 .wk-card:nth-child(even){background:#FAFCFA;}
-.wk-l{width:98px;flex-shrink:0;border-right:1px dashed #d8ddd6;padding-right:10px;display:flex;flex-direction:column;justify-content:center;gap:2px;}
+.wk-l{width:100px;flex-shrink:0;border-right:1px dashed #d8ddd6;padding-right:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:3px;}
 .wk-date{font-size:14px;font-weight:900;color:var(--green-d);}
 .wk-dow{font-size:11.5px;color:var(--sub);font-weight:700;}
-.wk-no{font-size:11px;color:#fff;background:var(--green);border-radius:6px;padding:2px 9px;width:fit-content;margin-top:4px;font-weight:700;}
-.wk-r{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;}
-.wk-main{font-size:15px;font-weight:900;color:#232a22;}
-.wk-desc{font-size:12px;line-height:1.5;color:#41493d;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.wk-tags{display:flex;gap:6px;flex-wrap:wrap;}
-.wk-tag{font-size:11.5px;font-weight:700;color:#7a5a12;background:#FBF3DE;border:1px solid #ecdcae;border-radius:16px;padding:2px 9px;}
-.wk-line{font-size:11.5px;line-height:1.5;color:#3a4038;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.wk-line b{color:var(--green-d);}
+.wk-no{font-size:11px;color:#fff;background:var(--green);border-radius:6px;padding:2px 10px;margin-top:3px;font-weight:700;}
+.wk-r{flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;}
+.wk-desc{font-size:12px;line-height:1.5;color:#41493d;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:-2px 0 0;}
+.wk-tag{font-size:11.5px;font-weight:700;color:#7a5a12;background:#FBF3DE;border:1px solid #ecdcae;border-radius:16px;padding:2px 9px;display:inline-block;}
+.wk-line{font-size:12px;line-height:1.55;color:#3a4038;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.wk-line b{color:var(--green-d);margin-right:3px;}
+.wk-nm{font-weight:900;font-size:13.5px;color:#232a22;}
 .mon-note{border:1px dashed #c9d3cc;background:#F6F9F6;border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:1.55;color:#4a5145;}
 .mon-note b{color:var(--green-d);}
 .mon-foot{text-align:center;font-size:10.5px;color:#a8a598;margin-top:9px;}
@@ -248,6 +247,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .ev.sel{border-color:var(--green);background:#EFF7F2;color:#20241f;}
 .ev.sel:before{border-color:var(--green);background:var(--green);box-shadow:inset 0 0 0 3px #fff;}
 .ev .n{font-weight:800;color:var(--green);margin-right:4px;}
+.ev-ta{width:100%;margin-top:8px;border:1.5px solid var(--green);border-radius:11px;padding:10px 12px;font-size:12.8px;font-family:inherit;line-height:1.6;outline:none;resize:vertical;min-height:70px;background:#F6FBF8;}
 .wz-ft{position:sticky;bottom:0;background:#fff;padding:12px 22px 18px;border-top:1px solid var(--line);}
 .wz-go{width:100%;height:48px;border:0;background:var(--green);color:#fff;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer;}
 .wz-go:hover{background:var(--green-d);}
@@ -414,10 +414,10 @@ function monthlyHTML(){
     const cards=list.map(s=>`<div class="wk-card">
         <div class="wk-l"><div class="wk-date">📅 ${s.date.getMonth()+1}월 ${s.date.getDate()}일</div><div class="wk-dow">${DOW[s.date.getDay()]}요일</div><div class="wk-no">${s.week}주차</div></div>
         <div class="wk-r">
-          <div class="wk-main">🎵 ${esc(s.main)}</div>
-          <div class="wk-desc">${esc(s.desc)}</div>
-          <div class="wk-tags"><span class="wk-tag">🎲 ${esc(s.sub1)}</span><span class="wk-tag">🎲 ${esc(s.sub2)}</span></div>
           <div class="wk-line"><b>🧺 준비물</b> ${esc(s.main)}, ${esc(s.sub1prep)}, ${esc(s.sub2prep)}</div>
+          <div class="wk-line"><b>🎵 메인활동</b> <span class="wk-nm">${esc(s.main)}</span></div>
+          <div class="wk-desc">${esc(s.desc)}</div>
+          <div class="wk-line"><b>🎲 보조활동</b> <span class="wk-tag">${esc(s.sub1)}</span> <span class="wk-tag">${esc(s.sub2)}</span></div>
           <div class="wk-line goal"><b>🎯 목표</b> ${esc(s.goal)}</div>
         </div></div>`).join('');
     out+=`<div class="page portrait sec sec-monthly" data-s="monthly"><div class="mon-inner">
@@ -633,7 +633,7 @@ const EVAL=[
  '체력적으로 힘들어하시는 어르신께는 난이도를 조절하여 진행하였고, 개별적으로 도움을 드려 모든 어르신이 끝까지 참여하실 수 있도록 지원하였습니다.',
  '전반적으로 만족도가 매우 높았고 회상 대화에서도 활발한 참여가 이어졌으며, 다음 「도구 레크레이션」 회차 활동을 기대하시는 반응을 보이셨습니다.'
 ];
-let wzEvalIdx=-1;
+let wzEvalIdx=-1; let wzEvalCustom='';
 const wzMain=document.getElementById('wz-main'), wzSub1=document.getElementById('wz-sub1'), wzSub2=document.getElementById('wz-sub2');
 RING.forEach((r,i)=>{const o=document.createElement('option');o.value=i;o.textContent=r.main;wzMain.appendChild(o);});
 SUBS.forEach(s=>{const a=document.createElement('option');a.value=s.name;a.textContent=s.name;wzSub1.appendChild(a);const b=document.createElement('option');b.value=s.name;b.textContent=s.name;wzSub2.appendChild(b);});
@@ -641,12 +641,16 @@ function wzResetSubs(){ const r=RING[parseInt(wzMain.value||'0')]; wzSub1.value=
 function wzMainChange(){ wzResetSubs(); }
 function wzProgChange(){}
 function renderEvals(){
-  document.getElementById('wz-evs').innerHTML=EVAL.map((t,i)=>`<div class="ev${i===wzEvalIdx?' sel':''}" onclick="pickEval(${i})"><span class="n">${i+1}.</span>${esc(t)}</div>`).join('');
+  const list=EVAL.map((t,i)=>`<div class="ev${i===wzEvalIdx?' sel':''}" onclick="pickEval(${i})"><span class="n">${i+1}.</span>${esc(t)}</div>`).join('');
+  const cust=`<div class="ev${wzEvalIdx==='c'?' sel':''}" onclick="pickEval('c')"><span class="n">✏️</span>직접 입력</div>`+
+    `<textarea id="wz-eval-custom" class="ev-ta" placeholder="평가를 직접 작성하세요" oninput="wzEvalCustom=this.value" style="display:${wzEvalIdx==='c'?'block':'none'}">${esc(wzEvalCustom)}</textarea>`;
+  document.getElementById('wz-evs').innerHTML=list+cust;
+  if(wzEvalIdx==='c'){ const ta=document.getElementById('wz-eval-custom'); if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);} }
 }
-function pickEval(i){ wzEvalIdx=(wzEvalIdx===i?-1:i); renderEvals(); }
+function pickEval(i){ if(i==='c'){ wzEvalIdx='c'; } else { wzEvalIdx=(wzEvalIdx===i?-1:i); } renderEvals(); }
 function wzPhoneSync(){ const nm=(document.getElementById('wz-teacher').value||'').trim(); if(PHONE[nm]) document.getElementById('wz-phone').value=PHONE[nm]; }
 function openWizard(){
-  wzEvalIdx=-1;
+  wzEvalIdx=-1; wzEvalCustom='';
   document.getElementById('wz-teacher').value='박기남';
   document.getElementById('wz-phone').value=PHONE['박기남']||'';
   const d=new Date(); document.getElementById('wz-date').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -661,7 +665,7 @@ let PENDING=null;
 function submitWizard(){
   PENDING={ teacher:(document.getElementById('wz-teacher').value||'').trim(), phone:(document.getElementById('wz-phone').value||'').trim(), date:document.getElementById('wz-date').value,
     place:(document.getElementById('wz-place').value||'').trim(), people:(document.getElementById('wz-people').value||'').trim(),
-    main:wzMain.value, sub1:wzSub1.value, sub2:wzSub2.value, evalIdx:wzEvalIdx, mgr:document.getElementById('wz-mgr').value };
+    main:wzMain.value, sub1:wzSub1.value, sub2:wzSub2.value, evalText:(wzEvalIdx==='c'?wzEvalCustom.trim():(wzEvalIdx>=0?EVAL[wzEvalIdx]:'')), mgr:document.getElementById('wz-mgr').value };
   // 스캔 라인이 질문지를 훑으며 '작성 완료' 문서로 바뀜
   const ov=document.getElementById('wzOv'), card=ov.querySelector('.wz');
   card.scrollTop=0;
@@ -687,7 +691,9 @@ function finishWizard(){
   const jp=document.getElementById('j-place'); if(jp) jp.value=P.place;
   const jpe=document.getElementById('j-people'); if(jpe) jpe.value=P.people;
   updateJournalAuto();
-  const je=document.getElementById('j-eval'); if(je && P.evalIdx>=0) je.value=EVAL[P.evalIdx];
+  const je=document.getElementById('j-eval'); if(je && P.evalText) je.value=P.evalText;
   show('intro');
 }
+// 계획서 진입 시 사전 질문 팝업 바로 표시
+try{ openWizard(); }catch(e){}
 </script></body></html>
