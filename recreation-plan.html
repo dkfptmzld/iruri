@@ -777,6 +777,7 @@ async function saveHWP(){
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
     _toast('✅ WORD 저장 완료');
   }catch(e){ _toastHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
+  setTimeout(autoSaveJournal,150);  // WORD 저장해도 일지 자동 저장
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
 
@@ -837,41 +838,47 @@ function _journalDocHtml(){
   const css=document.querySelector('style').innerHTML;
   return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:12mm} body{font-family:"맑은 고딕","Malgun Gothic",sans-serif;} '+css+' .sec{display:block!important} input,textarea{display:none}</style></head><body>'+clone.outerHTML+'</body></html>';
 }
+// 일지 페이지를 '현재 탭 전환 없이' 이미지(PDF)+워드로 생성 (오프스크린 캡처)
 async function _buildJournalFiles(){
-  fillA4();
+  const el=document.querySelector('.sec-journal'); if(!el) return null;
+  const wasOn=el.classList.contains('on');
+  const sv={pos:el.style.position,left:el.style.left,top:el.style.top,disp:el.style.display};
+  if(!wasOn){ el.style.position='absolute'; el.style.left='-10000px'; el.style.top='0'; el.style.display='block'; el.classList.add('on'); }
+  try{ fillA4(); }catch(e){}
   if(document.fonts&&document.fonts.ready){ try{await document.fonts.ready;}catch(e){} }
-  const el=document.querySelector('.sec-journal');
-  const {canvas}=await nodeToPNG(el);
-  const jpg=_b64ToU8(canvas.toDataURL('image/jpeg',0.92).split(',')[1]);
-  let [iw,ih]=_jpegSize(jpg); if(!iw||!ih){ iw=canvas.width; ih=canvas.height; }
-  const pdf=_jpegToPdf(jpg,iw,ih);
-  const docHtml=_journalDocHtml();
-  return { pdf:_u8ToB64(pdf), doc:_u8ToB64(new TextEncoder().encode('﻿'+docHtml)) };
+  let out=null;
+  try{
+    const {canvas}=await nodeToPNG(el);
+    const jpg=_b64ToU8(canvas.toDataURL('image/jpeg',0.92).split(',')[1]);
+    let [iw,ih]=_jpegSize(jpg); if(!iw||!ih){ iw=canvas.width; ih=canvas.height; }
+    out={ pdf:_u8ToB64(_jpegToPdf(jpg,iw,ih)), doc:_u8ToB64(new TextEncoder().encode('﻿'+_journalDocHtml())) };
+  }catch(e){ out=null; }
+  if(!wasOn){ el.classList.remove('on'); el.style.position=sv.pos; el.style.left=sv.left; el.style.top=sv.top; el.style.display=sv.disp; }
+  return out;
 }
-async function saveJournalRecord(){
+// 공통 저장: 로컬 누적 + 드라이브(강사→센터→연도) 파일 + 시트 기록
+// silent=true(자동저장): 알림/포커스 없이, 센터명 비었으면 '미지정'으로라도 저장
+async function _persistJournal(silent){
   const rec=collectJournal();
-  if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n프로그램 일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
-  rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;  // 같은 센터·강사·날짜면 덮어쓰기
-  const base=`${rec.year}${rec.month.padStart(2,'0')}${rec.day.padStart(2,'0')}_프로그램일지`;  // 파일명 접두어
-  // 1) 즉시 로컬 누적(오프라인에서도 보존)
+  if(!rec.center){ if(silent){ rec.center='미지정'; } else { alert('센터명(장소)을 먼저 입력해 주세요.\n프로그램 일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; } }
+  rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;
+  const base=`${rec.year}${rec.month.padStart(2,'0')}${rec.day.padStart(2,'0')}_프로그램일지`;
   const list=_loadJournals(); const li=list.findIndex(x=>x.id===rec.id);
   if(li>=0) list[li]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
   _saveJournalsLocal(list);
-  // 2) PDF·WORD 만들어 드라이브(강사→센터→연도)에 저장 + 시트 기록
-  _toast('⏳ 파일 만드는 중…', 0);
-  const wasCur=CUR; if(CUR!=='journal') show('journal');
-  let files=null;
-  try{ files=await _buildJournalFiles(); }catch(e){ files=null; }
-  if(wasCur!=='journal') show(wasCur);
-  _toast('⏳ 드라이브 저장 중…', 0);
+  if(!silent) _toast('⏳ 저장 중…', 0);
+  let files=null; try{ files=await _buildJournalFiles(); }catch(e){}
   const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
-  Promise.resolve(_gasPostPlan(payload)).then(res=>{
-    if(res&&res.ok){
-      _toast('✅ 드라이브에 저장됐어요');
+  return Promise.resolve(_gasPostPlan(payload)).then(res=>{
+    if(res&&res.ok){ _toast(silent?'📝 일지도 자동 저장됐어요':'✅ 드라이브에 저장됐어요');
       if(res.folderUrl||res.pdfUrl){ const l2=_loadJournals(); const k=l2.findIndex(x=>x.id===rec.id); if(k>=0){ l2[k].folderUrl=res.folderUrl||''; l2[k].pdfUrl=res.pdfUrl||''; l2[k].docUrl=res.docUrl||''; _saveJournalsLocal(l2); } }
-    } else { _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); }
-  }).catch(()=>{ _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); });
+    } else if(!silent){ _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); }
+  }).catch(()=>{ if(!silent) _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); });
 }
+function saveJournalRecord(){ return _persistJournal(false); }
+// PDF·WORD·전체저장 등 내보내기 시 자동으로 일지도 저장(버튼 안 눌러도)
+let _autoSaveT=0;
+function autoSaveJournal(){ const n=Date.now(); if(n-_autoSaveT<2000) return; _autoSaveT=n; try{ _persistJournal(true); }catch(e){} }
 
 // ── 저장된 일지 불러오기 ──
 let _ldRecords=[];
@@ -965,7 +972,7 @@ function loadJournalInto(r){
   closeLoad();
   show('journal');
 }
-window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; });
+window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; setTimeout(autoSaveJournal,150); });
 window.addEventListener('resize',()=>{ if(CUR==='journal')fillA4(); fitActivePage(); if(CUR==='monthly')mcApply(); });
 function pickProgram(p){
   if(p!=='rec') return;
@@ -974,8 +981,9 @@ function pickProgram(p){
   CUR='intro'; buildAll();
 }
 function goSelect(){
+  // 뒤로가기 → '무엇을 하시겠어요?' 작업 선택 팝업으로
   document.getElementById('planScreen').style.display='none';
-  document.getElementById('selectScreen').style.display='block';
+  openMenu();
 }
 // ── 작성 마법사 + 픽셀 로딩 ──
 const EVAL=[
