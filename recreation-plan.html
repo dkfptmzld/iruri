@@ -274,6 +274,21 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .wz.scanning .scan-done{animation:scanReveal 1.15s ease .08s forwards;opacity:1;}
 .wz.scanning .scan-done .chk{animation:chkPop .4s cubic-bezier(.3,1.5,.5,1) 1s forwards;}
 .wz.scanning .scan-bar{animation:scanSweep 1.15s ease .08s forwards;}
+.ld-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.ld-filters select{height:42px;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;font-size:13.5px;font-weight:700;background:#fff;font-family:inherit;color:var(--green-d);}
+.ld-tools{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.ld-refresh{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--green-d);}
+.ld-list{max-height:52vh;overflow-y:auto;padding-right:2px;}
+.ld-grp{font-size:12px;font-weight:900;color:var(--green-d);background:#EAF4EE;border-radius:8px;padding:6px 10px;margin:10px 0 6px;position:sticky;top:0;}
+.ld-item{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:#fff;transition:.12s;}
+.ld-item:hover{border-color:var(--green);background:#F6FBF8;}
+.ld-item .d{font-weight:900;color:#12603E;min-width:70px;font-size:13.5px;}
+.ld-item .m{flex:1;min-width:0;}
+.ld-item .m b{font-size:13.5px;color:#1c231e;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ld-item .m span{font-size:11.5px;color:var(--sub);}
+.ld-item .go{font-size:11px;font-weight:800;color:#fff;background:var(--green);border-radius:7px;padding:6px 9px;white-space:nowrap;}
+.ld-empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 10px;line-height:1.6;}
+@media(max-width:600px){ .ld-filters{grid-template-columns:1fr 1fr;} }
 .wz.scanning .wz-bd,.wz.scanning .wz-ft,.wz.scanning .wz-hd{filter:saturate(.85);}
 @keyframes scanReveal{0%{clip-path:inset(0 0 100% 0)}100%{clip-path:inset(0 0 0 0)}}
 @keyframes scanSweep{0%{opacity:0;top:-26px}7%{opacity:1}93%{opacity:1;top:100%}100%{opacity:0;top:100%}}
@@ -306,6 +321,8 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <button class="btn2" id="pdfBtn" onclick="savePDF()">📄 PDF 저장</button>
    <button class="btn2" id="hwpBtn" onclick="saveHWP()">📝 HWP 저장</button>
    <button class="btn" onclick="doSaveAll()" style="background:#0f5c3a;border-color:#0f5c3a">💾 전체 저장</button>
+   <button class="btn" id="jsaveBtn" onclick="saveJournalRecord()" style="background:#1565c0;border-color:#1565c0">☁️ 일지 저장</button>
+   <button class="btn2" id="jloadBtn" onclick="openLoad()" style="border-color:#1565c0;color:#1565c0">📂 불러오기</button>
    <button class="btn2 ghost" onclick="emailInfo()">📧 이메일</button>
   </div>
  </div>
@@ -329,6 +346,22 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <div class="wz-ft"><button class="wz-go" id="wzGo" onclick="submitWizard()">✍️ 일지 작성하기</button></div>
    <div class="scan-done"><div class="chk">✓</div><div class="t">작성 완료</div><div class="s">활동일지가 만들어졌어요</div></div>
    <div class="scan-bar"></div>
+  </div>
+ </div>
+ <!-- 저장된 일지 불러오기 -->
+ <div class="wz-ov" id="ldOv">
+  <div class="wz" style="max-width:640px">
+   <div class="wz-hd"><div class="t">📂 저장된 활동일지</div><div class="s">센터·강사·년·월별로 저장된 일지를 불러올 수 있어요</div><button class="x" onclick="closeLoad()">✕</button></div>
+   <div class="wz-bd">
+     <div class="ld-filters">
+       <select id="ld-center" onchange="renderLoadList()"></select>
+       <select id="ld-teacher" onchange="renderLoadList()"></select>
+       <select id="ld-year" onchange="renderLoadList()"></select>
+       <select id="ld-month" onchange="renderLoadList()"></select>
+     </div>
+     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div id="ld-list" class="ld-list"></div>
+   </div>
   </div>
  </div>
 <script>
@@ -628,6 +661,131 @@ async function saveHWP(){
   btn.textContent=t0; btn.disabled=false;
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
+
+// ── 활동일지 누적 저장 (센터·강사·년·월·일별) ──
+const GAS_URL_PLAN='https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbBCkZ3pHlkGArHZf1TkEZoNBfPKmRm492Byb_kPpFecgqWXw/exec';
+const LS_JOURNALS='iruri_rec_journals';
+function _loadJournals(){ try{ return JSON.parse(localStorage.getItem(LS_JOURNALS)||'[]'); }catch(e){ return []; } }
+function _saveJournalsLocal(arr){ try{ localStorage.setItem(LS_JOURNALS, JSON.stringify(arr)); }catch(e){} }
+// GAS 전송: 앱(부모) gasPost 재사용 가능하면 그것을, 아니면 직접 fetch
+function _gasPostPlan(body){
+  try{ if(window.parent && window.parent!==window && typeof window.parent.gasPost==='function') return window.parent.gasPost(body); }catch(e){}
+  return fetch(GAS_URL_PLAN,{method:'POST',body:JSON.stringify(body)}).then(r=>r.text()).then(t=>{ try{return JSON.parse(t);}catch(_){return {ok:false};} });
+}
+function collectJournal(){
+  const iso=(document.getElementById('startDate').value||'').trim();
+  const parts=iso.split('-'); const y=parts[0]||'', mo=String(parseInt(parts[1]||'0',10)||''), da=String(parseInt(parts[2]||'0',10)||'');
+  let dow=''; if(iso){ const dd=new Date(iso+'T00:00:00'); if(!isNaN(dd)) dow=DOW[dd.getDay()]+'요일'; }
+  const r=RING[parseInt(document.getElementById('startMain').value||'0',10)]||{};
+  const goalEl=document.getElementById('j-goal');
+  return {
+    center:(document.getElementById('j-place').value||'').trim(),
+    region:(gMgr&&gMgr.region)||'',
+    teacher:(document.getElementById('teacher').value||'').trim(),
+    program:'도구 레크레이션',
+    year:y, month:mo, day:da, dow:dow,
+    dateText:(document.getElementById('j-date').value||'').trim(),
+    people:(document.getElementById('j-people').value||'').trim(),
+    main:r.main||'', sub1:(document.getElementById('sub1sel').value||''), sub2:(document.getElementById('sub2sel').value||''),
+    goal:goalEl?(goalEl.textContent||'').trim():'',
+    evalText:(document.getElementById('j-eval').value||'').trim()
+  };
+}
+function saveJournalRecord(){
+  const btn=document.getElementById('jsaveBtn'); const t0=btn.textContent;
+  const rec=collectJournal();
+  if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n활동일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
+  rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;  // 같은 센터·강사·날짜면 덮어쓰기
+  // 1) 즉시 로컬 누적(오프라인에서도 보존)
+  const list=_loadJournals(); const i=list.findIndex(x=>x.id===rec.id);
+  if(i>=0) list[i]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
+  _saveJournalsLocal(list);
+  // 2) 백그라운드로 GAS(구글시트) 동기화
+  btn.textContent='⏳ 저장 중…'; btn.disabled=true;
+  _gasPostPlan({action:'saveJournalRecord', data:rec}).then(res=>{
+    if(res&&res.ok){ btn.textContent='✅ 저장됨'; }
+    else{ btn.textContent='📥 기기에 저장(동기화 대기)'; }
+    setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200);
+  }).catch(()=>{ btn.textContent='📥 기기에 저장(동기화 대기)'; setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200); });
+}
+
+// ── 저장된 일지 불러오기 ──
+let _ldRecords=[];
+function _mergeRecords(server){
+  const map={}; (server||[]).forEach(r=>{ if(r&&r.id) map[r.id]=r; });
+  _loadJournals().forEach(r=>{ if(r&&r.id && !map[r.id]) map[r.id]=r; });  // 서버에 없는 로컬(미동기화)만 보강
+  const arr=Object.values(map);
+  arr.sort((a,b)=>{ const ka=`${a.year||''}${String(a.month||'').padStart(2,'0')}${String(a.day||'').padStart(2,'0')}`; const kb=`${b.year||''}${String(b.month||'').padStart(2,'0')}${String(b.day||'').padStart(2,'0')}`; return kb.localeCompare(ka); });
+  return arr;
+}
+function openLoad(refresh){
+  const list=document.getElementById('ld-list');
+  document.getElementById('ldOv').classList.add('on');
+  list.innerHTML='<div class="ld-empty">⏳ 불러오는 중…</div>';
+  // 서버가 느려도 최대 8초 뒤엔 로컬 데이터로라도 화면을 채운다
+  let done=false;
+  const paint=(server)=>{ if(done) return; done=true; _ldRecords=_mergeRecords(server); _fillLoadFilters(); renderLoadList(); };
+  const timer=setTimeout(()=>paint(null), 8000);
+  _gasGetJournals().then(server=>{ clearTimeout(timer); paint(server); })
+                   .catch(()=>{ clearTimeout(timer); paint(null); });
+}
+function closeLoad(){ document.getElementById('ldOv').classList.remove('on'); }
+function _gasGetJournals(){
+  // GET 조회: 부모 gasGet 재사용 가능하면 그것을, 아니면 직접 fetch
+  try{ if(window.parent && window.parent!==window && typeof window.parent.gasGet==='function'){ return window.parent.gasGet({action:'getJournalRecords'}).then(r=>(r&&r.records)||[]); } }catch(e){}
+  const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),9000);
+  return fetch(GAS_URL_PLAN+'?action=getJournalRecords',{signal:ctrl.signal}).then(r=>r.text()).then(t=>{ try{const j=JSON.parse(t); return (j&&j.records)||[];}catch(_){return [];} }).finally(()=>clearTimeout(to));
+}
+function _uniqSorted(vals,{num}={}){ const s=[...new Set(vals.filter(v=>v!==''&&v!=null).map(String))]; s.sort((a,b)=> num?(Number(b)-Number(a)):a.localeCompare(b,'ko')); return s; }
+function _fillLoadFilters(){
+  const cur={c:document.getElementById('ld-center').value,t:document.getElementById('ld-teacher').value,y:document.getElementById('ld-year').value,m:document.getElementById('ld-month').value};
+  const opt=(arr,all)=>`<option value="">${all}</option>`+arr.map(v=>`<option>${esc(v)}</option>`).join('');
+  document.getElementById('ld-center').innerHTML =opt(_uniqSorted(_ldRecords.map(r=>r.center)),'전체 센터');
+  document.getElementById('ld-teacher').innerHTML=opt(_uniqSorted(_ldRecords.map(r=>r.teacher)),'전체 강사');
+  document.getElementById('ld-year').innerHTML  ='<option value="">전체 연도</option>'+_uniqSorted(_ldRecords.map(r=>r.year),{num:1}).map(y=>`<option value="${esc(y)}">${esc(y)}년</option>`).join('');
+  document.getElementById('ld-month').innerHTML ='<option value="">전체 월</option>'+_uniqSorted(_ldRecords.map(r=>r.month),{num:1}).map(m=>`<option value="${esc(m)}">${esc(m)}월</option>`).join('');
+  // 이전 선택 복구
+  const set=(id,v)=>{ const el=document.getElementById(id); if([...el.options].some(o=>o.value===v)) el.value=v; };
+  set('ld-center',cur.c); set('ld-teacher',cur.t); set('ld-year',cur.y); set('ld-month',cur.m);
+}
+function renderLoadList(){
+  const c=document.getElementById('ld-center').value, t=document.getElementById('ld-teacher').value, y=document.getElementById('ld-year').value, m=document.getElementById('ld-month').value;
+  const rows=_ldRecords.filter(r=> (!c||String(r.center)===c) && (!t||String(r.teacher)===t) && (!y||String(r.year)===y) && (!m||String(r.month)===m) );
+  const list=document.getElementById('ld-list');
+  document.getElementById('ld-count').textContent=`총 ${rows.length}건`;
+  if(!rows.length){ list.innerHTML='<div class="ld-empty">저장된 일지가 없어요.<br>일지를 작성한 뒤 <b>☁️ 일지 저장</b>을 누르면 여기에 쌓입니다.</div>'; return; }
+  let html='', lastGrp='';
+  rows.forEach((r,i)=>{
+    const grp=`${r.center||'(센터 미입력)'} · ${r.year||''}년 ${r.month||''}월`;
+    if(grp!==lastGrp){ html+=`<div class="ld-grp">📁 ${esc(grp)}</div>`; lastGrp=grp; }
+    const dstr=`${r.month||''}/${r.day||''} ${r.dow?('('+String(r.dow).replace('요일','')+')'):''}`;
+    const sub=[r.teacher,r.main].filter(Boolean).join(' · ');
+    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'활동일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span></div><div class="go">불러오기 →</div></div>`;
+  });
+  list.innerHTML=html;
+}
+function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
+function loadJournalInto(r){
+  // 폼에 값 복원
+  if(r.teacher){ const te=document.getElementById('teacher'); if(te) te.value=r.teacher; }
+  // 메인활동 인덱스 찾기
+  const mi=RING.findIndex(x=>x.main===r.main); if(mi>=0){ document.getElementById('startMain').value=String(mi); }
+  // 날짜 복원(년-월-일)
+  if(r.year&&r.month&&r.day){ const iso=`${r.year}-${String(r.month).padStart(2,'0')}-${String(r.day).padStart(2,'0')}`; const sd=document.getElementById('startDate'); if(sd) sd.value=iso; }
+  rebuildPlan();
+  // 보조활동 복원
+  if(r.sub1){ const s1=document.getElementById('sub1sel'); if(s1&&[...s1.options].some(o=>o.value===r.sub1)) s1.value=r.sub1; }
+  if(r.sub2){ const s2=document.getElementById('sub2sel'); if(s2&&[...s2.options].some(o=>o.value===r.sub2)) s2.value=r.sub2; }
+  updateJournalAuto();
+  // 일지 세부 필드 복원
+  const jt=document.getElementById('j-teacher'); if(jt&&r.teacher) jt.value=`${r.teacher} 강사`;
+  const jd=document.getElementById('j-date'); if(jd&&r.dateText) jd.value=r.dateText;
+  const jp=document.getElementById('j-place'); if(jp) jp.value=r.center||'';
+  const jpe=document.getElementById('j-people'); if(jpe) jpe.value=r.people||'';
+  const je=document.getElementById('j-eval'); if(je) je.value=r.evalText||'';
+  closeLoad();
+  show('journal');
+}
 window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; });
 window.addEventListener('resize',()=>{ if(CUR==='journal')fillA4(); fitActivePage(); if(CUR==='monthly')mcApply(); });
 function pickProgram(p){
