@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v16.81">
+<meta property="og:title" content="수업기록표 정산 시스템 v16.82">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v16.81">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v16.82">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v16.81</title>
+<title>수업기록표 정산 시스템 v16.82</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1598,6 +1598,11 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#C2410C,#B23A1E);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;">📞</div>
  <div style="font-size:16px;font-weight:700;color:#B23A1E;margin-bottom:8px;">비상연락망</div>
  <div style="font-size:12px;color:#B08070;line-height:1.6;">강사 연락처 · 권한 필요<br>눌러서 바로 전화</div>
+ </div>
+ <div role="button" tabindex="0" id="card-plan" aria-label="계획서 — 소개서·연간·월간·활동일지 작성" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; _goPlan()" style="background: white; border: 2px solid #BBD9C6; border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26,122,80,.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.22)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#BBD9C6';">
+ <div style="width:56px;height:56px;background:linear-gradient(135deg,#2E8B57,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;">🗓️</div>
+ <div style="font-size:16px;font-weight:700;color:#1A7A50;margin-bottom:8px;">계획서</div>
+ <div style="font-size:12px;color:#6B8E7B;line-height:1.6;">소개서·연간·월간<br>활동일지 자동 작성</div>
  </div>
   <!-- 커스텀 앱 카드 동적 렌더 -->
   <div id="landingCustomCards" style="display:contents;"></div>
@@ -4155,7 +4160,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v16.81';
+const SYSTEM_VERSION='v16.82';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15163,6 +15168,21 @@ function _goEmergency(){
  }
  openEmergencyContacts();
 }
+// v16.82: 계획서 — 소개서·연간·월간·활동일지 도구(별도 페이지)를 전체화면 오버레이(iframe)로 실행
+function _goPlan(){
+ let ov=document.getElementById('planAppOverlay');
+ if(!ov){
+  ov=document.createElement('div'); ov.id='planAppOverlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:100000;background:#EEECE6;display:flex;flex-direction:column;';
+  ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
+   +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
+   +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
+   +'<iframe id="planAppFrame" src="recreation-plan.html" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+  document.body.appendChild(ov);
+ } else { ov.style.display='flex'; }
+ try{ document.body.style.overflow='hidden'; }catch(_){}
+}
+function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
 // v15.41: 랜딩 카드는 항상 표시. 권한 없는 서비스는 클릭 시 안내 팝업으로 차단(showAdminLogin/_goCert/_clickCustomCard).
 //         카드 숨김을 없애 캐러셀 빈 슬롯/점 문제도 제거. 마스터에게만 권한관리 버튼 노출.
 function _applyLandingPerms(){
