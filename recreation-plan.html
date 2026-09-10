@@ -300,6 +300,8 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .ld-links{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
 .ld-link{font-size:10.5px;font-weight:700;color:#1565c0;border:1px solid #cfe0f5;background:#f2f7fd;border-radius:6px;padding:3px 7px;text-decoration:none;}
 .ld-link:hover{background:#e3eefb;}
+.ld-del{font-size:10.5px;font-weight:700;color:#c0392b;border:1px solid #f3c9c4;background:#fdf2f1;border-radius:6px;padding:3px 7px;cursor:pointer;font-family:inherit;}
+.ld-del:hover{background:#f9e2df;}
 .menu-btn{display:flex;align-items:center;gap:13px;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:16px 16px;margin-bottom:12px;cursor:pointer;text-align:left;transition:.13s;font-family:inherit;}
 .menu-btn:hover{border-color:var(--green);background:#F6FBF8;transform:translateY(-1px);box-shadow:0 6px 18px rgba(18,96,62,.10);}
 .menu-btn.primary{background:linear-gradient(135deg,var(--green),#2E9166);border-color:transparent;}
@@ -332,6 +334,12 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 /* 토스트 알림 */
 #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#12321f;color:#fff;font-size:13.5px;font-weight:700;padding:12px 20px;border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s;z-index:9999;max-width:88%;text-align:center;}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+#saveSpin{position:fixed;inset:0;z-index:12000;display:none;align-items:center;justify-content:center;background:rgba(240,247,242,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+#saveSpin.on{display:flex;}
+#saveSpin .ss-box{display:flex;flex-direction:column;align-items:center;gap:14px;background:#fff;padding:26px 34px;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.22);}
+#saveSpin .ss-ring{width:44px;height:44px;border:4px solid #d8ece0;border-top-color:var(--green,#1f8a4c);border-radius:50%;animation:ssSpin .8s linear infinite;}
+#saveSpin .ss-msg{font-size:14px;font-weight:800;color:#12603E;letter-spacing:.3px;}
+@keyframes ssSpin{to{transform:rotate(360deg);}}
 @media(max-width:600px){ .baract{gap:6px;} .iconbtn{padding:0 10px;font-size:12px;} .editbar{padding:11px 14px;} }
 .ld-empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 10px;line-height:1.6;}
 @media(max-width:600px){ .ld-filters{grid-template-columns:1fr 1fr;} }
@@ -353,7 +361,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  <div id="planScreen" style="display:none;">
  <div class="bar">
   <button class="backbtn" onclick="goSelect()">←</button>
-  <h1><span class="leaf">🌳</span> 레크레이션</h1>
+  <h1><span class="leaf">🌳</span> 도구 레크레이션</h1>
   <div class="tabs">
    <button class="tab on" data-s="intro" onclick="show('intro')">소개서</button>
    <button class="tab" data-s="annual" onclick="show('annual')">연간계획표</button>
@@ -393,7 +401,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   <div class="wz">
    <div class="wz-hd"><div class="t">🌳 계획서 · 프로그램 일지 작성</div><div class="s">프로그램과 오늘 활동 내용을 입력하면 일지가 자동으로 완성돼요</div><button class="x" onclick="closeWizard()">✕</button></div>
    <div class="wz-bd">
-     <div class="wz-row"><label>프로그램명</label><select id="wz-prog" onchange="wzProgChange()"><option value="rec">레크레이션 (도구 레크레이션)</option><option value="sports" disabled>실버 스포츠 — 준비 중</option><option value="cog" disabled>도구 인지 — 준비 중</option></select></div>
+     <div class="wz-row"><label>프로그램명</label><select id="wz-prog" onchange="wzProgChange()"><option value="rec">도구 레크레이션</option><option value="sports" disabled>실버 스포츠 — 준비 중</option><option value="cog" disabled>도구 인지 — 준비 중</option></select></div>
      <div class="wz-row"><label>담당 관리자</label><select id="wz-mgr"><option value="서울">서울 · 정상준 (010-2304-0324)</option><option value="인천">인천 · 한수희 (010-8311-1199)</option><option value="수원">수원 · 안지훈 (010-7239-0604)</option></select></div>
      <div class="wz-2"><div class="wz-row"><label>진행자</label><select id="wz-teacher" onchange="wzTeacherSel()"></select><input id="wz-teacherEtc" placeholder="이름 직접 입력" oninput="wzPhoneSync()" hidden style="margin-top:6px"></div><div class="wz-row"><label>연락처</label><input id="wz-phone" placeholder="예: 010-0000-0000"></div></div>
      <div class="wz-2"><div class="wz-row"><label>진행일시</label><input type="date" id="wz-date"></div><div class="wz-row"><label>장소 (센터명)</label><input id="wz-place" placeholder="예: ○○ 노인복지관"></div></div>
@@ -408,6 +416,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   </div>
  </div>
  <div id="toast"></div>
+ <div id="saveSpin"><div class="ss-box"><div class="ss-ring"></div><div class="ss-msg">저장 중…</div></div></div>
  <!-- 작업 선택 팝업 -->
  <div class="wz-ov" id="menuOv">
   <div class="wz" style="max-width:440px">
@@ -532,7 +541,7 @@ function annualHTML(){
     <td class="dt">${s.date?fmt(s.date)+' ('+DOW[s.date.getDay()]+')':''}</td></tr>`).join('');
   return `<div class="page land sec sec-annual" data-s="annual"><div class="doc-pad">
     ${letterhead('연간계획표', true)}
-    <div class="doc-title">${esc(y)} 레크레이션 연간계획표</div>
+    <div class="doc-title">${esc(y)} 도구 레크레이션 연간계획표</div>
     <div class="doc-sub">실버 도구 레크레이션 · 총 52주</div>
     <table><colgroup><col style="width:38px"><col style="width:58px"><col><col style="width:66px"><col style="width:118px"><col style="width:66px"><col style="width:118px"><col style="width:96px"></colgroup>
       <thead><tr><th>주차</th><th>메인활동</th><th>활동설명</th><th>활동1</th><th>준비물</th><th>활동2</th><th>준비물</th><th>예정 날짜</th></tr></thead><tbody>${rows}</tbody></table>
@@ -560,7 +569,7 @@ function monthlyHTML(){
         </div></div>`).join('');
     out+=`<div class="page portrait sec sec-monthly" data-s="monthly"><div class="mon-inner">
       ${letterhead(`월간계획서<br>${yy}년 ${mi}월`, true)}
-      <div class="mon-title">${yy}년 ${mi}월 <span>레크레이션 월간계획서</span></div>
+      <div class="mon-title">${yy}년 ${mi}월 <span>도구 레크레이션 월간계획서</span></div>
       <div class="mon-meta">
         <div class="mm"><span class="mm-k">프로그램</span><span class="mm-v">도구 레크레이션</span></div>
         <div class="mm"><span class="mm-k">진행자</span><span class="mm-v">${host}</span></div>
@@ -741,12 +750,12 @@ function show(s){
   if(mon){ mcReset(); requestAnimationFrame(mcApply); } else { stage.style.height=''; }
 }
 const CLR=['pr-plan','pr-journal','pr-all','pr-intro','pr-annual','pr-monthly'];
-function docNameOf(s){ return {intro:'레크레이션_소개서',annual:'레크레이션_연간계획표',monthly:'레크레이션_월간계획서',journal:'레크레이션_프로그램일지'}[s]||'문서'; }
+function docNameOf(s){ return {intro:'도구 레크레이션_소개서',annual:'도구 레크레이션_연간계획표',monthly:'도구 레크레이션_월간계획서',journal:'도구 레크레이션_프로그램일지'}[s]||'문서'; }
 function datePrefix(){ const d=(document.getElementById('startDate')||{}).value||''; const n=d.replace(/-/g,''); return n?n+'_':''; }
 function fileBase(s){ return datePrefix()+docNameOf(s); }
 const _origTitle=document.title;
 function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); document.title=fileBase(CUR); window.print(); }
-function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title=datePrefix()+'레크레이션_계획서_전체'; window.print(); }
+function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title=datePrefix()+'도구 레크레이션_계획서_전체'; window.print(); }
 // 페이지 요소를 화면 그대로 이미지로 렌더 (레이아웃·글꼴 유지)
 function nodeToPNG(el){
   return new Promise((resolve,reject)=>{
@@ -766,7 +775,7 @@ function nodeToPNG(el){
 async function saveHWP(){
   const sel={intro:'.sec-intro',annual:'.sec-annual',monthly:'.sec-monthly',journal:'.sec-journal'}[CUR];
   const nodes=[...document.querySelectorAll(sel)]; if(!nodes.length) return;
-  _toast('⏳ WORD 저장 중…', 0);
+  _spin('WORD 저장 중…');
   try{
     if(CUR==='journal') fillA4();
     if(document.fonts&&document.fonts.ready){ try{await document.fonts.ready;}catch(e){} }
@@ -775,8 +784,8 @@ async function saveHWP(){
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:6mm} img{display:block;margin:0 auto}</style></head><body>'+imgs+'</body></html>';
     const blob=new Blob(['﻿'+html],{type:'application/msword'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-    _toast('✅ WORD 저장 완료');
-  }catch(e){ _toastHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
+    _spinHide(); _toast('✅ WORD 저장 완료');
+  }catch(e){ _spinHide(); _toastHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
   setTimeout(autoSaveJournal,150);  // WORD 저장해도 일지 자동 저장
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
@@ -866,14 +875,15 @@ async function _persistJournal(silent){
   const list=_loadJournals(); const li=list.findIndex(x=>x.id===rec.id);
   if(li>=0) list[li]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
   _saveJournalsLocal(list);
-  if(!silent) _toast('⏳ 저장 중…', 0);
+  if(!silent) _spin('저장 중…');
   let files=null; try{ files=await _buildJournalFiles(); }catch(e){}
   const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
   return Promise.resolve(_gasPostPlan(payload)).then(res=>{
+    if(!silent) _spinHide();
     if(res&&res.ok){ _toast(silent?'📝 일지도 자동 저장됐어요':'✅ 드라이브에 저장됐어요');
       if(res.folderUrl||res.pdfUrl){ const l2=_loadJournals(); const k=l2.findIndex(x=>x.id===rec.id); if(k>=0){ l2[k].folderUrl=res.folderUrl||''; l2[k].pdfUrl=res.pdfUrl||''; l2[k].docUrl=res.docUrl||''; _saveJournalsLocal(l2); } }
     } else if(!silent){ _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); }
-  }).catch(()=>{ if(!silent) _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); });
+  }).catch(()=>{ if(!silent){ _spinHide(); _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); } });
 }
 function saveJournalRecord(){ return _persistJournal(false); }
 // PDF·WORD·전체저장 등 내보내기 시 자동으로 일지도 저장(버튼 안 눌러도)
@@ -942,11 +952,25 @@ function renderLoadList(){
     if(r.pdfUrl) links+=`<a class="ld-link" href="${esc(r.pdfUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 PDF</a>`;
     if(r.docUrl) links+=`<a class="ld-link" href="${esc(r.docUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📝 Word</a>`;
     if(r.folderUrl) links+=`<a class="ld-link" href="${esc(r.folderUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📂 폴더</a>`;
-    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'프로그램 일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span>${links?('<span class="ld-links">'+links+'</span>'):''}</div><div class="go">불러오기 →</div></div>`;
+    const gi=_ldRecords.indexOf(r);
+    links+=`<button type="button" class="ld-del" onclick="event.stopPropagation();deleteJournalAt(${gi})">🗑 삭제</button>`;
+    html+=`<div class="ld-item" onclick="loadJournalAt(${gi})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'프로그램 일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span><span class="ld-links">${links}</span></div><div class="go">불러오기 →</div></div>`;
   });
   list.innerHTML=html;
 }
 function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
+function deleteJournalAt(idx){
+  const r=_ldRecords[idx]; if(!r) return;
+  const label=`${r.main||'프로그램 일지'} (${r.month||''}/${r.day||''}${r.dow?(' '+String(r.dow).replace('요일','')):''})`;
+  if(!confirm(`'${label}' 일지를 삭제할까요?\n드라이브 파일과 목록에서 모두 지워지며, 되돌릴 수 없어요.`)) return;
+  // 1) 기기(localStorage)에서 삭제
+  if(r.id){ _saveJournalsLocal(_loadJournals().filter(x=>x.id!==r.id)); }
+  // 2) 화면 즉시 반영
+  _ldRecords=_ldRecords.filter(x=>x!==r); _fillLoadFilters(); renderLoadList();
+  _toast('🗑 삭제됐어요');
+  // 3) 서버(구글시트 + 드라이브) 백그라운드 삭제
+  if(r.id){ Promise.resolve(_gasPostPlan({action:'deleteJournalRecord', id:r.id})).catch(()=>{}); }
+}
 function loadJournalInto(r){
   // 메뉴에서 바로 불러온 경우에도 편집 화면이 보이도록 전환
   _hubReturn=false;
@@ -1051,6 +1075,8 @@ document.addEventListener('click',(e)=>{ const w=e.target.closest('.menu-wrap');
 let _toastT=null;
 function _toast(msg,ms){ const el=document.getElementById('toast'); if(!el) return; el.textContent=msg; el.classList.add('on'); if(_toastT) clearTimeout(_toastT); if(ms!==0) _toastT=setTimeout(()=>el.classList.remove('on'), ms||2200); }
 function _toastHide(){ const el=document.getElementById('toast'); if(el) el.classList.remove('on'); }
+function _spin(msg){ const el=document.getElementById('saveSpin'); if(!el) return; const m=el.querySelector('.ss-msg'); if(m) m.textContent=msg||'저장 중…'; el.classList.add('on'); }
+function _spinHide(){ const el=document.getElementById('saveSpin'); if(el) el.classList.remove('on'); }
 function closeWizard(){
   document.getElementById('wzOv').classList.remove('on');
   if(document.getElementById('planScreen').style.display==='block') return;  // 이미 작성 화면이면 그대로

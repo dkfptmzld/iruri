@@ -115,6 +115,7 @@ function doPost(e) {
     if (action === 'submitScheduleRequest') return response(submitScheduleRequest(body));            // v16.05
     if (action === 'resolveScheduleRequest')return response(resolveScheduleRequest(body.id, body.status));   // v16.05
     if (action === 'saveJournalRecord')     return response(saveJournalRecord(body.data));   // v16.91: 활동일지 누적 저장
+    if (action === 'deleteJournalRecord')   return response(deleteJournalRecord(body.id));   // 프로그램 일지 삭제
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
   finally { if (_lock) { try { _lock.releaseLock(); } catch (_e) {} } }
@@ -283,6 +284,30 @@ function getJournalRecords(center, teacher, year, month, region) {
     });
   }
   return { ok: true, records: out };
+}
+
+/* 저장된 프로그램 일지 삭제 — 고유ID로 시트 줄과 드라이브 파일(PDF·WORD)을 함께 지운다. */
+function deleteJournalRecord(id) {
+  if (!id) return { ok: false, message: '삭제할 ID가 없어요' };
+  const sheet = getSheet(SHEET_JOURNAL);
+  const last = sheet.getLastRow();
+  if (last < 2) return { ok: true, deleted: false };
+  const ids = sheet.getRange(2, 17, last - 1, 1).getValues();  // 17번째 열 = 고유ID
+  for (let i = 0; i < ids.length; i++) {
+    if ((ids[i][0] || '').toString() === id.toString()) {
+      // 드라이브 파일(PDF·WORD) 휴지통으로
+      try {
+        const urls = sheet.getRange(i + 2, 19, 1, 2).getValues()[0];  // 19=PDF, 20=WORD
+        [urls[0], urls[1]].forEach(function (u) {
+          const m = u && u.toString().match(/\/d\/([^/]+)/);
+          if (m) { try { DriveApp.getFileById(m[1]).setTrashed(true); } catch (e) {} }
+        });
+      } catch (e) { /* 파일 삭제 실패해도 시트 줄은 지운다 */ }
+      sheet.deleteRow(i + 2);
+      return { ok: true, deleted: true, id: id };
+    }
+  }
+  return { ok: true, deleted: false };
 }
 
 /* ════════ 신규 가입 승인 ════════ */
