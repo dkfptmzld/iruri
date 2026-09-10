@@ -189,53 +189,76 @@ function getSheet(name) {
     if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태','휴대폰','주소']);
     if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','메시지','요청시각','상태','처리시각']);
     if (name === SHEET_CTOMB)    sheet.appendRow(['센터명','지역','삭제시각']);
-    if (name === SHEET_JOURNAL)  sheet.appendRow(['저장시각','센터','지역','강사','프로그램','년','월','일','요일','진행일시','참여자','메인활동','보조활동①','보조활동②','활동목표','특이사항/총평','고유ID']);
+    if (name === SHEET_JOURNAL)  sheet.appendRow(['저장시각','센터','지역','강사','프로그램','년','월','일','요일','진행일시','참여자','메인활동','보조활동①','보조활동②','활동목표','특이사항/총평','고유ID','폴더URL','PDF','WORD']);
   }
   return sheet;
 }
 
-/* ════════ 활동일지 누적 (v16.91) ════════
- *  계획서 도구에서 작성한 활동일지를 '활동일지' 시트에 한 줄씩 쌓는다.
- *  센터·강사·년·월·일 컬럼이 따로 있어 시트에서 바로 필터/피벗으로 조회 가능.
- *  같은 고유ID가 이미 있으면(같은 일지 재저장) 그 줄을 덮어써서 중복을 막는다. */
+/* ════════ 활동일지 누적 (v16.91~v16.93) ════════
+ *  계획서 도구에서 작성한 활동일지를:
+ *   1) 구글 드라이브에 '활동일지 / 강사 / 센터 / 연도' 폴더로 PDF·WORD 파일 저장
+ *      (자격증 발급과 같은 폴더+파일 방식)
+ *   2) '활동일지' 시트에 한 줄씩 기록(센터·강사·년·월·일 + 파일 URL)
+ *  같은 고유ID(= 년월일_센터_강사)면 시트 줄·드라이브 파일을 덮어써 중복을 막는다. */
+function _subFolder_(parent, name) {
+  const nm = (name || '미지정').toString().trim() || '미지정';
+  const it = parent.getFoldersByName(nm);
+  return it.hasNext() ? it.next() : parent.createFolder(nm);
+}
+function getJournalRoot_() { return _subFolder_(getIruriRoot(), SHEET_JOURNAL); }  // 이루리 / 활동일지
+
 function saveJournalRecord(d) {
   if (!d) return { ok: false, message: '저장할 데이터가 없어요' };
   const center = (d.center || '').toString().trim();
   if (!center) return { ok: false, message: '센터명이 비어 있어요 (활동일지의 장소/센터명을 입력해 주세요)' };
-  const sheet = getSheet(SHEET_JOURNAL);
   const id = (d.id || ('J' + Date.now())).toString();
+
+  // 1) 드라이브: 활동일지 / 강사 / 센터 / 연도 폴더에 파일 저장
+  var folderUrl = '', pdfUrl = '', docUrl = '';
+  try {
+    if (d.files && (d.files.pdf || d.files.doc)) {
+      const yf = _subFolder_(_subFolder_(_subFolder_(getJournalRoot_(), d.teacher), center), (d.year || '').toString());
+      folderUrl = 'https://drive.google.com/drive/folders/' + yf.getId();
+      const saveFile = (f) => {
+        if (!f || !f.data) return '';
+        const ex = yf.getFilesByName(f.name);           // 같은 이름 파일은 휴지통으로(덮어쓰기)
+        while (ex.hasNext()) { ex.next().setTrashed(true); }
+        const blob = Utilities.newBlob(Utilities.base64Decode(f.data), f.mime, f.name);
+        return 'https://drive.google.com/file/d/' + yf.createFile(blob).getId() + '/view';
+      };
+      pdfUrl = saveFile(d.files.pdf);
+      docUrl = saveFile(d.files.doc);
+    }
+  } catch (e) { /* 파일 저장 실패해도 시트 기록은 진행 */ }
+
+  // 2) 시트 기록(덮어쓰기)
+  const sheet = getSheet(SHEET_JOURNAL);
   const row = [
-    new Date(),
-    center,
-    (d.region || '').toString(),
-    (d.teacher || '').toString(),
+    new Date(), center, (d.region || '').toString(), (d.teacher || '').toString(),
     (d.program || '도구 레크레이션').toString(),
-    (d.year || '').toString(),
-    (d.month || '').toString(),
-    (d.day || '').toString(),
-    (d.dow || '').toString(),
-    (d.dateText || '').toString(),
-    (d.people || '').toString(),
-    (d.main || '').toString(),
-    (d.sub1 || '').toString(),
-    (d.sub2 || '').toString(),
-    (d.goal || '').toString(),
-    (d.evalText || '').toString(),
-    id
+    (d.year || '').toString(), (d.month || '').toString(), (d.day || '').toString(), (d.dow || '').toString(),
+    (d.dateText || '').toString(), (d.people || '').toString(),
+    (d.main || '').toString(), (d.sub1 || '').toString(), (d.sub2 || '').toString(),
+    (d.goal || '').toString(), (d.evalText || '').toString(), id,
+    folderUrl, pdfUrl, docUrl
   ];
-  // 고유ID 중복 → 덮어쓰기
   const last = sheet.getLastRow();
   if (last > 1) {
     const ids = sheet.getRange(2, 17, last - 1, 1).getValues();  // 17번째 열 = 고유ID
     for (let i = 0; i < ids.length; i++) {
       if ((ids[i][0] || '').toString() === id) {
+        // 기존 URL 유지(이번에 파일을 안 만들었으면 덮어쓰지 않음)
+        const prev = sheet.getRange(i + 2, 18, 1, 3).getValues()[0];
+        if (!folderUrl && prev[0]) row[17] = prev[0];
+        if (!pdfUrl    && prev[1]) row[18] = prev[1];
+        if (!docUrl    && prev[2]) row[19] = prev[2];
         sheet.getRange(i + 2, 1, 1, row.length).setValues([row]);
-        return { ok: true, updated: true, id: id };
+        return { ok: true, updated: true, id: id, folderUrl: row[17], pdfUrl: row[18], docUrl: row[19] };
       }
     }
   }
   sheet.appendRow(row);
-  return { ok: true, id: id };
+  return { ok: true, id: id, folderUrl: folderUrl, pdfUrl: pdfUrl, docUrl: docUrl };
 }
 
 /* 저장된 활동일지 조회 — 센터/강사/년/월/지역으로 걸러서 돌려준다(비우면 전체). */
@@ -243,7 +266,7 @@ function getJournalRecords(center, teacher, year, month, region) {
   const sheet = getSheet(SHEET_JOURNAL);
   const last = sheet.getLastRow();
   if (last < 2) return { ok: true, records: [] };
-  const vals = sheet.getRange(2, 1, last - 1, 17).getValues();
+  const vals = sheet.getRange(2, 1, last - 1, 20).getValues();
   const out = [];
   for (let i = 0; i < vals.length; i++) {
     const r = vals[i];
@@ -255,7 +278,8 @@ function getJournalRecords(center, teacher, year, month, region) {
     out.push({
       savedAt: r[0], center: r[1], region: r[2], teacher: r[3], program: r[4],
       year: r[5], month: r[6], day: r[7], dow: r[8], dateText: r[9], people: r[10],
-      main: r[11], sub1: r[12], sub2: r[13], goal: r[14], evalText: r[15], id: r[16]
+      main: r[11], sub1: r[12], sub2: r[13], goal: r[14], evalText: r[15], id: r[16],
+      folderUrl: r[17], pdfUrl: r[18], docUrl: r[19]
     });
   }
   return { ok: true, records: out };
