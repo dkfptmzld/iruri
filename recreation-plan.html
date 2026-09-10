@@ -18,7 +18,7 @@ body{background:var(--bg);color:var(--ink);}
 .pcard.soon{opacity:.6;cursor:default;}
 .pcard .tag{font-size:11px;font-weight:700;color:#8A8778;background:#F1EFE9;border:1px solid #DDD9CE;border-radius:20px;padding:2px 9px;}
 .backbtn{height:38px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;padding:0 12px;margin-right:2px;}
-.bar{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;position:sticky;top:0;z-index:5;}
+.bar{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;position:sticky;top:0;z-index:20;}
 .bar .leaf{width:28px;height:28px;background:#DDEFCB;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;}
 .bar h1{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;margin-right:6px;}
 .fld{display:flex;flex-direction:column;gap:5px;}
@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--ink);}
 .sec.on{display:block;}
 /* 월간계획서: 순환 캐러셀 (좌우 스와이프·화살표, 가운데만 선명) */
 @media screen{
-  .stage.mcar{display:block;position:relative;overflow:hidden;justify-content:unset;padding:22px 0 30px;touch-action:pan-y;user-select:none;}
+  .stage.mcar{display:block;position:relative;z-index:1;overflow:hidden;justify-content:unset;padding:22px 0 30px;touch-action:pan-y;user-select:none;}
   .stage.mcar .sec-monthly{display:block!important;position:absolute;top:22px;left:50%;transform-origin:top center;transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease,filter .4s ease;margin:0;box-shadow:0 10px 34px rgba(0,0,0,.16);cursor:default;}
   #mcNav{display:none;}
   .stage.mcar ~ #mcNav,#planScreen.mcaron #mcNav{display:flex;}
@@ -147,16 +147,18 @@ td.c{text-align:center;} .wk{text-align:center;font-weight:800;color:var(--green
 .wk-cat.main{background:var(--green);color:#fff;}
 .wk-cat.sub{background:#EEF4EF;color:#3c6b52;border:1px solid #d3e3d8;}
 .wk-cat.goal{background:#1E50C0;color:#fff;}
-.wk-act{font-size:12.3px;line-height:1.55;color:#333b30;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.wk-act{font-size:12.3px;line-height:1.5;color:#333b30;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .wk-act b{font-weight:800;color:#20261f;}
 .wk-act,.wk-prep{flex-shrink:0;}
-.mon-weeks.wk5 .wk-sd{display:none;}
-.mon-weeks.wk5 + .mon-note{display:none;}
-.mon-weeks.wk5 .wk-goal{-webkit-line-clamp:1;max-height:2.1em;}
-.mon-weeks.wk5 .wk-card{padding:8px 13px;}
-.mon-weeks.wk5 .wk-r{gap:5px;justify-content:flex-start;}
+/* 5주차 달: 폰트·여백만 살짝 줄여 A4 한 장에 맞추되, 설명·목표는 유지 */
+.mon-weeks.wk5 .wk-card{padding:7px 12px;}
+.mon-weeks.wk5 .wk-r{gap:3px;justify-content:center;}
+.mon-weeks.wk5 .wk-act{font-size:11.4px;line-height:1.42;-webkit-line-clamp:1;}
+.mon-weeks.wk5 .wk-goal{font-size:11px;line-height:1.42;padding:5px 9px;-webkit-line-clamp:2;max-height:none;}
+.mon-weeks.wk5 .wk-prep{font-size:10px;padding-top:4px;}
+.mon-weeks.wk5 + .mon-note{padding:6px 10px;font-size:10px;}
 .wk-sd{color:#98a08f;font-size:11px;}
-.wk-goal{font-size:12px;line-height:1.5;color:#245c43;background:#F1F8F3;border:1px solid #d8ebe0;border-radius:8px;padding:6px 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex-shrink:0;}
+.wk-goal{font-size:12px;line-height:1.5;color:#245c43;background:#F1F8F3;border:1px solid #d8ebe0;border-radius:8px;padding:6px 10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex-shrink:0;}
 .wk-goal .wk-cat{vertical-align:1px;}
 .wk-prep{font-size:11px;line-height:1.4;color:#8f958a;border-top:1px dashed #e0e4dd;padding-top:6px;margin-top:1px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
 .wk-prep b{color:#6b7268;}
@@ -359,7 +361,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
      <button id="jloadBtn" onclick="openLoad();closeSaveMenu()"><span>📂</span> 저장된 일지 불러오기</button>
      <div class="sm-div"></div>
      <button id="pdfBtn" onclick="savePDF();closeSaveMenu()"><span>📄</span> 이 문서 PDF</button>
-     <button id="hwpBtn" onclick="saveHWP();closeSaveMenu()"><span>📝</span> 이 문서 HWP</button>
+     <button id="hwpBtn" onclick="saveHWP();closeSaveMenu()"><span>📝</span> 이 문서 WORD</button>
      <button onclick="doSaveAll();closeSaveMenu()"><span>💾</span> 전체 저장(PDF)</button>
      <div class="sm-div"></div>
      <button onclick="emailInfo();closeSaveMenu()"><span>📧</span> 이메일로 보내기</button>
@@ -518,7 +520,7 @@ function monthlyHTML(){
   const sched=schedule();
   const groups={};
   sched.forEach(s=>{ if(!s.date) return; const key=s.date.getFullYear()+'-'+String(s.date.getMonth()+1).padStart(2,'0'); (groups[key]=groups[key]||[]).push(s); });
-  const keys=Object.keys(groups).sort();
+  const keys=Object.keys(groups).sort().slice(0,12);  // 12개월(12장)만 — 마지막 달 1회짜리 자투리 페이지 방지
   const t=(document.getElementById('teacher').value||'').trim(); const host=t?`${esc(t)} 강사`:'—';
   let out='';
   keys.forEach(k=>{
@@ -708,7 +710,7 @@ function show(s){
   document.querySelectorAll('.jonly').forEach(el=>{el.style.display=j?'':'none';});
   const dn={intro:'소개서',annual:'연간계획표',monthly:'월간계획서',journal:'프로그램 일지'}[s]||'문서';
   document.getElementById('pdfBtn').innerHTML=`<span>📄</span> ${dn} PDF`;
-  document.getElementById('hwpBtn').innerHTML=`<span>📝</span> ${dn} HWP`;
+  document.getElementById('hwpBtn').innerHTML=`<span>📝</span> ${dn} WORD`;
   const stage=document.querySelector('.stage');
   const mon=(s==='monthly');
   stage.classList.toggle('mcar', mon);
@@ -743,7 +745,7 @@ function nodeToPNG(el){
 async function saveHWP(){
   const sel={intro:'.sec-intro',annual:'.sec-annual',monthly:'.sec-monthly',journal:'.sec-journal'}[CUR];
   const nodes=[...document.querySelectorAll(sel)]; if(!nodes.length) return;
-  _toast('⏳ HWP 저장 중…', 0);
+  _toast('⏳ WORD 저장 중…', 0);
   try{
     if(CUR==='journal') fillA4();
     if(document.fonts&&document.fonts.ready){ try{await document.fonts.ready;}catch(e){} }
@@ -752,8 +754,8 @@ async function saveHWP(){
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:6mm} img{display:block;margin:0 auto}</style></head><body>'+imgs+'</body></html>';
     const blob=new Blob(['﻿'+html],{type:'application/msword'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-    _toast('✅ HWP 저장 완료');
-  }catch(e){ _toastHide(); alert('HWP(DOC) 저장 중 문제가 발생했어요: '+e.message); }
+    _toast('✅ WORD 저장 완료');
+  }catch(e){ _toastHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
 
@@ -877,10 +879,9 @@ function closeLoad(){
   _closePlanWindow();
 }
 function _gasGetJournals(){
-  // GET 조회: 부모 gasGet 재사용 가능하면 그것을, 아니면 직접 fetch
-  try{ if(window.parent && window.parent!==window && typeof window.parent.gasGet==='function'){ return window.parent.gasGet({action:'getJournalRecords'}).then(r=>(r&&r.records)||[]); } }catch(e){}
+  // GET 조회: 직접 fetch (부모 앱의 동기화 상태표시/재시도 UI를 건드리지 않도록)
   const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),9000);
-  return fetch(GAS_URL_PLAN+'?action=getJournalRecords',{signal:ctrl.signal}).then(r=>r.text()).then(t=>{ try{const j=JSON.parse(t); return (j&&j.records)||[];}catch(_){return [];} }).finally(()=>clearTimeout(to));
+  return fetch(GAS_URL_PLAN+'?action=getJournalRecords',{signal:ctrl.signal}).then(r=>r.text()).then(t=>{ try{const j=JSON.parse(t); return (j&&j.records)||[];}catch(_){return [];} }).catch(()=>[]).finally(()=>clearTimeout(to));
 }
 function _uniqSorted(vals,{num}={}){ const s=[...new Set(vals.filter(v=>v!==''&&v!=null).map(String))]; s.sort((a,b)=> num?(Number(b)-Number(a)):a.localeCompare(b,'ko')); return s; }
 function _fillLoadFilters(){
