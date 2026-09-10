@@ -287,6 +287,9 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .ld-item .m b{font-size:13.5px;color:#1c231e;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ld-item .m span{font-size:11.5px;color:var(--sub);}
 .ld-item .go{font-size:11px;font-weight:800;color:#fff;background:var(--green);border-radius:7px;padding:6px 9px;white-space:nowrap;}
+.ld-links{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.ld-link{font-size:10.5px;font-weight:700;color:#1565c0;border:1px solid #cfe0f5;background:#f2f7fd;border-radius:6px;padding:3px 7px;text-decoration:none;}
+.ld-link:hover{background:#e3eefb;}
 .ld-empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 10px;line-height:1.6;}
 @media(max-width:600px){ .ld-filters{grid-template-columns:1fr 1fr;} }
 .wz.scanning .wz-bd,.wz.scanning .wz-ft,.wz.scanning .wz-hd{filter:saturate(.85);}
@@ -640,7 +643,7 @@ function nodeToPNG(el){
     const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>'+css+' .sec{display:block!important}</style>'+xhtml+'</div></foreignObject></svg>';
     const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
     const img=new Image();
-    img.onload=()=>{ try{ const s=2,c=document.createElement('canvas'); c.width=w*s;c.height=h*s; const ctx=c.getContext('2d'); ctx.scale(s,s); ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0); resolve({data:c.toDataURL('image/png'),w,h}); }catch(e){reject(e);} };
+    img.onload=()=>{ try{ const s=2,c=document.createElement('canvas'); c.width=w*s;c.height=h*s; const ctx=c.getContext('2d'); ctx.scale(s,s); ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0); resolve({data:c.toDataURL('image/png'),w,h,canvas:c}); }catch(e){reject(e);} };
     img.onerror=()=>reject(new Error('이미지 렌더 실패'));
     img.src=url;
   });
@@ -691,22 +694,71 @@ function collectJournal(){
     evalText:(document.getElementById('j-eval').value||'').trim()
   };
 }
-function saveJournalRecord(){
+// ── PDF·WORD 바이트 생성 (자격증 발급기와 동일 방식) ──
+function _b64ToU8(b64){ const bin=atob(b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return u8; }
+function _u8ToB64(u8){ let bin=''; const chunk=0x8000; for(let i=0;i<u8.length;i+=chunk){ bin+=String.fromCharCode.apply(null,u8.subarray(i,i+chunk)); } return btoa(bin); }
+function _jpegSize(d){ for(let i=2;i<d.length;){ if(d[i]!==0xFF){ i++; continue; } const m=d[i+1]; if(m>=0xC0&&m<=0xCF&&m!==0xC4&&m!==0xC8&&m!==0xCC){ return [(d[i+7]<<8)|d[i+8],(d[i+5]<<8)|d[i+6]]; } i+=2+((d[i+2]<<8)|d[i+3]); } return [0,0]; }
+function _jpegToPdf(jpeg,iw,ih){
+  const A4W=595.28,A4H=841.89; const s=Math.min(A4W/iw,A4H/ih),w=iw*s,h=ih*s,x=(A4W-w)/2,y=(A4H-h)/2;
+  const enc=str=>new TextEncoder().encode(str); const parts=[]; let len=0; const push=u=>{parts.push(u);len+=u.length;}; const off=[];
+  push(enc("%PDF-1.3\n%\xFF\xFF\xFF\xFF\n"));
+  function obj(n,head,stream){ off[n]=len; push(enc(n+" 0 obj\n"+head)); if(stream){ push(enc("\nstream\n")); push(stream); push(enc("\nendstream")); } push(enc("\nendobj\n")); }
+  obj(1,"<</Type/Catalog/Pages 2 0 R>>");
+  obj(2,"<</Type/Pages/Kids[3 0 R]/Count 1>>");
+  obj(3,"<</Type/Page/Parent 2 0 R/MediaBox[0 0 "+A4W.toFixed(2)+" "+A4H.toFixed(2)+"]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>");
+  obj(4,"<</Type/XObject/Subtype/Image/Width "+iw+"/Height "+ih+"/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length "+jpeg.length+">>",jpeg);
+  const content=enc("q "+w.toFixed(2)+" 0 0 "+h.toFixed(2)+" "+x.toFixed(2)+" "+y.toFixed(2)+" cm /Im0 Do Q");
+  obj(5,"<</Length "+content.length+">>",content);
+  const xrefOff=len; let xref="xref\n0 6\n0000000000 65535 f \n"; for(let i=1;i<=5;i++) xref+=String(off[i]).padStart(10,"0")+" 00000 n \n";
+  push(enc(xref)); push(enc("trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n"+xrefOff+"\n%%EOF"));
+  const out=new Uint8Array(len); let o=0; for(const p of parts){ out.set(p,o); o+=p.length; } return out;
+}
+// 활동일지 → 편집 가능한 Word(HTML) : 입력칸 값을 실제 텍스트로 치환
+function _journalDocHtml(){
+  const el=document.querySelector('.sec-journal'); if(!el) return '';
+  const clone=el.cloneNode(true);
+  clone.querySelectorAll('input').forEach(inp=>{ const sp=document.createElement('span'); sp.textContent=inp.value||''; inp.replaceWith(sp); });
+  clone.querySelectorAll('textarea').forEach(tx=>{ const div=document.createElement('div'); div.style.whiteSpace='pre-wrap'; div.textContent=tx.value||''; tx.replaceWith(div); });
+  const css=document.querySelector('style').innerHTML;
+  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:12mm} body{font-family:"맑은 고딕","Malgun Gothic",sans-serif;} '+css+' .sec{display:block!important} input,textarea{display:none}</style></head><body>'+clone.outerHTML+'</body></html>';
+}
+async function _buildJournalFiles(){
+  fillA4();
+  if(document.fonts&&document.fonts.ready){ try{await document.fonts.ready;}catch(e){} }
+  const el=document.querySelector('.sec-journal');
+  const {canvas}=await nodeToPNG(el);
+  const jpg=_b64ToU8(canvas.toDataURL('image/jpeg',0.92).split(',')[1]);
+  let [iw,ih]=_jpegSize(jpg); if(!iw||!ih){ iw=canvas.width; ih=canvas.height; }
+  const pdf=_jpegToPdf(jpg,iw,ih);
+  const docHtml=_journalDocHtml();
+  return { pdf:_u8ToB64(pdf), doc:_u8ToB64(new TextEncoder().encode('﻿'+docHtml)) };
+}
+async function saveJournalRecord(){
   const btn=document.getElementById('jsaveBtn'); const t0=btn.textContent;
   const rec=collectJournal();
   if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n활동일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
   rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;  // 같은 센터·강사·날짜면 덮어쓰기
+  const base=`${rec.year}${rec.month.padStart(2,'0')}${rec.day.padStart(2,'0')}_활동일지`;  // 파일명 접두어
   // 1) 즉시 로컬 누적(오프라인에서도 보존)
-  const list=_loadJournals(); const i=list.findIndex(x=>x.id===rec.id);
-  if(i>=0) list[i]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
+  const list=_loadJournals(); const li=list.findIndex(x=>x.id===rec.id);
+  if(li>=0) list[li]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
   _saveJournalsLocal(list);
-  // 2) 백그라운드로 GAS(구글시트) 동기화
-  btn.textContent='⏳ 저장 중…'; btn.disabled=true;
-  _gasPostPlan({action:'saveJournalRecord', data:rec}).then(res=>{
-    if(res&&res.ok){ btn.textContent='✅ 저장됨'; }
-    else{ btn.textContent='📥 기기에 저장(동기화 대기)'; }
-    setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200);
-  }).catch(()=>{ btn.textContent='📥 기기에 저장(동기화 대기)'; setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200); });
+  // 2) PDF·WORD 만들어 드라이브(강사→센터→연도)에 저장 + 시트 기록
+  btn.textContent='⏳ 파일 만드는 중…'; btn.disabled=true;
+  const wasCur=CUR; if(CUR!=='journal') show('journal');
+  let files=null;
+  try{ files=await _buildJournalFiles(); }catch(e){ files=null; }
+  if(wasCur!=='journal') show(wasCur);
+  btn.textContent='⏳ 드라이브 저장 중…';
+  const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
+  Promise.resolve(_gasPostPlan(payload)).then(res=>{
+    if(res&&res.ok){
+      btn.textContent='✅ 드라이브에 저장됨';
+      // 서버가 준 드라이브 URL 로컬에도 보관
+      if(res.folderUrl||res.pdfUrl){ const l2=_loadJournals(); const k=l2.findIndex(x=>x.id===rec.id); if(k>=0){ l2[k].folderUrl=res.folderUrl||''; l2[k].pdfUrl=res.pdfUrl||''; l2[k].docUrl=res.docUrl||''; _saveJournalsLocal(l2); } }
+    } else { btn.textContent='📥 기기에 저장(동기화 대기)'; }
+    setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2400);
+  }).catch(()=>{ btn.textContent='📥 기기에 저장(동기화 대기)'; setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2400); });
 }
 
 // ── 저장된 일지 불러오기 ──
@@ -760,7 +812,11 @@ function renderLoadList(){
     if(grp!==lastGrp){ html+=`<div class="ld-grp">📁 ${esc(grp)}</div>`; lastGrp=grp; }
     const dstr=`${r.month||''}/${r.day||''} ${r.dow?('('+String(r.dow).replace('요일','')+')'):''}`;
     const sub=[r.teacher,r.main].filter(Boolean).join(' · ');
-    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'활동일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span></div><div class="go">불러오기 →</div></div>`;
+    let links='';
+    if(r.pdfUrl) links+=`<a class="ld-link" href="${esc(r.pdfUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 PDF</a>`;
+    if(r.docUrl) links+=`<a class="ld-link" href="${esc(r.docUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📝 Word</a>`;
+    if(r.folderUrl) links+=`<a class="ld-link" href="${esc(r.folderUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📂 폴더</a>`;
+    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'활동일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span>${links?('<span class="ld-links">'+links+'</span>'):''}</div><div class="go">불러오기 →</div></div>`;
   });
   list.innerHTML=html;
 }
