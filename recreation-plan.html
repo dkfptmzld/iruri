@@ -471,8 +471,22 @@ function schedule(){
   const startIdx=parseInt(sMain.value||'0');
   const sd=document.getElementById('startDate').value;
   const base=sd?new Date(sd+'T00:00:00'):null;
+  const len=RING.length;
   const out=[];
-  for(let i=0;i<52;i++){ const r=RING[(startIdx+i)%RING.length]; const d=base?new Date(base.getTime()+i*7*86400000):null; out.push(Object.assign({},r,{week:i+1,date:d})); }
+  if(!base){ for(let i=0;i<52;i++) out.push(Object.assign({},RING[(startIdx+i)%len],{week:i+1,date:null})); return out; }
+  // '월간 교구 계획서'이므로 시작 달의 첫 수업요일(같은 요일)까지 뒤로 채운다
+  // 예: 시작일이 9/10(목)이면 9/3(목)까지 back-fill → 9월 페이지가 1주차(9/3)부터 나옴
+  const WK=7*86400000;
+  let first=new Date(base);
+  while(true){ const prev=new Date(first.getTime()-WK); if(prev.getMonth()===base.getMonth()&&prev.getFullYear()===base.getFullYear()) first=prev; else break; }
+  const backfill=Math.round((base.getTime()-first.getTime())/WK);       // 시작일 이전 주 수
+  const endLimit=new Date(base.getFullYear(), base.getMonth()+12, 1);   // 시작 달부터 12개월(미포함)
+  for(let i=0;i<80;i++){
+    const d=new Date(first.getTime()+i*WK);
+    if(d.getTime()>=endLimit.getTime()) break;
+    const idx=((startIdx+(i-backfill))%len+len)%len;                    // 시작일 세션 = startIdx 유지
+    out.push(Object.assign({},RING[idx],{week:i+1,date:d}));
+  }
   return out;
 }
 function letterhead(rt, mgr){
