@@ -864,13 +864,16 @@ function _mergeRecords(server){
 function openLoad(refresh){
   const list=document.getElementById('ld-list');
   document.getElementById('ldOv').classList.add('on');
-  list.innerHTML='<div class="ld-empty">⏳ 불러오는 중…</div>';
-  // 서버가 느려도 최대 8초 뒤엔 로컬 데이터로라도 화면을 채운다
-  let done=false;
-  const paint=(server)=>{ if(done) return; done=true; _ldRecords=_mergeRecords(server); _fillLoadFilters(); renderLoadList(); };
-  const timer=setTimeout(()=>paint(null), 8000);
-  _gasGetJournals().then(server=>{ clearTimeout(timer); paint(server); })
-                   .catch(()=>{ clearTimeout(timer); paint(null); });
+  // 1) 기기에 저장된 데이터로 '즉시' 표시(기다림 없음)
+  const local=_mergeRecords(null);
+  _ldRecords=local; _fillLoadFilters();
+  if(local.length){ renderLoadList(); }
+  else { list.innerHTML='<div class="ld-empty">⏳ 불러오는 중…</div>'; document.getElementById('ld-count').textContent=''; }
+  // 2) 서버(구글시트) 응답이 오면 합쳐서 갱신
+  _gasGetJournals().then(server=>{
+    if(server&&server.length){ _ldRecords=_mergeRecords(server); _fillLoadFilters(); renderLoadList(); }
+    else if(!local.length){ renderLoadList(); }   // 로컬·서버 모두 없음 → 빈 상태 안내
+  }).catch(()=>{ if(!local.length) renderLoadList(); });
 }
 function closeLoad(){
   document.getElementById('ldOv').classList.remove('on');
