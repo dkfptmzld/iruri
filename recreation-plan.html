@@ -591,8 +591,9 @@ function show(s){
 }
 const CLR=['pr-plan','pr-journal','pr-all','pr-intro','pr-annual','pr-monthly'];
 function docNameOf(s){ return {intro:'레크레이션_소개서',annual:'레크레이션_연간계획표',monthly:'레크레이션_월간계획서',journal:'레크레이션_활동일지'}[s]||'문서'; }
-function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); window.print(); }
-function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); window.print(); }
+const _origTitle=document.title;
+function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); document.title=docNameOf(CUR); window.print(); }
+function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title='레크레이션_계획서_전체'; window.print(); }
 // 페이지 요소를 화면 그대로 이미지로 렌더 (레이아웃·글꼴 유지)
 function nodeToPNG(el){
   return new Promise((resolve,reject)=>{
@@ -625,7 +626,7 @@ async function saveHWP(){
   btn.textContent=t0; btn.disabled=false;
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
-window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); });
+window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; });
 window.addEventListener('resize',()=>{ if(CUR==='journal')fillA4(); fitActivePage(); if(CUR==='monthly')mcApply(); });
 function pickProgram(p){
   if(p!=='rec') return;
