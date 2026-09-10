@@ -44,7 +44,7 @@ const SHEET_PRESENCE   = '접속현황';
 const SHEET_PENDING    = '가입대기';
 const SHEET_SCHEDREQ   = '스케줄요청';   // v16.05: 강사 스케줄 수정요청
 const SHEET_CTOMB      = '센터삭제기록';  // v16.20: 서버 공용 삭제기록(묘비) — 삭제한 센터가 다른 기기 캐시로 부활하는 것 방지
-const SHEET_JOURNAL    = '활동일지';      // v16.91: 계획서 도구에서 작성한 활동일지 누적(센터·강사·년·월·일별)
+const SHEET_JOURNAL    = '프로그램일지';    // v16.91~: 계획서 도구에서 작성한 프로그램 일지 누적(강사·센터·년·월·일별) + 드라이브 폴더명
 
 function response(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
