@@ -44,6 +44,7 @@ const SHEET_PRESENCE   = '접속현황';
 const SHEET_PENDING    = '가입대기';
 const SHEET_SCHEDREQ   = '스케줄요청';   // v16.05: 강사 스케줄 수정요청
 const SHEET_CTOMB      = '센터삭제기록';  // v16.20: 서버 공용 삭제기록(묘비) — 삭제한 센터가 다른 기기 캐시로 부활하는 것 방지
+const SHEET_JOURNAL    = '활동일지';      // v16.91: 계획서 도구에서 작성한 활동일지 누적(센터·강사·년·월·일별)
 
 function response(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
@@ -69,6 +70,7 @@ function doGet(e) {
     if (action === 'getDbMeta')            return response(getDbMeta());
     if (action === 'getPendingSignups')    return response(getPendingSignups());
     if (action === 'getScheduleRequests')  return response(getScheduleRequests());   // v16.05
+    if (action === 'getJournalRecords')    return response(getJournalRecords(p.center, p.teacher, p.year, p.month, p.region));  // v16.91
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -112,6 +114,7 @@ function doPost(e) {
     if (action === 'rejectSignup')          return response(rejectSignup(body.name));
     if (action === 'submitScheduleRequest') return response(submitScheduleRequest(body));            // v16.05
     if (action === 'resolveScheduleRequest')return response(resolveScheduleRequest(body.id, body.status));   // v16.05
+    if (action === 'saveJournalRecord')     return response(saveJournalRecord(body.data));   // v16.91: 활동일지 누적 저장
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
   finally { if (_lock) { try { _lock.releaseLock(); } catch (_e) {} } }
@@ -186,8 +189,76 @@ function getSheet(name) {
     if (name === SHEET_PENDING)  sheet.appendRow(['이름','비번해시','지역','입사일','계좌','과목','신청일','상태','휴대폰','주소']);
     if (name === SHEET_SCHEDREQ) sheet.appendRow(['ID','강사명','지역','변경내용JSON','메시지','요청시각','상태','처리시각']);
     if (name === SHEET_CTOMB)    sheet.appendRow(['센터명','지역','삭제시각']);
+    if (name === SHEET_JOURNAL)  sheet.appendRow(['저장시각','센터','지역','강사','프로그램','년','월','일','요일','진행일시','참여자','메인활동','보조활동①','보조활동②','활동목표','특이사항/총평','고유ID']);
   }
   return sheet;
+}
+
+/* ════════ 활동일지 누적 (v16.91) ════════
+ *  계획서 도구에서 작성한 활동일지를 '활동일지' 시트에 한 줄씩 쌓는다.
+ *  센터·강사·년·월·일 컬럼이 따로 있어 시트에서 바로 필터/피벗으로 조회 가능.
+ *  같은 고유ID가 이미 있으면(같은 일지 재저장) 그 줄을 덮어써서 중복을 막는다. */
+function saveJournalRecord(d) {
+  if (!d) return { ok: false, message: '저장할 데이터가 없어요' };
+  const center = (d.center || '').toString().trim();
+  if (!center) return { ok: false, message: '센터명이 비어 있어요 (활동일지의 장소/센터명을 입력해 주세요)' };
+  const sheet = getSheet(SHEET_JOURNAL);
+  const id = (d.id || ('J' + Date.now())).toString();
+  const row = [
+    new Date(),
+    center,
+    (d.region || '').toString(),
+    (d.teacher || '').toString(),
+    (d.program || '도구 레크레이션').toString(),
+    (d.year || '').toString(),
+    (d.month || '').toString(),
+    (d.day || '').toString(),
+    (d.dow || '').toString(),
+    (d.dateText || '').toString(),
+    (d.people || '').toString(),
+    (d.main || '').toString(),
+    (d.sub1 || '').toString(),
+    (d.sub2 || '').toString(),
+    (d.goal || '').toString(),
+    (d.evalText || '').toString(),
+    id
+  ];
+  // 고유ID 중복 → 덮어쓰기
+  const last = sheet.getLastRow();
+  if (last > 1) {
+    const ids = sheet.getRange(2, 17, last - 1, 1).getValues();  // 17번째 열 = 고유ID
+    for (let i = 0; i < ids.length; i++) {
+      if ((ids[i][0] || '').toString() === id) {
+        sheet.getRange(i + 2, 1, 1, row.length).setValues([row]);
+        return { ok: true, updated: true, id: id };
+      }
+    }
+  }
+  sheet.appendRow(row);
+  return { ok: true, id: id };
+}
+
+/* 저장된 활동일지 조회 — 센터/강사/년/월/지역으로 걸러서 돌려준다(비우면 전체). */
+function getJournalRecords(center, teacher, year, month, region) {
+  const sheet = getSheet(SHEET_JOURNAL);
+  const last = sheet.getLastRow();
+  if (last < 2) return { ok: true, records: [] };
+  const vals = sheet.getRange(2, 1, last - 1, 17).getValues();
+  const out = [];
+  for (let i = 0; i < vals.length; i++) {
+    const r = vals[i];
+    if (center  && (r[1] || '').toString() !== center.toString())   continue;
+    if (region  && (r[2] || '').toString() !== region.toString())   continue;
+    if (teacher && (r[3] || '').toString() !== teacher.toString())  continue;
+    if (year    && (r[5] || '').toString() !== year.toString())     continue;
+    if (month   && (r[6] || '').toString() !== month.toString())    continue;
+    out.push({
+      savedAt: r[0], center: r[1], region: r[2], teacher: r[3], program: r[4],
+      year: r[5], month: r[6], day: r[7], dow: r[8], dateText: r[9], people: r[10],
+      main: r[11], sub1: r[12], sub2: r[13], goal: r[14], evalText: r[15], id: r[16]
+    });
+  }
+  return { ok: true, records: out };
 }
 
 /* ════════ 신규 가입 승인 ════════ */

@@ -306,6 +306,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <button class="btn2" id="pdfBtn" onclick="savePDF()">📄 PDF 저장</button>
    <button class="btn2" id="hwpBtn" onclick="saveHWP()">📝 HWP 저장</button>
    <button class="btn" onclick="doSaveAll()" style="background:#0f5c3a;border-color:#0f5c3a">💾 전체 저장</button>
+   <button class="btn" id="jsaveBtn" onclick="saveJournalRecord()" style="background:#1565c0;border-color:#1565c0">☁️ 일지 저장</button>
    <button class="btn2 ghost" onclick="emailInfo()">📧 이메일</button>
   </div>
  </div>
@@ -628,6 +629,53 @@ async function saveHWP(){
   btn.textContent=t0; btn.disabled=false;
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
+
+// ── 활동일지 누적 저장 (센터·강사·년·월·일별) ──
+const GAS_URL_PLAN='https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbBCkZ3pHlkGArHZf1TkEZoNBfPKmRm492Byb_kPpFecgqWXw/exec';
+const LS_JOURNALS='iruri_rec_journals';
+function _loadJournals(){ try{ return JSON.parse(localStorage.getItem(LS_JOURNALS)||'[]'); }catch(e){ return []; } }
+function _saveJournalsLocal(arr){ try{ localStorage.setItem(LS_JOURNALS, JSON.stringify(arr)); }catch(e){} }
+// GAS 전송: 앱(부모) gasPost 재사용 가능하면 그것을, 아니면 직접 fetch
+function _gasPostPlan(body){
+  try{ if(window.parent && window.parent!==window && typeof window.parent.gasPost==='function') return window.parent.gasPost(body); }catch(e){}
+  return fetch(GAS_URL_PLAN,{method:'POST',body:JSON.stringify(body)}).then(r=>r.text()).then(t=>{ try{return JSON.parse(t);}catch(_){return {ok:false};} });
+}
+function collectJournal(){
+  const iso=(document.getElementById('startDate').value||'').trim();
+  const parts=iso.split('-'); const y=parts[0]||'', mo=String(parseInt(parts[1]||'0',10)||''), da=String(parseInt(parts[2]||'0',10)||'');
+  let dow=''; if(iso){ const dd=new Date(iso+'T00:00:00'); if(!isNaN(dd)) dow=DOW[dd.getDay()]+'요일'; }
+  const r=RING[parseInt(document.getElementById('startMain').value||'0',10)]||{};
+  const goalEl=document.getElementById('j-goal');
+  return {
+    center:(document.getElementById('j-place').value||'').trim(),
+    region:(gMgr&&gMgr.region)||'',
+    teacher:(document.getElementById('teacher').value||'').trim(),
+    program:'도구 레크레이션',
+    year:y, month:mo, day:da, dow:dow,
+    dateText:(document.getElementById('j-date').value||'').trim(),
+    people:(document.getElementById('j-people').value||'').trim(),
+    main:r.main||'', sub1:(document.getElementById('sub1sel').value||''), sub2:(document.getElementById('sub2sel').value||''),
+    goal:goalEl?(goalEl.textContent||'').trim():'',
+    evalText:(document.getElementById('j-eval').value||'').trim()
+  };
+}
+function saveJournalRecord(){
+  const btn=document.getElementById('jsaveBtn'); const t0=btn.textContent;
+  const rec=collectJournal();
+  if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n활동일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
+  rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;  // 같은 센터·강사·날짜면 덮어쓰기
+  // 1) 즉시 로컬 누적(오프라인에서도 보존)
+  const list=_loadJournals(); const i=list.findIndex(x=>x.id===rec.id);
+  if(i>=0) list[i]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
+  _saveJournalsLocal(list);
+  // 2) 백그라운드로 GAS(구글시트) 동기화
+  btn.textContent='⏳ 저장 중…'; btn.disabled=true;
+  _gasPostPlan({action:'saveJournalRecord', data:rec}).then(res=>{
+    if(res&&res.ok){ btn.textContent='✅ 저장됨'; }
+    else{ btn.textContent='📥 기기에 저장(동기화 대기)'; }
+    setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200);
+  }).catch(()=>{ btn.textContent='📥 기기에 저장(동기화 대기)'; setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2200); });
+}
 window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; });
 window.addEventListener('resize',()=>{ if(CUR==='journal')fillA4(); fitActivePage(); if(CUR==='monthly')mcApply(); });
 function pickProgram(p){
