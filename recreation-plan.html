@@ -672,9 +672,17 @@ function openWizard(){
   document.getElementById('wz-place').value=''; document.getElementById('wz-people').value='';
   document.getElementById('wz-mgr').value=gMgr.region||'서울';
   wzMain.value='0'; wzResetSubs(); renderEvals();
+  // 팝업이 깔끔하게 보이도록 뒤 선택화면 숨김
+  const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='none';
   document.getElementById('wzOv').classList.add('on');
 }
-function closeWizard(){ document.getElementById('wzOv').classList.remove('on'); }
+function closeWizard(){
+  document.getElementById('wzOv').classList.remove('on');
+  // 계획서 작성 화면이 아직 안 열린 상태면 선택화면 복구(다시 열 수 있게)
+  if(document.getElementById('planScreen').style.display!=='block'){
+    const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='';
+  }
+}
 function dateKText(iso){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`; }
 let PENDING=null;
 function submitWizard(){
