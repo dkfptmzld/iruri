@@ -164,7 +164,7 @@ td.c{text-align:center;} .wk{text-align:center;font-weight:800;color:var(--green
 .mon-note b{color:var(--green-d);}
 .mon-foot{text-align:center;font-size:10.5px;color:#a8a598;margin-top:9px;}
 
-/* ── 활동일지 ── */
+/* ── 프로그램 일지 ── */
 .sec-journal .jpad{display:flex;flex-direction:column;padding:12mm 15mm;min-height:297mm;}
 .sec-journal .jhead{display:flex;align-items:center;gap:14px;margin-bottom:4px;}
 .sec-journal .jhead .logo{width:44px;height:48px;flex-shrink:0;}
@@ -290,6 +290,39 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .ld-links{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap;}
 .ld-link{font-size:10.5px;font-weight:700;color:#1565c0;border:1px solid #cfe0f5;background:#f2f7fd;border-radius:6px;padding:3px 7px;text-decoration:none;}
 .ld-link:hover{background:#e3eefb;}
+.menu-btn{display:flex;align-items:center;gap:13px;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:16px 16px;margin-bottom:12px;cursor:pointer;text-align:left;transition:.13s;font-family:inherit;}
+.menu-btn:hover{border-color:var(--green);background:#F6FBF8;transform:translateY(-1px);box-shadow:0 6px 18px rgba(18,96,62,.10);}
+.menu-btn.primary{background:linear-gradient(135deg,var(--green),#2E9166);border-color:transparent;}
+.menu-btn.primary:hover{filter:brightness(1.04);background:linear-gradient(135deg,var(--green),#2E9166);}
+.menu-btn .mi{font-size:24px;width:44px;height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:center;background:#EAF4EE;border-radius:11px;}
+.menu-btn.primary .mi{background:rgba(255,255,255,.22);}
+.menu-btn .mt{flex:1;min-width:0;}
+.menu-btn .mt b{display:block;font-size:15px;font-weight:800;color:#12603E;}
+.menu-btn .mt small{display:block;font-size:11.5px;color:var(--sub);margin-top:2px;}
+.menu-btn.primary .mt b,.menu-btn.primary .mt small{color:#fff;}
+.menu-btn.primary .mt small{opacity:.9;}
+.menu-btn .ma{font-size:18px;font-weight:800;color:var(--green);}
+.menu-btn.primary .ma{color:#fff;}
+/* 정리된 상단 바 */
+.baract{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.iconbtn{height:38px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-size:13px;font-weight:800;color:var(--green-d);cursor:pointer;padding:0 14px;font-family:inherit;white-space:nowrap;transition:.12s;}
+.iconbtn:hover{border-color:var(--green);background:#F6FBF8;}
+.iconbtn.on{border-color:var(--green);background:#EAF4EE;}
+.iconbtn.primary{background:var(--green);border-color:var(--green);color:#fff;}
+.iconbtn.primary:hover{background:var(--green-d);}
+.menu-wrap{position:relative;}
+.save-menu{position:absolute;top:44px;right:0;z-index:300;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:0 16px 42px rgba(0,0,0,.18);padding:7px;min-width:236px;}
+.save-menu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;border-radius:9px;padding:11px 12px;font-size:13.5px;font-weight:700;color:#20321f;cursor:pointer;text-align:left;font-family:inherit;}
+.save-menu button:hover{background:#F1F8F4;color:var(--green-d);}
+.save-menu button span{font-size:16px;width:22px;text-align:center;flex:0 0 22px;}
+.sm-div{height:1px;background:var(--line);margin:5px 8px;}
+[hidden]{display:none!important;}
+.editbar{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:center;padding:12px 20px;background:#F6FBF8;border-bottom:1px solid var(--line);}
+.editbar .fld{margin:0;}
+/* 토스트 알림 */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#12321f;color:#fff;font-size:13.5px;font-weight:700;padding:12px 20px;border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:.25s;z-index:9999;max-width:88%;text-align:center;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:600px){ .baract{gap:6px;} .iconbtn{padding:0 10px;font-size:12px;} .editbar{padding:11px 14px;} }
 .ld-empty{text-align:center;color:var(--sub);font-size:13px;padding:30px 10px;line-height:1.6;}
 @media(max-width:600px){ .ld-filters{grid-template-columns:1fr 1fr;} }
 .wz.scanning .wz-bd,.wz.scanning .wz-ft,.wz.scanning .wz-hd{filter:saturate(.85);}
@@ -309,25 +342,38 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  <!-- 본문 -->
  <div id="planScreen" style="display:none;">
  <div class="bar">
-  <button class="backbtn" onclick="goSelect()">← 프로그램</button>
+  <button class="backbtn" onclick="goSelect()">←</button>
   <h1><span class="leaf">🌳</span> 레크레이션</h1>
+  <div class="tabs">
+   <button class="tab on" data-s="intro" onclick="show('intro')">소개서</button>
+   <button class="tab" data-s="annual" onclick="show('annual')">연간계획표</button>
+   <button class="tab" data-s="monthly" onclick="show('monthly')">월간계획서</button>
+   <button class="tab" data-s="journal" onclick="show('journal')">프로그램 일지</button>
+  </div>
+  <div class="baract">
+   <button class="iconbtn" id="editToggle" onclick="toggleEdit()">✏️ 편집</button>
+   <div class="menu-wrap">
+    <button class="iconbtn primary" onclick="toggleSaveMenu(event)">⤓ 저장 ▾</button>
+    <div class="save-menu" id="saveMenu" hidden>
+     <button id="jsaveBtn" onclick="saveJournalRecord();closeSaveMenu()"><span>☁️</span> 드라이브에 일지 저장</button>
+     <button id="jloadBtn" onclick="openLoad();closeSaveMenu()"><span>📂</span> 저장된 일지 불러오기</button>
+     <div class="sm-div"></div>
+     <button id="pdfBtn" onclick="savePDF();closeSaveMenu()"><span>📄</span> 이 문서 PDF</button>
+     <button id="hwpBtn" onclick="saveHWP();closeSaveMenu()"><span>📝</span> 이 문서 HWP</button>
+     <button onclick="doSaveAll();closeSaveMenu()"><span>💾</span> 전체 저장(PDF)</button>
+     <div class="sm-div"></div>
+     <button onclick="emailInfo();closeSaveMenu()"><span>📧</span> 이메일로 보내기</button>
+    </div>
+   </div>
+  </div>
+ </div>
+ <!-- 편집 패널(접힘) -->
+ <div class="editbar" id="editBar" hidden>
   <div class="fld"><label>강사 이름</label><input id="teacher" value="박기남" oninput="onTeacher()"></div>
   <div class="fld"><label>메인활동</label><select id="startMain" onchange="onMain()"></select></div>
   <div class="fld sub jonly"><label>보조활동 ①</label><select id="sub1sel" onchange="onSub()"></select></div>
   <div class="fld sub jonly"><label>보조활동 ②</label><select id="sub2sel" onchange="onSub()"></select></div>
   <div class="fld"><label>시작 날짜</label><input type="date" id="startDate" value="2026-09-01" oninput="onDate()"></div>
-  <div class="tabs">
-   <button class="tab on" data-s="intro" onclick="show('intro')">소개서</button>
-   <button class="tab" data-s="annual" onclick="show('annual')">연간계획표</button>
-   <button class="tab" data-s="monthly" onclick="show('monthly')">월간계획서</button>
-   <button class="tab" data-s="journal" onclick="show('journal')">활동일지</button>
-   <button class="btn2" id="pdfBtn" onclick="savePDF()">📄 PDF 저장</button>
-   <button class="btn2" id="hwpBtn" onclick="saveHWP()">📝 HWP 저장</button>
-   <button class="btn" onclick="doSaveAll()" style="background:#0f5c3a;border-color:#0f5c3a">💾 전체 저장</button>
-   <button class="btn" id="jsaveBtn" onclick="saveJournalRecord()" style="background:#1565c0;border-color:#1565c0">☁️ 일지 저장</button>
-   <button class="btn2" id="jloadBtn" onclick="openLoad()" style="border-color:#1565c0;color:#1565c0">📂 불러오기</button>
-   <button class="btn2 ghost" onclick="emailInfo()">📧 이메일</button>
-  </div>
  </div>
  <div class="stage"><div id="planWrap"></div><div id="journalWrap"></div></div>
  <div id="mcNav"><button onclick="mcGo(-1)" aria-label="이전 달">‹</button><span class="pos" id="mcPos"></span><button onclick="mcGo(1)" aria-label="다음 달">›</button></div>
@@ -335,7 +381,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  <!-- 작성 마법사 팝업 -->
  <div class="wz-ov" id="wzOv">
   <div class="wz">
-   <div class="wz-hd"><div class="t">🌳 계획서 · 활동일지 작성</div><div class="s">프로그램과 오늘 활동 내용을 입력하면 일지가 자동으로 완성돼요</div><button class="x" onclick="closeWizard()">✕</button></div>
+   <div class="wz-hd"><div class="t">🌳 계획서 · 프로그램 일지 작성</div><div class="s">프로그램과 오늘 활동 내용을 입력하면 일지가 자동으로 완성돼요</div><button class="x" onclick="closeWizard()">✕</button></div>
    <div class="wz-bd">
      <div class="wz-row"><label>프로그램명</label><select id="wz-prog" onchange="wzProgChange()"><option value="rec">레크레이션 (도구 레크레이션)</option><option value="sports" disabled>실버 스포츠 — 준비 중</option><option value="cog" disabled>도구 인지 — 준비 중</option></select></div>
      <div class="wz-row"><label>담당 관리자</label><select id="wz-mgr"><option value="서울">서울 · 정상준 (010-2304-0324)</option><option value="인천">인천 · 한수희 (010-8311-1199)</option><option value="수원">수원 · 안지훈 (010-7239-0604)</option></select></div>
@@ -347,14 +393,34 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
      <div class="wz-row"><label>「도구 레크레이션」 활동 평가 <span class="wz-sub">— 아래 5개 중 하나를 고르면 '전반적 평가'에 들어가요</span></label><div class="evs" id="wz-evs"></div></div>
    </div>
    <div class="wz-ft"><button class="wz-go" id="wzGo" onclick="submitWizard()">✍️ 일지 작성하기</button></div>
-   <div class="scan-done"><div class="chk">✓</div><div class="t">작성 완료</div><div class="s">활동일지가 만들어졌어요</div></div>
+   <div class="scan-done"><div class="chk">✓</div><div class="t">작성 완료</div><div class="s">프로그램 일지가 만들어졌어요</div></div>
    <div class="scan-bar"></div>
+  </div>
+ </div>
+ <div id="toast"></div>
+ <!-- 작업 선택 팝업 -->
+ <div class="wz-ov" id="menuOv">
+  <div class="wz" style="max-width:440px">
+   <div class="wz-hd"><div class="t">🌳 계획서 · 프로그램 일지</div><div class="s">무엇을 하시겠어요?</div><button class="x" onclick="closeMenu()">✕</button></div>
+   <div class="wz-bd" style="padding:20px 22px 8px">
+     <button class="menu-btn primary" onclick="menuGoWrite()">
+       <span class="mi">✍️</span>
+       <span class="mt"><b>계획서 · 프로그램 일지 작성</b><small>프로그램·오늘 활동을 입력해 새로 만들기</small></span>
+       <span class="ma">→</span>
+     </button>
+     <button class="menu-btn" onclick="menuGoLoad()">
+       <span class="mi">📂</span>
+       <span class="mt"><b>저장된 일지 불러오기</b><small>센터·강사·연도·월로 찾아서 열기</small></span>
+       <span class="ma">→</span>
+     </button>
+   </div>
+   <div class="wz-ft" style="border-top:0;padding-top:4px"><div class="wz-sub" style="text-align:center;width:100%">작성한 일지는 강사·센터·연도별로 드라이브에 저장돼요</div></div>
   </div>
  </div>
  <!-- 저장된 일지 불러오기 -->
  <div class="wz-ov" id="ldOv">
   <div class="wz" style="max-width:640px">
-   <div class="wz-hd"><div class="t">📂 저장된 활동일지</div><div class="s">센터·강사·년·월별로 저장된 일지를 불러올 수 있어요</div><button class="x" onclick="closeLoad()">✕</button></div>
+   <div class="wz-hd"><div class="t">📂 저장된 프로그램 일지</div><div class="s">센터·강사·년·월별로 저장된 일지를 불러올 수 있어요</div><button class="x" onclick="closeLoad()">✕</button></div>
    <div class="wz-bd">
      <div class="ld-filters">
        <select id="ld-center" onchange="renderLoadList()"></select>
@@ -484,14 +550,14 @@ function monthlyHTML(){
   });
   return out;
 }
-// ── 활동일지 ──
+// ── 프로그램 일지 ──
 function journalHTML(){
   const edu='- 레크레이션 활동을 통해 신체활동 및 협동심을 기른다. 보조 교구를 이용하여 다양한 팀 레크레이션 프로그램 및 개인 레크레이션 활동을 통해 팀 및 개인 역량을 기른다. 매회 프로그램 진행 전 스트레칭을 같이하여 활동 시 부상을 방지한다. 활동 시 낙상 및 부상을 방지하며 안전하게 활동을 진행합니다.';
   return `<div class="page portrait sec sec-journal" data-s="journal"><div class="jpad">
     <div class="jhead"><span class="logo">${LOGO}</span>
       <div class="wm"><div class="k">IRURI SILVER ACADEMY</div><div class="n">이루리 실버 아카데미</div></div>
       <div class="rt">도구 레크레이션</div></div>
-    <div class="jtitle">프로그램 활동일지</div><div class="jrule"></div>
+    <div class="jtitle">프로그램 일지</div><div class="jrule"></div>
     <table class="j"><colgroup><col style="width:106px"><col><col style="width:106px"><col></colgroup>
       <tr><td class="tl">프로그램명</td><td>도구 레크레이션</td><td class="tl">진행일시</td><td><input class="jin" id="j-date"></td></tr>
       <tr><td class="tl">진행자</td><td><input class="jin" id="j-teacher"></td><td class="tl">장소</td><td><input class="jin" id="j-place" placeholder="센터명 입력"></td></tr>
@@ -506,7 +572,7 @@ function journalHTML(){
       <tr><td class="sech" colspan="4">활동 사진</td></tr>
       <tr><td class="ta" colspan="4"><div class="photos"><div class="photo"><span class="ic">📷</span>사진 추가</div><div class="photo"><span class="ic">📷</span>사진 추가</div></div></td></tr>
     </table>
-    <div class="jfoot"><b>🌳 이루리 실버 아카데미</b> · 도구 레크레이션 프로그램 활동일지</div>
+    <div class="jfoot"><b>🌳 이루리 실버 아카데미</b> · 도구 레크레이션 프로그램 일지</div>
   </div></div>`;
 }
 // 선택된 메인에 맞춰 보조활동 셀렉트를 기본 페어로 리셋
@@ -614,9 +680,9 @@ function show(s){
   document.querySelectorAll('.sec').forEach(el=>el.classList.toggle('on',el.dataset.s===s));
   const j=(s==='journal');
   document.querySelectorAll('.jonly').forEach(el=>{el.style.display=j?'':'none';});
-  const dn={intro:'소개서',annual:'연간계획표',monthly:'월간계획서',journal:'활동일지'}[s]||'문서';
-  document.getElementById('pdfBtn').textContent=`📄 ${dn} PDF`;
-  document.getElementById('hwpBtn').textContent=`📝 ${dn} HWP`;
+  const dn={intro:'소개서',annual:'연간계획표',monthly:'월간계획서',journal:'프로그램 일지'}[s]||'문서';
+  document.getElementById('pdfBtn').innerHTML=`<span>📄</span> ${dn} PDF`;
+  document.getElementById('hwpBtn').innerHTML=`<span>📝</span> ${dn} HWP`;
   const stage=document.querySelector('.stage');
   const mon=(s==='monthly');
   stage.classList.toggle('mcar', mon);
@@ -626,7 +692,7 @@ function show(s){
   if(mon){ mcReset(); requestAnimationFrame(mcApply); } else { stage.style.height=''; }
 }
 const CLR=['pr-plan','pr-journal','pr-all','pr-intro','pr-annual','pr-monthly'];
-function docNameOf(s){ return {intro:'레크레이션_소개서',annual:'레크레이션_연간계획표',monthly:'레크레이션_월간계획서',journal:'레크레이션_활동일지'}[s]||'문서'; }
+function docNameOf(s){ return {intro:'레크레이션_소개서',annual:'레크레이션_연간계획표',monthly:'레크레이션_월간계획서',journal:'레크레이션_프로그램일지'}[s]||'문서'; }
 function datePrefix(){ const d=(document.getElementById('startDate')||{}).value||''; const n=d.replace(/-/g,''); return n?n+'_':''; }
 function fileBase(s){ return datePrefix()+docNameOf(s); }
 const _origTitle=document.title;
@@ -651,7 +717,7 @@ function nodeToPNG(el){
 async function saveHWP(){
   const sel={intro:'.sec-intro',annual:'.sec-annual',monthly:'.sec-monthly',journal:'.sec-journal'}[CUR];
   const nodes=[...document.querySelectorAll(sel)]; if(!nodes.length) return;
-  const btn=document.getElementById('hwpBtn'); const t0=btn.textContent; btn.textContent='⏳ 저장 중…'; btn.disabled=true;
+  _toast('⏳ HWP 저장 중…', 0);
   try{
     if(CUR==='journal') fillA4();
     if(document.fonts&&document.fonts.ready){ try{await document.fonts.ready;}catch(e){} }
@@ -660,12 +726,12 @@ async function saveHWP(){
     const html='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>@page{size:A4;margin:6mm} img{display:block;margin:0 auto}</style></head><body>'+imgs+'</body></html>';
     const blob=new Blob(['﻿'+html],{type:'application/msword'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-  }catch(e){ alert('HWP(DOC) 저장 중 문제가 발생했어요: '+e.message); }
-  btn.textContent=t0; btn.disabled=false;
+    _toast('✅ HWP 저장 완료');
+  }catch(e){ _toastHide(); alert('HWP(DOC) 저장 중 문제가 발생했어요: '+e.message); }
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
 
-// ── 활동일지 누적 저장 (센터·강사·년·월·일별) ──
+// ── 프로그램 일지 누적 저장 (센터·강사·년·월·일별) ──
 const GAS_URL_PLAN='https://script.google.com/macros/s/AKfycbwJeqAkTw1IeSdOzoZp6QbBCkZ3pHlkGArHZf1TkEZoNBfPKmRm492Byb_kPpFecgqWXw/exec';
 const LS_JOURNALS='iruri_rec_journals';
 function _loadJournals(){ try{ return JSON.parse(localStorage.getItem(LS_JOURNALS)||'[]'); }catch(e){ return []; } }
@@ -713,7 +779,7 @@ function _jpegToPdf(jpeg,iw,ih){
   push(enc(xref)); push(enc("trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n"+xrefOff+"\n%%EOF"));
   const out=new Uint8Array(len); let o=0; for(const p of parts){ out.set(p,o); o+=p.length; } return out;
 }
-// 활동일지 → 편집 가능한 Word(HTML) : 입력칸 값을 실제 텍스트로 치환
+// 프로그램 일지 → 편집 가능한 Word(HTML) : 입력칸 값을 실제 텍스트로 치환
 function _journalDocHtml(){
   const el=document.querySelector('.sec-journal'); if(!el) return '';
   const clone=el.cloneNode(true);
@@ -734,31 +800,28 @@ async function _buildJournalFiles(){
   return { pdf:_u8ToB64(pdf), doc:_u8ToB64(new TextEncoder().encode('﻿'+docHtml)) };
 }
 async function saveJournalRecord(){
-  const btn=document.getElementById('jsaveBtn'); const t0=btn.textContent;
   const rec=collectJournal();
-  if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n활동일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
+  if(!rec.center){ alert('센터명(장소)을 먼저 입력해 주세요.\n프로그램 일지 탭의 "장소" 칸에 센터명을 적으면 센터별로 저장됩니다.'); show('journal'); const jp=document.getElementById('j-place'); if(jp) jp.focus(); return; }
   rec.id='J'+rec.year+rec.month.padStart(2,'0')+rec.day.padStart(2,'0')+'_'+rec.center+'_'+rec.teacher;  // 같은 센터·강사·날짜면 덮어쓰기
-  const base=`${rec.year}${rec.month.padStart(2,'0')}${rec.day.padStart(2,'0')}_활동일지`;  // 파일명 접두어
+  const base=`${rec.year}${rec.month.padStart(2,'0')}${rec.day.padStart(2,'0')}_프로그램일지`;  // 파일명 접두어
   // 1) 즉시 로컬 누적(오프라인에서도 보존)
   const list=_loadJournals(); const li=list.findIndex(x=>x.id===rec.id);
   if(li>=0) list[li]={...rec,savedAt:Date.now()}; else list.push({...rec,savedAt:Date.now()});
   _saveJournalsLocal(list);
   // 2) PDF·WORD 만들어 드라이브(강사→센터→연도)에 저장 + 시트 기록
-  btn.textContent='⏳ 파일 만드는 중…'; btn.disabled=true;
+  _toast('⏳ 파일 만드는 중…', 0);
   const wasCur=CUR; if(CUR!=='journal') show('journal');
   let files=null;
   try{ files=await _buildJournalFiles(); }catch(e){ files=null; }
   if(wasCur!=='journal') show(wasCur);
-  btn.textContent='⏳ 드라이브 저장 중…';
+  _toast('⏳ 드라이브 저장 중…', 0);
   const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
   Promise.resolve(_gasPostPlan(payload)).then(res=>{
     if(res&&res.ok){
-      btn.textContent='✅ 드라이브에 저장됨';
-      // 서버가 준 드라이브 URL 로컬에도 보관
+      _toast('✅ 드라이브에 저장됐어요');
       if(res.folderUrl||res.pdfUrl){ const l2=_loadJournals(); const k=l2.findIndex(x=>x.id===rec.id); if(k>=0){ l2[k].folderUrl=res.folderUrl||''; l2[k].pdfUrl=res.pdfUrl||''; l2[k].docUrl=res.docUrl||''; _saveJournalsLocal(l2); } }
-    } else { btn.textContent='📥 기기에 저장(동기화 대기)'; }
-    setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2400);
-  }).catch(()=>{ btn.textContent='📥 기기에 저장(동기화 대기)'; setTimeout(()=>{ btn.textContent=t0; btn.disabled=false; },2400); });
+    } else { _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); }
+  }).catch(()=>{ _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); });
 }
 
 // ── 저장된 일지 불러오기 ──
@@ -781,7 +844,12 @@ function openLoad(refresh){
   _gasGetJournals().then(server=>{ clearTimeout(timer); paint(server); })
                    .catch(()=>{ clearTimeout(timer); paint(null); });
 }
-function closeLoad(){ document.getElementById('ldOv').classList.remove('on'); }
+function closeLoad(){
+  document.getElementById('ldOv').classList.remove('on');
+  if(document.getElementById('planScreen').style.display==='block') return;  // 계획 화면 위에서 열었으면 그대로
+  if(_hubReturn){ _hubReturn=false; openMenu(); return; }                    // 메뉴에서 왔으면 메뉴로 복귀
+  _closePlanWindow();
+}
 function _gasGetJournals(){
   // GET 조회: 부모 gasGet 재사용 가능하면 그것을, 아니면 직접 fetch
   try{ if(window.parent && window.parent!==window && typeof window.parent.gasGet==='function'){ return window.parent.gasGet({action:'getJournalRecords'}).then(r=>(r&&r.records)||[]); } }catch(e){}
@@ -816,19 +884,23 @@ function renderLoadList(){
     if(r.pdfUrl) links+=`<a class="ld-link" href="${esc(r.pdfUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📄 PDF</a>`;
     if(r.docUrl) links+=`<a class="ld-link" href="${esc(r.docUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📝 Word</a>`;
     if(r.folderUrl) links+=`<a class="ld-link" href="${esc(r.folderUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📂 폴더</a>`;
-    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'활동일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span>${links?('<span class="ld-links">'+links+'</span>'):''}</div><div class="go">불러오기 →</div></div>`;
+    html+=`<div class="ld-item" onclick="loadJournalAt(${_ldRecords.indexOf(r)})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'프로그램 일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span>${links?('<span class="ld-links">'+links+'</span>'):''}</div><div class="go">불러오기 →</div></div>`;
   });
   list.innerHTML=html;
 }
 function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
 function loadJournalInto(r){
+  // 메뉴에서 바로 불러온 경우에도 편집 화면이 보이도록 전환
+  _hubReturn=false;
+  document.getElementById('selectScreen').style.display='none';
+  document.getElementById('planScreen').style.display='block';
   // 폼에 값 복원
   if(r.teacher){ const te=document.getElementById('teacher'); if(te) te.value=r.teacher; }
   // 메인활동 인덱스 찾기
   const mi=RING.findIndex(x=>x.main===r.main); if(mi>=0){ document.getElementById('startMain').value=String(mi); }
   // 날짜 복원(년-월-일)
   if(r.year&&r.month&&r.day){ const iso=`${r.year}-${String(r.month).padStart(2,'0')}-${String(r.day).padStart(2,'0')}`; const sd=document.getElementById('startDate'); if(sd) sd.value=iso; }
-  rebuildPlan();
+  buildAll();  // 소개서·계획표·일지 전체 생성(메뉴에서 바로 불러온 경우 DOM이 없을 수 있어 buildAll)
   // 보조활동 복원
   if(r.sub1){ const s1=document.getElementById('sub1sel'); if(s1&&[...s1.options].some(o=>o.value===r.sub1)) s1.value=r.sub1; }
   if(r.sub2){ const s2=document.getElementById('sub2sel'); if(s2&&[...s2.options].some(o=>o.value===r.sub2)) s2.value=r.sub2; }
@@ -890,18 +962,39 @@ function openWizard(){
   const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='none';
   document.getElementById('wzOv').classList.add('on');
 }
+// ── 진입 시 작업 선택 팝업(작성 / 불러오기) ──
+let _hubReturn=false;
+function openMenu(){
+  const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='none';
+  document.getElementById('wzOv').classList.remove('on');
+  document.getElementById('ldOv').classList.remove('on');
+  document.getElementById('menuOv').classList.add('on');
+}
+function _closePlanWindow(){
+  try{ if(window.parent && window.parent!==window && typeof window.parent._closePlan==='function'){ window.parent._closePlan(); return true; } }catch(e){}
+  const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='';   // 단독 실행 폴백
+  return false;
+}
+function closeMenu(){
+  document.getElementById('menuOv').classList.remove('on');
+  if(document.getElementById('planScreen').style.display==='block') return;  // 이미 작성/불러온 상태면 그대로
+  _closePlanWindow();  // 메뉴를 닫으면 계획서 창 자체를 닫아 홈으로
+}
+function menuGoWrite(){ _hubReturn=true; document.getElementById('menuOv').classList.remove('on'); openWizard(); }
+function menuGoLoad(){ _hubReturn=true; document.getElementById('menuOv').classList.remove('on'); openLoad(); }
+// ── 상단 바: 편집 패널 토글 · 저장 메뉴 · 토스트 ──
+function toggleEdit(){ const b=document.getElementById('editBar'), t=document.getElementById('editToggle'); const show=b.hidden; b.hidden=!show; t.classList.toggle('on',show); }
+function toggleSaveMenu(e){ if(e)e.stopPropagation(); const m=document.getElementById('saveMenu'); m.hidden=!m.hidden; }
+function closeSaveMenu(){ const m=document.getElementById('saveMenu'); if(m) m.hidden=true; }
+document.addEventListener('click',(e)=>{ const w=e.target.closest('.menu-wrap'); if(!w) closeSaveMenu(); });
+let _toastT=null;
+function _toast(msg,ms){ const el=document.getElementById('toast'); if(!el) return; el.textContent=msg; el.classList.add('on'); if(_toastT) clearTimeout(_toastT); if(ms!==0) _toastT=setTimeout(()=>el.classList.remove('on'), ms||2200); }
+function _toastHide(){ const el=document.getElementById('toast'); if(el) el.classList.remove('on'); }
 function closeWizard(){
   document.getElementById('wzOv').classList.remove('on');
-  // 이미 계획서 작성 화면이면 그대로 둠
-  if(document.getElementById('planScreen').style.display==='block') return;
-  // 앱(부모 오버레이) 안에서 열린 경우: 팝업을 닫으면 계획서 창 자체를 닫아 홈으로 복귀
-  try{
-    if(window.parent && window.parent!==window && typeof window.parent._closePlan==='function'){
-      window.parent._closePlan(); return;
-    }
-  }catch(e){}
-  // 단독 실행(테스트) 폴백: 선택화면 복구
-  const ss=document.getElementById('selectScreen'); if(ss) ss.style.display='';
+  if(document.getElementById('planScreen').style.display==='block') return;  // 이미 작성 화면이면 그대로
+  if(_hubReturn){ _hubReturn=false; openMenu(); return; }                    // 메뉴에서 왔으면 메뉴로 복귀
+  _closePlanWindow();
 }
 function dateKText(iso){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일`; }
 let PENDING=null;
@@ -935,8 +1028,9 @@ function finishWizard(){
   const jpe=document.getElementById('j-people'); if(jpe) jpe.value=P.people;
   updateJournalAuto();
   const je=document.getElementById('j-eval'); if(je && P.evalText) je.value=P.evalText;
+  _hubReturn=false;
   show('intro');
 }
-// 계획서 진입 시 사전 질문 팝업 바로 표시
-try{ openWizard(); }catch(e){}
+// 계획서 진입 시 작업 선택 팝업(작성 / 불러오기)
+try{ openMenu(); }catch(e){}
 </script></body></html>
