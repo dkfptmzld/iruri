@@ -339,6 +339,25 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .wz.scanning .scan-bar{animation:scanSweep 1.15s ease .08s forwards;}
 .ld-filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
 .ld-filters select{height:42px;border:1.5px solid var(--line);border-radius:10px;padding:0 10px;font-size:13.5px;font-weight:700;background:#fff;font-family:inherit;color:var(--green-d);}
+/* 불러오기 2단 피커(강사 → 센터) + 연·월 칩 */
+.ld-pick{display:grid;grid-template-columns:minmax(118px,.82fr) 1.18fr;gap:10px;margin-bottom:12px;}
+.ld-col{border:1.5px solid var(--line);border-radius:12px;background:#FBFCFA;overflow:hidden;display:flex;flex-direction:column;}
+.ld-col-hd{font-size:11.5px;font-weight:900;color:var(--green-d);padding:8px 11px;background:#EAF4EE;border-bottom:1px solid var(--line);}
+.ld-col-body{max-height:230px;overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:5px;}
+.ld-opt{display:flex;align-items:center;justify-content:space-between;gap:6px;border:1.5px solid transparent;border-radius:9px;padding:9px 10px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:.12s;}
+.ld-opt:hover{border-color:#9FCBB4;background:#F6FBF8;}
+.ld-opt.sel{border-color:var(--green);background:#EAF4EE;}
+.ld-opt b{font-size:13px;font-weight:700;color:#1c231e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ld-opt.sel b{color:var(--green-d);font-weight:800;}
+.ld-opt .rg{font-size:10px;font-weight:800;color:#fff;background:var(--green);border-radius:5px;padding:1px 6px;white-space:nowrap;}
+.ld-col-hint{color:#9aa093;font-size:12px;text-align:center;padding:22px 8px;line-height:1.5;}
+.ld-ym{border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;display:flex;flex-direction:column;gap:9px;}
+.ld-ym-row{display:flex;align-items:flex-start;gap:9px;}
+.ld-ym-lb{font-size:12px;font-weight:900;color:var(--green-d);flex:0 0 54px;padding-top:5px;}
+.ld-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0;}
+.ld-chip{border:1.5px solid var(--line);border-radius:20px;padding:5px 13px;font-size:12.5px;font-weight:700;background:#fff;cursor:pointer;font-family:inherit;color:var(--green-d);transition:.12s;}
+.ld-chip:hover{border-color:#9FCBB4;background:#F6FBF8;}
+.ld-chip.sel{border-color:var(--green);background:var(--green);color:#fff;}
 .ld-tools{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .ld-refresh{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--green-d);}
 .ld-list{max-height:52vh;overflow-y:auto;padding-right:2px;}
@@ -501,13 +520,22 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   <div class="wz" style="max-width:640px">
    <div class="wz-hd"><div class="t">📂 저장된 프로그램 일지</div><div class="s">센터·강사·년·월별로 저장된 일지를 불러올 수 있어요</div><button class="x" onclick="closeLoad()">✕</button></div>
    <div class="wz-bd">
-     <div class="ld-filters">
-       <select id="ld-teacher" onchange="onLoadTeacherChange()"></select>
-       <select id="ld-center" onchange="renderLoadList()"></select>
-       <select id="ld-year" onchange="renderLoadList()"></select>
-       <select id="ld-month" onchange="renderLoadList()"></select>
+     <!-- 숨김 상태값(목록 필터 로직 공용). 화면 조작은 아래 2단 피커/칩으로 -->
+     <div class="ld-filters" hidden>
+       <select id="ld-teacher"></select>
+       <select id="ld-center"></select>
+       <select id="ld-year"></select>
+       <select id="ld-month"></select>
      </div>
-     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-schedbtn" onclick="openSaveFlow('load')">📅 강사·센터로 찾기</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div class="ld-pick">
+       <div class="ld-col"><div class="ld-col-hd">👤 강사</div><div class="ld-col-body" id="ld-teacherCol"></div></div>
+       <div class="ld-col"><div class="ld-col-hd">📁 센터</div><div class="ld-col-body" id="ld-centerCol"></div></div>
+     </div>
+     <div class="ld-ym" id="ld-ymBox" hidden>
+       <div class="ld-ym-row"><span class="ld-ym-lb">📅 연도</span><div class="ld-chips" id="ld-yearChips"></div></div>
+       <div class="ld-ym-row"><span class="ld-ym-lb">🗓️ 월</span><div class="ld-chips" id="ld-monthChips"></div></div>
+     </div>
+     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
      <div id="ld-list" class="ld-list"></div>
    </div>
   </div>
@@ -1026,6 +1054,8 @@ function saveJournalRecord(){ return _persistJournal(false); }
 // ── 저장된 일지 불러오기 ──
 let _ldRecords=[];
 let _ldTeacherDefaulted=false;   // 불러오기 열 때 '강사' 필터를 로그인 강사로 1회만 기본 선택
+let _ldCenterTouched=false;      // 센터를 한 번이라도 골랐는지(연·월 칩 표시 조건)
+let _ldTeacherList=[], _ldCenterList=[];   // 2단 피커 렌더용 인덱스 목록
 // 부모 앱(정산 시스템)에서 현재 로그인한 강사 이름을 읽어온다(같은 오리진). 관리자면 빈 값.
 function _currentTeacher(){
   const read=(w)=>{ try{ let n=w._loggedInTeacher; if(!n){ try{ n=w.sessionStorage.getItem('iruri_session'); }catch(_){} } return (n||'').toString().trim(); }catch(e){ return ''; } };
@@ -1137,6 +1167,7 @@ function _mergeRecords(server){
 function openLoad(refresh){
   const list=document.getElementById('ld-list');
   _ldTeacherDefaulted=false;   // 열 때마다 로그인 강사 기본 선택을 다시 적용
+  _ldCenterTouched=false;      // 연·월 칩은 센터를 고른 뒤에만 표시
   document.getElementById('ldOv').classList.add('on');
   // 1) 기기에 저장된 데이터로 '즉시' 표시(기다림 없음)
   const local=_mergeRecords(null);
@@ -1181,9 +1212,65 @@ function _fillLoadFilters(){
   // 로그인 시: 그 강사의 센터를 기본 선택(사용자가 센터를 아직 안 골랐을 때만)
   if(applyCenterDefault && !cur.c){
     const dc=_defaultCenterFor(me), csel=document.getElementById('ld-center');
-    if(dc && [...csel.options].some(o=>o.value===dc)) csel.value=dc;
+    if(dc && [...csel.options].some(o=>o.value===dc)){ csel.value=dc; _ldCenterTouched=true; }
   }
+  _ldSyncUI();   // 숨김 select 값 → 2단 피커/칩 화면 반영
 }
+// ── 불러오기 2단 피커: ① 강사(왼쪽) → ② 센터(오른쪽) → ③ 연·월 칩(내림차순) ──
+function _ldSyncUI(){ _ldRenderTeachers(); _ldRenderCenters(); _ldRenderYM(); }
+function _ldRenderTeachers(){
+  const col=document.getElementById('ld-teacherCol'); if(!col) return;
+  const tsel=document.getElementById('ld-teacher'); const sel=(tsel.value||''); const me=_currentTeacher();
+  // 전체 강사(부모 앱) ∪ 일지에 있는 강사 ∪ 로그인 강사 — 로그인 강사는 맨 위로
+  let all=_parentTeachers()||[]; if(!all.length) all=(typeof TEACHERS!=='undefined'?TEACHERS:[]);
+  let list=_uniqSorted([...all, ..._ldRecords.map(r=>r.teacher), me].filter(Boolean));
+  if(me && list.includes(me)) list=[me, ...list.filter(n=>n!==me)];
+  _ldTeacherList=list;
+  // 숨김 select에 없는 강사는 옵션으로 추가(값 설정이 되도록)
+  list.forEach(n=>{ if(![...tsel.options].some(o=>o.value===n)){ const op=document.createElement('option'); op.value=n; op.textContent=n; tsel.appendChild(op); } });
+  if(!list.length){ col.innerHTML='<div class="ld-col-hint">등록된 강사가<br>없어요.</div>'; return; }
+  col.innerHTML=list.map((n,i)=>`<button type="button" class="ld-opt${n===sel?' sel':''}" onclick="_ldPickTeacher(${i})"><b>${esc(n)}</b>${n===sel?'<span class="rg">선택</span>':''}</button>`).join('');
+}
+function _ldRenderCenters(){
+  const col=document.getElementById('ld-centerCol'); if(!col) return;
+  const t=(document.getElementById('ld-teacher').value||'');
+  if(!t){ _ldCenterList=[]; col.innerHTML='<div class="ld-col-hint">← 왼쪽에서<br>강사를 먼저<br>선택하세요</div>'; return; }
+  _ldCenterList=_centersForTeacher(t);
+  const sel=(document.getElementById('ld-center').value||'');
+  let html=`<button type="button" class="ld-opt${sel===''?' sel':''}" onclick="_ldPickCenter(-1)"><b>📁 전체 센터</b></button>`;
+  html+=_ldCenterList.map((c,i)=>`<button type="button" class="ld-opt${c===sel?' sel':''}" onclick="_ldPickCenter(${i})"><b>${esc(c)}</b></button>`).join('');
+  col.innerHTML=html;
+}
+function _ldRenderYM(){
+  const box=document.getElementById('ld-ymBox'); if(!box) return;
+  const t=(document.getElementById('ld-teacher').value||''), c=(document.getElementById('ld-center').value||'');
+  if(!t || !_ldCenterTouched){ box.hidden=true; return; }   // 센터를 고른 뒤에만 연·월 표시
+  box.hidden=false;
+  const recs=_ldRecords.filter(r=>(!t||String(r.teacher)===t)&&(!c||String(r.center)===c));
+  const years =_uniqSorted(recs.map(r=>r.year), {num:1});   // 내림차순
+  const months=_uniqSorted(recs.map(r=>r.month),{num:1});   // 내림차순
+  const y=(document.getElementById('ld-year').value||''), m=(document.getElementById('ld-month').value||'');
+  document.getElementById('ld-yearChips').innerHTML =`<button type="button" class="ld-chip${y===''?' sel':''}" onclick="_ldPickYear('')">전체</button>`+years.map(v=>`<button type="button" class="ld-chip${String(v)===y?' sel':''}" onclick="_ldPickYear('${esc(v)}')">${esc(v)}년</button>`).join('');
+  document.getElementById('ld-monthChips').innerHTML=`<button type="button" class="ld-chip${m===''?' sel':''}" onclick="_ldPickMonth('')">전체</button>`+months.map(v=>`<button type="button" class="ld-chip${String(v)===m?' sel':''}" onclick="_ldPickMonth('${esc(v)}')">${esc(v)}월</button>`).join('');
+}
+function _ldPickTeacher(i){
+  const n=_ldTeacherList[i]; if(n==null) return;
+  document.getElementById('ld-teacher').value=n; _ldTeacherDefaulted=true;
+  document.getElementById('ld-center').value=''; document.getElementById('ld-year').value=''; document.getElementById('ld-month').value='';
+  _ldCenterTouched=false;   // 강사를 바꾸면 센터부터 다시 선택
+  _ldSyncUI(); renderLoadList();
+}
+function _ldPickCenter(i){
+  const c=(i<0)?'':_ldCenterList[i]; if(i>=0 && c==null) return;
+  const csel=document.getElementById('ld-center');
+  if(c && ![...csel.options].some(o=>o.value===c)){ const op=document.createElement('option'); op.value=c; op.textContent=c; csel.appendChild(op); }
+  csel.value=c;
+  document.getElementById('ld-year').value=''; document.getElementById('ld-month').value='';   // 센터 바꾸면 연·월 초기화
+  _ldCenterTouched=true;
+  _ldRenderCenters(); _ldRenderYM(); renderLoadList();
+}
+function _ldPickYear(v){ document.getElementById('ld-year').value=v; _ldRenderYM(); renderLoadList(); }
+function _ldPickMonth(v){ document.getElementById('ld-month').value=v; _ldRenderYM(); renderLoadList(); }
 // 강사 필터를 바꾸면 그 강사의 '센터 관리' 센터로 센터 목록을 다시 채운다(센터 선택은 전체로 초기화)
 function onLoadTeacherChange(){
   const t=document.getElementById('ld-teacher').value;
