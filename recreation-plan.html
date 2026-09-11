@@ -48,6 +48,10 @@ body{background:var(--bg);color:var(--ink);}
   .stage.mcar{display:block;position:relative;z-index:1;overflow:hidden;justify-content:unset;padding:22px 0 30px;touch-action:none;user-select:none;}
   .stage.mcar .sec-monthly{display:block!important;position:absolute;top:22px;left:50%;transform-origin:top center;transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease,filter .4s ease;margin:0;box-shadow:0 10px 34px rgba(0,0,0,.16);cursor:default;}
   #mcNav{display:none;}
+  .j-savebar{display:none;}
+  #planScreen.jsbon .j-savebar{display:flex;position:fixed;left:0;right:0;bottom:24px;justify-content:center;z-index:60;pointer-events:none;}
+  #planScreen.jsbon .j-savebar button{pointer-events:auto;background:var(--green);color:#fff;border:0;border-radius:26px;padding:14px 30px;font-size:15px;font-weight:800;font-family:inherit;box-shadow:0 8px 24px rgba(31,138,76,.4);cursor:pointer;display:flex;align-items:center;gap:8px;}
+  #planScreen.jsbon .j-savebar button:active{transform:translateY(1px);}
   .stage.mcar ~ #mcNav,#planScreen.mcaron #mcNav{display:flex;}
   #mcNav{position:fixed;left:0;right:0;bottom:26px;justify-content:center;gap:18px;z-index:200;pointer-events:none;}
   #mcNav button{pointer-events:auto;width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.15);font-size:22px;color:var(--green-d);cursor:pointer;display:flex;align-items:center;justify-content:center;}
@@ -221,9 +225,12 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   @page{size:A4 portrait;margin:12mm;}
   @page land{size:A4 landscape;margin:8mm;}
   .sec-annual{page:land;}
-  .sec-monthly{height:271mm!important;overflow:hidden;}
+  /* 캐러셀이 각 월 카드에 걸어둔 인라인 스타일(축소·블러·투명·숨김·이동)을 인쇄 때 원상복구 */
+  .sec-monthly{height:271mm!important;overflow:hidden;transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;z-index:auto!important;position:relative!important;left:auto!important;top:auto!important;}
   .sec-monthly .mon-inner{padding:0 3mm;}
   .sec-monthly+.sec-monthly{break-before:page;page-break-before:always;}
+  /* 화면 전용 UI(토스트·저장 스피너·캐러셀 화살표·일지 저장버튼·팝업)는 인쇄에서 숨김 */
+  #toast,#saveSpin,#mcNav,.j-savebar,.wz-ov{display:none!important;}
   tr,.isec,.step,.feat .f,.eff .e,.info .row,.photos{break-inside:avoid;page-break-inside:avoid;}
   thead{display:table-header-group;}
   .wk-card{break-inside:avoid;page-break-inside:avoid;}
@@ -408,6 +415,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  </div>
  <div class="stage"><div id="planWrap"></div><div id="journalWrap"></div></div>
  <div id="mcNav"><button onclick="mcGo(-1)" aria-label="이전 달">‹</button><span class="pos" id="mcPos"></span><button onclick="mcGo(1)" aria-label="다음 달">›</button></div>
+ <div id="jSaveBar" class="j-savebar"><button type="button" onclick="saveJournalRecord()">☁️ 드라이브에 저장하기</button></div>
  </div>
  <!-- 작성 마법사 팝업 -->
  <div class="wz-ov" id="wzOv">
@@ -812,6 +820,7 @@ function show(s){
   const mon=(s==='monthly');
   stage.classList.toggle('mcar', mon);
   document.getElementById('planScreen').classList.toggle('mcaron', mon);
+  document.getElementById('planScreen').classList.toggle('jsbon', j);   // 프로그램 일지 하단 '드라이브에 저장하기' 버튼
   if(j){ fillA4(); }
   fitActivePage();
   if(mon){ mcReset(); requestAnimationFrame(mcApply); } else { stage.style.height=''; }
@@ -947,7 +956,7 @@ async function _persistJournal(silent){
   const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
   return Promise.resolve(_gasPostPlan(payload)).then(res=>{
     if(!silent) _spinHide();
-    if(res&&res.ok){ _toast(silent?'📝 일지도 자동 저장됐어요':'✅ 드라이브에 저장됐어요');
+    if(res&&res.ok){ if(!silent) _toast('✅ 드라이브에 저장됐어요');   // 자동(silent) 저장은 조용히 — 인쇄 화면에 토스트가 뜨지 않게
       if(res.folderUrl||res.pdfUrl){ const l2=_loadJournals(); const k=l2.findIndex(x=>x.id===rec.id); if(k>=0){ l2[k].folderUrl=res.folderUrl||''; l2[k].pdfUrl=res.pdfUrl||''; l2[k].docUrl=res.docUrl||''; _saveJournalsLocal(l2); } }
     } else if(!silent){ _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); }
   }).catch(()=>{ if(!silent){ _spinHide(); _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); } });
