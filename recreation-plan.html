@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--ink);}
 .sec.on{display:block;}
 /* 월간계획서: 순환 캐러셀 (좌우 스와이프·화살표, 가운데만 선명) */
 @media screen{
-  .stage.mcar{display:block;position:relative;z-index:1;overflow:hidden;justify-content:unset;padding:22px 0 30px;touch-action:pan-y;user-select:none;}
+  .stage.mcar{display:block;position:relative;z-index:1;overflow:hidden;justify-content:unset;padding:22px 0 30px;touch-action:none;user-select:none;}
   .stage.mcar .sec-monthly{display:block!important;position:absolute;top:22px;left:50%;transform-origin:top center;transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .4s ease,filter .4s ease;margin:0;box-shadow:0 10px 34px rgba(0,0,0,.16);cursor:default;}
   #mcNav{display:none;}
   .stage.mcar ~ #mcNav,#planScreen.mcaron #mcNav{display:flex;}
@@ -53,14 +53,6 @@ body{background:var(--bg);color:var(--ink);}
   #mcNav button{pointer-events:auto;width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.15);font-size:22px;color:var(--green-d);cursor:pointer;display:flex;align-items:center;justify-content:center;}
   #mcNav button:hover{background:#F6FBF8;border-color:var(--green);}
   #mcNav .pos{pointer-events:none;align-self:center;background:rgba(31,40,31,.82);color:#fff;font-size:12.5px;font-weight:800;padding:7px 14px;border-radius:20px;min-width:74px;text-align:center;}
-  #mcNav .mcz-btn{font-size:20px;}
-/* 월간계획서 확대 보기 오버레이 */
-.mcz-ov{position:fixed;inset:0;background:rgba(16,20,16,.93);z-index:400;display:none;}
-.mcz-ov.on{display:block;}
-.mcz-ov .mcz-scroll{position:absolute;inset:0;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:auto;padding:58px 10px 30px;display:flex;justify-content:center;align-items:flex-start;}
-.mcz-ov .mcz-body .sec-monthly{position:static!important;display:block!important;transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;margin:0!important;box-shadow:0 12px 44px rgba(0,0,0,.55)!important;}
-.mcz-ov .mcz-x{position:fixed;top:14px;right:16px;z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:#1c231e;font-size:19px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.35);}
-.mcz-ov .mcz-hint{position:fixed;top:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.4);padding:6px 14px;border-radius:20px;z-index:1;pointer-events:none;max-width:80%;text-align:center;}
 }
 
 /* ── 소개서 ── */
@@ -415,12 +407,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   <div class="fld"><label>시작 날짜</label><input type="date" id="startDate" value="2026-09-01" oninput="onDate()"></div>
  </div>
  <div class="stage"><div id="planWrap"></div><div id="journalWrap"></div></div>
- <div id="mcNav"><button onclick="mcGo(-1)" aria-label="이전 달">‹</button><span class="pos" id="mcPos"></span><button onclick="mcGo(1)" aria-label="다음 달">›</button><button class="mcz-btn" onclick="mcZoomOpen()" aria-label="확대해서 보기">🔍</button></div>
- <div id="mcZoom" class="mcz-ov" onclick="if(event.target===this)mcZoomClose()">
-  <button class="mcz-x" onclick="mcZoomClose()" aria-label="닫기">✕</button>
-  <div class="mcz-hint">손가락으로 확대·이동, 빈 곳을 누르면 닫혀요</div>
-  <div class="mcz-scroll" onclick="if(event.target===this)mcZoomClose()"><div id="mczBody" class="mcz-body"></div></div>
- </div>
+ <div id="mcNav"><button onclick="mcGo(-1)" aria-label="이전 달">‹</button><span class="pos" id="mcPos"></span><button onclick="mcGo(1)" aria-label="다음 달">›</button></div>
  </div>
  <!-- 작성 마법사 팝업 -->
  <div class="wz-ov" id="wzOv">
@@ -682,21 +669,27 @@ function fitActivePage(){
   const vw=document.documentElement.clientWidth;
   document.querySelectorAll('.sec.on').forEach(pg=>{ if(pg.classList.contains('sec-monthly'))return; const sw=pg.offsetWidth||794; const z=Math.min(1,(vw-24)/sw); if(z<1) pg.style.zoom=z; });
 }
-// 월간 순환 캐러셀: 가운데 월만 선명, 좌우는 블러 / 첫↔끝 순환
+// 월간 순환 캐러셀: 가운데 월만 선명, 좌우는 블러 / 첫↔끝 순환 (+ 가운데 달 두 손가락 확대)
 let _mc={sel:0};
+let _mcZoom={scale:1,tx:0,ty:0};   // 가운데 달 손가락 확대 상태(scale=1이면 확대 안 함)
+let _mcFit=1, _mcGesturing=false;
 function mcItems(){ return [...document.querySelectorAll('#planWrap .sec-monthly')]; }
+function _mcResetZoom(){ _mcZoom={scale:1,tx:0,ty:0}; }
+function _mcFocusEl(){ return document.querySelector('#planWrap .sec-monthly.focus'); }
+function _mcFocusTransform(){ const z=_mcZoom; return `translateX(calc(-50% + ${z.tx}px)) translateY(${z.ty}px) scale(${_mcFit*z.scale})`; }
+function _mcUpdateFocus(){ const el=_mcFocusEl(); if(el){ el.style.transition=_mcGesturing?'none':''; el.style.transform=_mcFocusTransform(); } }
 function mcApply(){
   const stage=document.querySelector('.stage'); if(!stage.classList.contains('mcar')) return;
   const items=mcItems(); const N=items.length; if(!N) return;
   _mc.sel=((_mc.sel%N)+N)%N;
   const vw=stage.clientWidth;
   const sw=items[0].offsetWidth||794, sh=items[0].offsetHeight||1123;
-  const fit=Math.min(1,(vw-20)/sw);
+  const fit=Math.min(1,(vw-20)/sw); _mcFit=fit;
   const spacing=Math.min(sw*fit+26, vw*0.96);
   items.forEach((el,i)=>{
     let d=i-_mc.sel; if(d>N/2)d-=N; else if(d<-N/2)d+=N;
     const ad=Math.abs(d);
-    el.style.transform=`translateX(calc(-50% + ${d*spacing}px)) scale(${ad===0?fit:fit*0.9})`;
+    el.style.transform=(ad===0)?_mcFocusTransform():`translateX(calc(-50% + ${d*spacing}px)) scale(${fit*0.9})`;
     el.style.opacity=ad===0?'1':(ad===1?'0.45':'0');
     el.style.filter=ad===0?'none':'blur(4px)';
     el.style.zIndex=String(100-ad);
@@ -707,31 +700,56 @@ function mcApply(){
   stage.style.height=(sh*fit+50)+'px';
   const pos=document.getElementById('mcPos'); if(pos) pos.textContent=(_mc.sel+1)+' / '+N;
 }
-function mcGo(dir){ _mc.sel+=dir; mcApply(); }
-function mcReset(){ _mc.sel=0; }
-// 월간계획서 확대 보기(가운데 달을 원본 크기로 띄우고 손가락/스크롤로 확대·이동)
-function mcZoomOpen(){
-  const items=mcItems(); const el=items[_mc.sel]; if(!el) return;
-  const clone=el.cloneNode(true);
-  clone.removeAttribute('style'); clone.classList.remove('focus');   // 캐러셀용 인라인 스타일 제거
-  const body=document.getElementById('mczBody'); if(!body) return;
-  body.innerHTML=''; body.appendChild(clone);
-  const sc=document.querySelector('#mcZoom .mcz-scroll'); if(sc){ sc.scrollTop=0; sc.scrollLeft=0; }
-  document.getElementById('mcZoom').classList.add('on');
+function mcGo(dir){ _mcResetZoom(); _mc.sel+=dir; mcApply(); }
+function mcReset(){ _mcResetZoom(); _mc.sel=0; }
+function _mcClampPan(){
+  const el=_mcFocusEl(), stage=document.querySelector('.stage'); if(!el||!stage) return;
+  const z=_mcZoom;
+  const sw=(el.offsetWidth||794)*_mcFit*z.scale, sh=(el.offsetHeight||1123)*_mcFit*z.scale;
+  const maxX=Math.max(0,(sw-stage.clientWidth)/2+30);
+  const maxY=Math.max(0,(sh-stage.clientHeight)/2+30);
+  z.tx=Math.max(-maxX,Math.min(maxX,z.tx));
+  z.ty=Math.max(-maxY,Math.min(maxY,z.ty));
 }
-function mcZoomClose(){ const z=document.getElementById('mcZoom'); if(z) z.classList.remove('on'); }
-// 스와이프
+// 부모 앱 휴대폰 뒤로가기: 계획서 내부 레이어를 한 단계씩 닫기(닫을 게 있으면 true)
+window._planBack=function(){
+  const on=(id)=>{ const e=document.getElementById(id); return !!(e && e.classList.contains('on')); };
+  const plan=document.getElementById('planScreen');
+  const planOpen=!!(plan && getComputedStyle(plan).display!=='none');
+  if(_mcZoom.scale>1){ _mcResetZoom(); _mcUpdateFocus(); return true; }              // 0) 월간 확대 중 → 확대 해제
+  if(on('ldOv')){ document.getElementById('ldOv').classList.remove('on'); if(!planOpen) openMenu(); return true; }
+  if(on('wzOv')){ document.getElementById('wzOv').classList.remove('on'); if(!planOpen) openMenu(); return true; }
+  if(planOpen){ goSelect(); return true; }                                            // 편집 화면 → 작업선택 메뉴
+  return false;                                                                       // 루트 → 부모가 계획서 닫음
+};
+// 손가락 제스처: 좌우 스와이프(달 넘김) + 두 손가락 핀치 확대 + 확대 시 한 손가락 이동
 (function(){
-  let x0=null,y0=null,drag=false;
   const stage=()=>document.querySelector('.stage');
-  document.addEventListener('pointerdown',e=>{ const s=stage(); if(!s||!s.classList.contains('mcar'))return; if(!s.contains(e.target))return; x0=e.clientX;y0=e.clientY;drag=true; });
-  document.addEventListener('pointerup',e=>{ if(!drag)return; drag=false; const dx=e.clientX-x0, dy=e.clientY-y0;
-    if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){ mcGo(dx<0?1:-1); }              // 왼쪽으로 밀면 다음 달(자연스러운 방향)
-    else if(Math.abs(dx)<8&&Math.abs(dy)<8){                                          // 제자리 탭 → 가운데 달 확대
-      const foc=document.querySelector('#planWrap .sec-monthly.focus');
-      if(foc&&foc.contains(e.target)) mcZoomOpen();
-    }
-  });
+  const inStage=(e)=>{ const s=stage(); return !!(s && s.classList.contains('mcar') && s.contains(e.target)); };
+  let x0=0,y0=0,drag=false;
+  document.addEventListener('pointerdown',e=>{ if(!inStage(e))return; if(_mcZoom.scale>1||_mcGesturing){drag=false;return;} x0=e.clientX;y0=e.clientY;drag=true; });
+  document.addEventListener('pointerup',e=>{ if(!drag)return; drag=false; if(_mcZoom.scale>1||_mcGesturing)return; const dx=e.clientX-x0,dy=e.clientY-y0; if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)) mcGo(dx<0?1:-1); });
+  let mode=null,sDist=1,sScale=1,sX=0,sY=0,sTx=0,sTy=0;
+  const dist=(t)=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  document.addEventListener('touchstart',e=>{
+    if(!inStage(e))return;
+    if(e.touches.length>=2){ mode='pinch'; _mcGesturing=true; drag=false; sDist=dist(e.touches)||1; sScale=_mcZoom.scale; }
+    else if(e.touches.length===1 && _mcZoom.scale>1){ mode='pan'; _mcGesturing=true; drag=false; sX=e.touches[0].clientX; sY=e.touches[0].clientY; sTx=_mcZoom.tx; sTy=_mcZoom.ty; }
+    else mode=null;
+  },{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(!mode)return;
+    if(mode==='pinch'&&e.touches.length>=2){ e.preventDefault(); _mcZoom.scale=Math.max(1,Math.min(4,sScale*dist(e.touches)/sDist)); _mcClampPan(); _mcUpdateFocus(); }
+    else if(mode==='pan'&&e.touches.length===1){ e.preventDefault(); _mcZoom.tx=sTx+(e.touches[0].clientX-sX); _mcZoom.ty=sTy+(e.touches[0].clientY-sY); _mcClampPan(); _mcUpdateFocus(); }
+  },{passive:false});
+  const endTouch=e=>{
+    if(!mode)return;
+    if(e.touches.length===0){ mode=null; _mcGesturing=false; if(_mcZoom.scale<=1.03)_mcResetZoom(); _mcClampPan(); _mcUpdateFocus(); }
+    else if(e.touches.length===1 && _mcZoom.scale>1){ mode='pan'; sX=e.touches[0].clientX; sY=e.touches[0].clientY; sTx=_mcZoom.tx; sTy=_mcZoom.ty; }
+    else mode=null;
+  };
+  document.addEventListener('touchend',endTouch,{passive:false});
+  document.addEventListener('touchcancel',endTouch,{passive:false});
 })();
 window.addEventListener('keydown',e=>{ if(CUR!=='monthly')return; if(e.key==='ArrowLeft')mcGo(-1); else if(e.key==='ArrowRight')mcGo(1); });
 let CUR='intro';
