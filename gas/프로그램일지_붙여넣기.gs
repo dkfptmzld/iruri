@@ -27,6 +27,9 @@
        if (action === 'deleteJournalRecord')
          return response(deleteJournalRecord(body.id));
 
+       if (action === 'combineJournalDocs')
+         return response(combineJournalDocs(body.ids));
+
    (doGet 은 e.parameter 를 p 로, doPost 는 JSON.parse(e.postData.contents) 를
     body 로 쓰는 기존 구조를 그대로 따릅니다. response() 도 기존 함수 사용.)
 ───────────────────────────────────────────────────────────────── */
@@ -161,4 +164,41 @@ function deleteJournalRecord(id) {
     }
   }
   return { ok:true, deleted:false };
+}
+
+// 여러 일지 WORD(드라이브에 저장된 각 .doc, 사진 포함)를 하나의 Word 문서로 합쳐 base64로 반환
+// ids: 합칠 일지들의 고유ID 배열(클라이언트가 넘긴 순서대로 이어붙임)
+function combineJournalDocs(ids) {
+  if (!ids || !ids.length) return { ok:false, message:'선택된 일지가 없어요' };
+  const sh = _jSheet();
+  const last = sh.getLastRow();
+  if (last < 2) return { ok:false, message:'저장된 일지가 없어요' };
+  const vals = sh.getRange(2, 1, last - 1, 20).getValues();
+  const byId = {};
+  for (let i = 0; i < vals.length; i++) byId[String(vals[i][16])] = vals[i];   // 17번째 열 = 고유ID
+
+  let head = '', bodies = [], count = 0, miss = 0;
+  ids.forEach(function (id) {
+    const r = byId[String(id)];
+    if (!r) { miss++; return; }
+    const url = r[19];                                  // 20번째 열 = WORD 파일 URL
+    const m = url && String(url).match(/\/d\/([^/]+)/);
+    if (!m) { miss++; return; }
+    let html = '';
+    try { html = DriveApp.getFileById(m[1]).getBlob().getDataAsString('UTF-8'); }
+    catch (e) { miss++; return; }
+    html = html.replace(/^﻿/, '');                 // BOM 제거
+    if (!head) { const hm = html.match(/<head[\s\S]*?<\/head>/i); head = hm ? hm[0] : ''; }  // 스타일은 첫 파일 것 1회만
+    const bm = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+    bodies.push(bm ? bm[1] : html);
+    count++;
+  });
+  if (!count) return { ok:false, message:'합칠 WORD 파일을 찾지 못했어요(저장 시 WORD가 없었을 수 있어요)' };
+
+  // 각 일지 사이에 페이지 나눔(한 일지 = 한 페이지)
+  const sep = '<br clear="all" style="mso-special-character:line-break;page-break-before:always">';
+  const combined = '﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">'
+    + head + '<body>' + bodies.join(sep) + '</body></html>';
+  const b64 = Utilities.base64Encode(combined, Utilities.Charset.UTF_8);
+  return { ok:true, count:count, missing:miss, data:b64, mime:'application/msword' };
 }
