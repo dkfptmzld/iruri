@@ -892,6 +892,15 @@ function autoSaveJournal(){ const n=Date.now(); if(n-_autoSaveT<2000) return; _a
 
 // ── 저장된 일지 불러오기 ──
 let _ldRecords=[];
+let _ldTeacherDefaulted=false;   // 불러오기 열 때 '강사' 필터를 로그인 강사로 1회만 기본 선택
+// 부모 앱(정산 시스템)에서 현재 로그인한 강사 이름을 읽어온다(같은 오리진). 관리자면 빈 값.
+function _currentTeacher(){
+  const read=(w)=>{ try{ let n=w._loggedInTeacher; if(!n){ try{ n=w.sessionStorage.getItem('iruri_session'); }catch(_){} } return (n||'').toString().trim(); }catch(e){ return ''; } };
+  let n='';
+  try{ if(window.parent && window.parent!==window) n=read(window.parent); }catch(e){}
+  if(!n) n=read(window);   // iframe 밖(단독 실행)일 때 대비
+  return n;
+}
 function _mergeRecords(server){
   const map={}; (server||[]).forEach(r=>{ if(r&&r.id) map[r.id]=r; });
   _loadJournals().forEach(r=>{ if(r&&r.id && !map[r.id]) map[r.id]=r; });  // 서버에 없는 로컬(미동기화)만 보강
@@ -901,6 +910,7 @@ function _mergeRecords(server){
 }
 function openLoad(refresh){
   const list=document.getElementById('ld-list');
+  _ldTeacherDefaulted=false;   // 열 때마다 로그인 강사 기본 선택을 다시 적용
   document.getElementById('ldOv').classList.add('on');
   // 1) 기기에 저장된 데이터로 '즉시' 표시(기다림 없음)
   const local=_mergeRecords(null);
@@ -935,6 +945,11 @@ function _fillLoadFilters(){
   // 이전 선택 복구
   const set=(id,v)=>{ const el=document.getElementById(id); if([...el.options].some(o=>o.value===v)) el.value=v; };
   set('ld-center',cur.c); set('ld-teacher',cur.t); set('ld-year',cur.y); set('ld-month',cur.m);
+  // 로그인 강사 기본 선택: 처음 열 때 1회, 사용자가 아직 강사 필터를 바꾸지 않았을 때만
+  if(!_ldTeacherDefaulted && !cur.t){
+    const me=_currentTeacher(), tsel=document.getElementById('ld-teacher');
+    if(me && [...tsel.options].some(o=>o.value===me)){ tsel.value=me; _ldTeacherDefaulted=true; }
+  }
 }
 function renderLoadList(){
   const c=document.getElementById('ld-center').value, t=document.getElementById('ld-teacher').value, y=document.getElementById('ld-year').value, m=document.getElementById('ld-month').value;
@@ -961,8 +976,14 @@ function renderLoadList(){
 function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
 function deleteJournalAt(idx){
   const r=_ldRecords[idx]; if(!r) return;
-  const label=`${r.main||'프로그램 일지'} (${r.month||''}/${r.day||''}${r.dow?(' '+String(r.dow).replace('요일','')):''})`;
-  if(!confirm(`'${label}' 일지를 삭제할까요?\n드라이브 파일과 목록에서 모두 지워지며, 되돌릴 수 없어요.`)) return;
+  const dowTxt=r.dow?(' ('+String(r.dow).replace('요일','')+')'):'';
+  const info=[
+    `📅 날짜 : ${r.year||''}년 ${r.month||''}월 ${r.day||''}일${dowTxt}`,
+    `🏢 센터 : ${r.center||'-'}`,
+    `👤 강사 : ${r.teacher||'-'}`,
+    `🎯 활동 : ${r.main||'-'}`
+  ].join('\n');
+  if(!confirm(`정말 아래 프로그램 일지를 삭제할까요?\n삭제하려는 정보가 이게 맞나요?\n\n${info}\n\n⚠️ 목록·구글시트·드라이브 파일(PDF·WORD)에서 모두 지워지며, 되돌릴 수 없어요.`)) return;
   // 1) 기기(localStorage)에서 삭제
   if(r.id){ _saveJournalsLocal(_loadJournals().filter(x=>x.id!==r.id)); }
   // 2) 화면 즉시 반영
