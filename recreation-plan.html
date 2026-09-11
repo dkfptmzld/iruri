@@ -196,6 +196,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .sec-journal .proc .hd2{font-weight:800;color:var(--green-d);}
 .sec-journal textarea{width:100%;border:1px solid #E1E5DF;border-radius:7px;background:#FBFDFB;padding:9px 10px;font-size:12.3px;font-family:inherit;line-height:1.75;outline:none;resize:none;min-height:80px;display:block;}
 .sec-journal textarea:focus{border-color:var(--green);background:#F6FBF8;}
+.sec-journal .eval-print{display:none;white-space:pre-wrap;word-break:break-word;font-size:12.3px;line-height:1.75;color:#20241f;padding:9px 10px;min-height:54px;}
 .sec-journal .photos{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .sec-journal .photo{border:1.4px dashed #C3C0B6;border-radius:10px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#B4B1A6;font-size:12px;gap:6px;background:#FBFAF6;}
 .sec-journal .photo .ic{font-size:24px;}
@@ -246,6 +247,18 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   .sec-journal .jpad{padding:0;min-height:0;}
   body.pr-all .sec-journal{break-before:page;page-break-before:always;}
   .sec-journal textarea{border-color:#ccc;background:#fff;}
+  /* 일지 A4 한 장에 맞춤: 인쇄 때만 줄간격·여백 살짝 축소(내용은 그대로) */
+  .sec-journal .jtitle{margin:3px 0 2px;}
+  .sec-journal .proc{line-height:1.62;}
+  .sec-journal .prep2{line-height:1.55;}
+  .sec-journal td.ta{padding:6px 12px;}
+  .sec-journal .jfoot{padding-top:8px;}
+  /* fillA4가 화면 채우려고 키워둔 사진칸을 인쇄 때는 원위치로(빈 자리표시라 안전) */
+  .sec-journal .photo{height:86px!important;}
+  /* 평가칸: 인쇄 때는 textarea(고정 높이라 긴 글이 잘림) 대신 자연스럽게 흐르는 div로 출력
+     → 긴 총평도 잘리지 않고, 짧으면 A4 한 장에 딱 맞음 */
+  .sec-journal textarea{display:none!important;}
+  .sec-journal .eval-print{display:block!important;line-height:1.6!important;}
 }
 /* ── 작성 마법사 팝업 ── */
 .wz-ov{position:fixed;inset:0;background:rgba(28,34,26,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px;}
@@ -600,7 +613,7 @@ function journalHTML(){
       <tr><td class="sech" colspan="4">프로그램 진행 과정</td></tr>
       <tr><td class="ta" colspan="4"><div class="proc" id="j-proc"></div></td></tr>
       <tr><td class="sech" colspan="4">전반적 평가</td></tr>
-      <tr><td class="ta" colspan="4"><textarea id="j-eval" placeholder="오늘 활동의 참여도·반응·특이사항 등 총평을 작성하세요"></textarea></td></tr>
+      <tr><td class="ta" colspan="4"><textarea id="j-eval" placeholder="오늘 활동의 참여도·반응·특이사항 등 총평을 작성하세요"></textarea><div id="j-eval-print" class="eval-print" aria-hidden="true"></div></td></tr>
       <tr><td class="sech" colspan="4">활동 사진</td></tr>
       <tr><td class="ta" colspan="4"><div class="photos"><div class="photo"><span class="ic">📷</span>사진 추가</div><div class="photo"><span class="ic">📷</span>사진 추가</div></div></td></tr>
     </table>
@@ -635,6 +648,7 @@ function fillJournalDefaults(){
 function fillA4(){
   const pad=document.querySelector('.sec-journal .jpad'); if(!pad) return;
   const ta=document.getElementById('j-eval'); if(!ta) return;
+  const ep=document.getElementById('j-eval-print'); if(ep) ep.textContent=ta.value||'';  // 인쇄용 평가 미러 동기화
   const jpg=pad.closest('.page'); if(jpg) jpg.style.zoom=''; // 실측을 위해 확대/축소 해제
   const sec=pad.closest('.sec'); const hidden=sec&&getComputedStyle(sec).display==='none';
   if(hidden){ sec.style.visibility='hidden'; sec.style.display='block'; } // 숨겨진 상태에서도 실측 가능하게 임시 표시
