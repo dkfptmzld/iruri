@@ -456,7 +456,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
      <div class="sm-div"></div>
      <button id="pdfBtn" onclick="savePDF();closeSaveMenu()"><span>📄</span> 이 문서 PDF</button>
      <button id="hwpBtn" onclick="saveHWP();closeSaveMenu()"><span>📝</span> 이 문서 WORD</button>
-     <button onclick="doSaveAll();closeSaveMenu()"><span>💾</span> 전체 저장(PDF)</button>
+     <button onclick="doSaveAll();closeSaveMenu()"><span>💾</span> 계획서 전체 PDF(소개서·연간·월간)</button>
      <div class="sm-div"></div>
      <button onclick="emailInfo();closeSaveMenu()"><span>📧</span> 이메일로 보내기</button>
     </div>
@@ -903,6 +903,9 @@ function show(s){
   const dn={intro:'소개서',annual:'연간계획표',monthly:'월간계획서',journal:'프로그램 일지'}[s]||'문서';
   document.getElementById('pdfBtn').innerHTML=`<span>📄</span> ${dn} PDF`;
   document.getElementById('hwpBtn').innerHTML=`<span>📝</span> ${dn} WORD`;
+  // 소개서·연간·월간 = PDF로만 / 프로그램 일지 = WORD로만 저장
+  document.getElementById('pdfBtn').hidden=j;
+  document.getElementById('hwpBtn').hidden=!j;
   const stage=document.querySelector('.stage');
   const mon=(s==='monthly');
   stage.classList.toggle('mcar', mon);
@@ -918,7 +921,7 @@ function datePrefix(){ const d=(document.getElementById('startDate')||{}).value|
 function fileBase(s){ return datePrefix()+docNameOf(s); }
 const _origTitle=document.title;
 function savePDF(){ document.body.classList.remove(...CLR); if(CUR==='journal'){ fillA4(); document.body.classList.add('pr-journal'); } else document.body.classList.add('pr-'+CUR); document.title=fileBase(CUR); window.print(); }
-function doSaveAll(){ document.body.classList.remove(...CLR); fillA4(); document.body.classList.add('pr-all'); document.title=datePrefix()+'도구 레크레이션_계획서_전체'; window.print(); }
+function doSaveAll(){ document.body.classList.remove(...CLR); document.body.classList.add('pr-plan'); document.title=datePrefix()+'도구 레크레이션_계획서_전체'; window.print(); }   // 계획서(소개서·연간·월간)만 PDF — 일지 제외(일지는 WORD로만)
 // 페이지 요소를 화면 그대로 이미지로 렌더 (레이아웃·글꼴 유지)
 function nodeToPNG(el){
   return new Promise((resolve,reject)=>{
@@ -1047,7 +1050,8 @@ async function _persistJournal(silent){
   _saveJournalsLocal(list);
   if(!silent) _spin('저장 중…');
   let files=null; try{ files=await _buildJournalFiles(); }catch(e){}
-  const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ pdf:{name:base+'.pdf',mime:'application/pdf',data:files.pdf}, doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
+  // 프로그램 일지는 WORD로만 저장(드라이브에도 .doc만) — PDF는 만들지 않음
+  const payload={ action:'saveJournalRecord', data:{...rec, files: files?{ doc:{name:base+'.doc',mime:'application/msword',data:files.doc} }:null } };
   return Promise.resolve(_gasPostPlan(payload)).then(res=>{
     if(!silent) _spinHide();
     if(res&&res.ok){ if(!silent) _toast('✅ 드라이브에 저장됐어요');   // 자동(silent) 저장은 조용히 — 인쇄 화면에 토스트가 뜨지 않게
