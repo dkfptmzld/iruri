@@ -442,8 +442,8 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <div class="wz-hd"><div class="t">📂 저장된 프로그램 일지</div><div class="s">센터·강사·년·월별로 저장된 일지를 불러올 수 있어요</div><button class="x" onclick="closeLoad()">✕</button></div>
    <div class="wz-bd">
      <div class="ld-filters">
-       <select id="ld-center" onchange="renderLoadList()"></select>
        <select id="ld-teacher" onchange="renderLoadList()"></select>
+       <select id="ld-center" onchange="renderLoadList()"></select>
        <select id="ld-year" onchange="renderLoadList()"></select>
        <select id="ld-month" onchange="renderLoadList()"></select>
      </div>
@@ -937,19 +937,27 @@ function _gasGetJournals(){
 function _uniqSorted(vals,{num}={}){ const s=[...new Set(vals.filter(v=>v!==''&&v!=null).map(String))]; s.sort((a,b)=> num?(Number(b)-Number(a)):a.localeCompare(b,'ko')); return s; }
 function _fillLoadFilters(){
   const cur={c:document.getElementById('ld-center').value,t:document.getElementById('ld-teacher').value,y:document.getElementById('ld-year').value,m:document.getElementById('ld-month').value};
+  const me=_currentTeacher();   // 로그인한 사람 이름(관리자 포함, 무조건 이 이름으로 필터)
   const opt=(arr,all)=>`<option value="">${all}</option>`+arr.map(v=>`<option>${esc(v)}</option>`).join('');
   document.getElementById('ld-center').innerHTML =opt(_uniqSorted(_ldRecords.map(r=>r.center)),'전체 센터');
-  document.getElementById('ld-teacher').innerHTML=opt(_uniqSorted(_ldRecords.map(r=>r.teacher)),'전체 강사');
+  // 강사 목록엔 로그인한 사람 이름을 항상 포함(기록이 아직 없어도 선택 가능하도록)
+  document.getElementById('ld-teacher').innerHTML=opt(_uniqSorted([..._ldRecords.map(r=>r.teacher), me].filter(Boolean)),'전체 강사');
   document.getElementById('ld-year').innerHTML  ='<option value="">전체 연도</option>'+_uniqSorted(_ldRecords.map(r=>r.year),{num:1}).map(y=>`<option value="${esc(y)}">${esc(y)}년</option>`).join('');
   document.getElementById('ld-month').innerHTML ='<option value="">전체 월</option>'+_uniqSorted(_ldRecords.map(r=>r.month),{num:1}).map(m=>`<option value="${esc(m)}">${esc(m)}월</option>`).join('');
   // 이전 선택 복구
   const set=(id,v)=>{ const el=document.getElementById(id); if([...el.options].some(o=>o.value===v)) el.value=v; };
   set('ld-center',cur.c); set('ld-teacher',cur.t); set('ld-year',cur.y); set('ld-month',cur.m);
-  // 로그인 강사 기본 선택: 처음 열 때 1회, 사용자가 아직 강사 필터를 바꾸지 않았을 때만
-  if(!_ldTeacherDefaulted && !cur.t){
-    const me=_currentTeacher(), tsel=document.getElementById('ld-teacher');
-    if(me && [...tsel.options].some(o=>o.value===me)){ tsel.value=me; _ldTeacherDefaulted=true; }
+  // 로그인한 사람 이름으로 무조건 기본 필터: 처음 열 때 1회, 사용자가 강사 필터를 바꾸지 않았을 때만
+  if(!_ldTeacherDefaulted && !cur.t && me){
+    document.getElementById('ld-teacher').value=me; _ldTeacherDefaulted=true;
+    // 그 강사의 센터를 기본 선택(오름차순 첫 센터). 사용자가 센터를 고르지 않았을 때만.
+    if(!cur.c){
+      const myCenters=_uniqSorted(_ldRecords.filter(r=>String(r.teacher)===me).map(r=>r.center));
+      const csel=document.getElementById('ld-center');
+      if(myCenters.length && [...csel.options].some(o=>o.value===myCenters[0])) csel.value=myCenters[0];
+    }
   }
+  // 로그인 이름을 못 읽으면(단독 실행 등) 센터는 '전체 센터' 기본 + 오름차순 목록(위 _uniqSorted 정렬)
 }
 function renderLoadList(){
   const c=document.getElementById('ld-center').value, t=document.getElementById('ld-teacher').value, y=document.getElementById('ld-year').value, m=document.getElementById('ld-month').value;
