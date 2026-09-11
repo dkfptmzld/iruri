@@ -208,6 +208,22 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .sec-journal .photo.has .ph-empty{display:none;}
 .sec-journal .photo .ph-x{display:none;position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:0;font-size:13px;cursor:pointer;align-items:center;justify-content:center;line-height:1;}
 .sec-journal .photo.has .ph-x{display:flex;}
+.jplace-wrap{display:flex;align-items:center;gap:6px;}
+.jplace-wrap .jin{flex:1;}
+.jpick{flex-shrink:0;border:1px solid var(--green);background:#F1F8F3;color:var(--green-d);border-radius:8px;padding:5px 9px;font-size:11.5px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+.jpick:hover{background:#e3f1e8;}
+.ld-schedbtn{border:1px solid var(--green);background:var(--green);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+.ld-schedbtn:hover{background:#18784a;}
+@media print{ .jpick{display:none!important;} .jplace-wrap{display:block;} }
+#cpOv{z-index:60;}
+#cpBody .cp-grp{margin-bottom:14px;}
+#cpBody .cp-day{font-size:12.5px;font-weight:900;color:var(--green-d);margin:0 0 7px;padding-left:2px;}
+#cpBody .cp-list{display:flex;flex-direction:column;gap:7px;}
+#cpBody .cp-item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;}
+#cpBody .cp-item:hover{border-color:var(--green);background:#F6FBF8;}
+#cpBody .cp-item b{font-size:14px;color:#1c231e;font-weight:800;}
+#cpBody .cp-rg{font-size:11px;font-weight:700;color:#6b7268;background:#F0EEE8;border-radius:6px;padding:2px 8px;}
+#cpBody .cp-empty{padding:26px 16px;text-align:center;color:#8a8f86;font-size:13px;line-height:1.6;}
 .sec-journal .photo .ic{font-size:24px;}
 .sec-journal .jfoot{text-align:center;font-size:11px;color:#a8a598;margin-top:auto;padding-top:12px;letter-spacing:.5px;}
 .sec-journal .jfoot b{color:var(--green);}
@@ -445,6 +461,12 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  <div id="toast"></div>
  <div id="saveSpin"><div class="ss-box"><div class="ss-ring"></div><div class="ss-msg">저장 중…</div></div></div>
  <!-- 작업 선택 팝업 -->
+ <div class="wz-ov" id="cpOv">
+  <div class="wz" style="max-width:460px">
+   <div class="wz-hd"><div class="t">📅 센터 선택</div><div class="s">강사 수업 스케줄 순서(요일)대로 표시돼요</div><button class="x" onclick="closeCenterPick()">✕</button></div>
+   <div class="wz-bd" id="cpBody" style="max-height:70vh;overflow:auto"></div>
+  </div>
+ </div>
  <div class="wz-ov" id="menuOv">
   <div class="wz" style="max-width:440px">
    <div class="wz-hd"><div class="t">🌳 계획서 · 프로그램 일지</div><div class="s">무엇을 하시겠어요?</div><button class="x" onclick="closeMenu()">✕</button></div>
@@ -474,7 +496,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
        <select id="ld-year" onchange="renderLoadList()"></select>
        <select id="ld-month" onchange="renderLoadList()"></select>
      </div>
-     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-schedbtn" onclick="openCenterPick('load')">📅 스케줄로 찾기</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
      <div id="ld-list" class="ld-list"></div>
    </div>
   </div>
@@ -619,7 +641,7 @@ function journalHTML(){
     <div class="jtitle">프로그램 일지</div><div class="jrule"></div>
     <table class="j"><colgroup><col style="width:106px"><col><col style="width:106px"><col></colgroup>
       <tr><td class="tl">프로그램명</td><td>도구 레크레이션</td><td class="tl">진행일시</td><td><input class="jin" id="j-date"></td></tr>
-      <tr><td class="tl">진행자</td><td><input class="jin" id="j-teacher"></td><td class="tl">장소</td><td><input class="jin" id="j-place" placeholder="센터명 입력"></td></tr>
+      <tr><td class="tl">진행자</td><td><input class="jin" id="j-teacher"></td><td class="tl">장소</td><td><div class="jplace-wrap"><input class="jin" id="j-place" placeholder="센터명 입력"><button type="button" class="jpick" onclick="openCenterPick()">📅 스케줄</button></div></td></tr>
       <tr><td class="tl">대상자</td><td>센터 내 어르신</td><td class="tl">참여자 / 현원</td><td><input class="jin" id="j-people" placeholder="예: 15명 / 18명"></td></tr>
       <tr><td class="tl">교육효과</td><td colspan="3" style="line-height:1.65;font-size:12.4px">${esc(edu)}</td></tr>
       <tr><td class="tl">활동목표</td><td colspan="3" id="j-goal"></td></tr>
@@ -744,6 +766,7 @@ window._planBack=function(){
   const plan=document.getElementById('planScreen');
   const planOpen=!!(plan && getComputedStyle(plan).display!=='none');
   if(_mcZoom.scale>1){ _mcResetZoom(); _mcUpdateFocus(); return true; }              // 0) 월간 확대 중 → 확대 해제
+  if(on('cpOv')){ closeCenterPick(); return true; }                                    // 센터 선택 팝업
   if(on('ldOv')){ document.getElementById('ldOv').classList.remove('on'); if(!planOpen) openMenu(); return true; }
   if(on('wzOv')){ document.getElementById('wzOv').classList.remove('on'); if(!planOpen) openMenu(); return true; }
   if(planOpen){ goSelect(); return true; }                                            // 편집 화면 → 작업선택 메뉴
@@ -997,6 +1020,51 @@ function _parentCenters(teacher){
   try{ if(window.parent && window.parent!==window && typeof window.parent._planCentersFor==='function') return window.parent._planCentersFor(teacher||''); }catch(e){}
   try{ if(typeof window._planCentersFor==='function') return window._planCentersFor(teacher||''); }catch(e){}
   return null;
+}
+// 강사 수업 스케줄(요일→센터, 순서) — 부모 앱에서 가져옴
+function _parentSchedule(teacher){
+  try{ if(window.parent && window.parent!==window && typeof window.parent._planScheduleFor==='function') return window.parent._planScheduleFor(teacher||''); }catch(e){}
+  try{ if(typeof window._planScheduleFor==='function') return window._planScheduleFor(teacher||''); }catch(e){}
+  return null;
+}
+// ── 강사 스케줄 순서(요일)대로 센터 선택 : 저장(장소) + 불러오기 공용 ──
+let _cpCenters=[], _cpMode='journal';
+function openCenterPick(mode){
+  _cpMode=(mode==='load')?'load':'journal';
+  const t=(_cpMode==='load')
+    ? ((document.getElementById('ld-teacher').value||'').trim() || _currentTeacher())
+    : ((document.getElementById('teacher').value||'').trim() || _currentTeacher());
+  const body=document.getElementById('cpBody'); if(!body) return;
+  const sched=_parentSchedule(t);
+  _cpCenters=[];
+  if(!t){
+    body.innerHTML='<div class="cp-empty">강사 이름을 먼저 확인해 주세요.<br>(편집에서 강사를 선택하면 스케줄이 나와요)</div>';
+  } else if(!sched || !sched.length){
+    body.innerHTML=`<div class="cp-empty"><b>${esc(t)}</b> 강사의 등록된 수업 스케줄이 없어요.<br>정산 시스템의 '센터 관리'에서 스케줄을 등록하면 여기에 표시됩니다.<br>지금은 장소 칸에 센터명을 직접 입력해 주세요.</div>`;
+  } else {
+    body.innerHTML=sched.map(g=>{
+      const items=(g.centers||[]).map(c=>{ const i=_cpCenters.push(c)-1;
+        return `<button type="button" class="cp-item" onclick="chooseCenter(${i})"><b>${esc(c.name)}</b>${c.region?`<span class="cp-rg">${esc(c.region)}</span>`:''}</button>`; }).join('');
+      const dayLabel = g.day==='미등록' ? '요일 미등록' : (g.day+'요일');
+      return `<div class="cp-grp"><div class="cp-day">📅 ${esc(dayLabel)}</div><div class="cp-list">${items}</div></div>`;
+    }).join('');
+  }
+  document.getElementById('cpOv').classList.add('on');
+}
+function closeCenterPick(){ const o=document.getElementById('cpOv'); if(o) o.classList.remove('on'); }
+function chooseCenter(i){
+  const c=_cpCenters[i];
+  if(c){
+    if(_cpMode==='load'){
+      const sel=document.getElementById('ld-center');
+      if(sel){ if(![...sel.options].some(o=>o.value===c.name)){ const op=document.createElement('option'); op.textContent=c.name; op.value=c.name; sel.appendChild(op); } sel.value=c.name; }
+      try{ _ldTeacherDefaulted=true; }catch(e){}
+      renderLoadList();
+    } else {
+      const jp=document.getElementById('j-place'); if(jp) jp.value=c.name;
+    }
+  }
+  closeCenterPick();
 }
 // 특정 강사 기준 센터 드롭다운 목록(센터관리 배정센터 ∪ 그 강사의 일지 센터, 오름차순)
 function _centersForTeacher(teacher){
