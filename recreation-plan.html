@@ -224,6 +224,13 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 #cpBody .cp-item b{font-size:14px;color:#1c231e;font-weight:800;}
 #cpBody .cp-rg{font-size:11px;font-weight:700;color:#6b7268;background:#F0EEE8;border-radius:6px;padding:2px 8px;}
 #cpBody .cp-empty{padding:26px 16px;text-align:center;color:#8a8f86;font-size:13px;line-height:1.6;}
+#cpBody .sv-back{display:inline-flex;align-items:center;gap:4px;border:none;background:none;color:var(--green-d);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;padding:2px 2px 12px;}
+#cpBody .sv-back:hover{text-decoration:underline;}
+#cpBody .sv-manual{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);}
+#cpBody .sv-manual input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:13px;}
+#cpBody .sv-manual input:focus{outline:none;border-color:var(--green);}
+#cpBody .sv-manual button{border:none;border-radius:10px;padding:10px 14px;background:var(--green);color:#fff;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap;}
+#cpBody .sv-manual button:hover{background:var(--green-d);}
 .sec-journal .photo .ic{font-size:24px;}
 .sec-journal .jfoot{text-align:center;font-size:11px;color:#a8a598;margin-top:auto;padding-top:12px;letter-spacing:.5px;}
 .sec-journal .jfoot b{color:var(--green);}
@@ -243,12 +250,14 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   body.pr-intro .sec:not(.sec-intro){display:none!important;}
   body.pr-annual .sec:not(.sec-annual){display:none!important;}
   body.pr-monthly .sec:not(.sec-monthly){display:none!important;}
-  @page{size:A4 portrait;margin:12mm;}
-  @page land{size:A4 landscape;margin:8mm;}
-  .sec-annual{page:land;}
+  /* @page 여백을 0으로 → 브라우저가 넣는 머리글/바닥글(날짜·주소·페이지)이 그려질 자리가 없어져 사라짐.
+     원래 여백(12mm/8mm)은 각 문서 콘텐츠의 padding 으로 되돌려 레이아웃은 그대로 유지 */
+  @page{size:A4 portrait;margin:0;}
+  @page land{size:A4 landscape;margin:0;}
+  .sec-annual{page:land;padding:8mm;}   /* 옛 @page 8mm 여백을 padding으로 되돌림 */
   /* 캐러셀이 각 월 카드에 걸어둔 인라인 스타일(축소·블러·투명·숨김·이동)을 인쇄 때 원상복구 */
-  .sec-monthly{height:271mm!important;overflow:hidden;transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;z-index:auto!important;position:relative!important;left:auto!important;top:auto!important;}
-  .sec-monthly .mon-inner{padding:0 3mm;}
+  .sec-monthly{height:296mm!important;overflow:hidden;transform:none!important;filter:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;z-index:auto!important;position:relative!important;left:auto!important;top:auto!important;}
+  .sec-monthly .mon-inner{padding:12mm 15mm 13mm;}   /* 옛 @page 12mm + 내부 3mm = 15mm 를 padding으로 되돌림(콘텐츠 271mm×180mm 동일) */
   .sec-monthly+.sec-monthly{break-before:page;page-break-before:always;}
   /* 화면 전용 UI(토스트·저장 스피너·캐러셀 화살표·일지 저장버튼·팝업)는 인쇄에서 숨김 */
   #toast,#saveSpin,#mcNav,.j-savebar,.wz-ov{display:none!important;}
@@ -256,7 +265,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   thead{display:table-header-group;}
   .wk-card{break-inside:avoid;page-break-inside:avoid;}
   /* 소개서 A4 한 장에 */
-  .sec-intro .ipad{padding:0;}
+  .sec-intro .ipad{padding:12mm;}   /* 옛 @page 12mm 여백을 padding으로 되돌림 */
   .sec-intro .lh-logo{width:38px;height:44px;}
   .sec-intro .lh-rule{margin-top:6px;}
   .sec-intro .ititle{font-size:20px;margin-top:6px;letter-spacing:1px;}
@@ -272,7 +281,9 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
   .sec-intro .icontact{margin-top:7px;padding:6px 12px;font-size:10.8px;}
   .sec-intro .ifoot{padding:6px 0 0;margin-top:5px;}
   /* 일지: 여백은 @page 로 */
-  .sec-journal .jpad{padding:0;min-height:0;}
+  .sec-journal .jpad{padding:12mm;min-height:0;}   /* 옛 @page 12mm 여백을 padding으로 되돌림 */
+  /* 빈 입력칸의 예시(placeholder)는 인쇄/PDF에 나오지 않게(예: '예: 15명 / 18명') */
+  .sec-journal input::placeholder{color:transparent!important;opacity:0!important;}
   body.pr-all .sec-journal{break-before:page;page-break-before:always;}
   .sec-journal textarea{border-color:#ccc;background:#fff;}
   /* 일지 A4 한 장에 맞춤: 인쇄 때만 줄간격·여백 살짝 축소(내용은 그대로) */
@@ -415,7 +426,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <div class="menu-wrap">
     <button class="iconbtn primary" onclick="toggleSaveMenu(event)">⤓ 저장 ▾</button>
     <div class="save-menu" id="saveMenu" hidden>
-     <button id="jsaveBtn" onclick="saveJournalRecord();closeSaveMenu()"><span>☁️</span> 드라이브에 일지 저장</button>
+     <button id="jsaveBtn" onclick="openSaveFlow('save');closeSaveMenu()"><span>☁️</span> 드라이브에 일지 저장</button>
      <button id="jloadBtn" onclick="openLoad();closeSaveMenu()"><span>📂</span> 저장된 일지 불러오기</button>
      <div class="sm-div"></div>
      <button id="pdfBtn" onclick="savePDF();closeSaveMenu()"><span>📄</span> 이 문서 PDF</button>
@@ -437,7 +448,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
  </div>
  <div class="stage"><div id="planWrap"></div><div id="journalWrap"></div></div>
  <div id="mcNav"><button onclick="mcGo(-1)" aria-label="이전 달">‹</button><span class="pos" id="mcPos"></span><button onclick="mcGo(1)" aria-label="다음 달">›</button></div>
- <div id="jSaveBar" class="j-savebar"><button type="button" onclick="saveJournalRecord()">☁️ 드라이브에 저장하기</button></div>
+ <div id="jSaveBar" class="j-savebar"><button type="button" onclick="openSaveFlow('save')">☁️ 드라이브에 저장하기</button></div>
  </div>
  <!-- 작성 마법사 팝업 -->
  <div class="wz-ov" id="wzOv">
@@ -496,7 +507,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
        <select id="ld-year" onchange="renderLoadList()"></select>
        <select id="ld-month" onchange="renderLoadList()"></select>
      </div>
-     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-schedbtn" onclick="openCenterPick('load')">📅 스케줄로 찾기</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-schedbtn" onclick="openSaveFlow('load')">📅 강사·센터로 찾기</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
      <div id="ld-list" class="ld-list"></div>
    </div>
   </div>
@@ -641,7 +652,7 @@ function journalHTML(){
     <div class="jtitle">프로그램 일지</div><div class="jrule"></div>
     <table class="j"><colgroup><col style="width:106px"><col><col style="width:106px"><col></colgroup>
       <tr><td class="tl">프로그램명</td><td>도구 레크레이션</td><td class="tl">진행일시</td><td><input class="jin" id="j-date"></td></tr>
-      <tr><td class="tl">진행자</td><td><input class="jin" id="j-teacher"></td><td class="tl">장소</td><td><div class="jplace-wrap"><input class="jin" id="j-place" placeholder="센터명 입력"><button type="button" class="jpick" onclick="openCenterPick()">📅 스케줄</button></div></td></tr>
+      <tr><td class="tl">진행자</td><td><input class="jin" id="j-teacher"></td><td class="tl">장소</td><td><input class="jin" id="j-place" placeholder="센터명 입력"></td></tr>
       <tr><td class="tl">대상자</td><td>센터 내 어르신</td><td class="tl">참여자 / 현원</td><td><input class="jin" id="j-people" placeholder="예: 15명 / 18명"></td></tr>
       <tr><td class="tl">교육효과</td><td colspan="3" style="line-height:1.65;font-size:12.4px">${esc(edu)}</td></tr>
       <tr><td class="tl">활동목표</td><td colspan="3" id="j-goal"></td></tr>
@@ -881,6 +892,14 @@ function nodeToPNG(el){
     const css=document.querySelector('style').innerHTML;
     const clone=el.cloneNode(true);
     clone.style.transform='none'; clone.style.filter='none'; clone.style.opacity='1'; clone.style.zoom=''; clone.style.position='static'; clone.style.margin='0'; clone.classList.remove('focus');
+    // cloneNode 는 사용자가 입력한 현재값(.value)을 직렬화에 담지 않으므로 원본값을 복제본에 반영.
+    // 빈 칸은 placeholder(예: '예: 15명 / 18명')가 이미지/ PDF에 찍히지 않게 제거.
+    try{
+      const _si=el.querySelectorAll('input,textarea'), _ci=clone.querySelectorAll('input,textarea');
+      _ci.forEach((c,i)=>{ const v=(_si[i]&&_si[i].value)||'';
+        if(c.tagName==='TEXTAREA') c.textContent=v; else if(v) c.setAttribute('value',v); else c.removeAttribute('value');
+        if(!v.trim()) c.removeAttribute('placeholder'); });
+    }catch(e){}
     const xhtml=new XMLSerializer().serializeToString(clone);
     const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>'+css+' .sec{display:block!important}</style>'+xhtml+'</div></foreignObject></svg>';
     const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
@@ -1028,44 +1047,71 @@ function _parentSchedule(teacher){
   return null;
 }
 // ── 강사 스케줄 순서(요일)대로 센터 선택 : 저장(장소) + 불러오기 공용 ──
-let _cpCenters=[], _cpMode='journal';
-function openCenterPick(mode){
-  _cpMode=(mode==='load')?'load':'journal';
-  const t=(_cpMode==='load')
+// 부모 앱 강사 목록
+function _parentTeachers(){
+  try{ if(window.parent && window.parent!==window && typeof window.parent._planTeachers==='function') return window.parent._planTeachers(); }catch(e){}
+  try{ if(typeof window._planTeachers==='function') return window._planTeachers(); }catch(e){}
+  return null;
+}
+// 저장/불러오기 위저드: ① 강사 선택 → ② 그 강사의 센터(폴더) 선택
+let _cpCenters=[], _svTeachers=[], _svMode='save', _svTeacher='';
+function _svHeader(sub){ const h=document.querySelector('#cpOv .wz-hd .s'); if(h) h.textContent=sub; const t=document.querySelector('#cpOv .wz-hd .t'); if(t) t.textContent = _svMode==='load'?'📂 강사·센터로 찾기':'☁️ 드라이브에 저장'; }
+function openSaveFlow(mode){
+  _svMode=(mode==='load')?'load':'save'; _svTeacher='';
+  const cur=(_svMode==='load')
     ? ((document.getElementById('ld-teacher').value||'').trim() || _currentTeacher())
     : ((document.getElementById('teacher').value||'').trim() || _currentTeacher());
-  const body=document.getElementById('cpBody'); if(!body) return;
-  const sched=_parentSchedule(t);
-  _cpCenters=[];
-  if(!t){
-    body.innerHTML='<div class="cp-empty">강사 이름을 먼저 확인해 주세요.<br>(편집에서 강사를 선택하면 스케줄이 나와요)</div>';
-  } else if(!sched || !sched.length){
-    body.innerHTML=`<div class="cp-empty"><b>${esc(t)}</b> 강사의 등록된 수업 스케줄이 없어요.<br>정산 시스템의 '센터 관리'에서 스케줄을 등록하면 여기에 표시됩니다.<br>지금은 장소 칸에 센터명을 직접 입력해 주세요.</div>`;
-  } else {
-    body.innerHTML=sched.map(g=>{
-      const items=(g.centers||[]).map(c=>{ const i=_cpCenters.push(c)-1;
-        return `<button type="button" class="cp-item" onclick="chooseCenter(${i})"><b>${esc(c.name)}</b>${c.region?`<span class="cp-rg">${esc(c.region)}</span>`:''}</button>`; }).join('');
-      const dayLabel = g.day==='미등록' ? '요일 미등록' : (g.day+'요일');
-      return `<div class="cp-grp"><div class="cp-day">📅 ${esc(dayLabel)}</div><div class="cp-list">${items}</div></div>`;
-    }).join('');
-  }
+  _svRenderTeachers(cur);
   document.getElementById('cpOv').classList.add('on');
 }
-function closeCenterPick(){ const o=document.getElementById('cpOv'); if(o) o.classList.remove('on'); }
-function chooseCenter(i){
-  const c=_cpCenters[i];
-  if(c){
-    if(_cpMode==='load'){
-      const sel=document.getElementById('ld-center');
-      if(sel){ if(![...sel.options].some(o=>o.value===c.name)){ const op=document.createElement('option'); op.textContent=c.name; op.value=c.name; sel.appendChild(op); } sel.value=c.name; }
-      try{ _ldTeacherDefaulted=true; }catch(e){}
-      renderLoadList();
-    } else {
-      const jp=document.getElementById('j-place'); if(jp) jp.value=c.name;
-    }
-  }
-  closeCenterPick();
+function _svRenderTeachers(cur){
+  _svHeader('① 강사를 선택하세요');
+  let list=_parentTeachers(); if(!list||!list.length) list=(typeof TEACHERS!=='undefined'?TEACHERS:[]);
+  list=[...new Set((list||[]).filter(Boolean))];
+  if(cur && list.includes(cur)) list=[cur, ...list.filter(n=>n!==cur)];
+  _svTeachers=list;
+  const body=document.getElementById('cpBody'); if(!body) return;
+  if(!list.length){ body.innerHTML='<div class="cp-empty">등록된 강사가 없어요.</div>'; return; }
+  body.innerHTML='<div class="cp-list">'+list.map((n,i)=>`<button type="button" class="cp-item" onclick="_svPickTeacher(${i})"><b>👤 ${esc(n)}</b>${(cur&&n===cur)?'<span class="cp-rg">현재</span>':''}</button>`).join('')+'</div>';
 }
+function _svPickTeacher(i){ const n=_svTeachers[i]; if(!n) return; _svTeacher=n; _svRenderCenters(); }
+function _svRenderCenters(){
+  _svHeader('② '+_svTeacher+' 강사의 센터(폴더)를 선택하세요');
+  const sched=_parentSchedule(_svTeacher); const body=document.getElementById('cpBody'); if(!body) return;
+  _cpCenters=[]; let inner='';
+  if(sched && sched.length){
+    inner=sched.map(g=>{
+      const items=(g.centers||[]).map(c=>{ const i=_cpCenters.push(c)-1;
+        return `<button type="button" class="cp-item" onclick="_svPickCenter(${i})"><b>📁 ${esc(c.name)}</b>${c.region?`<span class="cp-rg">${esc(c.region)}</span>`:''}</button>`; }).join('');
+      const dayLabel=g.day==='미등록'?'요일 미등록':(g.day+'요일');
+      return `<div class="cp-grp"><div class="cp-day">📅 ${esc(dayLabel)}</div><div class="cp-list">${items}</div></div>`;
+    }).join('');
+  } else {
+    inner=`<div class="cp-empty"><b>${esc(_svTeacher)}</b> 강사의 등록된 수업 스케줄이 없어요.<br>정산 시스템 '센터 관리'에서 스케줄을 등록하면 폴더가 표시됩니다.</div>`;
+  }
+  if(_svMode==='save'){ inner+=`<div class="sv-manual"><input id="sv-manual-input" placeholder="센터명 직접 입력"><button type="button" onclick="_svPickManual()">이 센터로 저장</button></div>`; }
+  body.innerHTML='<button type="button" class="sv-back" onclick="_svRenderTeachers(_svTeacher)">‹ 강사 다시 선택</button>'+inner;
+}
+function _svPickCenter(i){ const c=_cpCenters[i]; if(c) _svApply(_svTeacher, c.name); }
+function _svPickManual(){ const v=(document.getElementById('sv-manual-input').value||'').trim(); if(!v){ alert('센터명을 입력해 주세요.'); return; } _svApply(_svTeacher, v); }
+function _svApply(teacher, center){
+  if(_svMode==='load'){
+    const tsel=document.getElementById('ld-teacher');
+    if(tsel){ if(![...tsel.options].some(o=>o.value===teacher)){ const op=document.createElement('option'); op.textContent=teacher; op.value=teacher; tsel.appendChild(op);} tsel.value=teacher; }
+    try{ _ldTeacherDefaulted=true; }catch(e){}
+    const csel=document.getElementById('ld-center');
+    csel.innerHTML='<option value="">전체 센터</option>'+_centersForTeacher(teacher).map(v=>`<option>${esc(v)}</option>`).join('');
+    if(![...csel.options].some(o=>o.value===center)){ const op=document.createElement('option'); op.textContent=center; op.value=center; csel.appendChild(op);} csel.value=center;
+    closeCenterPick(); renderLoadList();
+  } else {
+    const th=document.getElementById('teacher'); if(th) th.value=teacher;
+    const jt=document.getElementById('j-teacher'); if(jt) jt.value=teacher+' 강사';
+    const jp=document.getElementById('j-place'); if(jp) jp.value=center;
+    closeCenterPick();
+    saveJournalRecord();   // 스피너와 함께 실제 저장(_persistJournal(false))
+  }
+}
+function closeCenterPick(){ const o=document.getElementById('cpOv'); if(o) o.classList.remove('on'); }
 // 특정 강사 기준 센터 드롭다운 목록(센터관리 배정센터 ∪ 그 강사의 일지 센터, 오름차순)
 function _centersForTeacher(teacher){
   const mg=_parentCenters(teacher);
