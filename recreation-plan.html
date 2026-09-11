@@ -358,8 +358,14 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
 .ld-chip{border:1.5px solid var(--line);border-radius:20px;padding:5px 13px;font-size:12.5px;font-weight:700;background:#fff;cursor:pointer;font-family:inherit;color:var(--green-d);transition:.12s;}
 .ld-chip:hover{border-color:#9FCBB4;background:#F6FBF8;}
 .ld-chip.sel{border-color:var(--green);background:var(--green);color:#fff;}
-.ld-tools{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.ld-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
 .ld-refresh{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--green-d);}
+.ld-selall{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--green-d);cursor:pointer;white-space:nowrap;}
+.ld-selall input,.ld-chk input{width:18px;height:18px;accent-color:var(--green);cursor:pointer;margin:0;}
+.ld-wordbtn{border:1.5px solid var(--green);background:var(--green);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.ld-wordbtn:disabled{opacity:.55;cursor:default;background:#fff;color:var(--green-d);}
+.ld-wordbtn:not(:disabled):hover{background:var(--green-d);}
+.ld-chk{display:flex;align-items:center;flex:0 0 auto;}
 .ld-list{max-height:52vh;overflow-y:auto;padding-right:2px;}
 .ld-grp{font-size:12px;font-weight:900;color:var(--green-d);background:#EAF4EE;border-radius:8px;padding:6px 10px;margin:10px 0 6px;position:sticky;top:0;}
 .ld-item{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:#fff;transition:.12s;}
@@ -535,7 +541,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
        <div class="ld-ym-row"><span class="ld-ym-lb">📅 연도</span><div class="ld-chips" id="ld-yearChips"></div></div>
        <div class="ld-ym-row"><span class="ld-ym-lb">🗓️ 월</span><div class="ld-chips" id="ld-monthChips"></div></div>
      </div>
-     <div class="ld-tools"><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div class="ld-tools"><label class="ld-selall"><input type="checkbox" id="ld-selall" onchange="_ldToggleAll(this)"> 전체 선택</label><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-wordbtn" id="ld-wordbtn" onclick="_ldBulkWord()" disabled>📗 선택 WORD 저장</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
      <div id="ld-list" class="ld-list"></div>
    </div>
   </div>
@@ -1168,6 +1174,7 @@ function openLoad(refresh){
   const list=document.getElementById('ld-list');
   _ldTeacherDefaulted=false;   // 열 때마다 로그인 강사 기본 선택을 다시 적용
   _ldCenterTouched=false;      // 연·월 칩은 센터를 고른 뒤에만 표시
+  if(!refresh){ _ldSel=new Set(); }   // 새로 열 때만 선택 초기화(새로고침은 선택 유지)
   document.getElementById('ldOv').classList.add('on');
   // 1) 기기에 저장된 데이터로 '즉시' 표시(기다림 없음)
   const local=_mergeRecords(null);
@@ -1280,9 +1287,10 @@ function onLoadTeacherChange(){
 function renderLoadList(){
   const c=document.getElementById('ld-center').value, t=document.getElementById('ld-teacher').value, y=document.getElementById('ld-year').value, m=document.getElementById('ld-month').value;
   const rows=_ldRecords.filter(r=> (!c||String(r.center)===c) && (!t||String(r.teacher)===t) && (!y||String(r.year)===y) && (!m||String(r.month)===m) );
+  _ldVisible=rows;   // 체크박스 '전체 선택' 대상
   const list=document.getElementById('ld-list');
   document.getElementById('ld-count').textContent=`총 ${rows.length}건`;
-  if(!rows.length){ list.innerHTML='<div class="ld-empty">저장된 일지가 없어요.<br>일지를 작성한 뒤 <b>☁️ 일지 저장</b>을 누르면 여기에 쌓입니다.</div>'; return; }
+  if(!rows.length){ list.innerHTML='<div class="ld-empty">저장된 일지가 없어요.<br>일지를 작성한 뒤 <b>☁️ 일지 저장</b>을 누르면 여기에 쌓입니다.</div>'; _ldUpdateBulk(); return; }
   let html='', lastGrp='';
   rows.forEach((r,i)=>{
     const grp=`${r.center||'(센터 미입력)'} · ${r.year||''}년 ${r.month||''}월`;
@@ -1295,9 +1303,45 @@ function renderLoadList(){
     if(r.folderUrl) links+=`<a class="ld-link" href="${esc(r.folderUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📂 폴더</a>`;
     const gi=_ldRecords.indexOf(r);
     links+=`<button type="button" class="ld-del" onclick="event.stopPropagation();deleteJournalAt(${gi})">🗑 삭제</button>`;
-    html+=`<div class="ld-item" onclick="loadJournalAt(${gi})"><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'프로그램 일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span><span class="ld-links">${links}</span></div><div class="go">불러오기 →</div></div>`;
+    const chk=_ldSel.has(r.id)?' checked':'';
+    html+=`<div class="ld-item" onclick="loadJournalAt(${gi})"><label class="ld-chk" onclick="event.stopPropagation()"><input type="checkbox"${chk} onchange="_ldToggleOne(${gi},this.checked)"></label><div class="d">${esc(dstr)}</div><div class="m"><b>${esc(r.main||'프로그램 일지')}</b><span>${esc(sub)}${r.people?(' · '+esc(r.people)):''}</span><span class="ld-links">${links}</span></div><div class="go">불러오기 →</div></div>`;
   });
   list.innerHTML=html;
+  _ldUpdateBulk();
+}
+// ── 체크한 일지 한번에 WORD로(드라이브에 저장된 각 WORD를 GAS가 합쳐 하나로) ──
+let _ldSel=new Set(), _ldVisible=[];
+function _ldToggleOne(gi,on){ const r=_ldRecords[gi]; if(!r||r.id==null) return; if(on)_ldSel.add(r.id); else _ldSel.delete(r.id); _ldUpdateBulk(); }
+function _ldToggleAll(cb){ (_ldVisible||[]).forEach(r=>{ if(r.id==null) return; if(cb.checked)_ldSel.add(r.id); else _ldSel.delete(r.id); }); renderLoadList(); }
+function _ldSelectedIds(){ return _ldRecords.filter(r=>_ldSel.has(r.id)).map(r=>r.id); }
+function _ldUpdateBulk(){
+  const total=_ldSelectedIds().length;
+  const btn=document.getElementById('ld-wordbtn');
+  if(btn){ btn.disabled=!total; btn.textContent=total?`📗 선택 ${total}건 WORD 저장`:'📗 선택 WORD 저장'; }
+  const all=document.getElementById('ld-selall');
+  if(all){ const vis=(_ldVisible||[]).filter(r=>r.id!=null); all.checked=vis.length>0 && vis.every(r=>_ldSel.has(r.id)); all.indeterminate=!all.checked && vis.some(r=>_ldSel.has(r.id)); }
+}
+function _bulkWordName(){
+  const t=(document.getElementById('ld-teacher').value||''), c=(document.getElementById('ld-center').value||''), y=(document.getElementById('ld-year').value||''), m=(document.getElementById('ld-month').value||'');
+  const parts=['도구 레크레이션_프로그램일지']; if(t)parts.push(t); if(c)parts.push(c); if(y)parts.push(y+'년'); if(m)parts.push(m+'월');
+  return parts.join('_')+'_모음';
+}
+async function _ldBulkWord(){
+  const ids=_ldSelectedIds();
+  if(!ids.length){ alert('WORD로 받을 일지를 먼저 체크해 주세요.'); return; }
+  _spin(`WORD ${ids.length}건 합치는 중…`);
+  try{
+    const res=await _gasPostPlan({action:'combineJournalDocs', ids});
+    if(!res || !res.ok || !res.data){
+      _spinHide();
+      alert('WORD 합치기에 실패했어요.\n'+((res&&res.message)||'구글 앱스 스크립트(GAS)에 combineJournalDocs 함수가 추가·재배포됐는지 확인해 주세요.'));
+      return;
+    }
+    const blob=new Blob([_b64ToU8(res.data)],{type:'application/msword'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=_bulkWordName()+'.doc';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    _spinHide(); _toast(`✅ ${res.count||ids.length}건 WORD 저장 완료`);
+  }catch(e){ _spinHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
 }
 function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
 function deleteJournalAt(idx){
