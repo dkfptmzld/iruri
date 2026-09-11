@@ -743,10 +743,15 @@ window._planBack=function(){
     else if(mode==='pan'&&e.touches.length===1){ e.preventDefault(); _mcZoom.tx=sTx+(e.touches[0].clientX-sX); _mcZoom.ty=sTy+(e.touches[0].clientY-sY); _mcClampPan(); _mcUpdateFocus(); }
   },{passive:false});
   const endTouch=e=>{
-    if(!mode)return;
-    if(e.touches.length===0){ mode=null; _mcGesturing=false; if(_mcZoom.scale<=1.03)_mcResetZoom(); _mcClampPan(); _mcUpdateFocus(); }
-    else if(e.touches.length===1 && _mcZoom.scale>1){ mode='pan'; sX=e.touches[0].clientX; sY=e.touches[0].clientY; sTx=_mcZoom.tx; sTy=_mcZoom.ty; }
-    else mode=null;
+    if(e.touches.length===0){
+      // 모든 손가락을 뗌 → 제스처 상태 반드시 초기화(안 하면 스와이프가 막힘)
+      if(_mcZoom.scale<=1.03) _mcResetZoom();
+      _mcClampPan(); mode=null; _mcGesturing=false; _mcUpdateFocus();
+    } else if(e.touches.length===1){
+      // 손가락 하나 남음: 확대 상태면 이동 모드로 이어가고, 아니면 제스처 종료
+      if(_mcZoom.scale>1){ mode='pan'; _mcGesturing=true; sX=e.touches[0].clientX; sY=e.touches[0].clientY; sTx=_mcZoom.tx; sTy=_mcZoom.ty; }
+      else { mode=null; _mcGesturing=false; }
+    }
   };
   document.addEventListener('touchend',endTouch,{passive:false});
   document.addEventListener('touchcancel',endTouch,{passive:false});
