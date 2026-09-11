@@ -862,7 +862,6 @@ async function saveHWP(){
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fileBase(CUR)+'.doc'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
     _spinHide(); _toast('✅ WORD 저장 완료');
   }catch(e){ _spinHide(); _toastHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
-  setTimeout(autoSaveJournal,150);  // WORD 저장해도 일지 자동 저장
 }
 function emailInfo(){ alert('📧 이메일 바로 보내기 — 준비 중\n\n작성한 문서를 PDF로 첨부해 구글 이메일로 바로 보내려면 GAS(구글 앱스 스크립트) 연동이 필요합니다. 연동되면 이 버튼으로 소개서·계획표·일지를 바로 전송할 수 있어요.'); }
 
@@ -962,9 +961,6 @@ async function _persistJournal(silent){
   }).catch(()=>{ if(!silent){ _spinHide(); _toast('📥 기기에 저장됐어요 (드라이브 동기화 대기)'); } });
 }
 function saveJournalRecord(){ return _persistJournal(false); }
-// PDF·WORD·전체저장 등 내보내기 시 자동으로 일지도 저장(버튼 안 눌러도)
-let _autoSaveT=0;
-function autoSaveJournal(){ const n=Date.now(); if(n-_autoSaveT<2000) return; _autoSaveT=n; try{ _persistJournal(true); }catch(e){} }
 
 // ── 저장된 일지 불러오기 ──
 let _ldRecords=[];
@@ -1127,7 +1123,7 @@ function loadJournalInto(r){
   closeLoad();
   show('journal');
 }
-window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; setTimeout(autoSaveJournal,150); });
+window.addEventListener('afterprint',()=>{ document.body.classList.remove(...CLR); document.title=_origTitle; });
 window.addEventListener('resize',()=>{ if(CUR==='journal')fillA4(); fitActivePage(); if(CUR==='monthly')mcApply(); });
 function pickProgram(p){
   if(p!=='rec') return;
