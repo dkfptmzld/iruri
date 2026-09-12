@@ -451,7 +451,6 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
    <div class="menu-wrap">
     <button class="iconbtn primary" onclick="toggleSaveMenu(event)">⤓ 저장 ▾</button>
     <div class="save-menu" id="saveMenu" hidden>
-     <button id="jsaveBtn" onclick="openSaveFlow('save');closeSaveMenu()"><span>☁️</span> 드라이브에 일지 저장</button>
      <button id="jloadBtn" onclick="openLoad();closeSaveMenu()"><span>📂</span> 저장된 일지 불러오기</button>
      <div class="sm-div"></div>
      <button id="pdfBtn" onclick="savePDF();closeSaveMenu()"><span>📄</span> 이 문서 PDF</button>
@@ -541,7 +540,7 @@ table.j td{border:1px solid #6C6A60;padding:9px 12px;font-size:12.7px;vertical-a
        <div class="ld-ym-row"><span class="ld-ym-lb">📅 연도</span><div class="ld-chips" id="ld-yearChips"></div></div>
        <div class="ld-ym-row"><span class="ld-ym-lb">🗓️ 월</span><div class="ld-chips" id="ld-monthChips"></div></div>
      </div>
-     <div class="ld-tools"><label class="ld-selall"><input type="checkbox" id="ld-selall" onchange="_ldToggleAll(this)"> 전체 선택</label><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-wordbtn" id="ld-wordbtn" onclick="_ldBulkWord()" disabled>📗 선택 WORD 저장</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
+     <div class="ld-tools"><label class="ld-selall"><input type="checkbox" id="ld-selall" onchange="_ldToggleAll(this)"> 전체 선택</label><span id="ld-count" class="wz-sub"></span><span style="flex:1"></span><button class="ld-wordbtn" id="ld-wordbtn" onclick="_ldBulkWord()" disabled>📦 선택 ZIP 저장</button><button class="ld-refresh" onclick="openLoad(true)">🔄 새로고침</button></div>
      <div id="ld-list" class="ld-list"></div>
    </div>
   </div>
@@ -1321,7 +1320,7 @@ function _ldSelectedIds(){ return _ldRecords.filter(r=>_ldSel.has(r.id)).map(r=>
 function _ldUpdateBulk(){
   const total=_ldSelectedIds().length;
   const btn=document.getElementById('ld-wordbtn');
-  if(btn){ btn.disabled=!total; btn.textContent=total?`📗 선택 ${total}건 WORD 저장`:'📗 선택 WORD 저장'; }
+  if(btn){ btn.disabled=!total; btn.textContent=total?`📦 선택 ${total}건 ZIP 저장`:'📦 선택 ZIP 저장'; }
   const all=document.getElementById('ld-selall');
   if(all){ const vis=(_ldVisible||[]).filter(r=>r.id!=null); all.checked=vis.length>0 && vis.every(r=>_ldSel.has(r.id)); all.indeterminate=!all.checked && vis.some(r=>_ldSel.has(r.id)); }
 }
@@ -1332,20 +1331,21 @@ function _bulkWordName(){
 }
 async function _ldBulkWord(){
   const ids=_ldSelectedIds();
-  if(!ids.length){ alert('WORD로 받을 일지를 먼저 체크해 주세요.'); return; }
-  _spin(`WORD ${ids.length}건 합치는 중…`);
+  if(!ids.length){ alert('ZIP으로 받을 일지를 먼저 체크해 주세요.'); return; }
+  _spin(`WORD ${ids.length}건 ZIP 압축 중…`);
   try{
-    const res=await _gasPostPlan({action:'combineJournalDocs', ids});
+    // GAS가 각 일지의 WORD(사진 포함)를 개별 파일 그대로 하나의 .zip으로 묶어 반환
+    const res=await _gasPostPlan({action:'zipJournalDocs', ids});
     if(!res || !res.ok || !res.data){
       _spinHide();
-      alert('WORD 합치기에 실패했어요.\n'+((res&&res.message)||'구글 앱스 스크립트(GAS)에 combineJournalDocs 함수가 추가·재배포됐는지 확인해 주세요.'));
+      alert('ZIP 압축에 실패했어요.\n'+((res&&res.message)||'구글 앱스 스크립트(GAS)에 zipJournalDocs 함수가 추가·재배포됐는지 확인해 주세요.'));
       return;
     }
-    const blob=new Blob([_b64ToU8(res.data)],{type:'application/msword'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=_bulkWordName()+'.doc';
+    const blob=new Blob([_b64ToU8(res.data)],{type:'application/zip'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=_bulkWordName()+'.zip';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-    _spinHide(); _toast(`✅ ${res.count||ids.length}건 WORD 저장 완료`);
-  }catch(e){ _spinHide(); alert('WORD 저장 중 문제가 발생했어요: '+e.message); }
+    _spinHide(); _toast(`✅ ${res.count||ids.length}건 ZIP 저장 완료`);
+  }catch(e){ _spinHide(); alert('ZIP 저장 중 문제가 발생했어요: '+e.message); }
 }
 function loadJournalAt(idx){ const r=_ldRecords[idx]; if(!r) return; loadJournalInto(r); }
 function deleteJournalAt(idx){

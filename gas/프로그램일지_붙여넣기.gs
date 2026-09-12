@@ -30,6 +30,9 @@
        if (action === 'combineJournalDocs')
          return response(combineJournalDocs(body.ids));
 
+       if (action === 'zipJournalDocs')
+         return response(zipJournalDocs(body.ids));
+
    (doGet 은 e.parameter 를 p 로, doPost 는 JSON.parse(e.postData.contents) 를
     body 로 쓰는 기존 구조를 그대로 따릅니다. response() 도 기존 함수 사용.)
 ───────────────────────────────────────────────────────────────── */
@@ -201,4 +204,39 @@ function combineJournalDocs(ids) {
     + head + '<body>' + bodies.join(sep) + '</body></html>';
   const b64 = Utilities.base64Encode(combined, Utilities.Charset.UTF_8);
   return { ok:true, count:count, missing:miss, data:b64, mime:'application/msword' };
+}
+
+// 체크한 여러 일지의 WORD(사진 포함)를 '각각 개별 파일'로 둔 채 하나의 .zip으로 묶어 base64 반환.
+//  ids: 압축할 일지들의 고유ID 배열. 파일명은 년월일_센터_강사_프로그램일지.doc (중복 시 (2),(3)…)
+function zipJournalDocs(ids) {
+  if (!ids || !ids.length) return { ok:false, message:'선택된 일지가 없어요' };
+  const sh = _jSheet();
+  const last = sh.getLastRow();
+  if (last < 2) return { ok:false, message:'저장된 일지가 없어요' };
+  const vals = sh.getRange(2, 1, last - 1, 20).getValues();
+  const byId = {};
+  for (let i = 0; i < vals.length; i++) byId[String(vals[i][16])] = vals[i];   // 17번째 열 = 고유ID
+
+  const blobs = [], used = {}; let count = 0, miss = 0;
+  ids.forEach(function (id) {
+    const r = byId[String(id)];
+    if (!r) { miss++; return; }
+    const url = r[19];                                  // 20번째 열 = WORD 파일 URL
+    const m = url && String(url).match(/\/d\/([^/]+)/);
+    if (!m) { miss++; return; }
+    var file;
+    try { file = DriveApp.getFileById(m[1]); } catch (e) { miss++; return; }
+    const y = (r[5] || '').toString(), mo = ('0' + (r[6] || '')).slice(-2), da = ('0' + (r[7] || '')).slice(-2);
+    var base = (y + mo + da + '_' + (r[1] || '') + '_' + (r[3] || '') + '_프로그램일지').replace(/[\\/:*?"<>|]/g, '_');
+    var name = base + '.doc', n = 2;
+    while (used[name]) { name = base + '(' + (n++) + ').doc'; }
+    used[name] = 1;
+    try { blobs.push(file.getBlob().setName(name)); count++; }
+    catch (e) { miss++; }
+  });
+  if (!count) return { ok:false, message:'압축할 WORD 파일을 찾지 못했어요(저장 시 WORD가 없었을 수 있어요)' };
+
+  const zip = Utilities.zip(blobs, '프로그램일지_모음.zip');
+  const b64 = Utilities.base64Encode(zip.getBytes());
+  return { ok:true, count:count, missing:miss, data:b64, mime:'application/zip' };
 }
