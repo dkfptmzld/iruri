@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.23">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.24">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.23">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.24">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.23</title>
+<title>수업기록표 정산 시스템 v17.24</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4160,7 +4160,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.23';
+const SYSTEM_VERSION='v17.24';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9527,6 +9527,37 @@ function delCenterByKey(name, region){
  delItem('center', i);
 }
 
+/* 강사별 화면(renderTeacherTable)의 🗑 : 센터 통째 삭제가 아니라
+ *  '이 강사만' 그 센터에서 배정 해제. 같은 센터의 다른 강사는 그대로 유지.
+ *  (마지막 강사였다면 센터는 미배정 센터로 남고, 센터 자체는 지우지 않음) */
+function unassignTeacherFromCenter(name, region, teacher){
+ const i=_centerIdxByKey(name, region);
+ if(i<0){ try{ showToast('센터를 찾을 수 없어요 — 목록을 새로고침해 주세요'); }catch(_){} return; }
+ const c=DB.centers[i];
+ const others=(Array.isArray(c.teachers)?c.teachers:[]).filter(t=>t!==teacher);
+ const desc = others.length
+  ? `<b>「${escH(c.name)}」</b>에서 <b>${escH(teacher)}</b> 강사만 배정 해제할까요?<br><span style="color:var(--text3);font-size:12px;">다른 강사(${others.map(escH).join(', ')})와 센터는 그대로 유지돼요.</span>`
+  : `<b>「${escH(c.name)}」</b>에서 <b>${escH(teacher)}</b> 강사 배정을 해제할까요?<br><span style="color:var(--text3);font-size:12px;">이 센터엔 다른 강사가 없어 <b>미배정 센터</b>로 남습니다. (센터 자체는 삭제되지 않아요)</span>`;
+ showConfirm({icon:'🗑',title:'강사 배정 해제',desc,okText:'배정 해제',okStyle:'danger',onOk:()=>_doUnassignTeacher(name, region, teacher)});
+}
+function _doUnassignTeacher(name, region, teacher){
+ const i=_centerIdxByKey(name, region);
+ if(i<0) return;
+ const c=DB.centers[i];
+ const prev=JSON.parse(JSON.stringify(DB.centers));
+ if(Array.isArray(c.teachers)) c.teachers=c.teachers.filter(t=>t!==teacher);   // 담당강사 목록
+ if(Array.isArray(c.schedule)) c.schedule=c.schedule.filter(s=>s.teacher!==teacher);   // 그 강사 스케줄
+ const feeKey=`${c.name}|${teacher}`;                                          // 강사별 개별 수업료
+ if(DB.centerFees && DB.centerFees[feeKey]!==undefined) delete DB.centerFees[feeKey];
+ try{ pushChangelog({type:'center_edit',desc:`강사 배정 해제 — ${c.name} · ${teacher}`,snapshot:{centers:prev}}); }catch(_){}
+ lsSave();
+ gasPost({action:'saveCenter', center:c}).catch(()=>{});   // 센터 통째 삭제(deleteCenter) 아님 — 수정만
+ try{ _refreshCenterView(); }catch(_){}
+ try{ if(typeof recompute==='function' && STATE.data) recompute(); }catch(_){}
+ try{ if(typeof renderGrowthView==='function') renderGrowthView(); }catch(_){}
+ showToast(`${c.name} · ${teacher} 배정 해제됨`);
+}
+
 /* ═══ v15.52: 센터 유실 방지 (방법 1·2·3) ═══
  *  - 삭제 도장(tombstone): 사용자가 삭제 버튼을 눌렀을 때만 기록 → 동기화가 '진짜 삭제'와 '유실'을 구분
  *  - 병합(merge): 동기화는 GAS+로컬 union. 도장 찍힌 것만 제외 → 사람이 안 지우면 절대 안 사라짐
@@ -10322,7 +10353,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
     ${cols.memo ? `<td style="padding:7px 10px;font-size:11px;color:${c.memo?'#92670B':'var(--text3)'};border-right:1px solid var(--border);border-bottom:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.memo?esc(c.memo):'—'}</td>` : ''}
     <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
      <button onclick="event.stopPropagation();openCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
-     <button onclick="event.stopPropagation();delCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+     <button onclick="event.stopPropagation();unassignTeacherFromCenter('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}','${escAttrJS(teacher)}')" title="이 강사 배정 해제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
     </td>
    </tr>`;
   });
@@ -10343,7 +10374,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
    ${cols.memo    ? `<td style="padding:7px 10px;font-size:11px;color:${c.memo?'#92670B':'var(--text3)'};border-right:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(c.memo||'').replace(/"/g,'&quot;')}">${c.memo?'📝 '+c.memo:'—'}</td>` : ''}
    <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
     <button onclick="event.stopPropagation();openCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="수정" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;margin-right:3px;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">✏️</button>
-    <button onclick="event.stopPropagation();delCenterByKey('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}')" title="삭제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
+    <button onclick="event.stopPropagation();unassignTeacherFromCenter('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}','${escAttrJS(teacher)}')" title="이 강사 배정 해제" style="width:26px;height:26px;border:1px solid var(--border);border-radius:5px;background:white;cursor:pointer;font-size:13px;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">🗑️</button>
    </td>
   </tr>`;
  }).join('');
@@ -15218,9 +15249,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.23&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.24&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.23&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.24&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
