@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.36">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.37">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.36">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.37">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.36</title>
+<title>수업기록표 정산 시스템 v17.37</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1571,11 +1571,11 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 
  <!-- 모드 카드 -->
  <div id="landingCardsWrap" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
- <div role="button" tabindex="0" id="card-teacher" aria-label="강사 모드 — 수업 기록표 작성" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
+ <div role="button" tabindex="0" id="card-teacher" aria-label="수업기록표 — 수업 기록표 작성" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; goTeacherFromLanding()" style="background: white; border: 2px solid rgb(200, 230, 201); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.1) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.2)';this.style.borderColor='#1A7A50';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.1)';this.style.borderColor='#c8e6c9';">
  <div style="width:56px;height:56px;background:linear-gradient(135deg,#43a047,#1A7A50);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 12px rgba(26,122,80,.3);">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
  </div>
- <div style="font-size:16px;font-weight:700;color:#1a4a2e;margin-bottom:8px;">강사 모드</div>
+ <div style="font-size:16px;font-weight:700;color:#1a4a2e;margin-bottom:8px;">수업기록표</div>
  <div style="font-size:12px;color:#6B9A7A;line-height:1.6;">수업 기록표를 작성하고<br>관리자에게 제출합니다</div>
  </div>
 
@@ -1593,11 +1593,11 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div style="font-size:12px;color:#6B8AA8;line-height:1.6;">내 수업 요일·시간을<br>확인하고 인쇄합니다</div>
  </div>
 
- <div role="button" tabindex="0" id="card-admin" aria-label="관리자 모드 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
+ <div role="button" tabindex="0" id="card-admin" aria-label="정산시스템 — 정산 및 강사 관리" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}" onclick="if(_landingEditMode)return; if(BLOCK_MOBILE_ADMIN&amp;&amp;window.innerWidth&lt;=768){showConfirm({icon:'🖥️',title:'PC 전용',desc:'관리자 모드는 현재 PC에서만 접속 가능해요.&lt;br&gt;&lt;small&gt;모바일 지원은 준비 중이에요.&lt;/small&gt;',okText:'확인',cancelText:'',okStyle:'primary',onOk:null});document.getElementById('confirmCancelBtn').style.display='none';return;} showAdminLogin()" style="background: linear-gradient(135deg, rgb(26, 122, 80), rgb(46, 125, 50)); border: 2px solid rgb(26, 122, 80); border-radius: 20px; padding: 28px 24px; width: 190px; cursor: pointer; transition: 0.2s; box-shadow: rgba(26, 122, 80, 0.25) 0px 4px 16px; transform: none;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 32px rgba(26,122,80,.35)';" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(26,122,80,.25)';">
  <div style="width:56px;height:56px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
  <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"></path></svg>
  </div>
- <div style="font-size:16px;font-weight:700;color:white;margin-bottom:8px;">관리자 모드</div>
+ <div style="font-size:16px;font-weight:700;color:white;margin-bottom:8px;">정산시스템</div>
  <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.6;">정산 내역을 확인하고<br>강사/센터를 관리합니다</div>
  </div>
  <!-- v14.97: 자격증 발급 (별도 페이지 certificate.html 연결) -->
@@ -4174,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.36';
+const SYSTEM_VERSION='v17.37';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15557,9 +15557,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.36&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.37&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.36&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.37&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
