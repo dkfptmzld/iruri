@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.25">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.25">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.25</title>
+<title>수업기록표 정산 시스템 v17.26</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2803,7 +2803,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   </div>
   <div id="cMemoSection" style="margin-bottom:14px;border:1.5px dashed #E0C878;background:#FFFDF4;border-radius:12px;padding:10px 12px;">
    <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
-    <span style="font-size:13px;font-weight:800;color:#8A6010;flex:1;min-width:0;">📝 센터 메모 <span style="font-size:11px;font-weight:600;color:#B0863A;">지역별 · 계속 유지 · 개별 추가/삭제</span></span>
+    <span style="font-size:13px;font-weight:800;color:#8A6010;flex:1;min-width:0;">📝 센터 메모 <span id="cMemoMonthLabel" style="font-size:11px;font-weight:800;color:#8A6010;"></span> <span style="font-size:11px;font-weight:600;color:#B0863A;">· 월별 · 변경 자동 기록 + 직접 메모</span></span>
     <button onclick="_toggleMemoVisible()" style="font-size:11px;border:1px solid #E0C878;background:#fff;color:#8A6010;border-radius:6px;padding:3px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;">접기/펼치기</button>
    </div>
    <div id="cMemoWrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;"></div>
@@ -4160,7 +4160,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.25';
+const SYSTEM_VERSION='v17.26';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9550,6 +9550,7 @@ function _doUnassignTeacher(name, region, teacher){
  const feeKey=`${c.name}|${teacher}`;                                          // 강사별 개별 수업료
  if(DB.centerFees && DB.centerFees[feeKey]!==undefined) delete DB.centerFees[feeKey];
  try{ pushChangelog({type:'center_edit',desc:`강사 배정 해제 — ${c.name} · ${teacher}`,snapshot:{centers:prev}}); }catch(_){}
+ try{ _logCenterMemoAuto(c.region, `👤 배정 해제 — ${c.name} · ${teacher}`); }catch(_){}   // v17.26
  lsSave();
  gasPost({action:'saveCenter', center:c}).catch(()=>{});   // 센터 통째 삭제(deleteCenter) 아님 — 수정만
  try{ _refreshCenterView(); }catch(_){}
@@ -9718,32 +9719,79 @@ function _autoFreezeCenters(){ if(Array.isArray(DB.centers) && DB.centers.length
 
 /* v15.28: 지역별 센터 메모 — 월과 무관하게 계속 유지. 지역마다 여러 개 추가/삭제. 정산과 무관(별도 키). */
 const CENTERMEMO_KEY = 'iruri_centermemo';
-function _getCenterMemo(){ try{ return JSON.parse(localStorage.getItem(CENTERMEMO_KEY)||'{}')||{}; }catch(_){ return {}; } }
+/* v17.26: 센터 메모를 '월별'로 저장 + 그 달의 센터 변경(강사/수업료/추가·삭제)을 자동 기록.
+ *  형식: { "YYYY년 M월": { 지역: [ {t:내용, auto:자동여부, at:ISO} ] } }
+ *  (옛 형식 {지역:[문자열]} 은 첫 로드 때 현재 달로 자동 이동 — 기존 메모 보존) */
+function _cmIsMonthKey(k){ return /^\d{4}년\s*\d+월$/.test(k); }
+function _getCenterMemo(){
+ let raw={}; try{ raw=JSON.parse(localStorage.getItem(CENTERMEMO_KEY)||'{}')||{}; }catch(_){ raw={}; }
+ const keys=Object.keys(raw);
+ const looksOld = keys.length>0 && keys.every(k=>!_cmIsMonthKey(k));   // 최상위 키가 전부 '월'이 아니면 옛 형식
+ if(looksOld){
+  const cur=_curCenterMonth(); const moved={}; moved[cur]={};
+  keys.forEach(rg=>{ if(Array.isArray(raw[rg])) moved[cur][rg]=raw[rg].map(s=>(s&&typeof s==='object')?s:{t:String(s),auto:false,at:''}); });
+  try{ localStorage.setItem(CENTERMEMO_KEY, JSON.stringify(moved)); }catch(_){}
+  return moved;
+ }
+ return raw;
+}
 function _saveCenterMemo(m){ try{ localStorage.setItem(CENTERMEMO_KEY, JSON.stringify(m)); }catch(_){} }
+function _cmViewMonth(){ return (_centerViewYM && _cmIsMonthKey(_centerViewYM)) ? _centerViewYM : _curCenterMonth(); }  // 보고 있는 달(메모)
+function _cmEditable(){ return _cmViewMonth()===_curCenterMonth(); }   // 현재 달만 직접 편집 가능
+function _cmMemoMonths(){ try{ return Object.keys(_getCenterMemo()).filter(_cmIsMonthKey); }catch(_){ return []; } }
+/* 자동 기록: 기본은 '현재 캘린더 달'에 남긴다(ym로 특정 달 지정 가능) */
+function _logCenterMemoAuto(region, text, ym){
+ if(!text) return;
+ const rg=String(region||'').trim()||'미지정';
+ const mon=ym||_curCenterMonth();
+ const m=_getCenterMemo();
+ m[mon]=m[mon]||{}; m[mon][rg]=Array.isArray(m[mon][rg])?m[mon][rg]:[];
+ m[mon][rg].unshift({t:String(text), auto:true, at:new Date().toISOString()});
+ if(m[mon][rg].length>300) m[mon][rg].length=300;
+ _saveCenterMemo(m);
+ try{ _renderCenterMemo(); }catch(_){}
+ try{ _populateCenterMonthSelect(); }catch(_){}
+}
+function _cmTimeLabel(at){ if(!at) return ''; try{ const d=new Date(at); if(isNaN(d)) return ''; return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }catch(_){ return ''; } }
 function _renderCenterMemo(){
  const wrap=document.getElementById('cMemoWrap'); if(!wrap) return;
- const m=_getCenterMemo();
+ const m=_getCenterMemo(); const ym=_cmViewMonth(); const editable=_cmEditable();
+ const monthMemo=m[ym]||{};
+ try{ const lb=document.getElementById('cMemoMonthLabel'); if(lb) lb.textContent=ym+(editable?'':' · 지난달(읽기전용)'); }catch(_){}
  const REGIONS=[['서울','#2563EB'],['인천','#0D9488'],['수원','#7C3AED']];
  wrap.innerHTML=REGIONS.map(([rg,col])=>{
-  const items=Array.isArray(m[rg])?m[rg]:[];
-  const rows=items.map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;font-size:12px;background:#FFFDF4;border:1px solid #EFE3BF;border-radius:6px;padding:5px 8px;margin-bottom:4px;color:#4A4536;"><span style="flex:1;cursor:pointer;word-break:break-word;" onclick="_editMemo('${rg}',${i})" title="클릭해서 수정">${esc(it)}</span><span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;" onclick="_delMemo('${rg}',${i})" title="삭제">✕</span></div>`).join('');
-  return `<div style="background:#fff;border:1px solid #EFE3BF;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${rows}<div onclick="_addMemo('${rg}')" style="font-size:12px;font-weight:700;color:#8A6010;border:1.5px dashed #E0C878;border-radius:7px;padding:6px;text-align:center;cursor:pointer;background:#fff;">＋ 메모 추가</div></div></div>`;
+  const items=Array.isArray(monthMemo[rg])?monthMemo[rg]:[];
+  const rows=items.map((it,i)=>{
+   const t=(it&&typeof it==='object')?it.t:String(it);
+   const auto=!!(it&&it.auto);
+   const tm=_cmTimeLabel(it&&it.at);
+   const badge=auto?`<span style="font-size:9px;font-weight:800;color:#1d4ed8;background:#E5EDFB;border:1px solid #C7D8F5;border-radius:5px;padding:0 4px;flex-shrink:0;white-space:nowrap;">자동</span>`:'';
+   const label=(!auto&&editable)
+    ? `<span style="flex:1;cursor:pointer;word-break:break-word;" onclick="_editMemo('${escAttrJS(rg)}',${i})" title="클릭해서 수정">${escH(t)}${tm?` <span style="color:#AEB4A0;font-size:10px;">${tm}</span>`:''}</span>`
+    : `<span style="flex:1;word-break:break-word;">${escH(t)}${tm?` <span style="color:#AEB4A0;font-size:10px;">${tm}</span>`:''}</span>`;
+   const delX=editable?`<span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;" onclick="_delMemo('${escAttrJS(rg)}',${i})" title="삭제">✕</span>`:'';
+   return `<div style="display:flex;align-items:center;gap:6px;font-size:12px;background:${auto?'#F7FAFF':'#FFFDF4'};border:1px solid ${auto?'#D8E4F7':'#EFE3BF'};border-radius:6px;padding:5px 8px;margin-bottom:4px;color:#4A4536;">${badge}${label}${delX}</div>`;
+  }).join('');
+  const addBtn=editable?`<div onclick="_addMemo('${escAttrJS(rg)}')" style="font-size:12px;font-weight:700;color:#8A6010;border:1.5px dashed #E0C878;border-radius:7px;padding:6px;text-align:center;cursor:pointer;background:#fff;">＋ 메모 추가</div>`:'';
+  return `<div style="background:#fff;border:1px solid #EFE3BF;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${rows||'<div style="font-size:11px;color:#B0863A;text-align:center;padding:6px 0;">기록 없음</div>'}${addBtn}</div></div>`;
  }).join('');
 }
-function _addMemo(rg){ const t=prompt(rg+' 메모 추가',''); if(t==null) return; const s=t.trim(); if(!s) return; const m=_getCenterMemo(); (m[rg]=m[rg]||[]).push(s); _saveCenterMemo(m); _renderCenterMemo(); }
-function _editMemo(rg,i){ const m=_getCenterMemo(); if(!(m[rg]&&m[rg][i]!=null)) return; const t=prompt(rg+' 메모 수정 (비우면 삭제)', m[rg][i]); if(t==null) return; const s=t.trim(); if(!s) m[rg].splice(i,1); else m[rg][i]=s; _saveCenterMemo(m); _renderCenterMemo(); }
-function _delMemo(rg,i){ const m=_getCenterMemo(); if(m[rg]&&m[rg][i]!=null){ m[rg].splice(i,1); _saveCenterMemo(m); _renderCenterMemo(); } }
+function _addMemo(rg){ if(!_cmEditable()){ showToast('지난달 메모는 수정할 수 없어요'); return; } const t=prompt(rg+' 메모 추가',''); if(t==null) return; const s=t.trim(); if(!s) return; const m=_getCenterMemo(); const ym=_curCenterMonth(); m[ym]=m[ym]||{}; (m[ym][rg]=Array.isArray(m[ym][rg])?m[ym][rg]:[]).unshift({t:s,auto:false,at:new Date().toISOString()}); _saveCenterMemo(m); _renderCenterMemo(); }
+function _editMemo(rg,i){ if(!_cmEditable()) return; const m=_getCenterMemo(); const ym=_curCenterMonth(); const arr=m[ym]&&m[ym][rg]; if(!(arr&&arr[i]!=null)) return; const cur=(arr[i]&&typeof arr[i]==='object')?arr[i].t:String(arr[i]); const t=prompt(rg+' 메모 수정 (비우면 삭제)', cur); if(t==null) return; const s=t.trim(); if(!s){ arr.splice(i,1); } else { arr[i]={t:s,auto:false,at:(arr[i]&&arr[i].at)||new Date().toISOString()}; } _saveCenterMemo(m); _renderCenterMemo(); }
+function _delMemo(rg,i){ if(!_cmEditable()){ showToast('지난달 메모는 수정할 수 없어요'); return; } const m=_getCenterMemo(); const ym=_curCenterMonth(); const arr=m[ym]&&m[ym][rg]; if(arr&&arr[i]!=null){ arr.splice(i,1); _saveCenterMemo(m); _renderCenterMemo(); } }
 function _toggleMemoVisible(){ const w=document.getElementById('cMemoWrap'); if(w) w.style.display=(w.style.display==='none')?'grid':'none'; }
 
 function _populateCenterMonthSelect(){
  const sel=document.getElementById('cMonthSelect'); if(!sel) return;
  const cur=_curCenterMonth();
- const months=_listCenterSnapMonths().filter(m=>m!==cur);
+ // 스냅샷 있는 달 ∪ 메모(변경기록) 있는 달 — 과거 메모도 골라 볼 수 있게
+ const months=[...new Set([..._listCenterSnapMonths(), ..._cmMemoMonths()])].filter(m=>m!==cur)
+   .sort((a,b)=>{ const pa=a.match(/(\d{4})년\s*(\d+)월/), pb=b.match(/(\d{4})년\s*(\d+)월/); return (parseInt(pb[1])*100+parseInt(pb[2]))-(parseInt(pa[1])*100+parseInt(pa[2])); });
  let html=`<option value="">🟢 현재 (${cur}) · 편집</option>`;
  months.forEach(m=>{ html+=`<option value="${m}">📖 ${m} · 기록(읽기전용)</option>`; });
  sel.innerHTML=html; sel.value=(_centerViewYM==='__resv__'||_centerViewYM==='__resvhist__')?'':_centerViewYM;
 }
-function _onCenterMonthChange(){ const sel=document.getElementById('cMonthSelect'); _centerViewYM=sel?sel.value:''; _renderCenterView(); }
+function _onCenterMonthChange(){ const sel=document.getElementById('cMonthSelect'); _centerViewYM=sel?sel.value:''; _renderCenterView(); try{ _renderCenterMemo(); }catch(_){} }
 
 function _renderCenterView(){
  const tree=document.getElementById('cview-tree');
@@ -9956,7 +10004,7 @@ function _applyResv(ym){ const r=_getResv(ym); if(!r.ops||!r.ops.length) return;
  });
  try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
  try{ _rebuildCenterFeesFromCenters(); }catch(_){} // v15.33: 강사별 수업료(schedule.fee) → centerFees 반영
- const m=_getCenterMemo(); Object.keys(memoAdd).forEach(rg=>{ if(!rg) return; (m[rg]=m[rg]||[]).unshift('📌 '+ym+' 반영: '+memoAdd[rg].join(' · ')); }); _saveCenterMemo(m);
+ Object.keys(memoAdd).forEach(rg=>{ if(!rg) return; _logCenterMemoAuto(rg, '📌 예약 반영: '+memoAdd[rg].join(' · '), ym); });   // 예약이 반영되는 그 달에 기록
  try{ localStorage.removeItem(_resvKey(ym)); }catch(_){}
 }
 function _checkResvRollover(){ const curN=_ymNum(_curCenterMonth()); const due=_listResvMonths().filter(ym=>_ymNum(ym)<=curN && (_getResv(ym).ops||[]).length); if(!due.length) return;
@@ -11652,6 +11700,16 @@ function saveModal(){
   //  (기존엔 새 이름만 saveCenter → 서버에 옛 이름이 유령으로 남아 다음 동기화에서 '삭제'로 잡히던 문제)
   const _renamed = (String(old.name).trim()!==String(obj.name).trim()) || (String(old.region||'').trim()!==String(obj.region||'').trim());
   pushChangelog({type:'center_edit',desc:`센터 수정 — ${old.name}${_renamed?` → ${obj.name}`:''}`,detail:_renamed?`이름 변경: ${old.name}(${old.region||'-'}) → ${obj.name}(${obj.region||'-'})`:`수업료 ${Number(old.fee||0).toLocaleString()}원 → ${Number(obj.fee||0).toLocaleString()}원`,snapshot:{centers:prev}});
+  // v17.26: 이번 달 센터 메모에 변경 내용 자동 기록(강사/수업료/센터명)
+  try{
+   const _chg=[]; const _ot=Array.isArray(old.teachers)?old.teachers:[], _nt=Array.isArray(obj.teachers)?obj.teachers:[];
+   const _add=_nt.filter(t=>!_ot.includes(t)), _rem=_ot.filter(t=>!_nt.includes(t));
+   if(_renamed) _chg.push(`센터명 변경: ${old.name}(${old.region||'-'}) → ${obj.name}(${obj.region||'-'})`);
+   if(_add.length) _chg.push(`강사 추가: ${_add.join(', ')}`);
+   if(_rem.length) _chg.push(`강사 제외: ${_rem.join(', ')}`);
+   if(Number(old.fee||0)!==Number(obj.fee||0)) _chg.push(`수업료 변경: ${Number(old.fee||0).toLocaleString()}원 → ${Number(obj.fee||0).toLocaleString()}원`);
+   if(_chg.length) _logCenterMemoAuto(obj.region, `✏️ ${obj.name} — ${_chg.join(' · ')}`);
+  }catch(_){}
   DB.centers[STATE.editIdx]=obj;
   gasPost({action:'saveCenter', center:obj}).catch(()=>{});
   if(_renamed){
@@ -11680,6 +11738,7 @@ function saveModal(){
   lsSave();
   _refreshCenterView();
   gasPost({action:'saveCenter', center:obj}).catch(()=>{});
+  try{ _logCenterMemoAuto(obj.region, `➕ 센터 추가 — ${obj.name}${(obj.teachers&&obj.teachers.length)?' · 강사: '+obj.teachers.join(', '):''}`); }catch(_){}   // v17.26
  }
  closeModal();showToast('저장되었습니다');
  if(STATE.data)recompute();
@@ -13544,6 +13603,7 @@ function _doDelItem(type, i){
    if(changed){
     affectedCenters++;
     gasPost({action:'saveCenter', center:c}).catch(()=>{});
+    try{ _logCenterMemoAuto(c.region, `👤 강사 삭제로 배정 해제 — ${c.name} · ${deletedName}`); }catch(_){}   // v17.26
    }
   });
   lsSave(); // 센터 변경 저장
@@ -13558,6 +13618,7 @@ function _doDelItem(type, i){
   return;
  } else {
   _addCenterTomb(deletedName, deletedRegion);   // v15.52: 삭제 도장 — 동기화가 이 센터를 되살리지 않음
+  try{ _logCenterMemoAuto(deletedRegion, `🗑 센터 삭제 — ${deletedName}`); }catch(_){}   // v17.26
   gasPost({action:'deleteCenter', name:deletedName}).catch(()=>{});
   renderCenterMgr();
   // v12.36~37: 센터 삭제 시 모든 관련 화면 즉시 갱신 (박기남님 요청)
@@ -15274,9 +15335,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.25&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.26&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.25&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.26&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
