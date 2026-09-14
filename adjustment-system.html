@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.31">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.32">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.31">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.32">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.31</title>
+<title>수업기록표 정산 시스템 v17.32</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4159,7 +4159,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.31';
+const SYSTEM_VERSION='v17.32';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15075,7 +15075,7 @@ function _renderLandingCustomCards(){
 }
 
 /* ═══ v14.98: 홈 커버플로우(캐릭터 선택) 컨트롤러 ═══ */
-var _cf = { sel:0, items:[] };
+var _cf = { sel:0, items:[], frac:0, dragging:false };   // frac: 드래그 중 소수 위치 오프셋
 function _cfGetItems(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return [];
   const skip={cfArrowL:1,cfArrowR:1,cfSpotEl:1};
@@ -15090,36 +15090,38 @@ function _cfGetItems(){
 function _cfApply(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return;
   const items=_cf.items, n=items.length;
-  _cf.sel=Math.max(0,Math.min(n-1,_cf.sel));
+  if(!_cf.dragging) _cf.sel=Math.max(0,Math.min(n-1,_cf.sel));
   const W=wrap.clientWidth||360;
   const off1=Math.min(255,Math.max(120,W*0.33));
   const cardW=Math.min(220,Math.max(168,W*0.6));
+  const pos=_cf.sel+(_cf.frac||0);   // v17.32: 드래그하면 소수 위치 → 스와이프한 만큼 따라 돎
+  const trans=_cf.dragging?'none':'transform .5s cubic-bezier(.22,.85,.3,1),opacity .5s,filter .5s,box-shadow .5s';
   items.forEach((el,i)=>{
-    // v16.80: 순환(circular) — 가장 가까운 쪽으로 위치시켜 양방향으로 계속 넘어가게
-    let d=i-_cf.sel; if(n>1){ if(d>n/2) d-=n; else if(d<-n/2) d+=n; }
-    const ad=Math.abs(d), sgn=d<0?-1:1, base='translate(-50%,-50%)';
+    // 순환(circular) — 어떤 위치에서도 가장 가까운 쪽으로 (소수 pos 대응)
+    let d=i-pos; if(n>1){ d=((d%n)+n)%n; if(d>n/2) d-=n; }
+    const ad=Math.abs(d), sgn=d<0?-1:1, capd=Math.max(-1,Math.min(1,d)), base='translate(-50%,-50%)';
+    const tx = sgn*(off1*Math.min(ad,1) + Math.max(0,ad-1)*off1*0.6);
+    const rot = -capd*40;
+    const scale = ad<=1 ? (1.05 - 0.25*ad) : Math.max(0.6, 0.8-(ad-1)*0.1);
+    const op = ad<=1 ? (1 - 0.5*ad) : Math.max(0, 0.5-0.5*(ad-1));
+    const near = ad<0.5;   // 사실상 가운데 카드
     el.style.position='absolute'; el.style.top='50%'; el.style.left='50%'; el.style.margin='0';
     el.style.width=cardW+'px';
-    el.style.transition='transform .5s cubic-bezier(.22,.85,.3,1),opacity .5s,filter .5s,box-shadow .5s';
-    el.style.cursor='pointer';
-    if(d===0){
-      el.style.transform=base+' scale(1.05)'; el.style.opacity='1'; el.style.filter='none'; el.style.zIndex='6'; el.style.pointerEvents='auto';
-      el.style.boxShadow='0 26px 60px rgba(0,0,0,.45), 0 0 0 4px rgba(255,255,255,.92), 0 0 50px rgba(255,255,255,.32)';
-    }else{
-      const tx=sgn*(off1+(ad-1)*off1*0.6);
-      el.style.transform=`${base} translateX(${tx}px) rotateY(${-sgn*40}deg) scale(${ad===1?0.8:0.6})`;
-      el.style.opacity= ad===1?'0.5':'0'; el.style.filter= ad===1?'blur(3px) grayscale(.55) brightness(.82)':'blur(4px)';
-      el.style.zIndex=String(5-ad); el.style.pointerEvents= ad===1?'auto':'none';
-      el.style.boxShadow='0 18px 34px rgba(0,0,0,.32)';
-    }
+    el.style.transition=trans; el.style.cursor='pointer';
+    el.style.transform=`${base} translateX(${tx}px) rotateY(${rot}deg) scale(${scale})`;
+    el.style.opacity=String(op);
+    el.style.filter = near ? 'none' : (ad<=1.5 ? 'blur(3px) grayscale(.55) brightness(.82)' : 'blur(4px)');
+    el.style.zIndex=String(6-Math.round(ad));
+    el.style.pointerEvents= ad<1.3?'auto':'none';
+    el.style.boxShadow = near ? '0 26px 60px rgba(0,0,0,.45), 0 0 0 4px rgba(255,255,255,.92), 0 0 50px rgba(255,255,255,.32)' : '0 18px 34px rgba(0,0,0,.32)';
   });
   const dots=document.getElementById('cfDots');
   if(dots){
     if(dots.children.length!==n) dots.innerHTML=items.map((_,i)=>`<div class="cf-dot" data-i="${i}"></div>`).join('');
-    [...dots.children].forEach((dd,i)=>dd.classList.toggle('on',i===_cf.sel));
+    const selr=n>0?(((Math.round(pos))%n)+n)%n:0;
+    [...dots.children].forEach((dd,i)=>dd.classList.toggle('on',i===selr));
   }
   const aL=document.getElementById('cfArrowL'), aR=document.getElementById('cfArrowR');
-  // v16.80: 순환이므로 양쪽 화살표 항상 표시(카드 2개 이상일 때)
   if(aL) aL.style.visibility=n>1?'visible':'hidden';
   if(aR) aR.style.visibility=n>1?'visible':'hidden';
 }
@@ -15144,8 +15146,8 @@ function _cfTick(){
     osc.connect(og); og.connect(ctx.destination); osc.start(t); osc.stop(t+0.06);
   }catch(e){}
 }
-function _cfGo(dx){ const n=_cf.items.length; if(n<=1) return; const o=_cf.sel; _cf.sel=((_cf.sel+dx)%n+n)%n; if(_cf.sel!==o)_cfTick(); _cfApply(); }
-function _cfSelect(i){ const o=_cf.sel; _cf.sel=Math.max(0,Math.min(_cf.items.length-1,i)); if(_cf.sel!==o)_cfTick(); _cfApply(); }
+function _cfGo(dx){ const n=_cf.items.length; if(n<=1) return; const o=_cf.sel; _cf.frac=0; _cf.dragging=false; _cf.sel=((_cf.sel+dx)%n+n)%n; if(_cf.sel!==o)_cfTick(); _cfApply(); }
+function _cfSelect(i){ const o=_cf.sel; _cf.frac=0; _cf.dragging=false; _cf.sel=Math.max(0,Math.min(_cf.items.length-1,i)); if(_cf.sel!==o)_cfTick(); _cfApply(); }
 function _cardFlowEnable(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return;
   document.getElementById('modeSelectScreen')?.classList.add('cf-dark');
@@ -15172,7 +15174,7 @@ function _cardFlowEnable(){
   document.getElementById('cfDots').style.display=''; document.getElementById('cfHint').style.display='';
   if(wrap.dataset.cfBound!=='1'){
     wrap.dataset.cfBound='1';
-    let sx=null, sy=null, swiped=false;
+    let sx=null, sy=null, swiped=false, dragging=false, stepPx=140;
     wrap.addEventListener('click', function(e){
       if(_landingEditMode) return;
       if(e.target.closest('.cf-arrow')) return;
@@ -15181,19 +15183,38 @@ function _cardFlowEnable(){
       if(idx<0) return;
       if(idx!==_cf.sel){ e.preventDefault(); e.stopPropagation(); _cfSelect(idx); }
     }, true);
-    wrap.addEventListener('pointerdown', e=>{ sx=e.clientX; sy=e.clientY; swiped=false; });
+    wrap.addEventListener('pointerdown', e=>{
+      if(_landingEditMode) return;
+      if(e.target.closest('.cf-arrow')) return;
+      sx=e.clientX; sy=e.clientY; swiped=false; dragging=false;
+      const W=wrap.clientWidth||360; stepPx=Math.min(255,Math.max(120,W*0.33));   // 카드 한 칸 = 이 거리만큼 끌면
+      try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
+    });
     wrap.addEventListener('pointermove', e=>{
       if(sx===null) return;
       const dx=e.clientX-sx, dy=e.clientY-sy;
-      if(Math.abs(dx)>10 && Math.abs(dx)>Math.abs(dy)) swiped=true;   // 가로 스와이프 인식
-    });
-    wrap.addEventListener('pointerup', e=>{
-      if(sx===null) return;
-      const dx=e.clientX-sx; sx=null;
-      if(Math.abs(dx)>40) _cfGo(dx<0?1:-1);                          // 좌우로 넘기기
-    });
-    wrap.addEventListener('pointercancel', ()=>{ sx=null; });
+      if(!dragging && Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)){ dragging=true; swiped=true; _cf.dragging=true; }
+      if(dragging){
+        e.preventDefault();
+        _cf.frac = -dx/stepPx;    // 끈 만큼(길이 비례) 커버플로가 따라 돎
+        _cfApply();
+      }
+    },{passive:false});
+    const _end=e=>{
+      if(sx===null) return; sx=null;
+      if(!dragging){ _cf.dragging=false; return; }
+      dragging=false; _cf.dragging=false;
+      const n=_cf.items.length; const o=_cf.sel;
+      const target=Math.round(_cf.sel + (_cf.frac||0));   // 놓으면 가까운 카드로 스냅
+      _cf.frac=0;
+      _cf.sel = n>0 ? ((target%n)+n)%n : 0;
+      _cfApply();
+      if(_cf.sel!==o) _cfTick();
+    };
+    wrap.addEventListener('pointerup', _end);
+    wrap.addEventListener('pointercancel', ()=>{ if(dragging){ dragging=false; _cf.dragging=false; _cf.frac=0; _cfApply(); } sx=null; });
   }
+  _cf.frac=0; _cf.dragging=false;
   _cfApply();
 }
 function _cardFlowDisable(){
@@ -15396,9 +15417,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.31&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.32&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.31&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.32&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
