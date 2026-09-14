@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.27">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.28">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.27">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.28">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.27</title>
+<title>수업기록표 정산 시스템 v17.28</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4160,7 +4160,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.27';
+const SYSTEM_VERSION='v17.28';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9752,7 +9752,13 @@ function _logCenterMemoAuto(region, text, ym){
  try{ _renderCenterMemo(); }catch(_){}
  try{ _populateCenterMonthSelect(); }catch(_){}
 }
-function _cmTimeLabel(at){ if(!at) return ''; try{ const d=new Date(at); if(isNaN(d)) return ''; return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }catch(_){ return ''; } }
+function _cmClock(at){ if(!at) return ''; try{ const d=new Date(at); if(isNaN(d)) return ''; return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }catch(_){ return ''; } }
+function _cmDateLabel(at){ if(!at) return '날짜 미상'; try{ const d=new Date(at); if(isNaN(d)) return '날짜 미상';
+ const dd=new Date(d.getFullYear(),d.getMonth(),d.getDate()); const now=new Date(); const t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+ const diff=Math.round((t0-dd)/86400000); const md=(d.getMonth()+1)+'월 '+d.getDate()+'일';
+ if(diff===0) return '오늘 · '+md; if(diff===1) return '어제 · '+md; return md; }catch(_){ return '날짜 미상'; } }
+// 자동 기록 앞머리 이모지 → 카테고리 색(왼쪽 띠)
+function _cmCatColor(t){ const s=String(t||''); if(s.indexOf('➕')===0) return '#16a34a'; if(s.indexOf('🗑')===0) return '#dc2626'; if(s.indexOf('👤')===0) return '#b45309'; if(s.indexOf('🧑')===0) return '#7c3aed'; if(s.indexOf('📌')===0) return '#4F46E5'; return '#2563eb'; /* ✏️ 등 */ }
 function _renderCenterMemo(){
  const wrap=document.getElementById('cMemoWrap'); if(!wrap) return;
  const m=_getCenterMemo(); const ym=_cmViewMonth(); const editable=_cmEditable();
@@ -9761,19 +9767,37 @@ function _renderCenterMemo(){
  const REGIONS=[['서울','#2563EB'],['인천','#0D9488'],['수원','#7C3AED']];
  wrap.innerHTML=REGIONS.map(([rg,col])=>{
   const items=Array.isArray(monthMemo[rg])?monthMemo[rg]:[];
-  const rows=items.map((it,i)=>{
-   const t=(it&&typeof it==='object')?it.t:String(it);
-   const auto=!!(it&&it.auto);
-   const tm=_cmTimeLabel(it&&it.at);
-   const badge=auto?`<span style="font-size:9px;font-weight:800;color:#1d4ed8;background:#E5EDFB;border:1px solid #C7D8F5;border-radius:5px;padding:0 4px;flex-shrink:0;white-space:nowrap;">자동</span>`:'';
-   const label=(!auto&&editable)
-    ? `<span style="flex:1;cursor:pointer;word-break:break-word;" onclick="_editMemo('${escAttrJS(rg)}',${i})" title="클릭해서 수정">${escH(t)}${tm?` <span style="color:#AEB4A0;font-size:10px;">${tm}</span>`:''}</span>`
-    : `<span style="flex:1;word-break:break-word;">${escH(t)}${tm?` <span style="color:#AEB4A0;font-size:10px;">${tm}</span>`:''}</span>`;
-   const delX=editable?`<span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;" onclick="_delMemo('${escAttrJS(rg)}',${i})" title="삭제">✕</span>`:'';
-   return `<div style="display:flex;align-items:center;gap:6px;font-size:12px;background:${auto?'#F7FAFF':'#FFFDF4'};border:1px solid ${auto?'#D8E4F7':'#EFE3BF'};border-radius:6px;padding:5px 8px;margin-bottom:4px;color:#4A4536;">${badge}${label}${delX}</div>`;
-  }).join('');
-  const addBtn=editable?`<div onclick="_addMemo('${escAttrJS(rg)}')" style="font-size:12px;font-weight:700;color:#8A6010;border:1.5px dashed #E0C878;border-radius:7px;padding:6px;text-align:center;cursor:pointer;background:#fff;">＋ 메모 추가</div>`:'';
-  return `<div style="background:#fff;border:1px solid #EFE3BF;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${rows||'<div style="font-size:11px;color:#B0863A;text-align:center;padding:6px 0;">기록 없음</div>'}${addBtn}</div></div>`;
+  const withIdx=items.map((it,i)=>({o:(it&&typeof it==='object')?it:{t:String(it),auto:false,at:''}, i}));
+  const manual=withIdx.filter(x=>!x.o.auto);
+  const autos =withIdx.filter(x=>x.o.auto);
+  // ① 직접 메모(맨 위, 눈에 띄게)
+  let manualHtml='';
+  if(manual.length){
+   manualHtml=`<div style="font-size:10px;font-weight:800;color:#8A6010;letter-spacing:.3px;margin:2px 0 5px;">📌 메모 · ${manual.length}</div>`+
+    manual.map(({o,i})=>{
+     const tx=editable?`<span style="flex:1;cursor:pointer;word-break:break-word;" onclick="_editMemo('${escAttrJS(rg)}',${i})" title="클릭해서 수정">${escH(o.t)}</span>`:`<span style="flex:1;word-break:break-word;">${escH(o.t)}</span>`;
+     const del=editable?`<span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;" onclick="_delMemo('${escAttrJS(rg)}',${i})" title="삭제">✕</span>`:'';
+     return `<div style="display:flex;align-items:center;gap:6px;font-size:12px;background:#FFFDF4;border:1px solid #EFE3BF;border-radius:6px;padding:5px 8px;margin-bottom:4px;color:#4A4536;">${tx}${del}</div>`;
+    }).join('');
+  }
+  // ② 변경 기록(자동) — 날짜별 그룹, 시각 + 카테고리 색 띠
+  let autoHtml='';
+  if(autos.length){
+   autoHtml=`<div style="font-size:10px;font-weight:800;color:#5b6472;letter-spacing:.3px;margin:${manual.length?'10px':'2px'} 0 5px;">🕘 변경 기록 · ${autos.length}</div>`;
+   let lastDate='';
+   autos.forEach(({o,i})=>{
+    const dl=_cmDateLabel(o.at);
+    if(dl!==lastDate){ autoHtml+=`<div style="font-size:10px;font-weight:700;color:#9aa0a6;margin:7px 0 3px;padding-bottom:2px;border-bottom:1px solid #EEF0F2;">${dl}</div>`; lastDate=dl; }
+    const tm=_cmClock(o.at);
+    const del=editable?`<span style="color:#C4A76A;cursor:pointer;flex-shrink:0;font-weight:700;font-size:11px;" onclick="_delMemo('${escAttrJS(rg)}',${i})" title="삭제">✕</span>`:'';
+    autoHtml+=`<div style="display:flex;align-items:baseline;gap:7px;font-size:11.5px;color:#414a3d;padding:3px 2px 3px 8px;border-left:2px solid ${_cmCatColor(o.t)};margin-bottom:2px;">`+
+     `<span style="color:#AEB4A0;font-size:10px;flex-shrink:0;min-width:32px;">${tm}</span>`+
+     `<span style="flex:1;word-break:break-word;line-height:1.4;">${escH(o.t)}</span>${del}</div>`;
+   });
+  }
+  const addBtn=editable?`<div onclick="_addMemo('${escAttrJS(rg)}')" style="font-size:12px;font-weight:700;color:#8A6010;border:1.5px dashed #E0C878;border-radius:7px;padding:6px;text-align:center;cursor:pointer;background:#fff;margin-top:8px;">＋ 메모 추가</div>`:'';
+  const body=(manualHtml+autoHtml)||'<div style="font-size:11px;color:#B0863A;text-align:center;padding:6px 0;">기록 없음</div>';
+  return `<div style="background:#fff;border:1px solid #EFE3BF;border-radius:9px;overflow:hidden;"><div style="font-size:11px;font-weight:800;color:#fff;background:${col};padding:5px 9px;">${rg} · ${items.length}</div><div style="padding:8px;">${body}${addBtn}</div></div>`;
  }).join('');
 }
 function _addMemo(rg){ if(!_cmEditable()){ showToast('지난달 메모는 수정할 수 없어요'); return; } const t=prompt(rg+' 메모 추가',''); if(t==null) return; const s=t.trim(); if(!s) return; const m=_getCenterMemo(); const ym=_curCenterMonth(); m[ym]=m[ym]||{}; (m[ym][rg]=Array.isArray(m[ym][rg])?m[ym][rg]:[]).unshift({t:s,auto:false,at:new Date().toISOString()}); _saveCenterMemo(m); _renderCenterMemo(); }
@@ -13592,11 +13616,11 @@ function _doDelItem(type, i){
  const prev = JSON.parse(JSON.stringify(type==='teacher' ? DB.teachers : DB.centers));
  if(type==='teacher') pushChangelog({type:'teacher_delete',desc:`강사 삭제 — ${deletedName}`,snapshot:{teachers:prev}});
  else pushChangelog({type:'center_delete',desc:`센터 삭제 — ${deletedName}`,snapshot:{centers:prev}});
- if(type==='teacher'){ try{ _logCenterMemoAuto(deletedRegion, `🧑‍🏫 강사 삭제 — ${deletedName}`); }catch(_){} }   // v17.27: 강사 삭제 요약도 센터 메모에
  arr.splice(i,1); lsSave();
  if(type==='teacher'){
   // v12.38: 강사 삭제 시 모든 센터의 담당강사·스케줄에서 그 강사 제거 (미등록화)
   let affectedCenters = 0;
+  const _affByRegion={};   // v17.28: 센터 메모 기록용(지역별 배정해제 센터 모음 → 한 줄로)
   DB.centers.forEach(c=>{
    let changed = false;
    // 담당강사 목록에서 제거
@@ -13619,9 +13643,14 @@ function _doDelItem(type, i){
    if(changed){
     affectedCenters++;
     gasPost({action:'saveCenter', center:c}).catch(()=>{});
-    try{ _logCenterMemoAuto(c.region, `👤 강사 삭제로 배정 해제 — ${c.name} · ${deletedName}`); }catch(_){}   // v17.26
+    (_affByRegion[c.region||'']=_affByRegion[c.region||'']||[]).push(c.name);   // v17.28: 지역별로 모음
    }
   });
+  // v17.28: 센터 메모(그 달)에 지역별로 '강사 삭제' 한 줄씩 — 배정 해제 센터도 함께 요약
+  try{
+   if(!(deletedRegion in _affByRegion)) _affByRegion[deletedRegion]=[];   // 소속 지역엔 센터가 없어도 삭제 기록
+   Object.keys(_affByRegion).forEach(rg=>{ const cs=_affByRegion[rg]; _logCenterMemoAuto(rg, `🧑‍🏫 강사 삭제 — ${deletedName}${cs.length?` · 배정 해제: ${cs.join(', ')}`:''}`); });
+  }catch(_){}
   lsSave(); // 센터 변경 저장
   gasPost({action:'deleteTeacher', name:deletedName}).catch(()=>{});
   renderTeacherMgr();
@@ -15351,9 +15380,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.27&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.28&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.27&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.28&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
