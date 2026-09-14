@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.34">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.35">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.34">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.35">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.34</title>
+<title>수업기록표 정산 시스템 v17.35</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -703,6 +703,16 @@ body.edit-mode-active .ledger-wrap textarea {
 .cf-dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.35); cursor:pointer; transition:.3s; }
 .cf-dot.on{ background:#fff; width:22px; border-radius:5px; }
 .cf-hint{ margin-top:12px; font-size:12px; color:#a9cdb9; text-align:center; }
+/* v17.35: 관리자 홈(별도 색상 테마) */
+#modeSelectScreen.cf-dark.home-admin{ background:radial-gradient(125% 95% at 50% 4%, #3b3f8f 0%, #272a63 46%, #14153a 100%)!important; }
+#modeSelectScreen.cf-dark.home-admin .ms-sub{ color:#c6c9f2!important; }
+#modeSelectScreen.cf-dark.home-admin .cf-hint{ color:#b0b3e2!important; }
+/* v17.35: 강사 홈 / 관리자 홈 전환 버튼 */
+.hm-toggle{ display:inline-flex; align-items:center; gap:7px; padding:9px 20px; border-radius:22px; font-size:13.5px; font-weight:800; cursor:pointer; font-family:inherit; border:1.5px solid; transition:all .15s; -webkit-backdrop-filter:blur(4px); backdrop-filter:blur(4px); }
+.hm-toggle.to-admin{ background:rgba(99,102,241,.22); border-color:rgba(165,180,252,.85); color:#EEF0FF; box-shadow:0 4px 16px rgba(30,27,90,.4); }
+.hm-toggle.to-admin:hover{ background:rgba(99,102,241,.36); }
+.hm-toggle.to-teacher{ background:rgba(52,211,153,.20); border-color:rgba(134,239,172,.9); color:#EAFBF1; box-shadow:0 4px 16px rgba(6,78,59,.32); }
+.hm-toggle.to-teacher:hover{ background:rgba(52,211,153,.34); }
 #landingEditBtn{ display:none!important; } /* v14.99: 홈 편집 기능 숨김 */
 @media (max-width:600px){ .cf-arrow{ width:38px; height:38px; font-size:19px; } }
 
@@ -1553,6 +1563,11 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <span onclick="doLogout()" style="font-size:12px;color:#9B9888;cursor:pointer;text-decoration:underline;">로그아웃</span>
  </div>
  <div id="landing-no-user" style="margin-bottom: 28px; font-size: 13px; color: rgb(155, 152, 136); display: none;"></div>
+
+ <!-- v17.35: 강사 홈 / 관리자 홈 전환 (관리자 권한 있는 사람에게만 노출) -->
+ <div id="homeModeRow" style="display:none;justify-content:center;margin:-14px auto 20px;">
+  <button id="homeModeToggle" type="button" onclick="_toggleHomeMode()" class="hm-toggle to-admin">🛠️ 관리자 홈 <span style="opacity:.6">→</span></button>
+ </div>
 
  <!-- 모드 카드 -->
  <div id="landingCardsWrap" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
@@ -4159,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.34';
+const SYSTEM_VERSION='v17.35';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14948,6 +14963,7 @@ function _showLandingUI(){
  document.getElementById('adminTopbar')?.classList.remove('visible');
  
  // 랜딩 표시
+ try{ _homeMode='teacher'; }catch(_){}   // v17.35: 홈 진입 시 기본은 강사 홈
  document.getElementById('modeSelectScreen').style.display='flex';
  // 커스텀 앱 카드 렌더
  setTimeout(()=>{
@@ -15129,7 +15145,8 @@ function _decorateFavStars(){
 function _renderHomeFavBar(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap||!wrap.parentNode) return;
   const cards={}; _homeCards().forEach(el=>{ const k=_favKeyOf(el); if(k) cards[k]=el; });
-  const valid=_getHomeFavs().filter(k=>cards[k] || k.indexOf('custom:')===0);
+  const _vis=(el)=>{ try{ return el && getComputedStyle(el).display!=='none'; }catch(_){ return !!el; } };
+  const valid=_getHomeFavs().filter(k=>_vis(cards[k]));   // v17.35: 현재 홈 모드에 보이는 카드만 바로가기로
   let bar=document.getElementById('homeFavBar');
   if(!bar){ bar=document.createElement('div'); bar.id='homeFavBar'; bar.style.cssText='display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:2px auto 16px;max-width:660px;'; wrap.parentNode.insertBefore(bar, wrap); }
   if(!valid.length){ bar.style.display='none'; bar.innerHTML=''; return; }
@@ -15140,6 +15157,50 @@ function _renderHomeFavBar(){
   }).join('');
 }
 function _refreshHomeFavUI(){ try{ _decorateFavStars(); }catch(_){} try{ _renderHomeFavBar(); }catch(_){} }
+
+/* ═══ v17.35: 강사 홈 / 관리자 홈 모드 구분 (기본=강사 홈, 관리자 권한자만 관리자 홈 전환) ═══ */
+const HOME_TEACHER_CARDS=['card-teacher','card-myschedule','card-plan'];
+const HOME_ADMIN_CARDS=['card-admin','card-cert','card-emergency'];
+let _homeMode='teacher';
+function _canAdminHome(){
+  try{
+    if(typeof _isMaster==='function' && _isMaster()) return true;
+    if(typeof _hasCap==='function' && (_hasCap('admin')||_hasCap('cert')||_hasCap('emergency'))) return true;
+    const apps=(typeof _getCustomApps==='function')?_getCustomApps():[];
+    return apps.some(a=>typeof _hasCardCap==='function' && _hasCardCap(a));
+  }catch(_){ return false; }
+}
+// 현재 모드에 맞게 카드 표시/숨김 + 색상 테마 + 전환버튼 (커버플로 재배치는 호출측에서)
+function _applyHomeModeDisplays(){
+  if(_homeMode==='admin' && !_canAdminHome()) _homeMode='teacher';  // 안전망
+  const ms=document.getElementById('modeSelectScreen');
+  if(ms) ms.classList.toggle('home-admin', _homeMode==='admin');
+  HOME_TEACHER_CARDS.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=(_homeMode==='teacher')?'':'none'; });
+  HOME_ADMIN_CARDS.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=(_homeMode==='admin')?'':'none'; });
+  const cc=document.getElementById('landingCustomCards');   // 커스텀 앱 카드 = 관리자 홈에만
+  if(cc) [...cc.children].forEach(el=>{ el.style.display=(_homeMode==='admin')?'':'none'; });
+  // 권한 관리(마스터 전용)는 관리자 홈에서만 노출
+  try{ const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=(typeof _isMaster==='function'&&_isMaster()&&_homeMode==='admin')?'flex':'none'; }catch(_){}
+  _refreshHomeModeToggle();
+}
+function _refreshHomeModeToggle(){
+  const row=document.getElementById('homeModeRow'), btn=document.getElementById('homeModeToggle');
+  if(!row||!btn) return;
+  if(_homeMode==='teacher'){
+    if(!_canAdminHome()){ row.style.display='none'; return; }
+    row.style.display='flex'; btn.className='hm-toggle to-admin';
+    btn.innerHTML='🛠️ 관리자 홈 <span style="opacity:.6">→</span>';
+  } else {
+    row.style.display='flex'; btn.className='hm-toggle to-teacher';
+    btn.innerHTML='<span style="opacity:.6">←</span> 강사 홈';
+  }
+}
+function _toggleHomeMode(){
+  _homeMode = (_homeMode==='teacher' && _canAdminHome()) ? 'admin' : 'teacher';
+  _cf.sel=0; _cf.frac=0; _cf.dragging=false;
+  if(typeof _cardFlowEnable==='function') _cardFlowEnable();  // 표시반영 + 커버플로 재배치 + 즐겨찾기 갱신
+  else if(typeof _applyHomeModeDisplays==='function'){ _applyHomeModeDisplays(); if(typeof _cfApply==='function'){ _cf.items=_cfGetItems(); _cfApply(); } }
+}
 
 /* ═══ v14.98: 홈 커버플로우(캐릭터 선택) 컨트롤러 ═══ */
 var _cf = { sel:0, items:[], frac:0, dragging:false };   // frac: 드래그 중 소수 위치 오프셋
@@ -15218,6 +15279,7 @@ function _cfSelect(i){ const o=_cf.sel; _cf.frac=0; _cf.dragging=false; _cf.sel=
 function _cardFlowEnable(){
   const wrap=document.getElementById('landingCardsWrap'); if(!wrap) return;
   document.getElementById('modeSelectScreen')?.classList.add('cf-dark');
+  if(typeof _applyHomeModeDisplays==='function') _applyHomeModeDisplays();   // v17.35: 현재 홈 모드 카드만 표시
   if(wrap.dataset.cfOrig===undefined) wrap.dataset.cfOrig=wrap.getAttribute('style')||'';
   wrap.setAttribute('style','position:relative;display:block;width:min(720px,94vw);height:330px;perspective:1500px;margin:6px auto 0;touch-action:pan-y;');
   _cf.items=_cfGetItems();
@@ -15488,9 +15550,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.34&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.35&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.34&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.35&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -15499,7 +15561,9 @@ function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov
 function _applyLandingPerms(){
  try{
   const master=_isMaster();
-  const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=master?'flex':'none';
+  // v17.35: 권한 관리(마스터 전용)는 관리자 홈에서만 노출
+  const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=(master && _homeMode==='admin')?'flex':'none';
+  if(typeof _refreshHomeModeToggle==='function') _refreshHomeModeToggle();
  }catch(_){}
 }
 // v15.38: 권한 관리 화면 (마스터 전용) — 이름×카드 체크박스, 즉시 저장·공유
