@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.37">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.38">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.37">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.38">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.37</title>
+<title>수업기록표 정산 시스템 v17.38</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4174,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.37';
+const SYSTEM_VERSION='v17.38';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15310,7 +15310,7 @@ function _cardFlowEnable(){
   document.getElementById('cfDots').style.display=''; document.getElementById('cfHint').style.display='';
   if(wrap.dataset.cfBound!=='1'){
     wrap.dataset.cfBound='1';
-    let sx=null, sy=null, swiped=false, dragging=false, stepPx=140;
+    let sx=null, sy=null, swiped=false, dragging=false, stepPx=140, capId=null;
     wrap.addEventListener('click', function(e){
       if(_landingEditMode) return;
       if(e.target.closest('.cf-arrow')) return;
@@ -15323,15 +15323,18 @@ function _cardFlowEnable(){
     wrap.addEventListener('pointerdown', e=>{
       if(_landingEditMode) return;
       if(e.target.closest('.cf-arrow')) return;
-      if(e.target.closest('.fav-star')) return;   // v17.34: 별표는 드래그/포인터캡처 대상 아님
-      sx=e.clientX; sy=e.clientY; swiped=false; dragging=false;
+      if(e.target.closest('.fav-star')) return;
+      sx=e.clientX; sy=e.clientY; swiped=false; dragging=false; capId=e.pointerId;
       const W=wrap.clientWidth||360; stepPx=Math.min(255,Math.max(120,W*0.33));   // 카드 한 칸 = 이 거리만큼 끌면
-      try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
+      // v17.38: setPointerCapture는 여기서 하지 않음 — 탭(클릭)이 wrap으로 리타깃되어 카드 onclick이 안 먹던 문제
     });
     wrap.addEventListener('pointermove', e=>{
       if(sx===null) return;
       const dx=e.clientX-sx, dy=e.clientY-sy;
-      if(!dragging && Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)){ dragging=true; swiped=true; _cf.dragging=true; }
+      if(!dragging && Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)){
+        dragging=true; swiped=true; _cf.dragging=true;
+        try{ wrap.setPointerCapture(capId); }catch(_){}   // v17.38: 실제 드래그가 시작될 때만 캡처
+      }
       if(dragging){
         e.preventDefault();
         _cf.frac = -dx/stepPx;    // 끈 만큼(길이 비례) 커버플로가 따라 돎
@@ -15340,6 +15343,8 @@ function _cardFlowEnable(){
     },{passive:false});
     const _end=e=>{
       if(sx===null) return; sx=null;
+      try{ if(capId!=null && wrap.hasPointerCapture&&wrap.hasPointerCapture(capId)) wrap.releasePointerCapture(capId); }catch(_){}
+      capId=null;
       if(!dragging){ _cf.dragging=false; return; }
       dragging=false; _cf.dragging=false;
       const n=_cf.items.length; const o=_cf.sel;
@@ -15350,7 +15355,7 @@ function _cardFlowEnable(){
       if(_cf.sel!==o) _cfTick();
     };
     wrap.addEventListener('pointerup', _end);
-    wrap.addEventListener('pointercancel', ()=>{ if(dragging){ dragging=false; _cf.dragging=false; _cf.frac=0; _cfApply(); } sx=null; });
+    wrap.addEventListener('pointercancel', ()=>{ if(dragging){ dragging=false; _cf.dragging=false; _cf.frac=0; _cfApply(); } try{ if(capId!=null && wrap.hasPointerCapture&&wrap.hasPointerCapture(capId)) wrap.releasePointerCapture(capId); }catch(_){} capId=null; sx=null; });
   }
   _cf.frac=0; _cf.dragging=false;
   _cfApply();
@@ -15557,9 +15562,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.37&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.38&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.37&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.38&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
