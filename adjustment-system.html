@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.39">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.40">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.39">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.40">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.39</title>
+<title>수업기록표 정산 시스템 v17.40</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4174,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.39';
+const SYSTEM_VERSION='v17.40';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4832,6 +4832,7 @@ function switchView(v){
   // v11.30: 탭 전환 시 GAS에서 최신 센터 DB 자동 로드
   // v15.27: 진입 시 현재 목록을 이번 달로 자동 freeze + 월 드롭다운 갱신 (정산 무관, 별도 저장소)
   _syncDBOnTabSwitch('centers', ()=>{ renderRegionStats(); populateTeacherFilter(); _autoFreezeCenters(); _centerViewYM=''; _renderCenterView(); _populateCenterMonthSelect(); _renderCenterMemo(); _checkResvRollover(); });
+  try{ if(typeof _syncCenterMemoFromGAS==='function') _syncCenterMemoFromGAS(); }catch(_){}   // v17.40: 센터 관리 열 때 공유 메모 최신본 반영
   try{ _loadSchedRequests(true); }catch(_){}   // v16.08: 강사 스케줄 수정요청 확인 (센터관리 탭)
  }
  if(v==='history') populateHistorySelects();
@@ -9748,7 +9749,52 @@ function _getCenterMemo(){
  }
  return raw;
 }
-function _saveCenterMemo(m){ try{ localStorage.setItem(CENTERMEMO_KEY, JSON.stringify(m)); }catch(_){} }
+function _saveCenterMemo(m){
+ try{ localStorage.setItem(CENTERMEMO_KEY, JSON.stringify(m)); }catch(_){}
+ // v17.40: 관리자끼리 전체 공유 — GAS 공용설정에 저장(권한/커스텀앱과 동일 방식, 새 GAS 코드 불필요)
+ try{ if(typeof gasPost==='function') gasPost({ action:'saveSystemSettings', settings:{ centermemo: JSON.stringify(m) } }).catch(()=>{}); }catch(_){}
+}
+// v17.40: 두 센터메모 객체 병합(월∪지역∪항목, 중복 제거, at 내림차순). 기존 로컬 메모를 지우지 않고 서버본과 합침.
+function _cmEntryKey(e){ try{ return (e&&typeof e==='object')?JSON.stringify(e):('s:'+String(e)); }catch(_){ return String(e); } }
+function _mergeCenterMemo(a, b){
+ const out={};
+ const add=(src)=>{ if(!src||typeof src!=='object') return;
+  Object.keys(src).forEach(ym=>{ const reg=src[ym]; if(!reg||typeof reg!=='object'||Array.isArray(reg)) return;
+   out[ym]=out[ym]||{};
+   Object.keys(reg).forEach(rg=>{ const arr=Array.isArray(reg[rg])?reg[rg]:[]; out[ym][rg]=out[ym][rg]||[]; arr.forEach(e=>out[ym][rg].push(e)); });
+  });
+ };
+ add(a); add(b);
+ Object.keys(out).forEach(ym=>Object.keys(out[ym]).forEach(rg=>{
+  const seen=new Set(); const uniq=[];
+  out[ym][rg].forEach(e=>{ const k=_cmEntryKey(e); if(!seen.has(k)){ seen.add(k); uniq.push(e); } });
+  uniq.sort((x,y)=>{ const ax=(x&&x.at)||'', ay=(y&&y.at)||''; return ax<ay?1:(ax>ay?-1:0); });   // 최신(at 큰 것) 먼저
+  out[ym][rg]=uniq;
+ }));
+ return out;
+}
+// v17.40: 서버(GAS)의 공유 센터메모를 가져와 로컬과 병합 → 로컬 저장 + (로컬에만 있던 게 있으면) 서버로 올림.
+//  관리자(정산시스템 접근 권한)만 동기화 — 일반 강사 기기엔 캐시/전송하지 않음.
+let _cmSyncing=false;
+async function _syncCenterMemoFromGAS(){
+ try{
+  if(_cmSyncing) return;
+  if(!(typeof _hasCap==='function' && _hasCap('admin'))) return;   // 관리자끼리만 공유
+  if(typeof gasGet!=='function') return;
+  _cmSyncing=true;
+  const res=await gasGet({ action:'getSystemSettings' });
+  let server={}; try{ if(res&&res.ok&&res.data&&res.data.centermemo) server=JSON.parse(res.data.centermemo)||{}; }catch(_){ server={}; }
+  const local=_getCenterMemo();
+  const merged=_mergeCenterMemo(server, local);
+  const mergedStr=JSON.stringify(merged);
+  try{ localStorage.setItem(CENTERMEMO_KEY, mergedStr); }catch(_){}
+  // 서버본과 다르면(=로컬에만 있던 기존 메모가 있으면) 서버로 업로드(마이그레이션)
+  const serverStr=(res&&res.ok&&res.data&&res.data.centermemo)?res.data.centermemo:'';
+  if(mergedStr!==serverStr){ try{ gasPost({ action:'saveSystemSettings', settings:{ centermemo: mergedStr } }).catch(()=>{}); }catch(_){} }
+  try{ if(typeof _renderCenterMemo==='function'){ const cv=document.getElementById('centersView'); if(cv && getComputedStyle(cv).display!=='none') _renderCenterMemo(); } }catch(_){}
+ }catch(_){}
+ finally{ _cmSyncing=false; }
+}
 function _cmViewMonth(){ return (_centerViewYM && _cmIsMonthKey(_centerViewYM)) ? _centerViewYM : _curCenterMonth(); }  // 보고 있는 달(메모)
 function _cmEditable(){ return _cmViewMonth()===_curCenterMonth(); }   // 현재 달만 직접 편집 가능
 function _cmMemoMonths(){ try{ return Object.keys(_getCenterMemo()).filter(_cmIsMonthKey); }catch(_){ return []; } }
@@ -15562,9 +15608,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.39&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.40&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.39&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.40&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -15643,6 +15689,7 @@ function checkAdminPw(){
 function _enterAdminMode(){
  _initSyncChip();
  setTimeout(updateChangelogBadge, 300);
+ try{ if(typeof _syncCenterMemoFromGAS==='function') _syncCenterMemoFromGAS(); }catch(_){}   // v17.40: 관리자 진입 시 공유 센터메모 동기화
  // v11.20: 앱 내 이동 플래그 설정
  sessionStorage.setItem('iruri_nav_flag', '1');
  document.getElementById('adminLoginModal').style.display = 'none';
