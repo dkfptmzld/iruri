@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.63">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.65">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.63">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.65">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.63</title>
+<title>수업기록표 정산 시스템 v17.65</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1229,6 +1229,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  .me-row>.me-amt{ flex:0 0 90px!important; order:4!important; }
  .me-row>.me-del{ flex:0 0 28px!important; margin-left:auto!important; order:2!important; }
  #presenceWidget{ display:none!important; }
+ #champFloat{ display:none!important; }
 }
 </style>
 <style id="_spinStyle">@keyframes _spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style></head>
@@ -2170,7 +2171,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 <div id="mgr-teacher-bar" style="display: flex;">
   <span id="mgr-teacher-bar-label">강사 선택</span>
   <button id="mgr-teacher-bar-pill" onclick="_openSidebarOverlay()">김유천 · 1,129,456원 ▾</button>
-  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div id="settleTopRow" style="display:flex;flex-wrap:wrap;gap:10px;padding:12px 16px 0;align-items:flex-start;"><div id="settleAlertPanel" style="display:none;flex:1 1 300px;min-width:0;"></div><div id="settleChamp" style="display:none;flex:1 1 300px;min-width:0;"></div></div><div id="srvStatus_settle_m" class="srv-line srv-mobile" data-srv="settle" data-view="settleView" style="margin:10px 16px 0;"></div><div class="layout" id="settleView" style="display: none;">
+  <button id="mgr-sidebar-btn" onclick="_openSidebarOverlay()">목록</button></div><div id="settleAlertPanel" style="display:none;padding:12px 16px 0;"></div><div id="srvStatus_settle_m" class="srv-line srv-mobile" data-srv="settle" data-view="settleView" style="margin:10px 16px 0;"></div><div class="layout" id="settleView" style="display: none;">
  <div class="sidebar" id="sidebar">
  <div id="month-selector" style="display: block; padding: 14px 14px 12px; border-bottom: 1px solid var(--border);">
   <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.2px;">수업기록표</div>
@@ -2998,6 +2999,8 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  </div>
 </div>
 
+<!-- v17.65: 성장 1등 플로팅 위젯 (접속 현황 위) -->
+<div id="champFloat" style="display:none;position:fixed;right:24px;bottom:88px;z-index:8998;width:320px;max-width:calc(100vw - 40px);text-align:right;font-family:inherit;"></div>
 <!-- v11.30: 접속 현황 플로팅 위젯 (관리자 전용) -->
 <div id="presenceWidget" style="display: block; position: fixed; bottom: 24px; right: 24px; z-index: 9000; font-family: inherit;">
  <!-- 토글 버튼 -->
@@ -4182,7 +4185,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.63';
+const SYSTEM_VERSION='v17.65';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4813,7 +4816,7 @@ function switchView(v){
  const _mbar = document.getElementById('mgr-month-bar');
  if(_mbar){ _mbar.style.display = v==='settle' ? 'flex' : 'none'; if(v==='settle'){ try{ _renderMobileMonthBar(); }catch(_){} } }
  document.getElementById('settleView').style.display=v==='settle'?'flex':'none';
- try{ const _champ=document.getElementById('settleChamp'); if(_champ){ if(v==='settle'){ _renderSettleChamp(); } else { _champ.style.display='none'; } } }catch(_){}   // v17.62: 성장 1등 축하 위젯
+ try{ _renderSettleChamp(); }catch(_){}   // v17.65: 성장 1등 플로팅 위젯(접속 현황 위) — 모든 탭에서 표시(성장추이 탭 제외)
  try{ _renderSettleAlerts(); }catch(_){}
  try{ _srvRender('settle'); }catch(_){}   // v15.89: 탭 전환 시 상태 줄 자리 갱신
  document.getElementById('teachersView').style.display=v==='teachers'?'block':'none';
@@ -8552,43 +8555,53 @@ function _settleAlertData(loadedYm, mode){
  }catch(_){}
  return {memo, center, count: memo.length+center.length};
 }
-// v17.62: 정산 탭 상단 '이번 달 성장 1등 지역' 축하 위젯 (누르면 성장추이로 이동)
+// v17.64~65: '이번 달 성장 1등' — 우측 하단(접속 현황 위) 켜고 끌 수 있는 작은 플로팅 위젯(접으면 칩, 펴면 컴팩트 카드). 상태는 기기에 저장.
+function _champOpen(){ try{ return localStorage.getItem('iruri_champOpen')!=='0'; }catch(_){ return true; } }
+function _toggleChamp(v){ try{ localStorage.setItem('iruri_champOpen', v?'1':'0'); }catch(_){ } try{ _renderSettleChamp(); }catch(_){ } }
 function _renderSettleChamp(){
- const el=document.getElementById('settleChamp'); if(!el) return;
+ const el=document.getElementById('champFloat'); if(!el) return;
+ // 성장추이 탭에서는 숨김(이미 그 화면이므로)
+ if(typeof STATE!=='undefined' && STATE.view==='history'){ el.style.display='none'; el.dataset.sig=''; return; }
  let months=[]; try{ months=_getRegionGrowth(); }catch(_){ }
- if(!months || months.length<2){ el.style.display='none'; el.innerHTML=''; return; }   // 비교할 지난달 없으면 숨김
+ if(!months || months.length<2){ el.style.display='none'; el.dataset.sig=''; el.innerHTML=''; return; }   // 비교할 지난달 없으면 숨김
  const cur=months[months.length-1], prev=months[months.length-2];
  const ORDER=['서울','인천','수원'];
  const pct=(a,b)=>{ if(!b) return null; return ((a-b)/Math.abs(b))*100; };
  const man=(v)=>{ const won=Math.round(Math.abs(v)); const eok=Math.floor(won/100000000); if(eok>0){ const mv=Math.round((won-eok*100000000)/10000); return (mv>0?eok+'억 '+mv.toLocaleString()+'만원':eok+'억원'); } const m=won/10000; return (m>=100?Math.round(m).toLocaleString():m.toFixed(1))+'만원'; };
  const rows=ORDER.filter(r=>cur.R&&cur.R[r]).map(r=>({ r, rev:cur.R[r].revenue, g:(prev.R&&prev.R[r]?pct(cur.R[r].revenue, prev.R[r].revenue):null) }));
- if(!rows.length){ el.style.display='none'; el.innerHTML=''; return; }
+ if(!rows.length){ el.style.display='none'; el.dataset.sig=''; el.innerHTML=''; return; }
  rows.sort((a,b)=>((b.g===null?-1e9:b.g)-(a.g===null?-1e9:a.g)));
  const champ=rows[0];
  const gTxt=(g)=>g===null?'—':(g>=0?'+':'')+g.toFixed(1)+'%';
+ // 같은 내용/상태면 재렌더 생략(탭 전환마다 애니메이션 반복 방지)
+ const _sig=(_champOpen()?'o':'c')+'|'+champ.r+'|'+gTxt(champ.g)+'|'+(cur.ym||'');
+ if(el.dataset.sig===_sig && el.style.display!=='none') return;
+ el.dataset.sig=_sig; el.style.display='block';
+ // ── 접힌 상태: 작은 칩(누르면 펼침) ──
+ if(!_champOpen()){
+  el.innerHTML=`<button onclick="_toggleChamp(true)" title="성장 순위 펼치기" style="cursor:pointer;font-family:inherit;border:1px solid #CFE8D7;background:linear-gradient(135deg,#EAF6EE,#DDF0E4);color:#15533a;border-radius:11px;padding:8px 12px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 4px 14px rgba(20,60,40,.14);">🏆 성장 1등 <span style="color:#1F7A4D;">${esc(champ.r)} ${gTxt(champ.g)}</span> <span style="opacity:.55;font-weight:700;">펼치기 ▾</span></button>`;
+  return;
+ }
+ // ── 펼친 상태: 컴팩트 카드 ──
  const cols=['#FFD86B','#FF8FA3','#8EEFB6','#8FC7FF','#C9A7FF'];
- let conf=''; for(let i=0;i<14;i++){ conf+=`<span class="champ-conf" style="left:${Math.round(Math.random()*96)}%;background:${cols[i%cols.length]};animation-duration:${(1.4+Math.random()*1.3).toFixed(2)}s;animation-delay:${(Math.random()*1.4).toFixed(2)}s;"></span>`; }
- const others=rows.slice(1,3).map((x,i)=>`<div style="flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:6px 10px;display:flex;align-items:baseline;gap:6px;min-width:0;">
-     <span style="font-size:13px;flex:none;">${i===0?'🥈':'🥉'}</span>
-     <span style="font-size:12.5px;font-weight:800;color:#fff;white-space:nowrap;">${esc(x.r)}</span>
-     <span style="font-size:12px;font-weight:800;color:#CFEFDD;margin-left:auto;white-space:nowrap;">${gTxt(x.g)}</span></div>`).join('');
- el.innerHTML=`<div class="champ-card" onclick="switchView('history')" title="눌러서 성장추이 자세히 보기" style="cursor:pointer;margin:0;background:linear-gradient(135deg,#1F5C43,#2E9E68);border-radius:16px;padding:13px 15px;color:#fff;position:relative;overflow:hidden;user-select:none;">
-    <div style="position:absolute;right:-40px;top:-40px;width:130px;height:130px;background:rgba(255,255,255,.06);border-radius:50%;"></div>
+ let conf=''; for(let i=0;i<10;i++){ conf+=`<span class="champ-conf" style="left:${Math.round(Math.random()*94)}%;background:${cols[i%cols.length]};animation-duration:${(1.4+Math.random()*1.2).toFixed(2)}s;animation-delay:${(Math.random()*1.3).toFixed(2)}s;"></span>`; }
+ const others=rows.slice(1,3).map((x,i)=>`<span style="display:inline-flex;align-items:baseline;gap:4px;background:rgba(255,255,255,.15);border-radius:8px;padding:3px 8px;white-space:nowrap;">
+     <span style="font-size:12px;">${i===0?'🥈':'🥉'}</span><span style="font-size:11.5px;font-weight:800;">${esc(x.r)}</span><span style="font-size:11px;font-weight:800;color:#CFEFDD;">${gTxt(x.g)}</span></span>`).join('');
+ el.innerHTML=`<div style="margin:0;background:linear-gradient(135deg,#1F5C43,#2E9E68);border-radius:14px;padding:9px 12px;color:#fff;position:relative;overflow:hidden;text-align:left;box-shadow:0 6px 22px rgba(20,60,40,.28);animation:champPop .45s ease-out both;">
     ${conf}
-    <div style="display:flex;align-items:center;gap:11px;position:relative;">
-     <div class="champ-trophy" style="font-size:30px;line-height:1;animation:champTrophy 1.7s ease-in-out infinite;">🏆</div>
-     <div style="flex:1;min-width:0;">
-      <div style="font-size:11.5px;opacity:.92;font-weight:700;">이번 달 성장 1등 지역 🎉 <span style="opacity:.8;">(${esc(cur.ym||'이번 달')})</span></div>
-      <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin-top:1px;">
-       <span style="font-size:21px;font-weight:900;">${esc(champ.r)}</span>
-       <span style="font-size:16px;font-weight:900;color:#FFE08A;">${gTxt(champ.g)}</span>
-       <span style="font-size:11px;opacity:.85;">매출 ${man(champ.rev)}</span></div>
+    <button onclick="event.stopPropagation();_toggleChamp(false)" title="접기" style="position:absolute;top:6px;right:7px;z-index:2;border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;width:20px;height:20px;font-size:12px;line-height:1;cursor:pointer;font-family:inherit;padding:0;">✕</button>
+    <div onclick="switchView('history')" title="눌러서 성장추이 자세히 보기" style="cursor:pointer;position:relative;user-select:none;">
+     <div style="display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding-right:22px;">
+      <span class="champ-trophy" style="font-size:22px;line-height:1;animation:champTrophy 1.7s ease-in-out infinite;">🏆</span>
+      <span style="font-size:11px;opacity:.9;font-weight:700;white-space:nowrap;">성장 1등</span>
+      <span style="font-size:17px;font-weight:900;">${esc(champ.r)}</span>
+      <span style="font-size:14px;font-weight:900;color:#FFE08A;">${gTxt(champ.g)}</span>
+      <span style="font-size:10.5px;opacity:.8;white-space:nowrap;">매출 ${man(champ.rev)}</span>
+      <span style="margin-left:auto;font-size:10.5px;font-weight:700;opacity:.95;white-space:nowrap;">성장추이 →</span>
      </div>
-     <div style="font-size:11px;font-weight:700;opacity:.95;white-space:nowrap;flex:none;">성장추이 →</div>
+     ${others?`<div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">${others}</div>`:''}
     </div>
-    ${others?`<div style="display:flex;gap:8px;margin-top:9px;position:relative;">${others}</div>`:''}
    </div>`;
- el.style.display='block';
 }
 function _renderSettleAlerts(){
  const host=document.getElementById('settleAlertPanel'); if(!host) return;
@@ -15663,9 +15676,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.63&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.65&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.63&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.65&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
