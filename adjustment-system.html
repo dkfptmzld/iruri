@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.65">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.66">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.65">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.66">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.65</title>
+<title>수업기록표 정산 시스템 v17.66</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3000,7 +3000,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 </div>
 
 <!-- v17.65: 성장 1등 플로팅 위젯 (접속 현황 위) -->
-<div id="champFloat" style="display:none;position:fixed;right:24px;bottom:88px;z-index:8998;width:320px;max-width:calc(100vw - 40px);text-align:right;font-family:inherit;"></div>
+<div id="champFloat" style="display:none;position:fixed;right:24px;bottom:88px;z-index:8998;width:52px;font-family:inherit;"></div>
 <!-- v11.30: 접속 현황 플로팅 위젯 (관리자 전용) -->
 <div id="presenceWidget" style="display: block; position: fixed; bottom: 24px; right: 24px; z-index: 9000; font-family: inherit;">
  <!-- 토글 버튼 -->
@@ -4185,7 +4185,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.65';
+const SYSTEM_VERSION='v17.66';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8555,8 +8555,8 @@ function _settleAlertData(loadedYm, mode){
  }catch(_){}
  return {memo, center, count: memo.length+center.length};
 }
-// v17.64~65: '이번 달 성장 1등' — 우측 하단(접속 현황 위) 켜고 끌 수 있는 작은 플로팅 위젯(접으면 칩, 펴면 컴팩트 카드). 상태는 기기에 저장.
-function _champOpen(){ try{ return localStorage.getItem('iruri_champOpen')!=='0'; }catch(_){ return true; } }
+// v17.64~66: '이번 달 성장 순위' — 우측 하단(접속 현황 위) 동그란 버튼. 누르면 세로 순위 패널이 위로 펼쳐짐. 열림 상태는 기기에 저장.
+function _champOpen(){ try{ return localStorage.getItem('iruri_champOpen')==='1'; }catch(_){ return false; } }
 function _toggleChamp(v){ try{ localStorage.setItem('iruri_champOpen', v?'1':'0'); }catch(_){ } try{ _renderSettleChamp(); }catch(_){ } }
 function _renderSettleChamp(){
  const el=document.getElementById('champFloat'); if(!el) return;
@@ -8571,37 +8571,39 @@ function _renderSettleChamp(){
  const rows=ORDER.filter(r=>cur.R&&cur.R[r]).map(r=>({ r, rev:cur.R[r].revenue, g:(prev.R&&prev.R[r]?pct(cur.R[r].revenue, prev.R[r].revenue):null) }));
  if(!rows.length){ el.style.display='none'; el.dataset.sig=''; el.innerHTML=''; return; }
  rows.sort((a,b)=>((b.g===null?-1e9:b.g)-(a.g===null?-1e9:a.g)));
- const champ=rows[0];
  const gTxt=(g)=>g===null?'—':(g>=0?'+':'')+g.toFixed(1)+'%';
+ const open=_champOpen();
  // 같은 내용/상태면 재렌더 생략(탭 전환마다 애니메이션 반복 방지)
- const _sig=(_champOpen()?'o':'c')+'|'+champ.r+'|'+gTxt(champ.g)+'|'+(cur.ym||'');
+ const _sig=(open?'o':'c')+'|'+rows.map(x=>x.r+gTxt(x.g)).join(',')+'|'+(cur.ym||'');
  if(el.dataset.sig===_sig && el.style.display!=='none') return;
  el.dataset.sig=_sig; el.style.display='block';
- // ── 접힌 상태: 작은 칩(누르면 펼침) ──
- if(!_champOpen()){
-  el.innerHTML=`<button onclick="_toggleChamp(true)" title="성장 순위 펼치기" style="cursor:pointer;font-family:inherit;border:1px solid #CFE8D7;background:linear-gradient(135deg,#EAF6EE,#DDF0E4);color:#15533a;border-radius:11px;padding:8px 12px;font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:0 4px 14px rgba(20,60,40,.14);">🏆 성장 1등 <span style="color:#1F7A4D;">${esc(champ.r)} ${gTxt(champ.g)}</span> <span style="opacity:.55;font-weight:700;">펼치기 ▾</span></button>`;
-  return;
- }
- // ── 펼친 상태: 컴팩트 카드 ──
- const cols=['#FFD86B','#FF8FA3','#8EEFB6','#8FC7FF','#C9A7FF'];
- let conf=''; for(let i=0;i<10;i++){ conf+=`<span class="champ-conf" style="left:${Math.round(Math.random()*94)}%;background:${cols[i%cols.length]};animation-duration:${(1.4+Math.random()*1.2).toFixed(2)}s;animation-delay:${(Math.random()*1.3).toFixed(2)}s;"></span>`; }
- const others=rows.slice(1,3).map((x,i)=>`<span style="display:inline-flex;align-items:baseline;gap:4px;background:rgba(255,255,255,.15);border-radius:8px;padding:3px 8px;white-space:nowrap;">
-     <span style="font-size:12px;">${i===0?'🥈':'🥉'}</span><span style="font-size:11.5px;font-weight:800;">${esc(x.r)}</span><span style="font-size:11px;font-weight:800;color:#CFEFDD;">${gTxt(x.g)}</span></span>`).join('');
- el.innerHTML=`<div style="margin:0;background:linear-gradient(135deg,#1F5C43,#2E9E68);border-radius:14px;padding:9px 12px;color:#fff;position:relative;overflow:hidden;text-align:left;box-shadow:0 6px 22px rgba(20,60,40,.28);animation:champPop .45s ease-out both;">
-    ${conf}
-    <button onclick="event.stopPropagation();_toggleChamp(false)" title="접기" style="position:absolute;top:6px;right:7px;z-index:2;border:none;background:rgba(255,255,255,.18);color:#fff;border-radius:6px;width:20px;height:20px;font-size:12px;line-height:1;cursor:pointer;font-family:inherit;padding:0;">✕</button>
-    <div onclick="switchView('history')" title="눌러서 성장추이 자세히 보기" style="cursor:pointer;position:relative;user-select:none;">
-     <div style="display:flex;align-items:center;gap:6px 8px;flex-wrap:wrap;padding-right:22px;">
-      <span class="champ-trophy" style="font-size:22px;line-height:1;animation:champTrophy 1.7s ease-in-out infinite;">🏆</span>
-      <span style="font-size:11px;opacity:.9;font-weight:700;white-space:nowrap;">성장 1등</span>
-      <span style="font-size:17px;font-weight:900;">${esc(champ.r)}</span>
-      <span style="font-size:14px;font-weight:900;color:#FFE08A;">${gTxt(champ.g)}</span>
-      <span style="font-size:10.5px;opacity:.8;white-space:nowrap;">매출 ${man(champ.rev)}</span>
-      <span style="margin-left:auto;font-size:10.5px;font-weight:700;opacity:.95;white-space:nowrap;">성장추이 →</span>
+ const MED=['🥇','🥈','🥉'];
+ const rankRows=rows.map((x,i)=>{
+  const first=i===0;
+  const gc=x.g===null?'#9B9888':(x.g>=0?'#16A34A':'#DC2626');
+  return `<div style="display:flex;align-items:center;gap:9px;padding:${first?'9px 10px':'7px 10px'};margin-bottom:4px;border-radius:10px;${first?'background:linear-gradient(135deg,#FFF6E0,#FFEFC7);border:1px solid #F0DDAE;':'background:#F7F6F1;'}">
+     <span style="font-size:${first?'19px':'16px'};line-height:1;flex:none;">${MED[i]||'·'}</span>
+     <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font-size:${first?'14px':'12.5px'};font-weight:800;color:#2A2A28;">${esc(x.r)}</span><span style="font-size:${first?'13.5px':'12px'};font-weight:900;color:${gc};">${gTxt(x.g)}</span></div>
+      ${first?`<div style="font-size:10px;color:#9B9888;margin-top:1px;">매출 ${man(x.rev)}</div>`:''}
      </div>
-     ${others?`<div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">${others}</div>`:''}
-    </div>
-   </div>`;
+    </div>`;
+ }).join('');
+ const cols=['#FFD86B','#FF8FA3','#8EEFB6','#8FC7FF','#C9A7FF'];
+ let conf=''; if(open){ for(let i=0;i<10;i++){ conf+=`<span class="champ-conf" style="left:${Math.round(Math.random()*92)}%;background:${cols[i%cols.length]};animation-duration:${(1.3+Math.random()*1.1).toFixed(2)}s;animation-delay:${(Math.random()*1.1).toFixed(2)}s;"></span>`; } }
+ el.innerHTML=`
+   <button onclick="_toggleChamp(${open?'false':'true'})" title="이번 달 성장 순위" style="width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,#E29B2E,#F6C84D);box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s;${open?'':'animation:champGlow 2.4s ease-in-out infinite;'}" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+     <span class="champ-trophy" style="font-size:24px;line-height:1;${open?'':'animation:champTrophy 1.7s ease-in-out infinite;'}">🏆</span>
+   </button>
+   ${open?`<div style="position:absolute;bottom:62px;right:0;width:236px;background:#fff;border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.2);overflow:hidden;animation:champPop .3s ease-out both;">
+     <div style="position:relative;background:linear-gradient(135deg,#1F5C43,#2E9E68);padding:10px 12px;overflow:hidden;">
+      ${conf}
+      <div style="display:flex;align-items:center;gap:6px;position:relative;"><span class="champ-trophy" style="font-size:16px;animation:champTrophy 1.7s ease-in-out infinite;">🏆</span><span style="font-size:12.5px;font-weight:800;color:#fff;flex:1;">이번 달 성장 순위</span><span onclick="event.stopPropagation();_toggleChamp(false)" title="닫기" style="cursor:pointer;font-size:13px;color:rgba(255,255,255,.85);font-weight:700;padding:0 2px;">✕</span></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.85);margin-top:2px;position:relative;">${esc(cur.ym||'')} · 전월 대비 매출 성장률</div>
+     </div>
+     <div style="padding:9px;">${rankRows}</div>
+     <div onclick="switchView('history')" style="border-top:1px solid #EFECE3;padding:9px 12px;text-align:center;font-size:11.5px;font-weight:700;color:#1F7A4D;cursor:pointer;">📈 성장추이 자세히 보기 →</div>
+    </div>`:''}`;
 }
 function _renderSettleAlerts(){
  const host=document.getElementById('settleAlertPanel'); if(!host) return;
@@ -15676,9 +15678,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.65&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.66&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.65&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.66&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
