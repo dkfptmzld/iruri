@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.60">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.61">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.60">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.61">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.60</title>
+<title>수업기록표 정산 시스템 v17.61</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4174,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.60';
+const SYSTEM_VERSION='v17.61';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15616,9 +15616,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.60&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.61&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.60&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.61&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -21426,29 +21426,43 @@ function _renderRegionKpis(){
   </div>`;
 
  /* ── B. 지역별 핵심 지표 카드 ── */
- // v17.59: 센터 관리(DB)에 등록된 센터명 집합 — 신규/이탈 집계에서 '미등록(수정 정보 없는) 이름'(오타 등) 제외용
+ // v17.59: 센터 관리(DB)에 등록된 센터명 집합 — 신규 집계에서 '미등록(수정 정보 없는) 이름'(오타 등) 제외용
  const _regCenterNames=(typeof DB!=='undefined'&&Array.isArray(DB.centers))?new Set(DB.centers.map(x=>x&&x.name).filter(Boolean)):null;
+
+ // v17.61: 신규/이탈 센터를 '센터 관리 등록 지역' 기준으로 귀속(A) — 수업기록 지역이 아니라 센터 관리에 등록된 지역으로.
+ //  · 신규: 센터 관리에 등록된 이름만(미등록·오타 제외) · 지역 = 등록 지역(없으면 그 달 수업 지역)
+ //  · 이탈: 등록 여부 무관(센터 관리에서 지워진 센터도 이탈로 잡히게) · 지역 = 등록 지역(없으면 마지막 활동 수업 지역)
+ const _validReg=r=>ORDER.indexOf(r)>=0;
+ const _dbRegOf=name=>{ const cc=(typeof DB!=='undefined'&&Array.isArray(DB.centers))?DB.centers.find(x=>x&&x.name===name):null; return (cc&&_validReg(cc.region))?cc.region:''; };
+ const _lessonRegOf=(period,name)=>{ if(!period||!period.R) return ''; let best='',bc=-1; Object.keys(period.R).forEach(r=>{ if(!_validReg(r)) return; const b=period.R[r]; if(b&&b.liveCenters&&b.liveCenters.has(name)){ const cnt=(b.centerRev&&b.centerRev[name])?b.centerRev[name].cnt:1; if(cnt>bc){bc=cnt;best=r;} } }); return best; };
+ const _gLive=period=>{ const s=new Set(); if(period&&period.R) Object.keys(period.R).forEach(r=>{ const b=period.R[r]; if(b&&b.liveCenters) b.liveCenters.forEach(x=>s.add(x)); }); return s; };
+ const _newByReg={}, _churnByReg={}, _excByReg={};
+ ORDER.forEach(r=>{ _newByReg[r]=[]; _churnByReg[r]=[]; _excByReg[r]=0; });
+ let _newNames=[], _churnNames=[];
+ if(isYear && cur.months && cur.months.length){
+  const _fp=cur.months[0], _lp=cur.months[cur.months.length-1];
+  const fg=_gLive(_fp), lg=_gLive(_lp);
+  lg.forEach(x=>{ if(!fg.has(x)) _newNames.push([x,_lp]); });
+  fg.forEach(x=>{ if(!lg.has(x)) _churnNames.push([x,_fp]); });
+ } else {
+  const cg=_gLive(cur);
+  if(selIdx>0){ const prior=new Set(); for(let _k=0;_k<selIdx;_k++){ _gLive(series[_k]).forEach(x=>prior.add(x)); } cg.forEach(x=>{ if(!prior.has(x)) _newNames.push([x,cur]); }); }
+  if(prev){ const pg=_gLive(prev); pg.forEach(x=>{ if(!cg.has(x)) _churnNames.push([x,prev]); }); }
+ }
+ _newNames.forEach(([x,per])=>{ const rr=_dbRegOf(x)||_lessonRegOf(per,x); if(!_validReg(rr)) return;
+   if(_regCenterNames && !_regCenterNames.has(x)){ _excByReg[rr]++; return; }   // 신규는 등록된 이름만
+   _newByReg[rr].push(x); });
+ _churnNames.forEach(([x,per])=>{ const rr=_dbRegOf(x)||_lessonRegOf(per,x); if(_validReg(rr)) _churnByReg[rr].push(x); });   // 이탈은 등록 여부 무관
+
  const cards=names.map((rg,idx)=>{
   const c=cur.R[rg], p=prev?prev.R[rg]:null;
   const [c1,c2,bg]=pal(rg);
   const profit=c.revenue-c.labor-c.cost;
   const margin=c.revenue>0?(profit/c.revenue*100):0;
   const pProfit=p?(p.revenue-p.labor-p.cost):null;
-  let newList=[], churnList=[];
-  // v17.57: 신규/이탈 센터는 '정상수업(O)' 기준 — 모의수업(△)만 한 센터는 신규에서 제외(실제 수업이 시작된 센터만 신규)
-  if(isYear && cur.months && cur.months.length){
-   // 연별 신규/이탈 = 그 해 첫 달 대비 마지막 달의 '정상수업 센터' 증감
-   const fm=cur.months[0].R[rg], lm=cur.months[cur.months.length-1].R[rg];
-   const fc=(fm&&fm.liveCenters)?fm.liveCenters:new Set(), lc=(lm&&lm.liveCenters)?lm.liveCenters:new Set();
-   lc.forEach(x=>{ if(!fc.has(x)) newList.push(x); }); fc.forEach(x=>{ if(!lc.has(x)) churnList.push(x); });
-  } else {
-   // 월별 신규 센터 = 이전 어느 달에도 '정상수업'이 없던 '첫 정상수업' 센터만. 이탈은 전월 대비 정상수업 중단
-   if(selIdx>0){ const _priorLive=new Set(); for(let _k=0;_k<selIdx;_k++){ const _pr=series[_k].R[rg]; if(_pr&&_pr.liveCenters) _pr.liveCenters.forEach(x=>_priorLive.add(x)); } c.liveCenters.forEach(x=>{ if(!_priorLive.has(x)) newList.push(x); }); }
-   if(p){ p.liveCenters.forEach(x=>{ if(!c.liveCenters.has(x)) churnList.push(x); }); }
-  }
-  // v17.59: 센터 관리(DB)에 없는 이름(오타·미등록 = 수정 정보 없는 센터)은 신규/이탈 집계에서 제외
-  let _excCnt=0;
-  if(_regCenterNames){ const _b=newList.length+churnList.length; newList=newList.filter(x=>_regCenterNames.has(x)); churnList=churnList.filter(x=>_regCenterNames.has(x)); _excCnt=_b-(newList.length+churnList.length); }
+  // v17.61: 신규/이탈은 위에서 '센터 관리 등록 지역' 기준으로 미리 계산(_newByReg/_churnByReg). 신규만 미등록 제외(_excByReg).
+  const newList=(_newByReg[rg]||[]).slice(), churnList=(_churnByReg[rg]||[]).slice();
+  const _excCnt=_excByReg[rg]||0;
   const nNew=newList.length, nOut=churnList.length;
 
   // 전월 대비 실제 금액 비교 줄
@@ -21517,8 +21531,9 @@ function _renderRegionKpis(){
   //  (모의수업은 보통 등록 전 달에 진행되므로, 현재 기간을 포함한 이전 모든 기간의 모의수업 센터를 누적)
   let pathHtml='';
   if(nNew>0){
+   // v17.61: 신규가 등록 지역 기준으로 귀속되므로 모의수업 이력도 전 지역(글로벌)에서 누적 확인
    const _mockCum=new Set();
-   for(let _k=0;_k<=selIdx;_k++){ const _pr=series[_k]&&series[_k].R[rg]; if(_pr&&_pr.mockCenters) _pr.mockCenters.forEach(x=>_mockCum.add(x)); }
+   for(let _k=0;_k<=selIdx;_k++){ const _per=series[_k]; if(_per&&_per.R) Object.keys(_per.R).forEach(r2=>{ const b=_per.R[r2]; if(b&&b.mockCenters) b.mockCenters.forEach(x=>_mockCum.add(x)); }); }
    const _koSort=(a,b)=>String(a).localeCompare(String(b),'ko');
    const fromMock=newList.filter(x=>_mockCum.has(x)).sort(_koSort);
    const fromRef =newList.filter(x=>!_mockCum.has(x)).sort(_koSort);
@@ -21539,7 +21554,7 @@ function _renderRegionKpis(){
       <span style="font-size:22px;font-weight:900;color:${_netCol};">${_netSign}${Math.abs(_net)}곳</span></div>
      ${_barHtml}
      <div style="font-size:10.5px;color:#9B9888;margin-top:6px;">신규 <b style="color:#16A34A;">${nNew}곳</b> − 이탈 <b style="color:#DC2626;">${nOut}곳</b> = 순수증가 <b style="color:${_netCol};">${_netSign}${Math.abs(_net)}곳</b></div>
-     ${_excCnt>0?`<div style="font-size:9.5px;color:#B5B1A5;margin-top:4px;line-height:1.5;">※ 센터 관리에 없는 이름(오타·미등록) ${_excCnt}곳은 집계에서 제외됨 — 센터 관리에 등록하면 반영돼요</div>`:''}
+     ${_excCnt>0?`<div style="font-size:9.5px;color:#B5B1A5;margin-top:4px;line-height:1.5;">※ 센터 관리에 없는 이름(오타·미등록) ${_excCnt}곳은 신규 집계에서 제외됨 — 센터 관리에 등록하면 반영돼요</div>`:''}
      ${pathHtml}
     </div>`;
 
