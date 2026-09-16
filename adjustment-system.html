@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.56">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.57">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.56">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.57">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.56</title>
+<title>수업기록표 정산 시스템 v17.57</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4174,7 +4174,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.56';
+const SYSTEM_VERSION='v17.57';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -15616,9 +15616,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.56&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.57&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.56&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.57&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -21433,15 +21433,16 @@ function _renderRegionKpis(){
   const margin=c.revenue>0?(profit/c.revenue*100):0;
   const pProfit=p?(p.revenue-p.labor-p.cost):null;
   let newList=[], churnList=[];
+  // v17.57: 신규/이탈 센터는 '정상수업(O)' 기준 — 모의수업(△)만 한 센터는 신규에서 제외(실제 수업이 시작된 센터만 신규)
   if(isYear && cur.months && cur.months.length){
-   // v17.51: 연별 신규/이탈 = 그 해 첫 달 대비 마지막 달의 센터 증감(전년 자료가 없어도 잡히게)
+   // 연별 신규/이탈 = 그 해 첫 달 대비 마지막 달의 '정상수업 센터' 증감
    const fm=cur.months[0].R[rg], lm=cur.months[cur.months.length-1].R[rg];
-   const fc=(fm&&fm.centers)?fm.centers:new Set(), lc=(lm&&lm.centers)?lm.centers:new Set();
+   const fc=(fm&&fm.liveCenters)?fm.liveCenters:new Set(), lc=(lm&&lm.liveCenters)?lm.liveCenters:new Set();
    lc.forEach(x=>{ if(!fc.has(x)) newList.push(x); }); fc.forEach(x=>{ if(!lc.has(x)) churnList.push(x); });
   } else {
-   // v17.54: 월별 신규 센터 = 이전 어느 달에도 없던 '첫 등장' 센터만(쉬었다 다시 연 센터는 제외). 이탈은 전월 대비 유지
-   if(selIdx>0){ const _priorCen=new Set(); for(let _k=0;_k<selIdx;_k++){ const _pr=series[_k].R[rg]; if(_pr&&_pr.centers) _pr.centers.forEach(x=>_priorCen.add(x)); } c.centers.forEach(x=>{ if(!_priorCen.has(x)) newList.push(x); }); }
-   if(p){ p.centers.forEach(x=>{ if(!c.centers.has(x)) churnList.push(x); }); }
+   // 월별 신규 센터 = 이전 어느 달에도 '정상수업'이 없던 '첫 정상수업' 센터만. 이탈은 전월 대비 정상수업 중단
+   if(selIdx>0){ const _priorLive=new Set(); for(let _k=0;_k<selIdx;_k++){ const _pr=series[_k].R[rg]; if(_pr&&_pr.liveCenters) _pr.liveCenters.forEach(x=>_priorLive.add(x)); } c.liveCenters.forEach(x=>{ if(!_priorLive.has(x)) newList.push(x); }); }
+   if(p){ p.liveCenters.forEach(x=>{ if(!c.liveCenters.has(x)) churnList.push(x); }); }
   }
   const nNew=newList.length, nOut=churnList.length;
 
@@ -21495,16 +21496,22 @@ function _renderRegionKpis(){
    return `<span style="font-size:10.5px;font-weight:700;background:#F2F0E8;color:#6A6760;border-radius:7px;padding:3px 8px;">${esc(s)} <b style="color:#2A2A28;">${now}</b>${dd}</span>`;
   }).filter(Boolean).join('');
 
-  // 전환률 — 이번 달 신규 센터 중 실제 정상수업(O)이 시작된 비율
-  //  (모의수업 없이 바로 시작하는 센터도 있으므로 분모는 '신규 센터' 전체.
-  //   모의수업만 하고 아직 정상수업이 없는 곳은 미전환으로 잡힘)
-  let convBox='';
+  // v17.57: 전환률 → '이탈 대비 신규 순증' 지표 + 신규 등록 전환 경로(🧪/🤝)
+  //  신규/이탈은 정상수업(O) 기준(위에서 계산). 순증 = 신규 − 이탈.
+  const _net=nNew-nOut;
+  const _netCol=_net>0?'#16A34A':(_net<0?'#DC2626':'#9B9888');
+  const _netSign=_net>0?'+':(_net<0?'−':'±');
+  const _tot=nNew+nOut;
+  const _gW=_tot>0?Math.round(nNew/_tot*100):0;
+  const _barHtml=_tot>0
+   ? `<div style="display:flex;height:9px;border-radius:99px;overflow:hidden;margin-top:7px;background:#EFEDE4;">
+       <i style="display:block;height:100%;width:${_gW}%;background:#16A34A;"></i>
+       <i style="display:block;height:100%;width:${100-_gW}%;background:#E28D8D;"></i></div>`
+   : `<div style="height:9px;border-radius:99px;background:#EFEDE4;margin-top:7px;"></div>`;
+  // 신규 등록 전환 경로 — 이번 기간까지 모의수업 이력이 있으면 '모의수업 전환', 없으면 '소개·기타'
+  //  (모의수업은 보통 등록 전 달에 진행되므로, 현재 기간을 포함한 이전 모든 기간의 모의수업 센터를 누적)
+  let pathHtml='';
   if(nNew>0){
-   const conv=newList.filter(x=>c.liveCenters.has(x)).length;
-   const rate=conv/nNew*100;
-   const rc=rate>=80?'#16A34A':(rate>=50?'#B4791A':'#DC2626');
-   // v17.55: 신규 센터 전환 경로 — 이번 기간까지 모의수업 이력이 있으면 '모의수업 전환', 없으면 '소개·기타'
-   //  (모의수업은 보통 등록 전 달에 진행되므로, 현재 기간을 포함한 이전 모든 기간의 모의수업 센터를 누적)
    const _mockCum=new Set();
    for(let _k=0;_k<=selIdx;_k++){ const _pr=series[_k]&&series[_k].R[rg]; if(_pr&&_pr.mockCenters) _pr.mockCenters.forEach(x=>_mockCum.add(x)); }
    const _koSort=(a,b)=>String(a).localeCompare(String(b),'ko');
@@ -21514,22 +21521,21 @@ function _renderRegionKpis(){
       <div style="font-size:10.5px;font-weight:700;color:${col};margin-bottom:3px;">${ico} ${label} <b>${arr.length}곳</b></div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;">${arr.map(n=>`<span onclick="_rgOpenCenter('${escAttrJS(n)}')" title="눌러서 센터 정보 수정" style="font-size:10.5px;color:#5A5750;background:${bg};border:1px solid ${col}44;border-radius:6px;padding:2px 7px;cursor:pointer;">${esc(n)} <span style="color:${col};">✎</span></span>`).join('')}</div>
      </div>`:'';
-   convBox=`<div style="margin-top:8px;background:#F7FAF8;border:1px solid #DCE6E0;border-radius:11px;padding:9px 12px;">
-     <div style="display:flex;justify-content:space-between;align-items:baseline;">
-      <span style="font-size:11.5px;font-weight:700;color:#5A5750;">전환률 <span style="font-weight:600;color:#9B9888;">(신규 → 정상수업)</span></span>
-      <span style="font-size:18px;font-weight:900;color:${rc};">${rate.toFixed(0)}%</span></div>
-     <div style="height:7px;background:#EFEDE4;border-radius:99px;overflow:hidden;margin-top:6px;"><i style="display:block;height:100%;width:${Math.min(100,rate).toFixed(0)}%;background:${rc};border-radius:99px;"></i></div>
-     <div style="font-size:10.5px;color:#9B9888;margin-top:5px;">신규 ${nNew}곳 중 <b>${conv}곳</b> 정상수업 시작${conv<nNew?` · ${nNew-conv}곳 모의수업 단계`:''}</div>
-     <div style="border-top:1px dashed #DCE6E0;margin-top:8px;padding-top:7px;">
+   pathHtml=`<div style="border-top:1px dashed #DCE6E0;margin-top:8px;padding-top:7px;">
       <div style="font-size:10.5px;font-weight:800;color:#5A5750;">${isYear?'올해':'이번 달'} 신규 등록 센터가 어디서 왔나</div>
       ${pathRow('모의수업에서 전환', fromMock, '#B4791A', '#FFF9EC', '🧪')}
       ${pathRow('소개·기타 전환', fromRef, '#2E75B6', '#EEF5FB', '🤝')}
       <div style="font-size:9.5px;color:#B5B1A5;margin-top:6px;line-height:1.5;">🧪 = 등록 전/후 모의수업(△) 이력이 있는 센터 · 🤝 = 모의수업 없이 소개 등으로 바로 등록</div>
-     </div>
-    </div>`;
-  } else {
-   convBox=`<div style="margin-top:8px;background:#FAFAF7;border:1px dashed #E2DFD4;border-radius:11px;padding:9px 12px;font-size:10.5px;color:#9B9888;">${isYear?'올해':'이번 달'} 신규 센터 없음</div>`;
+     </div>`;
   }
+  const convBox=`<div style="margin-top:8px;background:#F7FAF8;border:1px solid #DCE6E0;border-radius:11px;padding:10px 12px;">
+     <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:11.5px;font-weight:700;color:#5A5750;">${isYear?'올해':'이번 달'} 센터 순증 <span style="font-weight:600;color:#9B9888;">(신규 − 이탈)</span></span>
+      <span style="font-size:22px;font-weight:900;color:${_netCol};">${_netSign}${Math.abs(_net)}곳</span></div>
+     ${_barHtml}
+     <div style="font-size:10.5px;color:#9B9888;margin-top:6px;">신규 <b style="color:#16A34A;">${nNew}곳</b> − 이탈 <b style="color:#DC2626;">${nOut}곳</b> = 순증 <b style="color:${_netCol};">${_netSign}${Math.abs(_net)}곳</b></div>
+     ${pathHtml}
+    </div>`;
 
   const clickRow=(id,label,valHtml)=>`
     <div onclick="_rgTog('${id}')" style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;cursor:pointer;user-select:none;">
@@ -21586,8 +21592,8 @@ function _renderRegionKpis(){
       <div style="font-size:19px;font-weight:900;line-height:1;color:#DC2626;">${nOut}</div>
       <div style="font-size:10px;font-weight:700;margin-top:3px;color:#6A6760;">이탈 센터${nOut?' ▾':''}</div></div>
     </div>
-    ${nNew?`<div id="rgnew${idx}" style="display:none;background:#F4FBF7;border:1px solid #BFE3CE;border-radius:10px;padding:9px 11px;margin-top:6px;"><div style="font-size:10.5px;color:#16A34A;font-weight:700;margin-bottom:4px;">🆕 ${isYear?'올해':'이번 달'} 새로 생긴 센터 (${nNew}곳)</div>${newInner}</div>`:''}
-    ${nOut?`<div id="rgout${idx}" style="display:none;background:#FEF6F6;border:1px solid #F3C4C4;border-radius:10px;padding:9px 11px;margin-top:6px;"><div style="font-size:10.5px;color:#DC2626;font-weight:700;margin-bottom:4px;">📉 ${isYear?'올해 들어 사라진':'지난달 있었지만 이번 달 사라진'} 센터 (${nOut}곳)</div>${churnInner}</div>`:''}
+    ${nNew?`<div id="rgnew${idx}" style="display:none;background:#F4FBF7;border:1px solid #BFE3CE;border-radius:10px;padding:9px 11px;margin-top:6px;"><div style="font-size:10.5px;color:#16A34A;font-weight:700;margin-bottom:4px;">🆕 ${isYear?'올해':'이번 달'} 정상수업 시작한 센터 (${nNew}곳)</div>${newInner}</div>`:''}
+    ${nOut?`<div id="rgout${idx}" style="display:none;background:#FEF6F6;border:1px solid #F3C4C4;border-radius:10px;padding:9px 11px;margin-top:6px;"><div style="font-size:10.5px;color:#DC2626;font-weight:700;margin-bottom:4px;">📉 ${isYear?'올해 들어 정상수업 끊긴':'지난달 있었지만 이번 달 정상수업 끊긴'} 센터 (${nOut}곳)</div>${churnInner}</div>`:''}
     ${convBox}
    </div>
   </div>`;
