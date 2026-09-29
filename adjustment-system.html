@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.67">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.68">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.67">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.68">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.67</title>
+<title>수업기록표 정산 시스템 v17.68</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3091,7 +3091,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   <div class="loader-sub" id="loaderSub">완료까지 잠시 기다려주세요</div>
   <div id="loaderElapsed" style="margin-top:6px;font-size:12px;font-weight:600;color:#1A7A50;letter-spacing:.2px;"></div>
   <!-- v15.89: 오래 걸릴 때 안내 + 빠져나갈 방법 -->
-  <div id="loaderHint" style="display:none;margin-top:2px;font-size:11px;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:7px;padding:5px 10px;max-width:260px;text-align:center;"></div>
+  <div id="loaderHint" style="display:none;margin-top:2px;font-size:11.5px;line-height:1.55;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;padding:7px 11px;max-width:300px;text-align:center;word-break:keep-all;"></div>
   <button id="loaderCancel" onclick="hideLoader()" style="display:none;margin-top:6px;height:28px;padding:0 14px;border:1px solid var(--border);border-radius:7px;background:#fff;color:var(--text2);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">그만 기다리기</button>
  </div>
 </div>
@@ -4185,7 +4185,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.67';
+const SYSTEM_VERSION='v17.68';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5718,7 +5718,87 @@ async function recoverSubmissionsFromHistory(){
  });
 }
 
+/* v17.68: 이 컴퓨터에 저장된 기록이 없는 달을 구글 서버(GAS)에서 받아올 때 — 왜 오래 걸리는지 안내
+ *  · 로딩 중: 단계별 안내(로더) + 본문 대기 카드(로더를 닫아도 상황이 보이게)
+ *  · 실패 시: '기록 없음'으로 오인하지 않도록 원인·대처 설명 카드 + 자동 재시도(최대 3회) */
+const _SETTLE_LOAD_HINTS = [
+ [0,  '💡 이 컴퓨터에서 처음 여는 달이라 구글 서버에서 받아오고 있어요. 보통 5~20초 걸려요.'],
+ [20, '⏳ 구글 서버가 붐비는 중이에요. 서버는 요청을 한 번에 하나씩 처리해서, 다른 분의 요청이 끝나길 기다리는 중이에요. 자동으로 계속 시도하고 있어요.'],
+ [60, '🐢 평소보다 오래 걸리고 있어요. 계속 기다리셔도 되고, [그만 기다리기]를 눌러도 받아오는 대로 자동으로 표시돼요.']
+];
+let _settleRetryTimer = null, _settleWaitTimer = null;
+const _settleAutoRetryCount = {};
+const _SETTLE_AUTO_RETRY_MAX = 3, _SETTLE_AUTO_RETRY_SEC = 60;
+function _settleClearTimers(){
+ if(_settleRetryTimer){ clearInterval(_settleRetryTimer); _settleRetryTimer=null; }
+ if(_settleWaitTimer){ clearInterval(_settleWaitTimer); _settleWaitTimer=null; }
+}
+function _settleWhyHtml(){
+ return `<details style="margin-top:12px;text-align:left;background:#FAFAF7;border:1px solid #ECEAE2;border-radius:10px;padding:9px 12px;">
+   <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);">왜 이 컴퓨터에서만 오래 걸리나요?</summary>
+   <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-top:6px;">
+    · 정산 기록은 한 번 열면 <b>그 컴퓨터에 저장</b>돼서 다음부터는 바로 열려요. 이 컴퓨터엔 아직 이 달 기록이 없어 <b>구글 서버에서 받아와야</b> 해요.<br>
+    · 구글 서버는 요청을 <b>한 번에 하나씩</b> 처리해서, 여러 분이 동시에 쓰면 순서를 기다려야 해요.<br>
+    · 한 번만 받아오면 이후엔 이 컴퓨터에서도 빠르게 열려요.
+   </div>
+  </details>`;
+}
+function _settleWaitCard(ym){
+ const mc=document.getElementById('mainContent'); if(!mc) return;
+ const t0=Date.now();
+ mc.innerHTML=`<div id="settleWaitCard" style="display:flex;justify-content:center;padding:36px 16px;">
+   <div style="width:100%;max-width:440px;text-align:center;">
+    <div style="font-size:36px;">⏳</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text2);margin-top:8px;">${esc(ym)} 기록을 구글 서버에서 받아오는 중이에요</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;margin-top:6px;">이 컴퓨터에서 처음 여는 달이라 시간이 걸릴 수 있어요<br>(보통 5~20초 · 붐빌 땐 1~2분). 받아오면 <b>자동으로 표시</b>돼요.</div>
+    <div id="settleWaitElapsed" style="font-size:12px;font-weight:700;color:#1A7A50;margin-top:10px;">0초 경과</div>
+    ${_settleWhyHtml()}
+   </div></div>`;
+ _settleWaitTimer=setInterval(()=>{
+  const e=document.getElementById('settleWaitElapsed');
+  if(!e){ clearInterval(_settleWaitTimer); _settleWaitTimer=null; return; }
+  e.textContent=Math.floor((Date.now()-t0)/1000)+'초 경과 · 자동으로 계속 시도 중';
+ },1000);
+}
+function _settleRetryLoad(ym){
+ _settleClearTimers();
+ try{ _sessionLoadedMonths.delete(ym); }catch(_){}
+ loadMonthlySnapshot(ym);
+}
+function _settleFailCard(ym, reason){
+ if(window._settleViewedYm !== ym) return;   // 그사이 다른 달로 이동했으면 화면을 건드리지 않음
+ _settleClearTimers();
+ const mc=document.getElementById('mainContent'); if(!mc) return;
+ const why = reason==='offline' ? '인터넷 연결이 끊겨 있어요. 연결을 확인한 뒤 다시 시도해 주세요.'
+   : reason==='busy' ? '구글 서버가 지금 많이 붐벼서 응답하지 못했어요.'
+   : '구글 서버에 연결하지 못했거나, 제한 시간(약 2분) 안에 응답이 없었어요.';
+ const n=(_settleAutoRetryCount[ym]||0);
+ const canAuto = reason!=='offline' && n < _SETTLE_AUTO_RETRY_MAX;
+ const ymJs=escAttrJS(ym);
+ mc.innerHTML=`<div id="settleFailCard" style="display:flex;justify-content:center;padding:36px 16px;">
+   <div style="width:100%;max-width:440px;text-align:center;">
+    <div style="font-size:36px;">${reason==='offline'?'📴':'🐢'}</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text2);margin-top:8px;">${esc(ym)} 기록을 아직 못 받아왔어요</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;margin-top:6px;">${why}</div>
+    <div style="font-size:12.5px;color:#1A7A50;background:#EDF7F1;border:1px solid #CDE9D8;border-radius:9px;padding:8px 11px;margin-top:12px;line-height:1.6;">📌 <b>데이터가 사라진 게 아니에요.</b> 서버가 바빠서 잠깐 못 가져온 것뿐이에요.</div>
+    <div style="margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:7px;">
+     <button onclick="_settleRetryLoad('${ymJs}')" class="btn" style="font-size:13px;font-weight:700;background:#1A7A50;color:#fff;border-color:#1A7A50;">🔄 지금 다시 시도</button>
+     <div id="settleAutoRetryMsg" style="font-size:12px;color:var(--text3);">${canAuto?`<b id="settleAutoRetrySec">${_SETTLE_AUTO_RETRY_SEC}</b>초 후 자동으로 다시 시도해요 (${n+1}/${_SETTLE_AUTO_RETRY_MAX})`:(reason==='offline'?'':'자동 재시도를 멈췄어요. 1~2분 뒤 직접 눌러 주세요.')}</div>
+    </div>
+    <div style="font-size:11.5px;color:var(--text3);margin-top:12px;line-height:1.6;">💡 월초 정산 시기처럼 여러 분이 동시에 쓰는 시간을 피하면 더 빨라요.</div>
+    ${_settleWhyHtml()}
+   </div></div>`;
+ if(!canAuto) return;
+ let left=_SETTLE_AUTO_RETRY_SEC;
+ _settleRetryTimer=setInterval(()=>{
+  if(window._settleViewedYm!==ym || !document.getElementById('settleFailCard')){ _settleClearTimers(); return; }
+  left--;
+  const el=document.getElementById('settleAutoRetrySec'); if(el) el.textContent=left;
+  if(left<=0){ _settleAutoRetryCount[ym]=n+1; _settleRetryLoad(ym); }
+ },1000);
+}
 function loadMonthlySnapshot(ym){
+ _settleClearTimers();   // v17.68: 이전 달의 대기/자동 재시도 타이머 정리
  window._settleViewedYm = ym;   // v16.10: 모바일 월 이동 바가 현재 보는 달을 알도록
  try{ _renderMobileMonthBar(ym); }catch(_){}
  const key = MONTHLY_KEY_PREFIX + ym.replace(/\s/g,'_');
@@ -5776,8 +5856,12 @@ function loadMonthlySnapshot(ym){
   // 로컬 데이터 있으면 즉시 표시 → 토스트 불필요 (GAS 응답 후 별도 표시)
  } else {
   // 로컬 데이터 없으면 로딩 오버레이 표시
-  showLoader(`${ym} 데이터 불러오는 중...`, '', 50000);
-  showToast(`${ym} GAS에서 불러오는 중...`);
+  // v17.68: 이전 달 화면이 남아 헷갈리지 않게 본문을 '받아오는 중' 안내로 바꾸고,
+  //  서버 요청 최대 시간(45초×3회 ≈ 2분 20초)보다 로더가 먼저 사라지지 않게 150초로 늘림 + 단계별 원인 안내
+  STATE.data = null; STATE.regionFilter = null;
+  try{ _renderSidebarYM(ym); _renderNewTeacherList(); }catch(_){}
+  _settleWaitCard(ym);
+  showLoader(`${ym} 기록 불러오는 중`, '구글 서버에서 받아오는 중이에요', 150000, {hints:_SETTLE_LOAD_HINTS});
  }
 
  // v15.43: 마감월이고 이미 잠금(GAS로 한 번 확정)됐고 로컬 데이터가 있으면 → GAS 재확인 건너뜀(고정)
@@ -5803,6 +5887,10 @@ function loadMonthlySnapshot(ym){
    hideLoader();
    if(!r.ok || !r.data){
     if(!localSnap?.data?.teachers){
+     // v17.68: 서버 혼잡(_busy)은 '기록 없음'이 아님 → 원인 안내 + 재시도 카드
+     if(r && r._busy){ _settleFailCard(ym, 'busy'); return; }
+     if(window._settleViewedYm !== ym){ _settleClearTimers(); return; }   // 그사이 다른 달로 이동했으면 화면 유지
+     _settleClearTimers();
      // 로컬도 GAS도 없음 → 빈 화면 표시
      STATE.data = null; STATE.regionFilter = null;
      _renderSidebarYM(ym);
@@ -5918,8 +6006,13 @@ function loadMonthlySnapshot(ym){
     } else {
      showToast(`✅ ${ym} 최신 데이터로 업데이트됐어요`);
     }
-    STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
-    renderSettle();
+    _settleAutoRetryCount[ym]=0;
+    // v17.68: 늦게 도착한 응답이 그사이 옮겨간 다른 달 화면을 덮어쓰지 않게 (데이터는 위에서 이미 저장됨)
+    if(window._settleViewedYm === ym){
+     _settleClearTimers();
+     STATE.data = data; STATE.cur=0; STATE.regionFilter=null;
+     renderSettle();
+    }
     try{ _srvFresh('settle', (data.teachers||[]).length+'명'); }catch(_){}   // v15.89
    } else {
     showToast(`✅ ${ym} 수업기록표 로드 완료`);
@@ -5929,7 +6022,8 @@ function loadMonthlySnapshot(ym){
   })
   .catch(()=>{
    hideLoader();
-   if(!localSnap?.data?.teachers) showToast('GAS 연결 실패 — 로컬 데이터도 없어요');
+   // v17.68: 로컬 데이터가 없으면 원인·대처 안내 카드 + 자동 재시도 (토스트만 뜨고 사라지던 문제)
+   if(!localSnap?.data?.teachers) _settleFailCard(ym, (typeof navigator!=='undefined' && navigator.onLine===false) ? 'offline' : 'timeout');
    // 로컬 데이터는 이미 표시 중이므로 별도 처리 불필요
   });
 }
@@ -14438,7 +14532,7 @@ try{
  window.addEventListener('online',  ()=>Object.keys(_SRV).forEach(_srvRender));
 }catch(_){}
 
-function showLoader(msg='불러오는 중...', sub='', ms=15000){
+function showLoader(msg='불러오는 중...', sub='', ms=15000, opts){
   const el = document.getElementById('globalLoader');
   const txt = document.getElementById('loaderText');
   const subEl = document.getElementById('loaderSub');
@@ -14459,13 +14553,15 @@ function showLoader(msg='불러오는 중...', sub='', ms=15000){
     const cancel = document.getElementById('loaderCancel');
     if(hint){ hint.style.display='none'; hint.textContent=''; }
     if(cancel) cancel.style.display='none';
+    // v17.68: 경과 시간에 따라 단계별 안내 문구 (opts.hints = [[초, 문구], ...])
+    const stages = (opts && Array.isArray(opts.hints) && opts.hints.length) ? opts.hints : [[15,'구글 서버가 붐비는 것 같아요. 보통 30초 안에 됩니다']];
     const render = ()=>{
       const s=(_now()-t0)/1000;
       elp.textContent = s.toFixed(1)+'초 경과';
       if(s>=8 && cancel && cancel.style.display==='none') cancel.style.display='block';
-      if(s>=15 && hint && hint.style.display==='none'){
-        hint.style.display='block';
-        hint.textContent='구글 서버가 붐비는 것 같아요. 보통 30초 안에 됩니다';
+      if(hint){
+        let cur=null; stages.forEach(st=>{ if(s>=st[0]) cur=st[1]; });
+        if(cur && hint.textContent!==cur){ hint.textContent=cur; hint.style.display='block'; }
       }
     };
     render();
@@ -15678,9 +15774,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.67&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.68&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.67&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.68&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
