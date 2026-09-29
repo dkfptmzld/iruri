@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.71">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.72">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.71">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.72">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.71</title>
+<title>수업기록표 정산 시스템 v17.72</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4192,7 +4192,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.71';
+const SYSTEM_VERSION='v17.72';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -10619,6 +10619,13 @@ function _openCenterTimePicker(input, name, region, teacher, day, gyosi){
    null,                                                   // 고르는 중엔 화면만 (입력칸 값은 픽커가 갱신)
    (v)=>_saveCenterTime(name, region, teacher, day, gyosi, v));
 }
+/* v17.72: 센터관리 강사 표의 한 요일 안 교시 순서 — 시간이 정해진 수업은 이른 시간부터,
+ *  시간이 없는 수업은 그 뒤에 기존 순서(order→gyosi)대로. 표·드래그 이동이 모두 이 기준을 써야
+ *  '몇 번째 줄'이 같은 수업을 가리킨다. (_schMins: 시간 없으면 99999) */
+function _slotTimeCmp(a, b){
+ const sa=a.sched||a, sb=b.sched||b;
+ return _schMins(sa.time)-_schMins(sb.time) || (sa.order||99)-(sb.order||99) || (sa.gyosi||1)-(sb.gyosi||1);
+}
 function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const DAYS = ['월','화','수','목','금','토','일'];
  const REGION_COLOR = {'서울':'blue','인천':'teal','수원':'purple'};
@@ -10673,7 +10680,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
 
  // v11.30 fix: 교시 동적화 — 요일별 실제 등록 수만큼 슬롯 생성 (고정 3 제거)
  const rows = ['월','화','수','목','금','토','일'].flatMap(day=>{
-  const items = (dayMap[day]||[]).sort((a,b)=>(a.order||1)-(b.order||1));
+  const items = (dayMap[day]||[]).slice();
   if(!items.length){
    // v15.53: 등록 없는 요일도 '드롭 대상' 행으로 표시 → 다른 요일 수업을 이 요일로 끌어다 놓기 가능
    return [`<tr ondragover="_dndOver(event,0)" ondragleave="_dndLeave(event)" ondrop="_dndDropEmpty(event,'${region}','${escAttrJS(teacher)}','${day}')" style="border-bottom:1px solid var(--border);background:var(--surface2);">
@@ -10688,8 +10695,8 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   // v11.30 fix: slotCount = 실제 센터 수만 (maxOrder 제거)
   // order 값이 비정상적으로 크면 빈 슬롯이 수십 개 생기는 버그 방지
   const slotCount = items.length;
-  // order 기준으로 정렬해서 순서대로 슬롯에 배치
-  const sorted = [...items].sort((a,b)=>(a.order||99)-(b.order||99)||(a.gyosi||1)-(b.gyosi||1));
+  // v17.72: 시간순(시간 없으면 뒤에 기존 순서) — _slotTimeCmp
+  const sorted = [...items].sort(_slotTimeCmp);
   const slots = sorted;
   return slots.map((x,i)=>{
    const dayCell = i===0
@@ -10842,10 +10849,18 @@ function _dndApplyReorder(region, teacher, day, fromIdx, toIdx){
    allEntries.push({center:c, sched, order:sched.order||99, gyosi:sched.gyosi||1});
   });
  });
- const slots = allEntries.sort((a,b)=>(a.order||99)-(b.order||99)||(a.gyosi||1)-(b.gyosi||1));
+ const slots = allEntries.sort(_slotTimeCmp);   // v17.72: 표와 같은 기준(시간순)
  if(fromIdx<0||fromIdx>=slots.length||toIdx<0||toIdx>=slots.length) return;
  const [item] = slots.splice(fromIdx, 1);
  slots.splice(toIdx, 0, item);
+ // v17.72: 시간이 정해진 수업은 시간순으로 자동 정렬되므로, 그 순서를 거스르는 이동은 받지 않는다
+ //  (옮겨도 다시 시간순으로 돌아가 '안 움직인 것'처럼 보이기 때문). 시간 없는 수업끼리는 자유롭게 이동.
+ const _m=slots.map(x=>_schMins(x.sched.time));
+ if(_m.some((v,i)=>i>0 && v<_m[i-1])){
+  showToast('시간이 정해진 수업은 시간순으로 자동 정렬돼요 — 순서를 바꾸려면 시간을 고쳐 주세요');
+  selectTreeTeacher(region, teacher, false);
+  return;
+ }
  // order + gyosi 재설정
  slots.forEach((x,i)=>{ if(x){ x.sched.order = i+1; x.sched.gyosi = i+1; } });
  lsSave();
@@ -10861,7 +10876,7 @@ function _dndMoveDay(region, teacher, fromDay, slotIdx, toDay){
  DB.centers.filter(c=>c.region===region).forEach(c=>{
   (c.schedule||[]).filter(s=>s.teacher===teacher && (s.days||[]).includes(fromDay)).forEach(sched=>{ fromSlots.push({center:c, sched}); });
  });
- fromSlots.sort((a,b)=>(a.sched.order||99)-(b.sched.order||99)||(a.sched.gyosi||1)-(b.sched.gyosi||1));
+ fromSlots.sort(_slotTimeCmp);   // v17.72: 표와 같은 기준(시간순) — slotIdx 가 같은 수업을 가리키게
  if(slotIdx<0 || slotIdx>=fromSlots.length) return;
  const item=fromSlots[slotIdx];
  // 담당강사 카드의 요일 변경: fromDay 제거 + toDay 추가
@@ -10876,7 +10891,7 @@ function _dndMoveDay(region, teacher, fromDay, slotIdx, toDay){
  });
  item.sched.order=maxOrder+1; item.sched.gyosi=maxOrder+1;
  // fromDay 남은 슬롯 재정렬
- fromSlots.filter(x=>x!==item).sort((a,b)=>(a.sched.order||99)-(b.sched.order||99)).forEach((x,i)=>{ x.sched.order=i+1; x.sched.gyosi=i+1; });
+ fromSlots.filter(x=>x!==item).forEach((x,i)=>{ x.sched.order=i+1; x.sched.gyosi=i+1; });   // v17.72: 이미 시간순
  lsSave();
  _saveAllCentersToGas();
  selectTreeTeacher(region, teacher, false);
@@ -15888,9 +15903,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.71&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.72&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.71&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.72&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
