@@ -647,6 +647,7 @@ body.edit-mode-active .ledger-wrap textarea {
 @media(max-width:480px){.nc-slot-grid{grid-template-columns:1fr auto;}.nc-slot-grid>div:nth-child(1){grid-column:1/-1;}.nc-slot-del{align-self:center;}}
 /* 모바일: 상단 헤더 버튼을 가리지 않도록 하단 중앙 배치 */
 @media(max-width:600px){.save-toast{bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center;}}
+@media(max-width:600px){#settleBubble{left:12px!important;right:12px;width:auto!important;bottom:calc(68px + env(safe-area-inset-bottom))!important;}}
 
 /* GLOBAL LOADING OVERLAY */
 /* v15.98: 스케줄표 — 넓은 화면은 표, 휴대폰은 카드 */
@@ -3001,6 +3002,12 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 
 <!-- v17.65: 성장 1등 플로팅 위젯 (접속 현황 위) -->
 <div id="champFloat" style="display:none;position:fixed;right:24px;bottom:88px;z-index:8998;width:52px;font-family:inherit;"></div>
+<!-- v17.69: 정산 월별 기록을 서버에서 받아올 때 — 화면을 막지 않는 작은 말풍선 (저장 알림 토스트 바로 위) -->
+<div id="settleBubble" role="status" aria-live="polite" style="display:none;position:fixed;left:20px;bottom:72px;z-index:8995;width:300px;max-width:calc(100vw - 24px);background:#fff;border:1px solid #CFE5D7;border-radius:14px;box-shadow:0 8px 28px rgba(20,60,40,.18);padding:11px 34px 12px 13px;font-family:inherit;box-sizing:border-box;">
+ <div id="settleBubbleBody"></div>
+ <button onclick="_settleBubbleClose()" aria-label="닫기" title="닫기 (받아오기는 계속돼요)" style="position:absolute;top:6px;right:7px;border:0;background:transparent;font-size:14px;color:#9B9888;cursor:pointer;padding:4px;line-height:1;font-family:inherit;">✕</button>
+ <div style="position:absolute;left:24px;bottom:-7px;width:12px;height:12px;background:#fff;border-right:1px solid #CFE5D7;border-bottom:1px solid #CFE5D7;transform:rotate(45deg);"></div>
+</div>
 <!-- v11.30: 접속 현황 플로팅 위젯 (관리자 전용) -->
 <div id="presenceWidget" style="display: block; position: fixed; bottom: 24px; right: 24px; z-index: 9000; font-family: inherit;">
  <!-- 토글 버튼 -->
@@ -5725,10 +5732,52 @@ async function recoverSubmissionsFromHistory(){
  *  서버 부담 최소화). 문구는 '계속 받아오는 중'. 재시도는 화면을 가리는 로더 없이 카드 안에서 조용히 표시.
  *  인터넷이 다시 연결되면 즉시 재시도. 30분 넘게 안 되면 관리자에게 알리도록 안내. */
 const _SETTLE_LOAD_HINTS = [
- [0,  '💡 이 컴퓨터에서 처음 여는 달이라 구글 서버에서 받아오고 있어요. 보통 5~20초 걸려요.'],
- [20, '⏳ 구글 서버가 붐비는 중이에요. 서버는 요청을 한 번에 하나씩 처리해서, 다른 분의 요청이 끝나길 기다리는 중이에요. 자동으로 계속 시도하고 있어요.'],
- [60, '🐢 평소보다 오래 걸리고 있어요. 계속 기다리셔도 되고, [그만 기다리기]를 눌러도 받아오는 대로 자동으로 표시돼요.']
+ [0,  '이 컴퓨터에서 처음 여는 달이라 구글 서버에서 받아오고 있어요. 보통 5~20초 걸리고, 그동안 다른 작업을 하셔도 돼요.'],
+ [20, '구글 서버가 붐벼서 순서를 기다리는 중이에요. 서버는 요청을 한 번에 하나씩 처리해요. 자동으로 계속 시도하고 있어요.'],
+ [60, '평소보다 오래 걸리고 있어요. 받아오는 대로 자동으로 표시할게요. 이 말풍선은 닫아도 돼요.']
 ];
+/* v17.69: 화면을 막는 로딩창 대신 왼쪽 아래 작은 말풍선으로 진행 상황 안내 (다른 작업 방해 X)
+ *  한 번에 한 달만 표시 — 다른 달 응답이 현재 말풍선을 지우거나 덮지 않도록 달(ym) 기준으로 관리 */
+let _bubbleYm = null, _bubbleTick = null, _bubbleHideT = null;
+function _settleBubbleStop(){
+ if(_bubbleTick){ clearInterval(_bubbleTick); _bubbleTick=null; }
+ if(_bubbleHideT){ clearTimeout(_bubbleHideT); _bubbleHideT=null; }
+}
+function _settleBubbleClose(){
+ _settleBubbleStop(); _bubbleYm=null;
+ const b=document.getElementById('settleBubble'); if(b) b.style.display='none';
+}
+function _settleBubble(state, ym){
+ const b=document.getElementById('settleBubble'), body=document.getElementById('settleBubbleBody');
+ if(!b || !body) return;
+ if(state==='hide'){ if(_bubbleYm===ym) _settleBubbleClose(); return; }
+ if(state==='done'){
+  if(_bubbleYm && _bubbleYm!==ym) return;   // 다른 달을 받아오는 중이면 그 말풍선을 유지
+  _settleBubbleStop(); _bubbleYm=ym;
+  const here = (window._settleViewedYm===ym && typeof STATE!=='undefined' && STATE.view==='settle');
+  body.innerHTML=`<div style="font-size:13px;font-weight:800;color:#1a4a2e;">✅ ${esc(ym)} 기록을 받아왔어요</div>
+   <div style="font-size:12px;color:#6b6a63;margin-top:4px;line-height:1.5;">${here?'화면에 바로 표시했어요.':'정산 탭에서 '+esc(ym)+'을 열면 바로 보여요.'} 이제 이 컴퓨터에서도 빠르게 열려요.</div>`;
+  b.style.display='block';
+  _bubbleHideT=setTimeout(()=>{ if(_bubbleYm===ym) _settleBubbleClose(); }, 5000);
+  return;
+ }
+ // loading
+ _settleBubbleStop(); _bubbleYm=ym;
+ const t0=Date.now();
+ body.innerHTML=`<div style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:#1a4a2e;">
+   <span class="srv-spin" style="color:#1A7A50;"></span><span>${esc(ym)} 기록 받아오는 중</span>
+   <span id="settleBubbleEl" style="margin-left:auto;font-size:11.5px;font-weight:700;color:#1A7A50;white-space:nowrap;">0초</span></div>
+  <div id="settleBubbleHint" style="font-size:12px;color:#6b6a63;line-height:1.55;margin-top:5px;word-break:keep-all;"></div>`;
+ b.style.display='block';
+ const render=()=>{
+  if(_bubbleYm!==ym){ _settleBubbleStop(); return; }
+  const s=Math.floor((Date.now()-t0)/1000);
+  const el=document.getElementById('settleBubbleEl'); if(el) el.textContent = s>=60 ? Math.floor(s/60)+'분 '+(s%60)+'초' : s+'초';
+  let cur=''; _SETTLE_LOAD_HINTS.forEach(h=>{ if(s>=h[0]) cur=h[1]; });
+  const hn=document.getElementById('settleBubbleHint'); if(hn && hn.textContent!==cur) hn.textContent=cur;
+ };
+ render(); _bubbleTick=setInterval(render, 1000);
+}
 let _settleRetryTimer = null, _settleWaitTimer = null, _settleOnlineHooked = false;
 const _settleRetryState = {};                              // ym → {n: 응답 없던 횟수, since: 처음 시도 시각}
 const _SETTLE_RETRY_GAPS = [30, 60, 120, 180, 300];        // 초 — 마지막 값(5분)으로 계속 반복
@@ -5883,7 +5932,7 @@ function loadMonthlySnapshot(ym){
    STATE.data = null; STATE.regionFilter = null;
    try{ _renderSidebarYM(ym); _renderNewTeacherList(); }catch(_){}
    _settleWaitCard(ym);
-   showLoader(`${ym} 기록 불러오는 중`, '구글 서버에서 받아오는 중이에요', 150000, {hints:_SETTLE_LOAD_HINTS});
+   _settleBubble('loading', ym);   // v17.69: 화면을 막는 로딩창 대신 작은 말풍선
   }
  }
 
@@ -5908,6 +5957,7 @@ function loadMonthlySnapshot(ym){
  gasGet({action:'getMonthlySnapshot', yearMonth:ym}, 45000, 'settle')   // v15.89: 정산탭 상태 줄
   .then(r=>{
    hideLoader();
+   _settleBubble('hide', ym);   // v17.69: 응답 도착 → 말풍선 정리(성공이면 아래에서 '받아왔어요'로 다시 표시)
    if(!r.ok || !r.data){
     if(!localSnap?.data?.teachers){
      // v17.68: 서버 혼잡(_busy)은 '기록 없음'이 아님 → 원인 안내 + 재시도 카드
@@ -6026,10 +6076,11 @@ function loadMonthlySnapshot(ym){
      gasPost({action:'saveMonthlySnapshot', yearMonth:ym, data}).catch(()=>{});
      if(_restoredDone>0) showToast(`⚠️ ${ym} 누락된 완료 강사 ${_restoredDone}명 복구됨`);
      else showToast(`⚠️ ${ym} 강사료 ${_normRepairCount}건 자동 복구 저장됨`);
-    } else {
+    } else if(localSnap?.data?.teachers && !_isRetry){   // v17.69: 기다려서 받아온 경우엔 말풍선이 알려주므로 중복 토스트 생략
      showToast(`✅ ${ym} 최신 데이터로 업데이트됐어요`);
     }
     delete _settleRetryState[ym];
+    if(!localSnap?.data?.teachers || _isRetry) _settleBubble('done', ym);   // v17.69: 기다려서 받아온 경우 완료 알림
     // v17.68: 늦게 도착한 응답이 그사이 옮겨간 다른 달 화면을 덮어쓰지 않게 (데이터는 위에서 이미 저장됨)
     if(window._settleViewedYm === ym){
      _settleClearTimers();
@@ -6045,6 +6096,7 @@ function loadMonthlySnapshot(ym){
   })
   .catch(()=>{
    hideLoader();
+   _settleBubble('hide', ym);
    // v17.68: 로컬 데이터가 없으면 원인·대처 안내 카드 + 자동 재시도 (토스트만 뜨고 사라지던 문제)
    if(!localSnap?.data?.teachers) _settleFailCard(ym, (typeof navigator!=='undefined' && navigator.onLine===false) ? 'offline' : 'timeout');
    // 로컬 데이터는 이미 표시 중이므로 별도 처리 불필요
