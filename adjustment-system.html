@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.74">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.75">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.74">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.75">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.74</title>
+<title>수업기록표 정산 시스템 v17.75</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4192,7 +4192,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.74';
+const SYSTEM_VERSION='v17.75';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13230,6 +13230,17 @@ function _togglePresenceSection(sec){
  if(window._lastPresenceList !== undefined) _renderPresenceWidget(window._lastPresenceList);
 }
 
+/* v17.75: 마지막 접속을 '방금 / N분 전 / N시간 전 / N일 전 / N개월 전 / N년 전' 으로 */
+function _presenceAgo(ms){
+ if(!(ms>=0)) return '';
+ const m=Math.floor(ms/60000), h=Math.floor(m/60), d=Math.floor(h/24);
+ if(m<1) return '방금';
+ if(m<60) return m+'분 전';
+ if(h<24) return h+'시간 전';
+ if(d<30) return d+'일 전';
+ if(d<365) return Math.floor(d/30)+'개월 전';
+ return Math.floor(d/365)+'년 전';
+}
 function _renderPresenceWidget(list){
  window._lastPresenceList = list; // 토글 재렌더용 저장
  const listEl = document.getElementById('presenceList');
@@ -13256,21 +13267,27 @@ function _renderPresenceWidget(list){
  // v17.71: heartbeat 2분 주기(보고 있을 때만) 기준 — 5분 이내 = 온라인 (2번 놓쳐도 깜빡이지 않게 여유)
  const ONLINE_MS = 5 * 60 * 1000;
 
+ // 접속 시간 맵 (전체)
+ // v17.75: 서버가 이제 모든 강사의 마지막 접속을 준다(로그아웃은 out:true, 시각은 남김)
+ const seenMap = {}, outSet = new Set();
+ list.forEach(p=>{
+  const t = new Date(p.lastSeen).getTime();
+  if(!isFinite(t)) return;
+  seenMap[p.teacher] = Math.max(0, now - t);
+  if(p.out) outSet.add(p.teacher);
+ });
+ const _isOn = (n)=> seenMap[n]!==undefined && seenMap[n] < ONLINE_MS && !outSet.has(n);
+
  // DB 강사 전체 목록 (가나다순)
+ //  v17.75: 접속 기록에만 있는 이름(관리자 등)은 '지금 온라인'일 때만 — 지워진 강사가 오프라인에 남지 않게
+ const _dbNames = ((typeof DB!=='undefined'&&DB.teachers)||[]).map(t=>t.name);
  const allTeachers = [...new Set([
-  ...((typeof DB!=='undefined'&&DB.teachers)||[]).map(t=>t.name),
-  ...list.map(p=>p.teacher)
+  ..._dbNames,
+  ...list.map(p=>p.teacher).filter(n=>_dbNames.includes(n) || _isOn(n))
  ])].sort((a,b)=>a.localeCompare(b,'ko'));
 
- // 접속 시간 맵 (전체)
- const seenMap = {};
- list.forEach(p=>{
-  const ago = now - new Date(p.lastSeen).getTime();
-  seenMap[p.teacher] = ago;
- });
-
- const online  = allTeachers.filter(n=> seenMap[n]!==undefined && seenMap[n] < ONLINE_MS);
- const offline = allTeachers.filter(n=> seenMap[n]===undefined || seenMap[n] >= ONLINE_MS);
+ const online  = allTeachers.filter(n=> _isOn(n));
+ const offline = allTeachers.filter(n=> !_isOn(n));
  const onlineCount = online.length;
 
  if(badge) badge.style.display = onlineCount > 0 ? 'block' : 'none';
@@ -13281,11 +13298,13 @@ function _renderPresenceWidget(list){
    ? `<span style="width:8px;height:8px;border-radius:50%;background:#4CAF50;flex-shrink:0;animation:blink 1.4s ease-in-out infinite;display:inline-block;"></span>`
    : `<span style="width:8px;height:8px;border-radius:50%;background:#ccc;flex-shrink:0;display:inline-block;"></span>`;
   const timeStr = isOnline
-   ? `<span style="font-size:11px;color:#2e7d32;">${Math.floor(ago/60000)===0?'방금':Math.floor(ago/60000)+'분 전'}</span>`
-   : (ago!==undefined ? `<span style="font-size:11px;color:var(--text3);">${Math.floor(ago/60000)}분 전</span>` : '');
+   ? `<span style="font-size:11px;color:#2e7d32;">${_presenceAgo(ago)}</span>`
+   : (ago!==undefined
+      ? `<span style="font-size:11px;color:var(--text3);" title="마지막 접속 ${esc(new Date(now-ago).toLocaleString('ko-KR'))}">${_presenceAgo(ago)}</span>`
+      : `<span style="font-size:11px;color:#c4c4c4;">기록 없음</span>`);
   return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;${isOnline?'background:var(--green-bg);':''}">
    ${dot}
-   <span style="font-size:13px;font-weight:${isOnline?'600':'400'};color:${isOnline?'var(--green)':'var(--text2)'};flex:1;">${name}</span>
+   <span style="font-size:13px;font-weight:${isOnline?'600':'400'};color:${isOnline?'var(--green)':'var(--text2)'};flex:1;">${esc(name)}</span>
    ${timeStr}
   </div>`;
  };
@@ -15907,9 +15926,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.74&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.75&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.74&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.75&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }

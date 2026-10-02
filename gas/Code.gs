@@ -1105,19 +1105,21 @@ function saveSystemSettings(settings) {
 }
 
 function getPresence() {
+  // [접속현황 2026-10] 최근 10분만이 아니라 '모든 강사의 마지막 접속 시각'을 돌려준다
+  //  → 관리자 화면 오프라인 목록에 '3시간 전·2일 전'처럼 표시. (강사 수만큼이라 몇 KB)
+  //  로그아웃한 사람은 out:true (마지막 접속 시각은 그대로 남김)
   const ss = ss_();
   let sheet = ss.getSheetByName(SHEET_PRESENCE);
   if (!sheet) return { ok: true, data: [] };
   const values = sheet.getDataRange().getValues();
   const result = [];
-  const now = new Date();
   for (let i = 1; i < values.length; i++) {
     const [teacher, lastSeen, page] = values[i];
     if (!teacher) continue;
     const lastSeenDate = lastSeen instanceof Date ? lastSeen : new Date(lastSeen);
-    if (now - lastSeenDate < 10 * 60 * 1000) {
-      result.push({ teacher: String(teacher), lastSeen: lastSeenDate.toISOString(), page: String(page||'') });
-    }
+    if (isNaN(lastSeenDate.getTime())) continue;
+    const pg = String(page || '');
+    result.push({ teacher: String(teacher), lastSeen: lastSeenDate.toISOString(), page: pg, out: pg === '로그아웃' });
   }
   return { ok: true, data: result };
 }
@@ -1137,13 +1139,15 @@ function updatePresence(teacher, page) {
 }
 
 function removePresence(teacher) {
+  // [접속현황 2026-10] 줄을 지우지 않고 '로그아웃'으로 표시 → 마지막 접속 시각이 남는다
   if (!teacher) return { ok: false };
   const ss = ss_();
   const sheet = ss.getSheetByName(SHEET_PRESENCE);
   if (!sheet) return { ok: true };
   const values = sheet.getDataRange().getValues();
-  for (let i = values.length - 1; i >= 1; i--) {
-    if (String(values[i][0]) === teacher) sheet.deleteRow(i + 1);
+  const now = new Date();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === teacher) { sheet.getRange(i + 1, 2, 1, 2).setValues([[now, '로그아웃']]); return { ok: true }; }
   }
   return { ok: true };
 }
