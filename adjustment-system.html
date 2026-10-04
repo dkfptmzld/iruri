@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.77">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.78">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.77">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.78">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.77</title>
+<title>수업기록표 정산 시스템 v17.78</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4195,7 +4195,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.77';
+const SYSTEM_VERSION='v17.78';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4959,6 +4959,16 @@ const CENTER_ALIAS={
  '가가호호 봉천':'가가호호봉천','천사':'천사노인',
 };
 
+/* v17.78: 센터의 '대표 수업료' — 배정 강사들의 수업료 중 가장 많이 쓰는 값(같으면 먼저 나온 값).
+ *  새 센터 창(v16.32~)은 수업료를 강사별로만 저장하고 센터 기본값(fee)은 0으로 남겨서,
+ *  배정되지 않은 강사(보강 등)가 그 센터를 고르면 0원이 되던 문제를 메우는 데 쓴다. */
+function _centerRepFee(c){
+ if(!c) return 0;
+ const cnt=new Map();
+ (c.schedule||[]).forEach(s=>{ const f=Number(s&&s.fee)||0; if(f>0) cnt.set(f,(cnt.get(f)||0)+1); });
+ let best=0, bestN=0; cnt.forEach((n,f)=>{ if(n>bestN){ best=f; bestN=n; } });
+ return best;
+}
 function getCenterFee(centerName,teacherName,excelFee,lessonRegion){
  let baseName=centerName.replace(/\(.+?\)/g,'').trim();
  // 강사별 가가호호 구분 (봉천 vs 시흥)
@@ -4985,7 +4995,8 @@ function getCenterFee(centerName,teacherName,excelFee,lessonRegion){
   if(sched?.fee) return sched.fee;
  }
  if(m&&m.fee) return m.fee;
- return (excelFee&&excelFee>0)?excelFee:0;
+ if(excelFee&&excelFee>0) return excelFee;
+ return _centerRepFee(m);   // v17.78: 센터 기본값이 0이면 배정 강사들의 대표 수업료
 }
 
 function toggleCenterDetail(id){
@@ -7527,7 +7538,15 @@ function renderCenterPickerList(q, teacherName, cur){
  const knownFuzzy=new Set(); assigned.forEach(c=>knownFuzzy.add(fuzKey(c.name,c.region)));
 
  // 수업료는 항상 로그인 강사(내 정산) 기준 조합키
- const feeOf=(name,region)=>DB.centerFees[`${name}|${teacherName}`]||centerBy(name,region)?.fee||0;
+ // v17.78: 없으면 → 내 배정 수업료 → (보강이면) 원래 강사 수업료 → 센터 기본값 → 배정 강사들의 대표 수업료
+ //  (새 센터 창으로 만든 센터는 기본값이 0이라 미배정 강사·보강에서 '-'(0원)로 뜨던 문제)
+ const feeOf=(name,region)=>{
+  const c=centerBy(name,region);
+  const schedFee=(tn)=>Number(((c&&c.schedule)||[]).find(s=>s&&s.teacher===tn&&Number(s.fee)>0)?.fee)||0;
+  return Number(DB.centerFees[`${name}|${teacherName}`])||schedFee(teacherName)
+   ||((isSub&&subFor)?(Number(DB.centerFees[`${name}|${subFor}`])||schedFee(subFor)):0)
+   ||Number(c?.fee)||_centerRepFee(c)||0;
+ };
  const staffOf=(name,region)=>{ const c=centerBy(name,region); return (c&&Array.isArray(c.teachers))?c.teachers:[]; };
  const rgStyleOf=r=>({'서울':'background:#EFF6FF;color:#1E40AF','인천':'background:#E1F5EE;color:#0F6E56','수원':'background:#F0EAFA;color:#5A3AB0'}[r]||'background:#F0EEE8;color:#7a756a');
 
@@ -12404,7 +12423,9 @@ function _ncBuildObj(){
   slots.sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')));
   slots.forEach((s,gi)=>{ schedule.push({teacher:tn, days:s.days||[], order:orderOf[tn], fee:teacherFee, gyosi:gi+1, ...(s.time&&{time:s.time})}); });
  });
- const obj={name, region:_ncRegion, fee:0, address, email, teachers, schedule, source:(_ncEditIdx!=null&&DB.centers[_ncEditIdx]&&DB.centers[_ncEditIdx].source)||'수동'};
+ // v17.78: 센터 기본 수업료 = 배정 강사들의 대표 수업료(강사가 없으면 예전 값 유지) — 미배정 강사·보강·정산 대체값으로 쓰임
+ const _oldFee=(_ncEditIdx!=null&&DB.centers[_ncEditIdx]&&Number(DB.centers[_ncEditIdx].fee))||0;
+ const obj={name, region:_ncRegion, fee:_centerRepFee({schedule})||_oldFee, address, email, teachers, schedule, source:(_ncEditIdx!=null&&DB.centers[_ncEditIdx]&&DB.centers[_ncEditIdx].source)||'수동'};
  if(_ncEditIdx!=null && DB.centers[_ncEditIdx]){
   const old=DB.centers[_ncEditIdx];
   if(old.phone) obj.phone=old.phone;
@@ -15945,9 +15966,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.77&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.78&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.77&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.78&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
