@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.76">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.77">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.76">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.77">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.76</title>
+<title>수업기록표 정산 시스템 v17.77</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -585,6 +585,9 @@ body.edit-mode-active .ledger-wrap textarea {
 .nc-tfee-in{margin-left:auto;display:flex;align-items:center;gap:5px;flex:0 0 auto;}
 .nc-tfee{width:112px;border:1.5px solid #D6D2C6;border-radius:9px;padding:8px 10px;font:inherit;font-family:'DM Mono','Noto Sans KR',monospace;color:#20201C;background:#fff;outline:none;text-align:right;}
 .nc-tfee:focus{border-color:#1A7A50;}
+.nc-tfee.err{border-color:#DC2626;background:#FEF2F2;box-shadow:0 0 0 3px rgba(220,38,38,.12);}   /* v17.77: 수업료 필수 */
+.nc-tfee-row.err{border-color:#FCA5A5;background:#FFF5F5;}
+.nc-tfee.err:focus,.nc-tfee.err:focus-visible{border-color:#DC2626;outline:2px solid #DC2626;outline-offset:2px;}
 .nc-tfee-won{font-size:12.5px;color:#6A6760;}
 .nc-slot-grid{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:7px;align-items:end;}
 .nc-mini-lb{font-size:10.5px;color:#9A968C;font-weight:700;margin-bottom:4px;display:block;}
@@ -4192,7 +4195,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.76';
+const SYSTEM_VERSION='v17.77';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12272,11 +12275,11 @@ function _ncAddTeacherBlock(teacher, slots, fee){
  const list=document.getElementById('ncAsgList');
  const bl=document.createElement('div'); bl.className='nc-tblock';
  bl.innerHTML=`<div class="nc-tblock-head"><select class="nc-tsel"><option value="">강사 선택…</option>${_ncTeacherOptions(teacher)}</select><button type="button" class="nc-tblock-del" title="이 강사 배정 삭제">✕</button></div>`
-  +`<div class="nc-tfee-row"><span class="nc-tfee-lb">수업료 <span style="font-weight:500;color:#9A968C;">(이 강사 · 회당)</span></span><span class="nc-tfee-in"><input class="nc-tfee" inputmode="numeric" placeholder="예: 55000" value="${esc(String(fee||''))}"><span class="nc-tfee-won">원</span></span></div>`
+  +`<div class="nc-tfee-row"><span class="nc-tfee-lb">수업료 <span style="color:#DC2626;font-weight:800;">*</span> <span style="font-weight:500;color:#9A968C;">(이 강사 · 회당)</span></span><span class="nc-tfee-in"><input class="nc-tfee" inputmode="numeric" placeholder="예: 55000" value="${esc(String(fee||''))}"><span class="nc-tfee-won">원</span></span></div>`
   +`<div class="nc-tslots"></div><button type="button" class="nc-add-slot">＋ 시간 추가 <span style="font-weight:500;font-size:11px;color:#9A968C;">(같은 날 오전·오후 따로면 여기)</span></button>`;
  bl.querySelector('.nc-tblock-del').onclick=()=>{ bl.remove(); _ncRetintAll(); _ncUpdateCount(); _ncBuildPreview(); };
  bl.querySelector('.nc-tsel').onchange=()=>{ _ncUpdateCount(); _ncBuildPreview(); };
- bl.querySelector('.nc-tfee').addEventListener('input',_ncBuildPreview);
+ bl.querySelector('.nc-tfee').addEventListener('input',function(){ this.classList.remove('err'); this.closest('.nc-tfee-row')?.classList.remove('err'); _ncBuildPreview(); });
  bl.querySelector('.nc-add-slot').onclick=()=>_ncAddSlot(bl,null);
  list.appendChild(bl);
  (slots&&slots.length?slots:[null]).forEach(s=>_ncAddSlot(bl,s));
@@ -12345,6 +12348,21 @@ function _ncTrySave(){
  const name=document.getElementById('ncName').value.trim();
  if(!name){ showToast('⚠️ 센터명을 입력하세요'); try{document.getElementById('ncName').focus();}catch(_){} return; }
  if(!_ncRegion){ showToast('⚠️ 지역을 골라주세요'); return; }
+ // v17.77: 수업료 필수 — 배정한 강사마다 회당 수업료가 있어야 저장(0원으로 저장돼 정산이 0원으로 나오던 문제 방지)
+ //  같은 강사를 두 칸에 넣었으면 어느 한 칸에만 있어도 됨(_ncBuildObj 와 같은 규칙)
+ const _blocks=[...document.querySelectorAll('#ncAsgList .nc-tblock')];
+ const _feeOf=(bl)=>Number((bl.querySelector('.nc-tfee')?.value||'').replace(/[^0-9]/g,''))||0;
+ const _missing=[];
+ _blocks.forEach(bl=>{ const tn=bl.querySelector('.nc-tsel')?.value; if(!tn) return;
+  if(_blocks.some(b=>b.querySelector('.nc-tsel')?.value===tn && _feeOf(b)>0)) return;
+  if(!_missing.some(m=>m.tn===tn)) _missing.push({tn, bl}); });
+ if(_missing.length){
+  _missing.forEach(m=>{ const inp=m.bl.querySelector('.nc-tfee'); inp.classList.add('err'); m.bl.querySelector('.nc-tfee-row')?.classList.add('err'); });
+  const first=_missing[0].bl.querySelector('.nc-tfee');
+  try{ first.scrollIntoView({behavior:'smooth',block:'center'}); setTimeout(()=>first.focus(),250); }catch(_){}
+  showToast(`⚠️ 수업료를 입력하세요 — ${_missing.map(m=>m.tn).join(', ')} 강사`);
+  return;
+ }
  const nn=_ncNorm(name);
  if(_ncEditIdx!=null){ _ncRealSave(); return; }
  const sameIdx=(DB.centers||[]).findIndex(c=>_ncNorm(c.name)===nn && (c.region||'')===_ncRegion);
@@ -15927,9 +15945,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.76&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.77&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.76&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.77&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
