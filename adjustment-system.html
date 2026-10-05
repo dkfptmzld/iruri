@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.78">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.79">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.78">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.79">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.78</title>
+<title>수업기록표 정산 시스템 v17.79</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4195,7 +4195,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.78';
+const SYSTEM_VERSION='v17.79';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4681,6 +4681,7 @@ window.addEventListener('load', ()=>{
     DB.teachers = _mergeTeacherAccounts(r.data);
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     _dbVerSet(_tVerKey, r.version);   // v15.87: 반영을 끝낸 뒤에만 버전 저장
+    try{ _refillSettleFees(); }catch(_){}   // v17.79: 늦게 도착한 강사료로 정산 빈칸 채우기
     // 강사 관리 화면 열려있으면 갱신
     if(document.getElementById('teachersView')?.style.display === 'block'){
      renderTeacherStats(); renderTeacherMgr();
@@ -4895,6 +4896,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
     DB.teachers = _mergeTeacherAccounts(r.data);   // v15.15: 계좌 보존
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
+    try{ _refillSettleFees(); }catch(_){}   // v17.79
     renderFn(); // 최신 데이터로 다시 렌더
     try{ _srvFresh('teachers', DB.teachers.length+'명'); }catch(_){}   // v15.89
    }
@@ -5032,17 +5034,45 @@ function calcPretax(total,feePct,lessons){
  *  - totalSum/pretax/profit/finalPay: lessons + feePct로 재계산(calcPretax, 3.3% 공제)
  *  - parkingCost/supplyCost/etcCost/mockLesson: notesData 카테고리별 합
  */
+/* v17.79: 강사료가 비어(0) 있는 정산 기록을 지금 강사관리 값으로 다시 채운다.
+ *  [고친 문제] 정산 화면은 '처음 그릴 때'만 채웠다. 그 뒤에 강사관리에서 강사료를 넣거나,
+ *  서버에서 강사 목록이 늦게 도착하면 화면을 다시 열기 전까지 '강사료 0% · 확정 월급 0'으로 남았다.
+ *  (신규 가입 강사가 강사료를 정하기 전에 기록표를 제출하면 기록에 0이 들어간다)
+ *  이미 강사료가 있는 기록은 건드리지 않는다(지난달 강사료 보존). 채운 게 있으면 화면도 갱신. */
+function _refillSettleFees(){
+ const ts = STATE && STATE.data && Array.isArray(STATE.data.teachers) ? STATE.data.teachers : null;
+ if(!ts) return 0;
+ let n = 0;
+ ts.forEach(t=>{
+  if(!t || (typeof t.feePct==='number' && t.feePct>0)) return;
+  try{ _fillSettleFields(t); }catch(_){}
+  if(typeof t.feePct==='number' && t.feePct>0) n++;
+ });
+ if(n){
+  try{
+   const sv=document.getElementById('settleView');
+   if(sv && sv.style.display!=='none' && typeof renderTeacher==='function' && ts[STATE.cur]) renderTeacher(STATE.cur);
+   if(typeof _renderNewTeacherList==='function') _renderNewTeacherList();
+  }catch(_){}
+ }
+ return n;
+}
 function _fillSettleFields(rec){
  if(!rec || !Array.isArray(rec.lessons)) return rec;
  if(!(typeof rec.feePct==='number' && rec.feePct>0)){
   const _dbList = (typeof DB!=='undefined' && Array.isArray(DB.teachers)) ? DB.teachers : [];
-  const dbT = _dbList.find(d=>d.name===rec.name);
-  if(dbT && dbT.feeVal!=null) rec.feePct = (dbT.feeType==='pct') ? (dbT.feeVal/100) : dbT.feeVal;
+  // v17.79: 이름 앞뒤 공백·한글 조합 방식 차이로 못 찾던 경우까지 맞춤
+  const _nm = (x)=>{ try{ return String(x||'').normalize('NFC').trim(); }catch(_){ return String(x||'').trim(); } };
+  const dbT = _dbList.find(d=>d.name===rec.name) || _dbList.find(d=>_nm(d.name)===_nm(rec.name));
+  const _fv = dbT ? Number(dbT.feeVal) : 0;
+  if(dbT && _fv>0) rec.feePct = (dbT.feeType==='pct') ? (_fv/100) : _fv;
  }
  if(!(typeof rec.totalSum==='number' && rec.totalSum>0))
   rec.totalSum = rec.lessons.reduce((s,l)=>s+(Number(l.total)||0),0);
- if(!(typeof rec.pretax==='number' && rec.pretax>0))
+ if(!(typeof rec.pretax==='number' && rec.pretax>0)){
   rec.pretax = calcPretax(rec.totalSum, rec.feePct, rec.lessons);
+  if(rec.pretax>0) rec.profit = (rec.totalSum||0) - rec.pretax;   // v17.79: 강사료를 새로 채웠으면 영업이익도 다시(예전엔 '수업료 전액'으로 남음)
+ }
  if(rec.profit==null) rec.profit = (rec.totalSum||0) - (rec.pretax||0);
  if(!(typeof rec.finalPay==='number' && rec.finalPay>0))
   rec.finalPay = Math.round((rec.pretax||0)*0.967);
@@ -6724,6 +6754,7 @@ function deleteTeacherRecord(i){
 function renderTeacher(i){
  STATE.cur = i; // v11.30 fix: cur 항상 동기화
  const t=STATE.data.teachers[i];
+ try{ if(t && !(typeof t.feePct==='number' && t.feePct>0)) _fillSettleFields(t); }catch(_){}   // v17.79: 강사료 빈 기록은 볼 때마다 강사관리 값으로
  const cnt=t.lessons.reduce((s,l)=>s+l.count,0);
  document.getElementById('mainContent').innerHTML=`
  <div class="profile-row">
@@ -12027,6 +12058,7 @@ function saveModal(){
  // v13.85: renderSettle() → STATE.cur 유지하며 재계산 (강사 정보 변경 시 다른 강사로 튀는 버그 방지)
  try{
   if(STATE.data){
+   try{ _refillSettleFees(); }catch(_){}   // v17.79: 강사료를 처음 넣은 강사 → 이번 달 정산 빈칸 채우기
    STATE.data.teachers.forEach((t,i)=>{ if(typeof recalcTeacher==='function') recalcTeacher(i); });
    if(typeof renderTeacher==='function') renderTeacher(STATE.cur);
    if(typeof _renderSidebarYM==='function') _renderSidebarYM();
@@ -15966,9 +15998,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.78&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.79&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.78&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.79&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
