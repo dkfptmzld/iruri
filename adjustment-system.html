@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.80">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.81">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.80">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.81">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.80</title>
+<title>수업기록표 정산 시스템 v17.81</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -658,9 +658,36 @@ body.edit-mode-active .ledger-wrap textarea {
 .sch-table{display:block;overflow-x:auto;}
 @media(max-width:600px){ .sch-cards{display:block;} .sch-table{display:none;} }
 /* v17.80: 휴대폰 수정 모드 — 카드형 입력 + 새 센터 추가 줄을 2칸으로 */
-.sch-ecard{border:1px solid #E6E3D8;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff;}
-.sch-ecard .sch-elb{display:block;font-size:11px;font-weight:700;color:#8A8778;margin:8px 0 3px;}
-.sch-ecard input{width:100%;height:38px;border:1px solid #D8B25A;border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit;outline:none;background:#FFFDF6;box-sizing:border-box;}
+/* v17.81: 휴대폰 수정 화면 보기 쉽게 — 요일 바로가기·요일 띠·한 줄 입력·빈칸/고친칸 색·하단 고정 요청 버튼 */
+.sch-ecard{border:1px solid #E6E3D8;border-left:4px solid #CFCBBF;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff;transition:border-color .15s,background .15s;}
+.sch-ecard.chg{border-color:#86C9A5;border-left-color:#1A7A50;background:#F5FBF7;}
+.sch-ecard .sch-ehead{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.sch-ecard .sch-ename{font-size:15px;font-weight:800;color:#20201C;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sch-ecard .sch-echg{display:none;font-size:10.5px;font-weight:800;color:#fff;background:#1A7A50;border-radius:9px;padding:1px 7px;white-space:nowrap;}
+.sch-ecard.chg .sch-echg{display:inline-block;}
+.sch-ecard .sch-erow{display:flex;align-items:center;gap:8px;margin-top:6px;}
+.sch-ecard .sch-elb{flex:0 0 46px;font-size:12px;font-weight:700;color:#6A6760;}
+.sch-ecard input{flex:1;min-width:0;width:100%;height:40px;border:1.5px solid #E2D3A8;border-radius:9px;padding:0 10px;font-size:14px;font-family:inherit;outline:none;background:#FFFDF6;box-sizing:border-box;}
+.sch-ecard input:focus{border-color:#1A7A50;background:#fff;}
+.sch-ecard input.empty{border-style:dashed;border-color:#E8B4B4;background:#FFF8F8;}
+.sch-ecard input.empty::placeholder{color:#C98A8A;}
+.sch-ecard input.chg{border-color:#1A7A50;background:#fff;}
+.sch-ecard input.sch-etime{font-family:'DM Mono',monospace;font-weight:800;font-size:16px;text-align:center;cursor:pointer;color:#146142;}
+.sch-ejump{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px;}
+.sch-ejump button{flex:1;min-width:44px;height:34px;border:1px solid #CDE8D8;background:#F4FAF6;color:#146142;border-radius:9px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;}
+.sch-ejump button b{font-size:10.5px;font-weight:600;color:#7FA890;margin-left:2px;}
+.sch-eday{position:sticky;top:-16px;z-index:2;display:flex;align-items:center;gap:8px;margin:14px -4px 8px;padding:7px 10px;background:#1A7A50;color:#fff;border-radius:9px;font-size:14px;font-weight:800;}
+.sch-eday span{font-size:11.5px;font-weight:600;opacity:.85;}
+.sch-ehint{font-size:11.5px;color:#6A6760;background:#F7F5EE;border-radius:9px;padding:8px 10px;margin-bottom:10px;line-height:1.55;}
+.sch-ehint i{font-style:normal;display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin:0 3px 0 6px;}
+#schMiniBar{display:none;}
+@media(max-width:600px){
+ #schMiniBar.on{display:flex;position:sticky;bottom:-16px;z-index:3;align-items:center;gap:10px;margin:12px -18px -16px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #E6E3D8;box-shadow:0 -4px 14px rgba(0,0,0,.06);}
+ #schMiniBar .t{flex:1;font-size:13px;color:#6A6760;}
+ #schMiniBar .t b{color:#B45309;}
+ #schMiniBar button{height:40px;padding:0 16px;border:none;border-radius:10px;background:#1A7A50;color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+ #schMiniBar button:disabled{background:#CFCBBF;}
+}
 .sch-add-grid{display:grid;grid-template-columns:64px 1fr 1fr 96px 1fr 30px;gap:6px;align-items:center;margin-bottom:6px;}
 @media(max-width:600px){
  .sch-add-grid{grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid #CDE8D8;border-radius:10px;background:#fff;margin-bottom:8px;}
@@ -4207,7 +4234,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.80';
+const SYSTEM_VERSION='v17.81';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9179,29 +9206,45 @@ function _schEditCardsHTML(teacher){
  if(!rows.length) return '';
  const cur=(r,f)=>{ const k=[r.center,r.region,r.day,r.gyosi,f].join('\u0001'); return (k in _schEdits)?_schEdits[k]:(r[f]||''); };
  const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
- let out='';
- _SCH_DAYS.forEach(day=>{
-  const list=byDay[day]; if(!list||!list.length) return;
-  out += `<div style="margin-bottom:12px;"><div style="font-size:13px;font-weight:800;color:#1A7A50;margin-bottom:6px;">${day}요일 <span style="font-weight:500;color:#9A968C;font-size:11.5px;">${list.length}곳</span></div>`;
+ const days=_SCH_DAYS.filter(d=>byDay[d]&&byDay[d].length);
+ // 위: 요일 바로가기 + 색 안내
+ let out=`<div class="sch-ejump">${days.map(d=>`<button type="button" onclick="_schJumpDay('${d}')">${d}<b>${byDay[d].length}</b></button>`).join('')}</div>
+  <div class="sch-ehint">바뀐 곳만 고치고 아래 <b>요청 보내기</b>를 누르세요.<br><i style="background:#FFF8F8;border:1.5px dashed #E8B4B4;"></i>비어 있음 <i style="background:#fff;border:1.5px solid #1A7A50;"></i>고친 곳</div>`;
+ days.forEach(day=>{
+  const list=byDay[day];
+  out += `<div class="sch-eday" id="schDay-${day}">${day}요일 <span>${list.length}곳</span></div>`;
   list.forEach(r=>{
    const a=`'${escAttrJS(r.center)}','${escAttrJS(r.region)}','${r.day}',${r.gyosi}`;
-   out += `<div class="sch-ecard">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-     <span style="font-size:14.5px;font-weight:800;">${e(r.center)}</span>
-     ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;">${e(r.area)}</span>`:''}
-     <span style="margin-left:auto;font-size:11px;font-weight:700;color:#8A5A12;background:#FFF7E3;border:1px solid #E8CC80;border-radius:10px;padding:1px 8px;white-space:nowrap;">${r.weeks===5?5:4}주차 수업</span>
+   const inp=(f,attrs,ph,cls)=>{ const v=cur(r,f), b=r[f]||''; const c=[cls||'', v?'':'empty', (String(v).trim()!==String(b).trim())?'chg':''].join(' ').trim();
+     return `<input data-base="${q(b)}" class="${c}" value="${q(v)}" placeholder="${ph}" ${attrs}>`; };
+   const changed=['time','address','email'].some(f=>String(cur(r,f)).trim()!==String(r[f]||'').trim());
+   out += `<div class="sch-ecard${changed?' chg':''}">
+    <div class="sch-ehead">
+     <span class="sch-ename">${e(r.center)}</span>
+     <span class="sch-echg">✓ 고침</span>
+     ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;white-space:nowrap;">${e(r.area)}</span>`:''}
+     <span style="font-size:11px;font-weight:700;color:#8A5A12;background:#FFF7E3;border:1px solid #E8CC80;border-radius:10px;padding:1px 7px;white-space:nowrap;">${r.weeks===5?5:4}주차</span>
     </div>
-    <label class="sch-elb">🕐 강의시간</label>
-    <input type="text" value="${q(cur(r,'time'))}" placeholder="눌러서 시간 선택" readonly onclick="_openSchTimeInput(this,${a})" style="text-align:center;cursor:pointer;font-family:'DM Mono',monospace;font-weight:700;">
-    <label class="sch-elb">📍 주소</label>
-    <input type="text" value="${q(cur(r,'address'))}" placeholder="주소 입력" oninput="_schEditSet(${a},'address',this.value)">
-    <label class="sch-elb">✉️ 이메일</label>
-    <input type="email" value="${q(cur(r,'email'))}" placeholder="이메일 입력 (선택)" oninput="_schEditSet(${a},'email',this.value)" style="color:#2C5AA0;">
+    <div class="sch-erow"><span class="sch-elb">🕐 시간</span>${inp('time',`type="text" readonly onclick="_openSchTimeInput(this,${a})"`,'눌러서 선택','sch-etime')}</div>
+    <div class="sch-erow"><span class="sch-elb">📍 주소</span>${inp('address',`type="text" oninput="_schEditSet(${a},'address',this.value);_schCardMark(this)"`,'주소를 넣어 주세요')}</div>
+    <div class="sch-erow"><span class="sch-elb">✉️ 메일</span>${inp('email',`type="email" oninput="_schEditSet(${a},'email',this.value);_schCardMark(this)" style="color:#2C5AA0;font-size:13px;"`,'이메일 (선택)')}</div>
    </div>`;
   });
-  out += `</div>`;
  });
  return out;
+}
+/* v17.81: 입력칸·카드에 '비어 있음 / 고친 곳' 색 표시 */
+function _schCardMark(input){
+ if(!input || !input.closest) return;
+ const v=String(input.value||'').trim(), b=String(input.getAttribute('data-base')||'').trim();
+ input.classList.toggle('empty', !v);
+ input.classList.toggle('chg', v!==b);
+ const card=input.closest('.sch-ecard');
+ if(card) card.classList.toggle('chg', !![...card.querySelectorAll('input')].find(x=>x.classList.contains('chg')));
+}
+function _schJumpDay(d){
+ const el=document.getElementById('schDay-'+d), box=document.getElementById('schedCard');
+ if(el && box){ box.scrollTo({top: el.offsetTop - 8, behavior:'smooth'}); }
 }
 /* 화면으로 보기 (강사·관리자 공용) */
 let _schEditMode=false, _schEdits={}, _schEditBase={}, _schEditTeacher='', _schAdds=[], _schCurShowFee=false;
@@ -9259,7 +9302,8 @@ function _schRenderOverlay(name, showFee){
          <button class="btn sm primary" id="schSendBtn" onclick="_sendScheduleRequest('${safe}')" disabled style="gap:4px;opacity:.5;white-space:nowrap;">📬 관리자에게 수정 요청 보내기</button>
         </div>
        </div>
-       <div style="margin-top:8px;font-size:11px;color:#9A968C;">· 요청을 보내면 <b>관리자 확인 후</b> 반영됩니다 (바로 바뀌지 않아요). · 지역은 주소를 넣으면 자동으로 채워집니다.</div>`
+       <div style="margin-top:8px;font-size:11px;color:#9A968C;">· 요청을 보내면 <b>관리자 확인 후</b> 반영됩니다 (바로 바뀌지 않아요). · 지역은 주소를 넣으면 자동으로 채워집니다.</div>
+       <div id="schMiniBar" class="on"><span class="t" id="schMiniTxt">고친 곳이 없어요</span><button type="button" id="schMiniBtn" disabled onclick="_schMiniGo()">요청 보내기 ↓</button></div>`
     : `<div style="margin-top:10px;font-size:11px;color:#9A968C;">강의시간·주소는 센터 관리에서 채우거나, <b>✏️ 수정 요청</b>으로 직접 채워 관리자에게 보낼 수 있어요.</div>`}`;
  if(edit){ try{ _schRenderAdds(); }catch(_){} }
 }
@@ -9345,7 +9389,7 @@ function _schEditSet(center,region,day,gyosi,field,value){
  _schUpdateEditBar();
 }
 function _openSchTimeInput(input, center, region, day, gyosi){
- _openTimePickerAt(input, null, (v)=>{ input.value=v; _schEditSet(center,region,day,gyosi,'time',v); });
+ _openTimePickerAt(input, null, (v)=>{ input.value=v; _schEditSet(center,region,day,gyosi,'time',v); try{ _schCardMark(input); }catch(_){} });
 }
 function _schBuildChanges(){
  const norm=(field,v)=>{ if(field==='time') return _normTime(v); return String(v==null?'':v).trim(); };
@@ -9358,9 +9402,17 @@ function _schBuildChanges(){
  });
  return ch;
 }
+function _schMiniGo(){
+ const bar=document.getElementById('schEditBar'), box=document.getElementById('schedCard');
+ if(bar && box){ box.scrollTo({top: bar.offsetTop - 12, behavior:'smooth'}); setTimeout(()=>{ try{ document.getElementById('schReqMsg')?.focus({preventScroll:true}); }catch(_){} }, 450); }
+}
 function _schUpdateEditBar(){
  const ch=_schBuildChanges(), adds=_schBuildAdds();
  const total=ch.length+adds.length;
+ // v17.81: 휴대폰 하단 고정 바
+ const mt=document.getElementById('schMiniTxt'), mb=document.getElementById('schMiniBtn');
+ if(mt) mt.innerHTML = total ? `<b>${ch.length?ch.length+'곳 수정':''}${ch.length&&adds.length?' · ':''}${adds.length?'새 센터 '+adds.length+'곳':''}</b>` : '고친 곳이 없어요';
+ if(mb) mb.disabled=!total;
  const cnt=document.getElementById('schEditCount'), btn=document.getElementById('schSendBtn');
  if(cnt){
   const parts=[];
@@ -16043,9 +16095,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.80&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.81&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.80&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.81&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
