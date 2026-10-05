@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.82">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.83">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.82">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.83">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.82</title>
+<title>수업기록표 정산 시스템 v17.83</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4238,7 +4238,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.82';
+const SYSTEM_VERSION='v17.83';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6269,6 +6269,18 @@ function _pdfGroupedNotes(notesData, catColor){
  }).join('');
 }
 
+/* v17.83: PDF 요일 순서 — 기록의 요일 묶음(dayGroups) 순서를 따르되 같은 요일은 한 번만,
+ *  묶음에 없는 요일의 수업도 빠뜨리지 않고 뒤에 붙인다.
+ *  [고친 문제] 강사 입력에서 같은 요일 묶음이 두 개 생긴 기록(예: 화요일 2개)은
+ *  PDF에 그 요일 수업 전체가 두 번 인쇄됐다(합계·지급액은 정상, 표만 중복). */
+function _pdfDayOrder(t, dayMap){
+ const DAYS=['월','화','수','목','금','토','일'];
+ const base = Array.isArray(t.dayGroups) ? t.dayGroups.map(g=>g&&g.day) : DAYS.filter(d=>dayMap.has(d));
+ const out=[];
+ base.forEach(d=>{ if(d && !out.includes(d)) out.push(d); });
+ [...dayMap.keys()].forEach(d=>{ if(!out.includes(d)) out.push(d); });
+ return out;
+}
 /* ═══ PDF 페이지 빌드 (내 제출 내역에서도 재사용) ═══ */
 function _buildTeacherPdfPage(t){
  const feePctDisp=t.feePct?(t.feePct<10?Math.round(t.feePct*100)+'%':Math.round(t.feePct).toLocaleString()+'원/회'):'-';
@@ -6278,7 +6290,7 @@ function _buildTeacherPdfPage(t){
  const dayMap=new Map();
  t.lessons.forEach(l=>{if(!dayMap.has(l.day)) dayMap.set(l.day,[]);dayMap.get(l.day).push(l);});
  const DAYS=['월','화','수','목','금','토','일'];
- const dayOrder=t.dayGroups?t.dayGroups.map(g=>g.day):DAYS.filter(d=>dayMap.has(d));
+ const dayOrder=_pdfDayOrder(t, dayMap);   // v17.83: 같은 요일 묶음이 2개여도 한 번만(예전엔 그 요일 표가 두 번 인쇄됨)
  const maxWeeks=_weeksOfGroups(t.dayGroups);   // v15.92: filter(Boolean)이면 6주차가 안 잡힘
  let bodyRows='';
  dayOrder.forEach(day=>{
@@ -6399,7 +6411,7 @@ function dlPDF(){
  const dayMap=new Map();
  t.lessons.forEach(l=>{if(!dayMap.has(l.day)) dayMap.set(l.day,[]);dayMap.get(l.day).push(l);});
  const DAYS=['월','화','수','목','금','토','일'];
- const dayOrder=t.dayGroups?t.dayGroups.map(g=>g.day):DAYS.filter(d=>dayMap.has(d));
+ const dayOrder=_pdfDayOrder(t, dayMap);   // v17.83: 같은 요일 묶음이 2개여도 한 번만(예전엔 그 요일 표가 두 번 인쇄됨)
 
  // maxWeeks: 요일별 날짜 개수 중 최대값 (5주 초과 대응)
  const maxWeeks=_weeksOfGroups(t.dayGroups);   // v15.92: filter(Boolean)이면 6주차가 안 잡힘
@@ -6553,9 +6565,11 @@ function dlPDF(){
  // 가로 A4 한 페이지 압축 레이아웃 (v11.36)
  // 제거: 상단 로고 헤더, 큰 아바타 배너, 3열 카드, 서명란
  // 유지: 강사명+월+최종지급액(한 줄), 계좌, 수업기록표, 특이사항+정산표(2단)
+ // v17.83: 글꼴을 @import 로 불러오면 이 팝업에서 아래 '한 장 맞춤' 스크립트가 실행되지 않아(크롬)
+ //  내용이 많은 강사(센터 19곳 등)는 맨 아래 '최종 지급액' 줄이 잘려 인쇄됐다 → 막지 않는 방식으로 불러온다.
  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${label} 정산서 ${printDate}</title>
+ <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" media="only x" onload="this.media='all';setTimeout(function(){try{fitPages();fitScreen();}catch(e){}},80);">
  <style>
- @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
  *{box-sizing:border-box;margin:0;padding:0;}
  @page{size:A4 landscape;margin:8mm;}
  body{font-family:'Noto Sans KR','맑은 고딕','Apple SD Gothic Neo',sans-serif;font-size:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#f5f4f0;color:#1a1916;}
@@ -6671,14 +6685,14 @@ function dlPDF(){
     while(pg.firstChild) inner.appendChild(pg.firstChild);
     pg.appendChild(inner);
    }
-   var maxH = pg.clientHeight, maxW = pg.clientWidth;
+   var maxH = pg.clientHeight - 6, maxW = pg.clientWidth;   // v17.83: 인쇄 반올림으로 맨 아래 줄이 잘리지 않게 약간 여유
    var s = 1;
-   for(var i=0;i<3;i++){
+   for(var i=0;i<5;i++){
     inner.style.transform = 'none';
     inner.style.width = (100/s) + '%';
     var h = inner.scrollHeight * s;     // 현재 배율에서 실제로 차지할 높이
     if(h <= maxH + 0.5) break;
-    s = Math.max(MIN, s * (maxH / h));
+    s = Math.max(MIN, s * (maxH / h) * 0.995);
    }
    if(s < 1){
     inner.style.width = (100/s) + '%';
@@ -9800,8 +9814,7 @@ function _printSchedules(names, showFee){
    ${_hdr(n)}
    ${_schTableHTML(n, !!showFee, false)}
   </div></div>`).join('');
- const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>강사 스케줄</title><style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+ const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>강사 스케줄</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" media="only x" onload="this.media='all';setTimeout(function(){try{fitPages();fitScreen();}catch(e){}},80);"><style>
   *{box-sizing:border-box;margin:0;padding:0;}
   @page{size:A4 landscape;margin:10mm;}
   body{font-family:'Noto Sans KR','맑은 고딕',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#EFEDE4;}
@@ -9831,7 +9844,7 @@ function _printSchedules(names, showFee){
   document.querySelectorAll('.page').forEach(function(pg){
    var inner=pg.querySelector('.page-fit'); if(!inner) return;
    var tbl=inner.querySelector('table');
-   if(tbl) tbl.style.height='';
+   if(tbl){ tbl.style.height=''; [].forEach.call(tbl.querySelectorAll('tbody tr'),function(tr){ tr.style.height=''; }); }   // v17.83: 다시 맞출 때 이전 줄높이 초기화
    var maxH=pg.clientHeight, s=1;
    for(var i=0;i<6;i++){
     inner.style.transform='none'; inner.style.width=(100/s)+'%';
@@ -16126,9 +16139,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.82&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.83&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.82&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.83&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
