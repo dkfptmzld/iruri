@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.79">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.80">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.79">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.80">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.79</title>
+<title>수업기록표 정산 시스템 v17.80</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -657,6 +657,18 @@ body.edit-mode-active .ledger-wrap textarea {
 .sch-cards{display:none;}
 .sch-table{display:block;overflow-x:auto;}
 @media(max-width:600px){ .sch-cards{display:block;} .sch-table{display:none;} }
+/* v17.80: 휴대폰 수정 모드 — 카드형 입력 + 새 센터 추가 줄을 2칸으로 */
+.sch-ecard{border:1px solid #E6E3D8;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff;}
+.sch-ecard .sch-elb{display:block;font-size:11px;font-weight:700;color:#8A8778;margin:8px 0 3px;}
+.sch-ecard input{width:100%;height:38px;border:1px solid #D8B25A;border-radius:8px;padding:0 10px;font-size:14px;font-family:inherit;outline:none;background:#FFFDF6;box-sizing:border-box;}
+.sch-add-grid{display:grid;grid-template-columns:64px 1fr 1fr 96px 1fr 30px;gap:6px;align-items:center;margin-bottom:6px;}
+@media(max-width:600px){
+ .sch-add-grid{grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:1px solid #CDE8D8;border-radius:10px;background:#fff;margin-bottom:8px;}
+ .sch-add-grid > *{height:36px !important;font-size:13.5px !important;}
+ .sch-add-grid > .sch-add-full{grid-column:1 / -1;}
+ .sch-add-grid{grid-auto-flow:dense;}
+ .sch-add-grid > div:last-child{height:auto !important;font-size:11px !important;grid-column:1 / -1;}
+}
 /* v15.89: 탭별 서버 요청 상태 줄 */
 .srv-line{display:none;align-items:center;gap:6px;padding:6px 9px;border-radius:7px;font-size:10.5px;font-weight:600;line-height:1.4;margin-bottom:10px;}
 .srv-line .srv-el{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums;opacity:.85;flex-shrink:0;padding-left:8px;}
@@ -4195,7 +4207,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.79';
+const SYSTEM_VERSION='v17.80';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9158,6 +9170,39 @@ function _schCardsHTML(teacher, showFee){
  });
  return out;
 }
+/* v17.80: 휴대폰 '수정 모드' — 7칸 표를 좁은 화면에 넣으면 제목·칸이 겹쳐 보여서 카드형 입력으로.
+ *  입력값은 표와 똑같이 _schEdits 에 담긴다(같은 키) → 보내는 내용은 PC와 같다. */
+function _schEditCardsHTML(teacher){
+ const rows=_teacherScheduleRows(teacher);
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ const q=(v)=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+ if(!rows.length) return '';
+ const cur=(r,f)=>{ const k=[r.center,r.region,r.day,r.gyosi,f].join('\u0001'); return (k in _schEdits)?_schEdits[k]:(r[f]||''); };
+ const byDay={}; rows.forEach(r=>{ (byDay[r.day]=byDay[r.day]||[]).push(r); });
+ let out='';
+ _SCH_DAYS.forEach(day=>{
+  const list=byDay[day]; if(!list||!list.length) return;
+  out += `<div style="margin-bottom:12px;"><div style="font-size:13px;font-weight:800;color:#1A7A50;margin-bottom:6px;">${day}요일 <span style="font-weight:500;color:#9A968C;font-size:11.5px;">${list.length}곳</span></div>`;
+  list.forEach(r=>{
+   const a=`'${escAttrJS(r.center)}','${escAttrJS(r.region)}','${r.day}',${r.gyosi}`;
+   out += `<div class="sch-ecard">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+     <span style="font-size:14.5px;font-weight:800;">${e(r.center)}</span>
+     ${r.area?`<span style="font-size:11px;background:#F2F0E8;color:#6A6760;border-radius:9px;padding:1px 7px;">${e(r.area)}</span>`:''}
+     <span style="margin-left:auto;font-size:11px;font-weight:700;color:#8A5A12;background:#FFF7E3;border:1px solid #E8CC80;border-radius:10px;padding:1px 8px;white-space:nowrap;">${r.weeks===5?5:4}주차 수업</span>
+    </div>
+    <label class="sch-elb">🕐 강의시간</label>
+    <input type="text" value="${q(cur(r,'time'))}" placeholder="눌러서 시간 선택" readonly onclick="_openSchTimeInput(this,${a})" style="text-align:center;cursor:pointer;font-family:'DM Mono',monospace;font-weight:700;">
+    <label class="sch-elb">📍 주소</label>
+    <input type="text" value="${q(cur(r,'address'))}" placeholder="주소 입력" oninput="_schEditSet(${a},'address',this.value)">
+    <label class="sch-elb">✉️ 이메일</label>
+    <input type="email" value="${q(cur(r,'email'))}" placeholder="이메일 입력 (선택)" oninput="_schEditSet(${a},'email',this.value)" style="color:#2C5AA0;">
+   </div>`;
+  });
+  out += `</div>`;
+ });
+ return out;
+}
 /* 화면으로 보기 (강사·관리자 공용) */
 let _schEditMode=false, _schEdits={}, _schEditBase={}, _schEditTeacher='', _schAdds=[], _schCurShowFee=false;
 function openSchedule(teacher, showFee){
@@ -9191,11 +9236,11 @@ function _schRenderOverlay(name, showFee){
      <button class="btn sm" onclick="closeSchedule()">닫기</button>`;
  card.innerHTML = `
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-   <div style="flex:1;min-width:170px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}${edit?' <span style="font-size:11px;font-weight:700;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:20px;padding:1px 8px;">✏️ 수정 모드</span>':''}</div>
+   <div style="flex:1;min-width:170px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}${edit?' <span style="white-space:nowrap;display:inline-block;font-size:11px;font-weight:700;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:20px;padding:1px 8px;">✏️ 수정 모드</span>':''}</div>
    ${headBtns}
   </div>
-  ${edit?'':`<div class="sch-cards">${_schCardsHTML(name, showFee)}</div>`}
-  <div class="sch-table"${edit?' style="display:block"':''}>${_schTableHTML(name, showFee, !edit, edit)}</div>
+  <div class="sch-cards">${edit?_schEditCardsHTML(name):_schCardsHTML(name, showFee)}</div>
+  <div class="sch-table">${_schTableHTML(name, showFee, !edit, edit)}</div>
   ${edit ? `<div id="schAddSection" style="margin-top:12px;padding:12px 14px;background:#F4FAF6;border:1px solid #CDE8D8;border-radius:10px;">
      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
       <span style="font-size:12.5px;font-weight:800;color:#1A7A50;">➕ 새 센터(수업) 추가 <span style="font-weight:500;color:#7FA890;font-size:11px;">주말·신규 수업도 여기서</span></span>
@@ -9265,11 +9310,11 @@ function _schRenderAdds(){
  if(!_schAdds.length){ host.innerHTML='<div style="font-size:11.5px;color:#9A968C;padding:4px 2px;">주말·새 수업이 생기면 <b>+ 센터 추가</b>로 채워서 관리자에게 보낼 수 있어요.</div>'; return; }
  const e=(v)=>String(v==null?'':v).replace(/"/g,'&quot;');
  host.innerHTML=_schAdds.map((r,i)=>`
-  <div style="display:grid;grid-template-columns:64px 1fr 1fr 96px 1fr 30px;gap:6px;align-items:center;margin-bottom:6px;">
+  <div class="sch-add-grid">
    <select onchange="_schAddSet(${i},'day',this.value)" style="${INP}cursor:pointer;">
     ${_SCH_DAYS.map(d=>`<option value="${d}"${r.day===d?' selected':''}>${d}</option>`).join('')}
    </select>
-   <input class="sch-add-addr" value="${e(r.address)}" placeholder="주소 입력 (→ 지역·센터명 자동)" oninput="_schAddAddr(${i},this.value)" style="${INP}">
+   <input class="sch-add-addr sch-add-full" value="${e(r.address)}" placeholder="주소 입력 (→ 지역·센터명 자동)" oninput="_schAddAddr(${i},this.value)" style="${INP}">
    <input data-add-name="${i}" value="${e(r.name)}" placeholder="센터명 (자동)" oninput="_schAddSet(${i},'name',this.value)" style="${INP}">
    <input value="${e(r.time)}" placeholder="🕐 시간" readonly onclick="_openSchAddTime(this,${i})" style="${INP}cursor:pointer;text-align:center;">
    <input value="${e(r.email)}" placeholder="이메일(선택)" oninput="_schAddSet(${i},'email',this.value)" style="${INP}color:#2C5AA0;">
@@ -15998,9 +16043,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.79&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=17.80&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.79&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=17.80&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
