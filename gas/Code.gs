@@ -92,6 +92,7 @@ function doGet(e) {
     if (action === 'getPendingSignups')    return response(getPendingSignups());
     if (action === 'getScheduleRequests')  return response(getScheduleRequests());   // v16.05
     if (action === 'getJournalRecords')    return response(getJournalRecords(p.center, p.teacher, p.year, p.month, p.region));   // 계획서 일지
+    if (action === 'getDepositMappings')   return response(depGetMappings());                                                    // 계좌매칭: 매핑 조회
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -139,6 +140,7 @@ function doPost(e) {
     if (action === 'deleteJournalRecord')   return response(deleteJournalRecord(body.id));            // 계획서 일지 삭제
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
+    if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings));         // 계좌매칭: 매핑 저장(전체 교체)
 
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
@@ -1496,4 +1498,53 @@ function zipJournalDocs(ids) {
   const zip = Utilities.zip(blobs, '프로그램일지_모음.zip');
   const b64 = Utilities.base64Encode(zip.getBytes());
   return { ok:true, count:count, missing:miss, data:b64, mime:'application/zip' };
+}
+
+
+/* ════════ 계좌매칭(입금센터매칭) — 매핑 저장/조회 ════════
+ *  대표님이 계좌매칭 탭에서 학습한 '취급점→센터' 매핑을 구글시트에 영속한다.
+ *  앱: 탭 열 때 getDepositMappings 로 서버 정본을 받고, 매핑이 바뀌면
+ *      saveDepositMappings 로 전체 매핑 배열을 통째로 저장(배치 쓰기)한다.
+ *  ※ 입금내역은 저장하지 않는다(매달 엑셀 재업로드로 복원 가능). 계좌번호도 없음(민감도 낮음).
+ *  ※ 저장 잠금은 doPost 가 이미 처리하므로 여기선 잠그지 않는다(이중잠금 방지).
+ *  ※ 이 스크립트는 openById 방식이라 반드시 ss_() 를 쓴다(getActiveSpreadsheet 는 null). */
+var DEP_MAP_SHEET = '계좌매칭_매핑';
+var DEP_MAP_HEADERS = ['mapId','branchKey','branchRaw','centerName','region','gijaeSamples','isExcluded','note','registeredAt','lastMatchedAt'];
+
+function _depMapSheet() {
+  const ss = ss_();
+  let sh = ss.getSheetByName(DEP_MAP_SHEET);
+  if (!sh) { sh = ss.insertSheet(DEP_MAP_SHEET); sh.getRange(1, 1, 1, DEP_MAP_HEADERS.length).setValues([DEP_MAP_HEADERS]); }
+  return sh;
+}
+
+function depGetMappings() {
+  const sh = _depMapSheet(), vals = sh.getDataRange().getValues(), out = [];
+  for (let i = 1; i < vals.length; i++) {
+    const r = vals[i];
+    if (!r[0]) continue;
+    out.push({
+      mapId: String(r[0]), branchKey: String(r[1]), branchRaw: String(r[2]),
+      centerName: String(r[3]), region: String(r[4]),
+      gijaeSamples: r[5] ? String(r[5]).split('|').filter(String) : [],
+      isExcluded: (r[6] === true || String(r[6]).toLowerCase() === 'true'),
+      note: String(r[7] || ''), registeredAt: String(r[8] || ''), lastMatchedAt: String(r[9] || '')
+    });
+  }
+  return { ok: true, data: out };
+}
+
+function depSaveMappings(mappings) {
+  const sh = _depMapSheet();
+  sh.clearContents();
+  sh.getRange(1, 1, 1, DEP_MAP_HEADERS.length).setValues([DEP_MAP_HEADERS]);
+  mappings = mappings || [];
+  if (mappings.length) {
+    const rows = mappings.map(function (m) {
+      return [ m.mapId || '', m.branchKey || '', m.branchRaw || '', m.centerName || '', m.region || '',
+               (m.gijaeSamples || []).join('|'), !!m.isExcluded, m.note || '', m.registeredAt || '', m.lastMatchedAt || '' ];
+    });
+    sh.getRange(2, 1, rows.length, DEP_MAP_HEADERS.length).setValues(rows);   // 배치 쓰기(한 번에)
+  }
+  return { ok: true, count: mappings.length };
 }
