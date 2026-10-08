@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.86">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.87">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.86">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.87">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.86</title>
+<title>수업기록표 정산 시스템 v17.87</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4304,7 +4304,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.86';
+const SYSTEM_VERSION='v17.87';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4703,6 +4703,129 @@ function getDepositRoster(){
 
 // 초기 로드
 _loadDepositDB();
+
+/* ═══════════════════════════════════════════════════════════════
+   계좌매칭 — 매칭 엔진  [STEP 2]  (v17.87)
+   키: 취급점(1순위) + 기재내용(보조). 학습형. "애매하면 매칭 안 함(미등록)".
+═══════════════════════════════════════════════════════════════ */
+
+// 기재내용 코어 유사(동일/접두) 비교
+function _depGijaeAlike(a, b){
+ if(!a || !b || a.length<2 || b.length<2) return false;
+ return a===b || a.startsWith(b) || b.startsWith(a);
+}
+
+/* 입금건 1건 → 센터 판정 (mutate 안 함). return {matchStatus, matchedCenterName, region, mapId} */
+function matchOneDeposit(rec){
+ const bk = rec.branchKey || normDepositBranch(rec.branchRaw);
+ const maps = findDepositMappings(bk);
+ if(!maps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };
+ const centerMaps = maps.filter(m=>!m.isExcluded && m.centerName);
+ const exclMaps   = maps.filter(m=>m.isExcluded);
+ // 센터 매핑이 없고 제외(본인/이자)만 있으면 → 제외
+ if(!centerMaps.length) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:(exclMaps[0]&&exclMaps[0].mapId)||null };
+ // 취급점이 센터 1곳에만 연결 → 기재내용 무시 자동 매칭 (갈산 케이스)
+ if(centerMaps.length===1){
+  const m=centerMaps[0];
+  return { matchStatus:'matched', matchedCenterName:m.centerName, region:m.region||'', mapId:m.mapId };
+ }
+ // 여러 센터 → 기재내용 코어로 2차 선택
+ const gc = normDepositGijae(rec.depositorName);
+ let best=null, bestScore=0;
+ centerMaps.forEach(m=>{
+  let score=0;
+  if((m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s)))) score+=2;
+  if(_depGijaeAlike(gc, normDepositGijae(m.centerName))) score+=1;
+  if(score>bestScore){ bestScore=score; best=m; }
+ });
+ if(best && bestScore>0) return { matchStatus:'matched', matchedCenterName:best.centerName, region:best.region||'', mapId:best.mapId };
+ // 애매 → 미등록으로 남겨 사람이 확인 (틀린 매칭 방지)
+ return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
+}
+
+/* 전체(또는 특정 배치) 재매칭. 데이터 변경 순서: ①데이터 ②파생 ③save (④render·⑤toast는 UI에서)
+   return {total, matched, unmatched, excluded} */
+function runMatching(batchId){
+ const targets = depositDB.records.filter(r=>!batchId || r.uploadBatchId===batchId);
+ let matched=0, unmatched=0, excluded=0;
+ targets.forEach(rec=>{
+  if(!rec.branchKey) rec.branchKey = normDepositBranch(rec.branchRaw);
+  const r = matchOneDeposit(rec);
+  rec.matchStatus = r.matchStatus;
+  rec.matchedCenterName = r.matchedCenterName;
+  rec.region = r.region || '';
+  if(r.matchStatus==='matched'){
+   matched++;
+   const m = depositDB.mappings.find(x=>x.mapId===r.mapId);
+   if(m){
+    m.lastMatchedAt = (rec.date||'') + (rec.time?(' '+rec.time):'');
+    const g = rec.depositorName;
+    if(g && !(m.gijaeSamples||[]).includes(g)){ (m.gijaeSamples=m.gijaeSamples||[]).push(g); }
+   }
+  } else if(r.matchStatus==='excluded'){ excluded++; }
+  else { unmatched++; }
+ });
+ saveDepositDB();
+ return { total:targets.length, matched, unmatched, excluded };
+}
+
+/* 미등록 입금건을 센터에 수동 등록(학습) → 같은 취급점 건 자동 재매칭.
+   opts: {centerName, region, isExcluded, note}. return {mapId, rematched} */
+function registerDepositMapping(rec, opts){
+ opts = opts || {};
+ const bk = rec.branchKey || normDepositBranch(rec.branchRaw);
+ // ①데이터: 매핑 추가/갱신
+ const m = upsertDepositMapping({
+  branchKey: bk, branchRaw: rec.branchRaw,
+  centerName: opts.isExcluded ? '' : (opts.centerName||''),
+  region: opts.region||'', gijae: rec.depositorName,
+  isExcluded: !!opts.isExcluded, note: opts.note||''
+ });
+ // ②파생: 같은 취급점 입금건 재매칭
+ let rematched=0;
+ depositDB.records.forEach(r=>{
+  const rbk = r.branchKey || normDepositBranch(r.branchRaw);
+  if(rbk!==bk) return;
+  const res = matchOneDeposit(r);
+  r.matchStatus=res.matchStatus; r.matchedCenterName=res.matchedCenterName; r.region=res.region||'';
+  if(res.matchStatus==='matched') rematched++;
+ });
+ // ③save
+ saveDepositDB();
+ return { mapId:m.mapId, rematched };
+}
+
+/* 매칭 요약(대시보드용) */
+function getDepositSummary(batchId){
+ const rs = depositDB.records.filter(r=>!batchId || r.uploadBatchId===batchId);
+ const matched = rs.filter(r=>r.matchStatus==='matched');
+ const unmatched = rs.filter(r=>r.matchStatus==='unmatched');
+ const excluded = rs.filter(r=>r.matchStatus==='excluded');
+ const amt = rs.reduce((s,r)=>s+(Number(r.amount)||0),0);
+ const denom = matched.length+unmatched.length;   // 제외건은 분모에서 뺌
+ return {
+  total:rs.length, matched:matched.length, unmatched:unmatched.length, excluded:excluded.length,
+  totalAmount:amt, matchedAmount:matched.reduce((s,r)=>s+(Number(r.amount)||0),0),
+  matchRate: denom? Math.round(matched.length/denom*100) : 0
+ };
+}
+
+/* 미입금 대사: 라이브 명단 − 이번(배치) 입금확인 센터 = 미입금 후보.
+   return {paid:[{name,region}], unpaid:[{name,region}]} */
+function getUnpaidCenters(batchId){
+ const roster = getDepositRoster();
+ const paidKeys = new Set();
+ depositDB.records.forEach(r=>{
+  if((!batchId || r.uploadBatchId===batchId) && r.matchStatus==='matched' && r.matchedCenterName){
+   paidKeys.add(r.matchedCenterName+'|'+(r.region||''));
+  }
+ });
+ const paid=[], unpaid=[];
+ roster.forEach(c=>{
+  if(paidKeys.has(c.name+'|'+(c.region||''))) paid.push(c); else unpaid.push(c);
+ });
+ return { paid, unpaid };
+}
 
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
 function _rebuildCenterFeesFromCenters(centers){
