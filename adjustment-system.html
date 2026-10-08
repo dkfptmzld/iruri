@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.00">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.01">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.00">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.01">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.00</title>
+<title>수업기록표 정산 시스템 v18.01</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4462,7 +4462,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.00';
+const SYSTEM_VERSION='v18.01';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5427,9 +5427,11 @@ function _depParseWooriAoa(aoa){
  const recs=[];
  for(let i=h+1;i<aoa.length;i++){
   const r=aoa[i]||[]; if(!r.length) continue;
+  if(!/^\d+$/.test(String(r[0]).trim())) continue;   // No.가 숫자인 거래행만 (꼬리 합계행 '총 N건' 제외)
   const amt=num(r[ci.in]);
   if(amt<=0) continue;   // 입금 건만 (지급·요약행 제외)
   const dtc=_depCellDateTime(ci.dt>=0?r[ci.dt]:'');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(dtc.date)) continue;   // 날짜 없는 행(요약/안내) 제외
   const branchRaw=String(r[ci.branch]||'').trim();
   recs.push({ depositId:_depUid('dep'), date:dtc.date, time:dtc.time,
     summary:String(ci.summary>=0?r[ci.summary]:'').trim(),
@@ -5453,25 +5455,28 @@ function _depMaskAcct(a){
 function _depCommitImport(records, fileName, account){
  if(!records || !records.length){ showToast('입금 건을 찾지 못했어요'); return; }
  const acct = account || ('file:'+(fileName||'기타'));   // 계좌번호 못 읽으면 파일명으로 구분
- const period = _depActivePeriod();
+ // 각 입금을 '거래일시의 월'로 자동 분배 → 회차 자동 생성(날짜 없으면 현재 선택 회차)
+ records.forEach(r=>{ r.account=acct; r.periodId=((r.date||'').slice(0,7)) || _depActivePeriod(); });
+ const periods=[...new Set(records.map(r=>r.periodId))].sort();
+ const coverKeys=new Set(records.map(r=>r.periodId+'|'+acct));   // 이 업로드가 덮는 (월+계좌)
  const doLoad=()=>{
   const B=_depUid('up');
-  records.forEach(r=>{ r.uploadBatchId=B; r.account=acct; r.periodId=period; });
-  // 같은 회차+같은 계좌만 교체, 그 외(다른 회차/다른 계좌)는 모두 유지
-  const kept = depositDB.records.filter(r=> !((r.periodId||'')===period && (r.account||'')===acct) );
+  records.forEach(r=>{ r.uploadBatchId=B; });
+  // 이 업로드가 덮는 (월+계좌)만 교체, 나머지(다른 월/다른 계좌)는 유지
+  const kept = depositDB.records.filter(r=> !coverKeys.has((r.periodId||'')+'|'+(r.account||'')) );
   depositDB.records = kept.concat(records);
-  depositDB.batches = (depositDB.batches||[]).filter(b=> !(b.period===period && b.account===acct))
-    .concat([{ batchId:B, period:period, account:acct, label:fileName||'엑셀', uploadedAt:new Date().toISOString(), count:records.length }]);
+  depositDB.batches = (depositDB.batches||[]).filter(b=> !coverKeys.has((b.period||'')+'|'+(b.account||'')) )
+    .concat(periods.map(p=>({ batchId:B, period:p, account:acct, label:fileName||'엑셀', uploadedAt:new Date().toISOString(), count:records.filter(r=>r.periodId===p).length })));
+  _depPeriod = periods[periods.length-1] || _depPeriod;   // 최신 월로 보기
   const res=runMatching();   // 전체 재매칭 + save
   renderDepositView();
-  const accts=[...new Set(_depPeriodRecs().map(r=>r.account||''))].length;
-  showToast(`[${period}] ${_depMaskAcct(acct)} ${records.length}건 · 회차 전체 ${_depPeriodRecs().length}건(${accts}계좌) — 매칭 ${res.matched}`);
+  showToast(`${_depMaskAcct(acct)} ${records.length}건 → ${periods.length}개 회차(${periods.join(', ')}) 반영 — 매칭 ${res.matched}`);
  };
- const hadSame = depositDB.records.some(r=>(r.periodId||'')===period && (r.account||'')===acct);
+ const hadSame = depositDB.records.some(r=> coverKeys.has((r.periodId||'')+'|'+(r.account||'')) );
  if(hadSame){
-  showConfirm({icon:'🔄',title:'같은 회차·계좌 내역 교체',desc:`<b>${period}</b> 회차의 이 계좌(<b>${_depMaskAcct(acct)}</b>) 기존 입금내역을 새 파일로 교체합니다.<br><small style="color:var(--text3)">다른 회차·다른 계좌 내역과 학습 매핑은 그대로 유지됩니다.</small>`,okText:'교체',okStyle:'primary',onOk:doLoad});
+  showConfirm({icon:'🔄',title:'같은 계좌 내역 교체',desc:`이 계좌(<b>${_depMaskAcct(acct)}</b>)의 입금을 <b>${periods.length}개 회차(${periods.join(', ')})</b>로 반영합니다. 해당 회차의 이 계좌 기존 내역은 교체됩니다.<br><small style="color:var(--text3)">다른 계좌·다른 회차와 학습 매핑은 유지됩니다.</small>`,okText:'반영',okStyle:'primary',onOk:doLoad});
  } else {
-  doLoad();   // 이 회차에 이 계좌 처음 → 바로 추가(합산)
+  doLoad();
  }
 }
 
