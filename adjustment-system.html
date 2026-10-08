@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.95">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.96">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.95">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.96">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.95</title>
+<title>수업기록표 정산 시스템 v17.96</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3140,8 +3140,9 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    </div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
     <span style="font-size:12px;color:var(--text3);">회차</span>
-    <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차(월) 선택 — 업로드/보기 대상" style="height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 8px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;"></select>
-    <button class="btn sm" onclick="_depAddPeriod()" title="새 회차(월) 추가">＋ 회차</button>
+    <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차 선택 — 업로드/보기 대상" style="height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 8px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;"></select>
+    <button class="btn sm" onclick="_depRenamePeriod()" title="현재 회차 이름 수정">✎ 이름수정</button>
+    <button class="btn sm" onclick="_depAddPeriod()" title="새 회차 추가">＋ 회차</button>
     <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
     <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (선택한 회차로 저장, 자동 매칭)">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="_depOnExcelFile(this)">
@@ -4389,7 +4390,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.95';
+const SYSTEM_VERSION='v17.96';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4949,14 +4950,36 @@ function _depRenderPeriodSel(){
  }).join('');
 }
 function _depOnPeriodChange(v){ _depPeriod=v; renderDepositView(); }
+// YYYY-MM 형태면 정규화, 아니면 입력한 이름 그대로(자유 라벨 허용)
+function _depNormPeriod(v){
+ const s=String(v||'').trim(); if(!s) return '';
+ const m=s.match(/^(\d{4})[.\-\/\s]+(\d{1,2})$/);
+ return m? (m[1]+'-'+String(m[2]).padStart(2,'0')) : s;
+}
 function _depAddPeriod(){
- const v=prompt('새 회차(월)을 입력하세요  예: 2026-08', _depCurMonth());
- if(!v) return;
- const m=String(v).trim().match(/^(\d{4})[.\-\/\s]*(\d{1,2})$/);
- if(!m){ showToast('형식이 올바르지 않아요. 예: 2026-08'); return; }
- _depPeriod=m[1]+'-'+String(m[2]).padStart(2,'0');
+ const v=prompt('새 회차 이름을 입력하세요  예: 2026-08 또는 8월정산', _depCurMonth());
+ if(v==null) return;
+ const nn=_depNormPeriod(v);
+ if(!nn){ showToast('이름을 입력하세요'); return; }
+ _depPeriod=nn;
  renderDepositView();
- showToast(`회차 ${_depPeriod} 선택 — 이 회차로 엑셀을 업로드하세요`);
+ showToast(`회차 '${nn}' 선택 — 이 회차로 엑셀을 업로드하세요`);
+}
+/* 현재 회차 이름 수정 — 해당 회차의 입금내역·배치 이름도 함께 변경 */
+function _depRenamePeriod(){
+ const cur=_depActivePeriod();
+ const v=prompt(`회차 이름 수정 (현재: ${cur})\n예: 2026-07 또는 7월정산`, cur);
+ if(v==null) return;
+ const nn=_depNormPeriod(v);
+ if(!nn){ showToast('이름을 입력하세요'); return; }
+ if(nn===cur) return;
+ if(_depAllPeriods().includes(nn)){ showToast(`'${nn}' 회차가 이미 있어요 — 다른 이름을 쓰세요`); return; }
+ depositDB.records.forEach(r=>{ if((r.periodId||'')===cur) r.periodId=nn; });   // ①
+ (depositDB.batches||[]).forEach(b=>{ if(b.period===cur) b.period=nn; });
+ _depPeriod=nn;
+ saveDepositDB();        // ③
+ renderDepositView();    // ④
+ showToast(`회차 이름을 '${nn}'로 변경했어요`);   // ⑤
 }
 
 function _depPopulateCenterList(){
