@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.85">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.86">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.85">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.86">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.85</title>
+<title>수업기록표 정산 시스템 v17.86</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4304,7 +4304,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.85';
+const SYSTEM_VERSION='v17.86';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4601,6 +4601,108 @@ window._planTeachers = function(){
   return [...new Set(arr.map(t=>t&&t.name).filter(Boolean))];
  }catch(e){ return []; }
 };
+
+/* ═══════════════════════════════════════════════════════════════
+   계좌매칭(입금센터매칭) — 데이터 계층  [STEP 1]  (v17.86)
+   목적: 우리은행 입금내역을 '취급점(1순위)+기재내용(보조)'으로 센터에 매칭,
+         전체 센터 명단(라이브 DB.centers) 대비 월별 미입금 센터 파악.
+   설계:
+     · 독립 저장소(LS_DEPOSIT). DB.centers는 읽기 참조만(이름+지역).
+     · 매핑은 학습형(취급점→센터). 한 취급점에 여러 센터 허용(기재내용으로 구분).
+     · GAS 전환 대비 데이터 접근 함수 추상화(getDepositDB/saveDepositDB/매핑 CRUD).
+   ※ 매칭 엔진은 STEP 2, 탭 UI는 STEP 3에서. 여기선 데이터/정규화/영속화만.
+═══════════════════════════════════════════════════════════════ */
+const LS_DEPOSIT = 'iruri_deposit_v1';
+
+let depositDB = {
+ mappings: [],  // {mapId,branchKey,branchRaw,centerName,region,gijaeSamples[],isExcluded,note,registeredAt,lastMatchedAt}
+ records:  [],  // {depositId,date,time,summary,depositorName,branchRaw,branchKey,amount,matchedCenterName,region,matchStatus,uploadBatchId}
+ batches:  []   // {batchId,label,uploadedAt,count}
+};
+
+function _depUid(prefix){ return (prefix||'id')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+/* ── 정규화: 취급점(매칭 1순위 키) ──
+   타행 "신한은행(026604)" → "신한은행(026604)"   (은행명+점코드)
+   자행 숫자코드 "0154228"  → "우리[015422]"       (끝자리 변동 대비 앞 6자리)
+   자행 지점명 "부천중앙지점"→ "우리[부천중앙지점]"                                   */
+function normDepositBranch(raw){
+ const b=String(raw||'').trim();
+ const m=b.match(/\((\d+)\)/);
+ if(m) return b.split('(')[0].trim()+'('+m[1]+')';
+ if(/^\d+$/.test(b)) return '우리['+b.slice(0,6)+']';
+ return '우리['+b+']';
+}
+
+/* ── 정규화: 기재내용 → 센터 코어 (보조 매칭/표시용) ── */
+const _DEP_SUF=/강사료|강사비|강사|프로그램|주야간보호센터|주야간보호|데이케어센터|데이케어|노인복지센터|노인복지관|복지관|요양원|요양|주간보호센터|주간보호|복지센터|센터|데이|주야간|노인|재가|분/g;
+const _DEP_MONTH=/\d{1,2}\s*월|\d{4}/g;
+const _DEP_TAIL=/(센|케어|캐어|케|캐|어|전문|보호|보|주간|주|님|요양|원|점|본점|본|복지|복)+$/;
+function normDepositGijae(raw){
+ let s=String(raw||'');
+ s=s.replace(/\(.*?\)|（.*?）/g,'').replace(_DEP_MONTH,'');
+ s=s.replace(_DEP_SUF,'').replace(/[^가-힣A-Za-z0-9]/g,'').replace(/\d+$/,'');
+ let prev=null;
+ while(prev!==s && s.length>2){ prev=s; s=s.replace(_DEP_TAIL,''); }
+ return s;
+}
+
+/* ── 거래일시 분리: "2026.07.14 11:33:12" → {date:'2026-07-14', time:'11:33:12'} ── */
+function splitDepositDateTime(dt){
+ const s=String(dt||'').trim();
+ const m=s.match(/(\d{4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})[^\d]*(\d{1,2}:\d{2}(?::\d{2})?)?/);
+ if(!m) return {date:s, time:''};
+ return {date:`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`, time:m[4]||''};
+}
+
+function fmtDepWon(n){ return (Number(n)||0).toLocaleString('ko-KR')+'원'; }
+
+/* ── 영속화 (GAS 전환 대비 추상화) ── */
+function _loadDepositDB(){
+ const raw=lsGet(LS_DEPOSIT);
+ if(raw && typeof raw==='object'){
+  depositDB.mappings = Array.isArray(raw.mappings)?raw.mappings:[];
+  depositDB.records  = Array.isArray(raw.records) ?raw.records :[];
+  depositDB.batches  = Array.isArray(raw.batches) ?raw.batches :[];
+ }
+}
+function saveDepositDB(){
+ try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }
+ catch(e){ console.error('deposit save fail', e); }
+}
+function getDepositDB(){ return depositDB; }
+
+/* ── 매핑 접근자 (취급점→센터, 학습형) ── */
+function getDepositMappings(){ return depositDB.mappings; }
+function findDepositMappings(branchKey){ return depositDB.mappings.filter(m=>m.branchKey===branchKey); }
+function upsertDepositMapping({branchKey, branchRaw, centerName, region, gijae, isExcluded, note}){
+ // 같은 취급점+센터(+지역) 조합이 있으면 갱신, 없으면 추가(한 취급점에 여러 센터 허용)
+ let m=depositDB.mappings.find(x=>x.branchKey===branchKey && x.centerName===(centerName||'') && (x.region||'')===(region||''));
+ if(!m){
+  m={ mapId:_depUid('map'), branchKey, branchRaw:branchRaw||'', centerName:centerName||'', region:region||'',
+      gijaeSamples:[], isExcluded:!!isExcluded, note:note||'', registeredAt:new Date().toISOString(), lastMatchedAt:null };
+  depositDB.mappings.push(m);
+ } else {
+  if(centerName!==undefined) m.centerName=centerName;
+  if(region!==undefined)     m.region=region;
+  if(isExcluded!==undefined) m.isExcluded=!!isExcluded;
+  if(note!==undefined)       m.note=note;
+ }
+ if(gijae && !m.gijaeSamples.includes(gijae)) m.gijaeSamples.push(gijae);
+ return m;
+}
+function removeDepositMapping(mapId){
+ const i=depositDB.mappings.findIndex(m=>m.mapId===mapId);
+ if(i>=0) depositDB.mappings.splice(i,1);
+}
+
+/* ── 매칭 대상 센터 명단(라이브 DB.centers) 참조 ── */
+function getDepositRoster(){
+ try{ return (DB.centers||[]).map(c=>({name:c.name, region:c.region||''})); }catch(e){ return []; }
+}
+
+// 초기 로드
+_loadDepositDB();
 
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
 function _rebuildCenterFeesFromCenters(centers){
