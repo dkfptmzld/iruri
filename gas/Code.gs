@@ -93,6 +93,7 @@ function doGet(e) {
     if (action === 'getScheduleRequests')  return response(getScheduleRequests());   // v16.05
     if (action === 'getJournalRecords')    return response(getJournalRecords(p.center, p.teacher, p.year, p.month, p.region));   // 계획서 일지
     if (action === 'getDepositMappings')   return response(depGetMappings());                                                    // 계좌매칭: 매핑 조회
+    if (action === 'getDepositRecords')    return response(depGetRecords());                                                     // 계좌매칭: 회차 입금내역 조회
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -141,6 +142,7 @@ function doPost(e) {
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
     if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings));         // 계좌매칭: 매핑 저장(전체 교체)
+    if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records)); // 계좌매칭: 회차 입금내역 저장
 
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
@@ -1547,4 +1549,48 @@ function depSaveMappings(mappings) {
     sh.getRange(2, 1, rows.length, DEP_MAP_HEADERS.length).setValues(rows);   // 배치 쓰기(한 번에)
   }
   return { ok: true, count: mappings.length };
+}
+
+
+/* ════════ 계좌매칭 — 회차(월) 입금내역 저장/조회 ════════
+ *  각 회차(2026-07 등)의 입금내역을 시트에 보관 → 캐시 삭제·기기 변경에도 복원.
+ *  저장 시 해당 회차 행만 교체(다른 회차 유지). 잠금은 doPost 가 처리. */
+var DEP_REC_SHEET = '계좌매칭_입금내역';
+var DEP_REC_HEADERS = ['periodId','account','date','time','summary','depositorName','branchRaw','branchKey','amount','matchStatus','matchedCenterName','region'];
+
+function _depRecSheet() {
+  var ss = ss_();
+  var sh = ss.getSheetByName(DEP_REC_SHEET);
+  if (!sh) { sh = ss.insertSheet(DEP_REC_SHEET); sh.getRange(1,1,1,DEP_REC_HEADERS.length).setValues([DEP_REC_HEADERS]); }
+  return sh;
+}
+
+function depGetRecords() {
+  var sh = _depRecSheet(), v = sh.getDataRange().getValues(), out = [];
+  for (var i = 1; i < v.length; i++) {
+    var r = v[i];
+    if (!r[0] && !r[7]) continue;
+    out.push({
+      periodId: String(r[0]), account: String(r[1]), date: String(r[2]), time: String(r[3]),
+      summary: String(r[4]), depositorName: String(r[5]), branchRaw: String(r[6]), branchKey: String(r[7]),
+      amount: Number(r[8]) || 0, matchStatus: String(r[9] || 'unmatched'),
+      matchedCenterName: (r[10] === '' ? null : String(r[10])), region: String(r[11] || '')
+    });
+  }
+  return { ok: true, data: out };
+}
+
+function depSaveRecords(period, records) {
+  var sh = _depRecSheet(), v = sh.getDataRange().getValues(), keep = [];
+  for (var i = 1; i < v.length; i++) { if (v[i][0] && String(v[i][0]) !== String(period)) keep.push(v[i]); }  // 다른 회차 보존
+  records = records || [];
+  var add = records.map(function (m) {
+    return [ String(period), m.account || '', m.date || '', m.time || '', m.summary || '', m.depositorName || '',
+             m.branchRaw || '', m.branchKey || '', Number(m.amount) || 0, m.matchStatus || 'unmatched',
+             m.matchedCenterName || '', m.region || '' ];
+  });
+  var all = [DEP_REC_HEADERS].concat(keep).concat(add);
+  sh.clearContents();
+  sh.getRange(1, 1, all.length, DEP_REC_HEADERS.length).setValues(all);  // 전체 재기록(배치)
+  return { ok: true, period: String(period), count: add.length };
 }

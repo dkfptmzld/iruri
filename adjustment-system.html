@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.94">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.95">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.94">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.95">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.94</title>
+<title>수업기록표 정산 시스템 v17.95</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3143,10 +3143,9 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차(월) 선택 — 업로드/보기 대상" style="height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 8px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;"></select>
     <button class="btn sm" onclick="_depAddPeriod()" title="새 회차(월) 추가">＋ 회차</button>
     <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
-    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (선택한 회차로 저장)">📁 엑셀 업로드</button>
+    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (선택한 회차로 저장, 자동 매칭)">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="_depOnExcelFile(this)">
-    <button class="btn sm" onclick="_depLoadMock()" title="실제 입금내역 형태의 가데이터로 동작 검증">🧪 가데이터</button>
-    <button class="btn sm" onclick="_depRunMatch()">🔍 매칭 실행</button>
+    <button class="btn sm" onclick="_depSavePeriod()" title="이 회차 입금내역을 클라우드(구글시트)에 저장">💾 회차 저장</button>
     <button class="btn sm" onclick="_depClear()" style="color:var(--red);border-color:var(--red);">초기화</button>
    </div>
   </div>
@@ -3374,6 +3373,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
      <div class="nc-preview" id="ncPreview"></div>
     </div>
     <div class="nc-foot">
+     <button class="nc-btn" id="ncDelBtn" onclick="_ncDelete()" style="display:none;color:#dc2626;border-color:#dc2626;">🗑 센터 삭제</button>
      <button class="nc-btn ghost" onclick="_ncToSearch()">취소</button>
      <button class="nc-btn primary" id="ncSaveBtn" onclick="_ncTrySave()">센터 저장</button>
     </div>
@@ -4389,7 +4389,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.94';
+const SYSTEM_VERSION='v17.95';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5048,7 +5048,7 @@ function renderDepUnpaid(){
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
   </div>`;
  const body=view.map(r=>`<tr>
-    <td>${esc(r.name)}</td>
+    <td><a href="#" onclick="event.preventDefault();openCenterByKey('${esc(r.name)}','${esc(r.region)}')" title="센터 수정/삭제" style="color:var(--blue);font-weight:600;text-decoration:none;cursor:pointer;">${esc(r.name)}</a></td>
     <td style="color:var(--text3)">${esc(r.region)}</td>
     <td>${r.paid?'<span class="dep-pill matched">✓ 입금</span>':'<span class="dep-pill unmatched">미입금</span>'}</td>
     <td>${r.paid?fmtDepWon(r.amount):'<span style="color:var(--text3)">-</span>'}</td>
@@ -5349,6 +5349,47 @@ function _depSchedulePush(){
    .then(r=>{ _depSetSyncChip(r && r.ok ? 'ok' : 'local'); })
    .catch(()=>{ _depSetSyncChip('local'); });  // 실패해도 로컬엔 남음
  }, 2500);
+}
+
+/* 저장된 회차 입금내역을 GAS에서 받아 로컬에 '없는 회차만' 채움(작업 중 로컬 회차 보존) */
+async function _depSyncRecordsFromGAS(){
+ if(typeof gasGet!=='function' || typeof GAS_URL==='undefined') return false;
+ try{
+  const r = await gasGet({action:'getDepositRecords'}, 60000);
+  if(r && r.ok===true && Array.isArray(r.data)){
+   const localPeriods=new Set(depositDB.records.map(x=>x.periodId||''));
+   const add=r.data.filter(x=>!localPeriods.has(x.periodId||'')).map(x=>({ ...x, depositId:x.depositId||_depUid('dep'), uploadBatchId:x.uploadBatchId||'gas' }));
+   if(add.length){
+    depositDB.records = depositDB.records.concat(add);
+    try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}
+    return true;
+   }
+  }
+ }catch(e){}
+ return false;
+}
+
+/* 탭 열 때: 매핑+회차 입금내역 동기화 → 반영 후 재매칭(수동 '매칭 실행' 불필요) */
+async function _depSyncFromGAS(){
+ const m = await _depSyncMappingsFromGAS();
+ const r = await _depSyncRecordsFromGAS();
+ if(m || r){ try{ runMatching(); }catch(_){} renderDepositView(); }
+}
+
+/* 💾 이 회차 입금내역을 클라우드(구글시트)에 저장 */
+function _depSavePeriod(){
+ const period=_depActivePeriod();
+ const recs=_depPeriodRecs();
+ if(!recs.length){ showToast(`[${period}] 저장할 입금내역이 없어요`); return; }
+ if(typeof gasPost!=='function' || typeof GAS_URL==='undefined'){ showToast('클라우드에 연결되지 않았어요'); return; }
+ _depSetSyncChip('save');
+ showToast(`[${period}] 클라우드 저장 중…`);
+ gasPost({action:'saveDepositRecords', period:period, records:recs})
+  .then(r=>{
+   if(r && r.ok){ _depSetSyncChip('ok'); showToast(`[${period}] ${recs.length}건 클라우드 저장 완료`); }
+   else { _depSetSyncChip('local'); showToast('저장 실패 — GAS에 계좌매칭 저장기능이 배포됐는지 확인하세요'); }
+  })
+  .catch(()=>{ _depSetSyncChip('local'); showToast('저장 실패(오프라인/혼잡)'); });
 }
 
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
@@ -5698,7 +5739,7 @@ function switchView(v){
  const _suv=document.getElementById('signupsView'); if(_suv) _suv.style.display=v==='signups'?'block':'none';
  if(v==='signups') renderSignupsView();
  const _dpv=document.getElementById('depositView'); if(_dpv) _dpv.style.display=v==='deposit'?'block':'none';
- if(v==='deposit'){ renderDepositView(); try{ _depSyncMappingsFromGAS().then(ok=>{ if(ok) renderDepositView(); }); }catch(_){} }
+ if(v==='deposit'){ renderDepositView(); try{ _depSyncFromGAS(); }catch(_){} }
  if(v==='teachers'){
   // v11.30: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
   _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); });
@@ -10792,6 +10833,17 @@ function delCenterByKey(name, region){
  if(i<0){ try{ showToast('센터를 찾을 수 없어요 — 목록을 새로고침해 주세요'); }catch(_){} return; }
  delItem('center', i);
 }
+/* 센터 수정 팝업(_ncOpen)에서 삭제 — 삭제 후 계좌매칭 뷰도 갱신 */
+function _ncDelete(){
+ if(_ncEditIdx==null) return;
+ const c=DB.centers[_ncEditIdx]; if(!c){ showToast('센터를 찾을 수 없어요'); return; }
+ const idx=_ncEditIdx, nm=c.name, rg=c.region||'';
+ showConfirm({icon:'🗑',title:'센터 삭제',desc:`<b>「${escH(nm)}」</b>${rg?` <span style="font-size:11px;color:var(--text3)">(${escH(rg)})</span>`:''} 센터를 삭제할까요?<br><small style="color:var(--text3)">정산·계좌매칭 명단에서 사라집니다. 변경 이력에서 복구할 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
+  try{ _ncClose(); }catch(_){}
+  _doDelItem('center', idx);
+  try{ if(typeof renderDepositView==='function') renderDepositView(); }catch(_){}
+ }});
+}
 
 /* 강사별 화면(renderTeacherTable)의 🗑 : 센터 통째 삭제가 아니라
  *  '이 강사만' 그 센터에서 배정 해제. 같은 센터의 다른 강사는 그대로 유지.
@@ -13263,6 +13315,7 @@ function _ncOpenForm(center){
  _ncRegion = center? (center.region||'') : '';
  document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(b=>b.classList.toggle('on', b.dataset.r===_ncRegion));
  document.getElementById('ncSaveBtn').textContent = isEdit? '수정 저장' : '센터 저장';
+ const _delBtn=document.getElementById('ncDelBtn'); if(_delBtn) _delBtn.style.display = (_ncEditIdx!=null) ? 'inline-flex' : 'none';   // 수정 모드에서만 삭제 버튼
  const list=document.getElementById('ncAsgList'); list.innerHTML=''; list.classList.remove('nc-hasactive');   // v16.36: 흐림 초기화
  if(isEdit && (center.schedule||[]).length){
   _ncCenterTeachers(center).forEach(tn=>{
