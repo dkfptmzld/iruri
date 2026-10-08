@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.98">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.99">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.98">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.99">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.98</title>
+<title>수업기록표 정산 시스템 v17.99</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3227,6 +3227,19 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    </div>
   </div>
  </div>
+
+ <!-- 매핑 일괄 가져오기 모달 -->
+ <div id="depImportModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10050;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:22px;width:580px;max-width:94vw;box-shadow:0 16px 48px rgba(0,0,0,.28);">
+   <div style="font-size:16px;font-weight:700;margin-bottom:2px;">매핑 일괄 가져오기</div>
+   <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">전달받은 매핑 JSON을 붙여넣으세요. 같은 취급점+센터는 갱신되고, 가져온 뒤 기존 입금건이 자동 재매칭됩니다.</div>
+   <textarea id="depImportText" placeholder='[ {"branchKey":"국민은행(004070)","branchRaw":"국민은행(004070)","centerName":"학수정","region":"서울"}, ... ]' spellcheck="false" style="width:100%;height:230px;border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:12px;font-family:ui-monospace,monospace;background:var(--surface);color:var(--text);outline:none;resize:vertical;box-sizing:border-box;"></textarea>
+   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+    <button class="btn sm" onclick="_depCloseImport()">취소</button>
+    <button class="btn sm primary" onclick="_depDoImport()">가져오기</button>
+   </div>
+  </div>
+ </div>
 </div>
 
 <!-- v17.65: 성장 1등 플로팅 위젯 (접속 현황 위) -->
@@ -4422,7 +4435,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.98';
+const SYSTEM_VERSION='v17.99';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5137,8 +5150,38 @@ function renderDepMappings(){
    <td style="color:var(--text3);font-size:11.5px;">${esc((m.gijaeSamples||[]).slice(0,3).join(', '))}</td>
    <td><button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
  </tr>`).join('');
- const inner=`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan=5 class="dep-empty">등록된 매핑이 없습니다.</td></tr>'}</tbody></table>`;
+ const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
+   </div>`;
+ const inner=bar+`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan=5 class="dep-empty">등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.</td></tr>'}</tbody></table>`;
  el.innerHTML=_depPanelHTML('매핑 관리',`(${maps.length}개)`,inner);
+}
+
+/* 매핑 일괄 가져오기 (JSON 붙여넣기) */
+function _depOpenImport(){ const m=document.getElementById('depImportModal'); if(m){ const t=document.getElementById('depImportText'); if(t) t.value=''; m.style.display='flex'; } }
+function _depCloseImport(){ const m=document.getElementById('depImportModal'); if(m) m.style.display='none'; }
+function _depDoImport(){
+ const txt=(document.getElementById('depImportText').value||'').trim();
+ if(!txt){ showToast('붙여넣을 데이터가 없어요'); return; }
+ let arr; try{ arr=JSON.parse(txt); }catch(e){ showToast('형식 오류 — JSON을 그대로 붙여넣으세요'); return; }
+ if(!Array.isArray(arr)){ showToast('배열([ ]) 형식이어야 해요'); return; }
+ let n=0;
+ arr.forEach(m=>{
+  if(!m || typeof m!=='object') return;
+  const branchKey=(String(m.branchKey||'').trim()) || normDepositBranch(m.branchRaw||'');
+  if(!branchKey) return;
+  const excl=!!m.isExcluded;
+  const samples=Array.isArray(m.gijaeSamples)? m.gijaeSamples : (m.gijae? [m.gijae] : []);
+  upsertDepositMapping({ branchKey, branchRaw:m.branchRaw||branchKey, centerName:excl?'':(m.centerName||''),
+    region:m.region||'', gijae:samples[0]||'', isExcluded:excl, note:m.note||'일괄가져오기' });
+  samples.slice(1).forEach(g=>upsertDepositMapping({ branchKey, branchRaw:m.branchRaw||branchKey,
+    centerName:excl?'':(m.centerName||''), region:m.region||'', gijae:g, isExcluded:excl }));
+  n++;
+ });
+ runMatching();        // ①②③ 기존 입금건 재매칭 + 저장(→GAS 자동 push)
+ renderDepositView();  // ④
+ _depCloseImport();
+ showToast(`매핑 ${n}건 가져오기 완료`);   // ⑤
 }
 
 function renderDepRecords(){
