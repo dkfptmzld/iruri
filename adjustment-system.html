@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.01">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.02">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.01">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.02">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.01</title>
+<title>수업기록표 정산 시스템 v18.02</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3176,8 +3176,9 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <button class="btn sm" onclick="_depRenamePeriod()" title="현재 회차 이름 수정">✎ 이름수정</button>
     <button class="btn sm" onclick="_depAddPeriod()" title="새 회차 추가">＋ 회차</button>
     <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
-    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (선택한 회차로 저장, 자동 매칭)">📁 엑셀 업로드</button>
+    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (자동 매칭)">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="_depOnExcelFile(this)">
+    <label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;" title="체크 시 입금 날짜의 월로 자동 분배(여러 달치 한 파일). 평소엔 선택한 회차로 들어갑니다."><input type="checkbox" id="depAutoSplit" style="width:14px;height:14px;cursor:pointer;accent-color:var(--green);"> 월 자동분배</label>
     <button class="btn sm" onclick="_depSavePeriod()" title="이 회차 입금내역을 클라우드(구글시트)에 저장">💾 회차 저장</button>
     <button class="btn sm" onclick="_depClear()" style="color:var(--red);border-color:var(--red);">초기화</button>
    </div>
@@ -4462,7 +4463,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.01';
+const SYSTEM_VERSION='v18.02';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5455,8 +5456,9 @@ function _depMaskAcct(a){
 function _depCommitImport(records, fileName, account){
  if(!records || !records.length){ showToast('입금 건을 찾지 못했어요'); return; }
  const acct = account || ('file:'+(fileName||'기타'));   // 계좌번호 못 읽으면 파일명으로 구분
- // 각 입금을 '거래일시의 월'로 자동 분배 → 회차 자동 생성(날짜 없으면 현재 선택 회차)
- records.forEach(r=>{ r.account=acct; r.periodId=((r.date||'').slice(0,7)) || _depActivePeriod(); });
+ // '월 자동분배' 체크 시: 거래일시의 월로 자동 분배(여러 달치 한 파일) / 아니면: 선택한 회차로(수동, 기본)
+ const autosplit = !!(document.getElementById('depAutoSplit') && document.getElementById('depAutoSplit').checked);
+ records.forEach(r=>{ r.account=acct; r.periodId = autosplit ? (((r.date||'').slice(0,7)) || _depActivePeriod()) : _depActivePeriod(); });
  const periods=[...new Set(records.map(r=>r.periodId))].sort();
  const coverKeys=new Set(records.map(r=>r.periodId+'|'+acct));   // 이 업로드가 덮는 (월+계좌)
  const doLoad=()=>{
