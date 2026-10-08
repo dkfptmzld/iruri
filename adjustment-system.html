@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.88">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.89">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.88">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.89">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.88</title>
+<title>수업기록표 정산 시스템 v17.89</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3139,8 +3139,10 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <div style="font-size:13px;color:var(--text3);margin-top:2px;">우리은행 입금내역을 취급점으로 센터에 매칭 · 명단 대비 미입금 센터를 찾습니다</div>
    </div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드">📁 엑셀 업로드</button>
+    <input id="depExcelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="_depOnExcelFile(this)">
     <button class="btn sm" onclick="_depLoadMock()" title="실제 입금내역 형태의 가데이터로 동작 검증">🧪 가데이터</button>
-    <button class="btn sm primary" onclick="_depRunMatch()">🔍 매칭 실행</button>
+    <button class="btn sm" onclick="_depRunMatch()">🔍 매칭 실행</button>
     <button class="btn sm" onclick="_depClear()" style="color:var(--red);border-color:var(--red);">초기화</button>
    </div>
   </div>
@@ -4383,7 +4385,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.88';
+const SYSTEM_VERSION='v17.89';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5097,6 +5099,88 @@ function _depLoadMock(){
  saveDepositDB();      // ③
  renderDepositView();  // ④
  showToast(`가데이터 ${depositDB.records.length}건 로드 — '매칭 실행'을 눌러보세요`); // ⑤
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   계좌매칭 — 엑셀 업로드 파서  [STEP 4]  (v17.89)
+   우리은행 거래내역 엑셀(헤더: No./거래일시/적요/기재내용/지급/입금/거래후잔액/취급점/메모)
+   → 입금 건만 추출, 거래일시 분리, 취급점 정규화 → depositDB.records 적재 → 자동 매칭
+   (XLSX = 이미 앱에 로드된 SheetJS 사용)
+═══════════════════════════════════════════════════════════════ */
+function _depPickExcel(){ const el=document.getElementById('depExcelFile'); if(el) el.click(); }
+
+function _depOnExcelFile(input){
+ const f = input && input.files && input.files[0]; if(!f) return;
+ const reader = new FileReader();
+ reader.onload = e => {
+  try{ _depImportArrayBuffer(e.target.result, f.name); }
+  catch(err){ console.error('deposit excel parse fail', err); showToast('엑셀을 읽지 못했어요. 우리은행 거래내역 엑셀이 맞는지 확인해주세요.'); }
+  input.value='';
+ };
+ reader.onerror = ()=>{ showToast('파일 읽기 실패'); input.value=''; };
+ reader.readAsArrayBuffer(f);
+}
+
+// 거래일시 셀(문자열 또는 Date) → {date,time}
+function _depCellDateTime(v){
+ if(v instanceof Date && !isNaN(v)){
+  const p=n=>String(n).padStart(2,'0');
+  return { date:`${v.getFullYear()}-${p(v.getMonth()+1)}-${p(v.getDate())}`,
+           time:`${p(v.getHours())}:${p(v.getMinutes())}:${p(v.getSeconds())}` };
+ }
+ return splitDepositDateTime(v);
+}
+
+function _depImportArrayBuffer(ab, fileName){
+ if(typeof XLSX==='undefined'){ showToast('엑셀 라이브러리를 불러오지 못했어요'); return; }
+ const wb = XLSX.read(ab, {type:'array', cellDates:true});
+ const ws = wb.Sheets[wb.SheetNames[0]];
+ const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:''});
+ const parsed = _depParseWooriAoa(aoa);
+ if(!parsed.ok){ showToast(parsed.msg||'형식을 인식하지 못했어요'); return; }
+ _depCommitImport(parsed.records, fileName);
+}
+
+/* 2차원 배열 → 입금 레코드 배열 (헤더 자동 탐지, 컬럼명 기반 매핑) */
+function _depParseWooriAoa(aoa){
+ let h=-1;
+ for(let i=0;i<Math.min(aoa.length,15);i++){ const r=aoa[i]||[]; if(String(r[0]).trim()==='No.'){ h=i; break; } }
+ if(h<0) return { ok:false, msg:'우리은행 거래내역 형식이 아니에요 (헤더 No.를 못 찾음)' };
+ const hdr=(aoa[h]||[]).map(x=>String(x).replace(/\s/g,''));
+ const col=key=>hdr.findIndex(x=>x.includes(key));
+ const ci={ dt:col('거래일시'), summary:col('적요'), gijae:col('기재내용'), out:col('지급'), in:col('입금'), branch:col('취급점') };
+ if(ci.in<0 || ci.gijae<0 || ci.branch<0) return { ok:false, msg:'필요 컬럼(입금/기재내용/취급점)을 못 찾았어요' };
+ const num=v=>{ const n=Number(String(v).replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; };
+ const recs=[];
+ for(let i=h+1;i<aoa.length;i++){
+  const r=aoa[i]||[]; if(!r.length) continue;
+  const amt=num(r[ci.in]);
+  if(amt<=0) continue;   // 입금 건만 (지급·요약행 제외)
+  const dtc=_depCellDateTime(ci.dt>=0?r[ci.dt]:'');
+  const branchRaw=String(r[ci.branch]||'').trim();
+  recs.push({ depositId:_depUid('dep'), date:dtc.date, time:dtc.time,
+    summary:String(ci.summary>=0?r[ci.summary]:'').trim(),
+    depositorName:String(r[ci.gijae]||'').trim(),
+    branchRaw, branchKey:normDepositBranch(branchRaw), amount:amt,
+    matchedCenterName:null, region:'', matchStatus:'unmatched', uploadBatchId:null });
+ }
+ return { ok:true, records:recs };
+}
+
+function _depCommitImport(records, fileName){
+ if(!records || !records.length){ showToast('입금 건을 찾지 못했어요'); return; }
+ const doLoad=()=>{
+  const B=_depUid('up');
+  records.forEach(r=>r.uploadBatchId=B);
+  depositDB.records=records;   // ① 이번 회차로 교체
+  depositDB.batches=[{ batchId:B, label:fileName||'엑셀 업로드', uploadedAt:new Date().toISOString(), count:records.length }];
+  const res=runMatching(B);    // ②③ 매칭 + save
+  renderDepositView();         // ④
+  showToast(`${records.length}건 업로드 — 매칭 ${res.matched} · 미등록 ${res.unmatched} · 제외 ${res.excluded}`); // ⑤
+ };
+ if(depositDB.records.length){
+  showConfirm({icon:'📁',title:'입금내역 교체',desc:`새 파일 <b>${records.length}건</b>을 불러옵니다. 기존 입금내역은 교체됩니다.<br><small style="color:var(--text3)">학습된 매핑은 유지됩니다.</small>`,okText:'불러오기',okStyle:'primary',onOk:doLoad});
+ } else doLoad();
 }
 
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
