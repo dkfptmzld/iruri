@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.92">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.93">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.92">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.93">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.92</title>
+<title>수업기록표 정산 시스템 v17.93</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4385,7 +4385,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.92';
+const SYSTEM_VERSION='v17.93';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5056,13 +5056,18 @@ function renderDepRecords(){
  const el=document.getElementById('depSub-records'); if(!el) return;
  const rows=rs.map(r=>`<tr>
    <td>${_depFmtDate(r)}</td>
+   <td style="color:var(--text3)">${esc(_depMaskAcct(r.account))}</td>
    <td>${esc(r.depositorName)}</td>
    <td style="color:var(--text2)">${esc(r.branchRaw)}</td>
    <td>${fmtDepWon(r.amount)}</td>
    <td>${_depStatusPill(r)}</td>
    <td>${esc(r.matchedCenterName||'')}${r.region?` <span style="color:var(--text3)">(${esc(r.region)})</span>`:''}</td>
  </tr>`).join('');
- const inner=`<table class="dep-table"><thead><tr><th>입금일시</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th></tr></thead><tbody>${rows||'<tr><td colspan=6 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
+ // 불러온 계좌 요약(여러 계좌 합산 시 확인용)
+ const byAcct={}; rs.forEach(r=>{ const a=r.account||''; byAcct[a]=(byAcct[a]||0)+1; });
+ const acctLine=Object.keys(byAcct).length? `<div style="padding:9px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);">불러온 계좌 ${Object.keys(byAcct).length}개 · `
+   + Object.entries(byAcct).map(([a,n])=>`${_depMaskAcct(a)} <b>${n}건</b>`).join(' · ') + `</div>` : '';
+ const inner=acctLine+`<table class="dep-table"><thead><tr><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
  el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건)`,inner);
 }
 function _depStatusPill(r){
@@ -5144,10 +5149,10 @@ function _depLoadMock(){
  depositDB.records = samples.map((s,i)=>{
   const dt=splitDepositDateTime('2026.07.'+String(10+(i%5)).padStart(2,'0')+' '+String(9+(i%9)).padStart(2,'0')+':30:00');
   return { depositId:_depUid('dep'), date:dt.date, time:dt.time, summary:'인터넷',
-    depositorName:s[1], branchRaw:s[0], branchKey:normDepositBranch(s[0]), amount:s[2],
+    depositorName:s[1], branchRaw:s[0], branchKey:normDepositBranch(s[0]), amount:s[2], account:'1005403108034',
     matchedCenterName:null, region:'', matchStatus:'unmatched', uploadBatchId:B };
  });
- depositDB.batches=[{batchId:B,label:'가데이터',uploadedAt:new Date().toISOString(),count:depositDB.records.length}];
+ depositDB.batches=[{batchId:B,account:'1005403108034',label:'가데이터',uploadedAt:new Date().toISOString(),count:depositDB.records.length}];
  saveDepositDB();      // ③
  renderDepositView();  // ④
  showToast(`가데이터 ${depositDB.records.length}건 로드 — '매칭 실행'을 눌러보세요`); // ⑤
@@ -5190,7 +5195,7 @@ function _depImportArrayBuffer(ab, fileName){
  const aoa = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:''});
  const parsed = _depParseWooriAoa(aoa);
  if(!parsed.ok){ showToast(parsed.msg||'형식을 인식하지 못했어요'); return; }
- _depCommitImport(parsed.records, fileName);
+ _depCommitImport(parsed.records, fileName, parsed.account);
 }
 
 /* 2차원 배열 → 입금 레코드 배열 (헤더 자동 탐지, 컬럼명 기반 매핑) */
@@ -5202,6 +5207,11 @@ function _depParseWooriAoa(aoa){
  const col=key=>hdr.findIndex(x=>x.includes(key));
  const ci={ dt:col('거래일시'), summary:col('적요'), gijae:col('기재내용'), out:col('지급'), in:col('입금'), branch:col('취급점') };
  if(ci.in<0 || ci.gijae<0 || ci.branch<0) return { ok:false, msg:'필요 컬럼(입금/기재내용/취급점)을 못 찾았어요' };
+ // 회사 계좌번호(헤더의 "계좌번호 : XXXX")를 추출 → 계좌별 관리 키
+ let ownAcct='';
+ for(let i=0;i<=h;i++){ const joined=(aoa[i]||[]).map(x=>String(x)).join(' ');
+  const m=joined.match(/계좌번호\s*[:：]\s*([0-9\-]+)/);
+  if(m){ ownAcct=m[1].replace(/[^0-9]/g,''); break; } }
  const num=v=>{ const n=Number(String(v).replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; };
  const recs=[];
  for(let i=h+1;i<aoa.length;i++){
@@ -5213,26 +5223,42 @@ function _depParseWooriAoa(aoa){
   recs.push({ depositId:_depUid('dep'), date:dtc.date, time:dtc.time,
     summary:String(ci.summary>=0?r[ci.summary]:'').trim(),
     depositorName:String(r[ci.gijae]||'').trim(),
-    branchRaw, branchKey:normDepositBranch(branchRaw), amount:amt,
+    branchRaw, branchKey:normDepositBranch(branchRaw), amount:amt, account:ownAcct,
     matchedCenterName:null, region:'', matchStatus:'unmatched', uploadBatchId:null });
  }
- return { ok:true, records:recs };
+ return { ok:true, records:recs, account:ownAcct };
 }
 
-function _depCommitImport(records, fileName){
+// 회사 계좌번호 마스킹 표시 (예: 1005-****-8034)
+function _depMaskAcct(a){
+ const n=String(a||'').replace(/[^0-9]/g,'');
+ if(!n) return '(계좌미상)';
+ if(n.length<7) return n;
+ return n.slice(0,4)+'-****-'+n.slice(-4);
+}
+
+/* 계좌별 업로드: 같은 계좌는 교체, 다른 계좌는 유지(추가) — 회사 계좌 2개 이상 지원 */
+function _depCommitImport(records, fileName, account){
  if(!records || !records.length){ showToast('입금 건을 찾지 못했어요'); return; }
+ const acct = account || ('file:'+(fileName||'기타'));   // 계좌번호 못 읽으면 파일명으로 구분
  const doLoad=()=>{
   const B=_depUid('up');
-  records.forEach(r=>r.uploadBatchId=B);
-  depositDB.records=records;   // ① 이번 회차로 교체
-  depositDB.batches=[{ batchId:B, label:fileName||'엑셀 업로드', uploadedAt:new Date().toISOString(), count:records.length }];
-  const res=runMatching(B);    // ②③ 매칭 + save
-  renderDepositView();         // ④
-  showToast(`${records.length}건 업로드 — 매칭 ${res.matched} · 미등록 ${res.unmatched} · 제외 ${res.excluded}`); // ⑤
+  records.forEach(r=>{ r.uploadBatchId=B; r.account=acct; });
+  const kept = depositDB.records.filter(r=>(r.account||'')!==acct);   // 다른 계좌 내역 유지
+  depositDB.records = kept.concat(records);                           // 같은 계좌만 교체 후 합산
+  depositDB.batches = (depositDB.batches||[]).filter(b=>b.account!==acct)
+    .concat([{ batchId:B, account:acct, label:fileName||'엑셀', uploadedAt:new Date().toISOString(), count:records.length }]);
+  const res=runMatching();   // 전체 재매칭 + save
+  renderDepositView();
+  const accts=[...new Set(depositDB.records.map(r=>r.account||''))].length;
+  showToast(`${_depMaskAcct(acct)} ${records.length}건 불러옴 · 전체 ${depositDB.records.length}건(${accts}계좌) — 매칭 ${res.matched}`);
  };
- if(depositDB.records.length){
-  showConfirm({icon:'📁',title:'입금내역 교체',desc:`새 파일 <b>${records.length}건</b>을 불러옵니다. 기존 입금내역은 교체됩니다.<br><small style="color:var(--text3)">학습된 매핑은 유지됩니다.</small>`,okText:'불러오기',okStyle:'primary',onOk:doLoad});
- } else doLoad();
+ const hadSame = depositDB.records.some(r=>(r.account||'')===acct);
+ if(hadSame){
+  showConfirm({icon:'🔄',title:'같은 계좌 내역 교체',desc:`이 계좌(<b>${_depMaskAcct(acct)}</b>)의 기존 입금내역을 새 파일로 교체합니다.<br><small style="color:var(--text3)">다른 계좌 내역과 학습 매핑은 그대로 유지됩니다.</small>`,okText:'교체',okStyle:'primary',onOk:doLoad});
+ } else {
+  doLoad();   // 새 계좌 → 바로 추가(다른 계좌와 합산)
+ }
 }
 
 /* ═══════════════════════════════════════════════════════════════
