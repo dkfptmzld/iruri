@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.02">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.03">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.02">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.03">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.02</title>
+<title>수업기록표 정산 시스템 v18.03</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4463,7 +4463,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.02';
+const SYSTEM_VERSION='v18.03';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5146,6 +5146,7 @@ function renderDepUnpaid(){
     <span style="font-size:12.5px;color:var(--text2)">${_depRegionFilter==='all'?'전체':esc(_depRegionFilter)} — 입금 <b style="color:var(--green)">${scPaid}곳</b> · 미입금 <b style="color:var(--red)">${scTotal-scPaid}곳</b> <span style="color:var(--text3)">/ ${scTotal}곳</span></span>
     <span style="flex:1"></span>
     ${fbtn('all','전체')} ${fbtn('unpaid','❌ 미입금')} ${fbtn('paid','✅ 입금')}
+    <button class="btn sm" onclick="_depCopyUnpaid()" title="미입금 센터를 지역별로 복사(카톡 붙여넣기용)">📋 미입금 복사</button>
     <input id="depStatusSearch" value="${esc(q)}" oninput="_depStatusSearch(this.value)" placeholder="센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;">
   </div>
   <div style="padding:0 12px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
@@ -5163,6 +5164,42 @@ function renderDepUnpaid(){
  el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner);
 }
 
+// 현재 회차·현재 지역필터 기준 미입금 센터를 지역별로 묶어 카톡 붙여넣기용 텍스트로 복사
+function _depCopyUnpaid(){
+ if(!_depPeriodRecs().length){ showToast('이 회차에 입금내역이 없습니다'); return; }
+ const roster=getDepositRoster();
+ const paidSet=new Set();
+ _depPeriodRecs().forEach(r=>{ if(r.matchStatus==='matched' && r.matchedCenterName) paidSet.add(r.matchedCenterName+'|'+(r.region||'')); });
+ const unpaid=roster.filter(c=> !paidSet.has(c.name+'|'+(c.region||''))
+                             && (_depRegionFilter==='all' || (c.region||'')===_depRegionFilter));
+ if(!unpaid.length){ showToast('미입금 센터가 없습니다'); return; }
+ const byRegion={};
+ unpaid.forEach(c=>{ const rg=c.region||'기타'; (byRegion[rg]=byRegion[rg]||[]).push(c.name); });
+ const regionKeys=Object.keys(byRegion).sort((a,b)=>a.localeCompare(b,'ko'));
+ const lines=[`[미입금 센터] ${_depActivePeriod()} (총 ${unpaid.length}곳)`,''];
+ regionKeys.forEach(rg=>{
+  lines.push(`■ ${rg} (${byRegion[rg].length}곳)`);
+  byRegion[rg].sort((a,b)=>a.localeCompare(b,'ko')).forEach(nm=>lines.push(`- ${nm}`));
+  lines.push('');
+ });
+ const text=lines.join('\n').trim();
+ _depCopyText(text, `미입금 ${unpaid.length}곳을 복사했습니다`);
+}
+// 클립보드 복사(실패 시 textarea 폴백)
+function _depCopyText(text, okMsg){
+ const done=()=>showToast(okMsg||'복사했습니다');
+ if(navigator.clipboard && navigator.clipboard.writeText){
+  navigator.clipboard.writeText(text).then(done).catch(()=>_depCopyFallback(text,done));
+ } else { _depCopyFallback(text,done); }
+}
+function _depCopyFallback(text,done){
+ try{
+  const ta=document.createElement('textarea'); ta.value=text;
+  ta.style.position='fixed'; ta.style.top='-9999px'; document.body.appendChild(ta);
+  ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done();
+ }catch(e){ showToast('복사에 실패했습니다'); }
+}
+
 function renderDepUnmatched(){
  const list=_depPeriodRecs().filter(r=>r.matchStatus==='unmatched');
  const el=document.getElementById('depSub-unmatched'); if(!el) return;
@@ -5171,7 +5208,7 @@ function renderDepUnmatched(){
    <td>${esc(r.depositorName)}</td>
    <td style="color:var(--text2)">${esc(r.branchRaw)}</td>
    <td>${fmtDepWon(r.amount)}</td>
-   <td><button class="btn sm primary" onclick="openDepRegister('${esc(r.depositId)}')">센터 등록</button></td>
+   <td style="white-space:nowrap;"><button class="btn sm primary" onclick="openDepRegister('${esc(r.depositId)}')">센터 등록</button> <button class="btn sm" onclick="_depDeleteRecord('${esc(r.depositId)}')" style="color:var(--red);border-color:var(--red);" title="이 입금내역을 삭제합니다">삭제</button></td>
  </tr>`).join('');
  const inner=`<table class="dep-table"><thead><tr><th>입금일시</th><th>기재내용</th><th>취급점</th><th>금액</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan=5 class="dep-empty">미등록 입금처가 없습니다.</td></tr>'}</tbody></table>`;
  el.innerHTML=_depPanelHTML('미등록 입금처',`(${list.length}건)`,inner);
@@ -5317,6 +5354,18 @@ function _depSaveReg(){
  _depCloseReg();
  showToast(excl?`제외 처리 완료 (${res.rematched}건 반영)`:`"${esc(centerName)}" 연결 완료 — 같은 취급점 ${res.rematched}건 자동 매칭`); // ⑤
 }
+function _depDeleteRecord(depositId){
+ const rec=(depositDB.records||[]).find(r=>r.depositId===depositId);
+ if(!rec){ showToast('입금내역을 찾을 수 없습니다'); return; }
+ const label=`${_depFmtDate(rec)} · ${esc(rec.depositorName||'')} · ${fmtDepWon(rec.amount)}`;
+ showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`아래 입금내역을 삭제할까요?<br><small style="color:var(--text3)">${label}</small><br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 되돌릴 수 없습니다.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
+  depositDB.records = depositDB.records.filter(r=>r.depositId!==depositId); // ①
+  saveDepositDB();          // ③
+  renderDepositView();      // ④
+  showToast('입금내역을 삭제했습니다'); // ⑤
+ }});
+}
+
 function _depDelMapping(mapId){
  showConfirm({icon:'🗑️',title:'매핑 삭제',desc:'이 취급점↔센터 매핑을 삭제할까요?<br><small style="color:var(--text3)">관련 입금건은 미등록으로 되돌아갑니다.</small>',okText:'삭제',okStyle:'danger',onOk:()=>{
   removeDepositMapping(mapId);  // ①
