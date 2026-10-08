@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.96">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.97">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.96">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.97">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.96</title>
+<title>수업기록표 정산 시스템 v17.97</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1498,8 +1498,40 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     fill.style.width=v.toFixed(2)+'%';
     pnum.textContent=Math.floor(v)+'%';
   }
+  // ── 로딩 완료 효과음 (WebAudio로 생성, 외부 파일 없음) ──
+  var _acx=null, _chimed=false, _loadT=Date.now();
+  function _chime(){
+    if(_chimed) return;
+    try{
+      if(localStorage.getItem('iruri_splash_mute')==='1') { _chimed=true; return; }  // 끄고 싶을 때 대비
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      _acx=_acx||new AC();
+      if(_acx.state==='suspended'){ try{ _acx.resume(); }catch(e){} }
+      if(_acx.state!=='running') return;   // 아직 잠김(자동재생 차단) → 제스처 때 재생
+      _chimed=true;
+      var now=_acx.currentTime, notes=[659.25,783.99,1046.50];   // E5·G5·C6 밝은 3음
+      notes.forEach(function(f,i){
+        var o=_acx.createOscillator(), g=_acx.createGain(), st=now+i*0.11;
+        o.type='sine'; o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001, st);
+        g.gain.linearRampToValueAtTime(0.13, st+0.03);
+        g.gain.exponentialRampToValueAtTime(0.0007, st+0.45);
+        o.connect(g); g.connect(_acx.destination); o.start(st); o.stop(st+0.5);
+      });
+    }catch(e){}
+  }
+  // 자동재생이 막혔으면 로드 직후 첫 클릭/키 입력에서 한 번(10초 내)만 울림
+  function _gUnlock(){
+    if(!_chimed && (Date.now()-_loadT)<10000) _chime();
+    window.removeEventListener('pointerdown',_gUnlock,true);
+    window.removeEventListener('keydown',_gUnlock,true);
+  }
+  window.addEventListener('pointerdown',_gUnlock,true);
+  window.addEventListener('keydown',_gUnlock,true);
+
   function arrive(){
     if(arrived) return; arrived=true; d=100; place(100);
+    _chime();                                         // 도착 순간 효과음
     splash.classList.add('iruri-arrived');            // 걸음 멈춤 + 하트 + 나무 반짝
     setTimeout(function(){
       splash.classList.add('iruri-hide');
@@ -4390,7 +4422,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.96';
+const SYSTEM_VERSION='v17.97';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
