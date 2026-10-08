@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.89">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.90">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.89">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.90">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.89</title>
+<title>수업기록표 정산 시스템 v17.90</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3135,7 +3135,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div class="mgr-wrap">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
    <div>
-    <div style="font-size:18px;font-weight:700;">💳 계좌매칭 <span style="font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:10px;">입금센터 대사</span></div>
+    <div style="font-size:18px;font-weight:700;">💳 계좌매칭 <span style="font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:10px;">입금센터 대사</span> <span id="depSyncChip" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text3);">클라우드 확인 중…</span></div>
     <div style="font-size:13px;color:var(--text3);margin-top:2px;">우리은행 입금내역을 취급점으로 센터에 매칭 · 명단 대비 미입금 센터를 찾습니다</div>
    </div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -4385,7 +4385,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.89';
+const SYSTEM_VERSION='v17.90';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4750,6 +4750,8 @@ function _loadDepositDB(){
 function saveDepositDB(){
  try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }
  catch(e){ console.error('deposit save fail', e); }
+ // 매핑(핵심 자산)은 GAS에도 백그라운드 저장 (STEP5). 로컬은 캐시 겸 오프라인 백업.
+ try{ if(typeof _depSchedulePush==='function') _depSchedulePush(); }catch(_){}
 }
 function getDepositDB(){ return depositDB; }
 
@@ -5183,6 +5185,53 @@ function _depCommitImport(records, fileName){
  } else doLoad();
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   계좌매칭 — GAS 동기화  [STEP 5]  (v17.90)
+   매핑(학습 자산)을 구글시트에 영속. 로컬(localStorage)은 캐시 겸 오프라인 백업.
+   - 탭 열 때: getDepositMappings 로 서버 정본을 받아 로컬 갱신
+   - 매핑 변경 시: saveDepositMappings 로 전체 매핑 배열을 백그라운드 저장(디바운스)
+   GAS 미설정/오프라인이어도 로컬로 그대로 동작(안전).
+═══════════════════════════════════════════════════════════════ */
+function _depSetSyncChip(state){
+ const c=document.getElementById('depSyncChip'); if(!c) return;
+ const map={
+  ok:   ['☁️ 클라우드 저장됨', 'var(--green-bg)', 'var(--green)'],
+  save: ['☁️ 저장 중…',       'var(--blue-bg)',  'var(--blue)'],
+  local:['⚠ 로컬 전용(미설정)', 'var(--amber-bg)', 'var(--amber)'],
+  wait: ['클라우드 확인 중…',    'var(--surface2)', 'var(--text3)']
+ };
+ const s=map[state]||map.wait;
+ c.textContent=s[0]; c.style.background=s[1]; c.style.color=s[2];
+}
+
+async function _depSyncMappingsFromGAS(){
+ if(typeof gasGet!=='function' || typeof GAS_URL==='undefined'){ _depSetSyncChip('local'); return false; }
+ try{
+  const r = await gasGet({action:'getDepositMappings'}, 45000);
+  if(r && r.ok===true && Array.isArray(r.data)){
+   depositDB.mappings = r.data;   // 서버가 정본
+   try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}  // GAS push 재유발 없이 캐시만
+   _depSetSyncChip('ok');
+   return true;
+  }
+  // 서버는 응답했으나 액션 미구현({ok:false}) → 아직 GAS 미설정
+  _depSetSyncChip('local');
+ }catch(e){ _depSetSyncChip('local'); }  // 오프라인/혼잡 → 로컬 캐시 사용
+ return false;
+}
+
+let _depGasTimer=null;
+function _depSchedulePush(){
+ if(typeof gasPost!=='function' || typeof GAS_URL==='undefined') return;
+ _depSetSyncChip('save');
+ clearTimeout(_depGasTimer);
+ _depGasTimer=setTimeout(()=>{
+  gasPost({action:'saveDepositMappings', mappings:depositDB.mappings})
+   .then(r=>{ _depSetSyncChip(r && r.ok ? 'ok' : 'local'); })
+   .catch(()=>{ _depSetSyncChip('local'); });  // 실패해도 로컬엔 남음
+ }, 2500);
+}
+
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
 function _rebuildCenterFeesFromCenters(centers){
  (centers||DB.centers).forEach(c=>{
@@ -5530,7 +5579,7 @@ function switchView(v){
  const _suv=document.getElementById('signupsView'); if(_suv) _suv.style.display=v==='signups'?'block':'none';
  if(v==='signups') renderSignupsView();
  const _dpv=document.getElementById('depositView'); if(_dpv) _dpv.style.display=v==='deposit'?'block':'none';
- if(v==='deposit') renderDepositView();
+ if(v==='deposit'){ renderDepositView(); try{ _depSyncMappingsFromGAS().then(ok=>{ if(ok) renderDepositView(); }); }catch(_){} }
  if(v==='teachers'){
   // v11.30: 탭 전환 시 GAS에서 최신 강사 DB 자동 로드
   _syncDBOnTabSwitch('teachers', ()=>{ renderTeacherStats(); renderTeacherMgr(); });
