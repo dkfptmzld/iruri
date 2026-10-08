@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.93">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.94">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.93">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.94">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.93</title>
+<title>수업기록표 정산 시스템 v17.94</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3138,8 +3138,12 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <div style="font-size:18px;font-weight:700;">💳 계좌매칭 <span style="font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:10px;">입금센터 대사</span> <span id="depSyncChip" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text3);">클라우드 확인 중…</span></div>
     <div style="font-size:13px;color:var(--text3);margin-top:2px;">우리은행 입금내역을 취급점으로 센터에 매칭 · 명단 대비 미입금 센터를 찾습니다</div>
    </div>
-   <div style="display:flex;gap:6px;flex-wrap:wrap;">
-    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드">📁 엑셀 업로드</button>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:12px;color:var(--text3);">회차</span>
+    <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차(월) 선택 — 업로드/보기 대상" style="height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 8px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;"></select>
+    <button class="btn sm" onclick="_depAddPeriod()" title="새 회차(월) 추가">＋ 회차</button>
+    <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
+    <button class="btn sm primary" onclick="_depPickExcel()" title="우리은행 거래내역 엑셀 업로드 (선택한 회차로 저장)">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" style="display:none" onchange="_depOnExcelFile(this)">
     <button class="btn sm" onclick="_depLoadMock()" title="실제 입금내역 형태의 가데이터로 동작 검증">🧪 가데이터</button>
     <button class="btn sm" onclick="_depRunMatch()">🔍 매칭 실행</button>
@@ -4385,7 +4389,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.93';
+const SYSTEM_VERSION='v17.94';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4879,8 +4883,16 @@ function registerDepositMapping(rec, opts){
 }
 
 /* 매칭 요약(대시보드용) */
-function getDepositSummary(batchId){
- const rs = depositDB.records.filter(r=>!batchId || r.uploadBatchId===batchId);
+/* ── 회차(월) — 입금 날짜가 제각각이라 '회차'를 라벨로 지정, 뷰는 회차별로 분리 ── */
+let _depPeriod='';
+function _depCurMonth(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function _depAllPeriods(){ return [...new Set(depositDB.records.map(r=>r.periodId).filter(Boolean))].sort().reverse(); }
+function _depActivePeriod(){ if(!_depPeriod){ const ps=_depAllPeriods(); _depPeriod = ps[0] || _depCurMonth(); } return _depPeriod; }
+function _depInPeriod(r){ return (r.periodId||'')===_depActivePeriod(); }
+function _depPeriodRecs(){ return depositDB.records.filter(_depInPeriod); }
+
+function getDepositSummary(){
+ const rs = _depPeriodRecs();
  const matched = rs.filter(r=>r.matchStatus==='matched');
  const unmatched = rs.filter(r=>r.matchStatus==='unmatched');
  const excluded = rs.filter(r=>r.matchStatus==='excluded');
@@ -4893,13 +4905,13 @@ function getDepositSummary(batchId){
  };
 }
 
-/* 미입금 대사: 라이브 명단 − 이번(배치) 입금확인 센터 = 미입금 후보.
+/* 미입금 대사: 라이브 명단 − 이번 회차 입금확인 센터 = 미입금 후보.
    return {paid:[{name,region}], unpaid:[{name,region}]} */
-function getUnpaidCenters(batchId){
+function getUnpaidCenters(){
  const roster = getDepositRoster();
  const paidKeys = new Set();
- depositDB.records.forEach(r=>{
-  if((!batchId || r.uploadBatchId===batchId) && r.matchStatus==='matched' && r.matchedCenterName){
+ _depPeriodRecs().forEach(r=>{
+  if(r.matchStatus==='matched' && r.matchedCenterName){
    paidKeys.add(r.matchedCenterName+'|'+(r.region||''));
   }
  });
@@ -4920,8 +4932,31 @@ function _depFmtDate(r){ return esc((r.date||'')+(r.time?(' '+String(r.time).sli
 
 function renderDepositView(){
  _depPopulateCenterList();
+ _depRenderPeriodSel();
  renderDepDashboard();
  _depRenderSub();
+}
+
+/* 회차 선택 드롭다운 */
+function _depRenderPeriodSel(){
+ const sel=document.getElementById('depPeriodSel'); if(!sel) return;
+ const cur=_depActivePeriod();
+ const periods=_depAllPeriods();
+ if(!periods.includes(cur)) periods.unshift(cur);   // 아직 데이터 없는 새 회차도 표시
+ sel.innerHTML=periods.map(p=>{
+  const cnt=depositDB.records.filter(r=>(r.periodId||'')===p).length;
+  return `<option value="${esc(p)}"${p===cur?' selected':''}>${esc(p)}${cnt?` (${cnt}건)`:''}</option>`;
+ }).join('');
+}
+function _depOnPeriodChange(v){ _depPeriod=v; renderDepositView(); }
+function _depAddPeriod(){
+ const v=prompt('새 회차(월)을 입력하세요  예: 2026-08', _depCurMonth());
+ if(!v) return;
+ const m=String(v).trim().match(/^(\d{4})[.\-\/\s]*(\d{1,2})$/);
+ if(!m){ showToast('형식이 올바르지 않아요. 예: 2026-08'); return; }
+ _depPeriod=m[1]+'-'+String(m[2]).padStart(2,'0');
+ renderDepositView();
+ showToast(`회차 ${_depPeriod} 선택 — 이 회차로 엑셀을 업로드하세요`);
 }
 
 function _depPopulateCenterList(){
@@ -4933,7 +4968,7 @@ function _depPopulateCenterList(){
 function renderDepDashboard(){
  const s=getDepositSummary();
  const up=getUnpaidCenters();
- const unmatched=depositDB.records.filter(r=>r.matchStatus==='unmatched').length;
+ const unmatched=_depPeriodRecs().filter(r=>r.matchStatus==='unmatched').length;
  const cards=[
   ['매칭률', s.matchRate+'%', 'green'],
   ['입금 확인 센터', up.paid.length+'곳', 'blue'],
@@ -4974,11 +5009,11 @@ function _depStatusSearch(v){
 // 센터 입금현황: 전 명단을 ✅입금/❌미입금 + 금액 + 필터/검색으로 한눈에
 function renderDepUnpaid(){
  const el=document.getElementById('depSub-unpaid'); if(!el) return;
- if(!depositDB.records.length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">입금내역이 없습니다. 상단 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
+ if(!_depPeriodRecs().length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">이 회차(${esc(_depActivePeriod())})에 입금내역이 없습니다. 회차를 확인하고 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
  const roster=getDepositRoster();
- // 매칭된 입금을 센터별로 집계(금액 합·최근 입금일시)
+ // 매칭된 입금을 센터별로 집계(금액 합·최근 입금일시) — 선택 회차만
  const paidMap={};
- depositDB.records.forEach(r=>{
+ _depPeriodRecs().forEach(r=>{
   if(r.matchStatus==='matched' && r.matchedCenterName){
    const k=r.matchedCenterName+'|'+(r.region||'');
    if(!paidMap[k]) paidMap[k]={amount:0, last:'', cnt:0};
@@ -5024,7 +5059,7 @@ function renderDepUnpaid(){
 }
 
 function renderDepUnmatched(){
- const list=depositDB.records.filter(r=>r.matchStatus==='unmatched');
+ const list=_depPeriodRecs().filter(r=>r.matchStatus==='unmatched');
  const el=document.getElementById('depSub-unmatched'); if(!el) return;
  const rows=list.map(r=>`<tr>
    <td>${_depFmtDate(r)}</td>
@@ -5052,7 +5087,7 @@ function renderDepMappings(){
 }
 
 function renderDepRecords(){
- const rs=depositDB.records;
+ const rs=_depPeriodRecs();
  const el=document.getElementById('depSub-records'); if(!el) return;
  const rows=rs.map(r=>`<tr>
    <td>${_depFmtDate(r)}</td>
@@ -5127,11 +5162,13 @@ function _depRunMatch(){
  showToast(`매칭 완료 — 성공 ${r.matched} · 미등록 ${r.unmatched} · 제외 ${r.excluded}`); // ⑤
 }
 function _depClear(){
- showConfirm({icon:'⚠️',title:'입금내역 초기화',desc:'불러온 입금내역을 모두 지웁니다.<br><small style="color:var(--text3)">학습된 매핑은 유지됩니다.</small>',okText:'초기화',okStyle:'danger',onOk:()=>{
-  depositDB.records=[]; depositDB.batches=[];  // ①
+ const period=_depActivePeriod();
+ showConfirm({icon:'⚠️',title:'이 회차 초기화',desc:`<b>${period}</b> 회차의 입금내역만 지웁니다.<br><small style="color:var(--text3)">다른 회차와 학습된 매핑은 유지됩니다.</small>`,okText:'초기화',okStyle:'danger',onOk:()=>{
+  depositDB.records = depositDB.records.filter(r=>(r.periodId||'')!==period);   // ① 이 회차만
+  depositDB.batches = (depositDB.batches||[]).filter(b=>b.period!==period);
   saveDepositDB();                             // ③
   renderDepositView();                         // ④
-  showToast('입금내역을 초기화했습니다');       // ⑤
+  showToast(`[${period}] 입금내역을 초기화했습니다`);       // ⑤
  }});
 }
 
@@ -5146,16 +5183,19 @@ function _depLoadMock(){
   ['신한은행(026604)','도우누리정다운',220000],['기업은행(009999)','어딘가노인복지',220000],
   ['0154228','명화노인주야간보호센',240000],['국민은행(004283)','6월강사료기쁜우리',220000]
  ];
- depositDB.records = samples.map((s,i)=>{
+ const period=_depActivePeriod();
+ const newRecs = samples.map((s,i)=>{
   const dt=splitDepositDateTime('2026.07.'+String(10+(i%5)).padStart(2,'0')+' '+String(9+(i%9)).padStart(2,'0')+':30:00');
   return { depositId:_depUid('dep'), date:dt.date, time:dt.time, summary:'인터넷',
-    depositorName:s[1], branchRaw:s[0], branchKey:normDepositBranch(s[0]), amount:s[2], account:'1005403108034',
+    depositorName:s[1], branchRaw:s[0], branchKey:normDepositBranch(s[0]), amount:s[2], account:'1005403108034', periodId:period,
     matchedCenterName:null, region:'', matchStatus:'unmatched', uploadBatchId:B };
  });
- depositDB.batches=[{batchId:B,account:'1005403108034',label:'가데이터',uploadedAt:new Date().toISOString(),count:depositDB.records.length}];
+ depositDB.records = depositDB.records.filter(r=>(r.periodId||'')!==period).concat(newRecs);   // 이 회차만 교체
+ depositDB.batches=(depositDB.batches||[]).filter(b=>b.period!==period)
+   .concat([{batchId:B,period:period,account:'1005403108034',label:'가데이터',uploadedAt:new Date().toISOString(),count:newRecs.length}]);
  saveDepositDB();      // ③
  renderDepositView();  // ④
- showToast(`가데이터 ${depositDB.records.length}건 로드 — '매칭 실행'을 눌러보세요`); // ⑤
+ showToast(`[${period}] 가데이터 ${newRecs.length}건 로드 — '매칭 실행'을 눌러보세요`); // ⑤
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -5237,27 +5277,30 @@ function _depMaskAcct(a){
  return n.slice(0,4)+'-****-'+n.slice(-4);
 }
 
-/* 계좌별 업로드: 같은 계좌는 교체, 다른 계좌는 유지(추가) — 회사 계좌 2개 이상 지원 */
+/* 회차+계좌별 업로드: 같은 회차의 같은 계좌만 교체, 다른 회차·다른 계좌는 유지(합산)
+   회사 계좌 2개 이상 + 월별 분리 지원 */
 function _depCommitImport(records, fileName, account){
  if(!records || !records.length){ showToast('입금 건을 찾지 못했어요'); return; }
  const acct = account || ('file:'+(fileName||'기타'));   // 계좌번호 못 읽으면 파일명으로 구분
+ const period = _depActivePeriod();
  const doLoad=()=>{
   const B=_depUid('up');
-  records.forEach(r=>{ r.uploadBatchId=B; r.account=acct; });
-  const kept = depositDB.records.filter(r=>(r.account||'')!==acct);   // 다른 계좌 내역 유지
-  depositDB.records = kept.concat(records);                           // 같은 계좌만 교체 후 합산
-  depositDB.batches = (depositDB.batches||[]).filter(b=>b.account!==acct)
-    .concat([{ batchId:B, account:acct, label:fileName||'엑셀', uploadedAt:new Date().toISOString(), count:records.length }]);
+  records.forEach(r=>{ r.uploadBatchId=B; r.account=acct; r.periodId=period; });
+  // 같은 회차+같은 계좌만 교체, 그 외(다른 회차/다른 계좌)는 모두 유지
+  const kept = depositDB.records.filter(r=> !((r.periodId||'')===period && (r.account||'')===acct) );
+  depositDB.records = kept.concat(records);
+  depositDB.batches = (depositDB.batches||[]).filter(b=> !(b.period===period && b.account===acct))
+    .concat([{ batchId:B, period:period, account:acct, label:fileName||'엑셀', uploadedAt:new Date().toISOString(), count:records.length }]);
   const res=runMatching();   // 전체 재매칭 + save
   renderDepositView();
-  const accts=[...new Set(depositDB.records.map(r=>r.account||''))].length;
-  showToast(`${_depMaskAcct(acct)} ${records.length}건 불러옴 · 전체 ${depositDB.records.length}건(${accts}계좌) — 매칭 ${res.matched}`);
+  const accts=[...new Set(_depPeriodRecs().map(r=>r.account||''))].length;
+  showToast(`[${period}] ${_depMaskAcct(acct)} ${records.length}건 · 회차 전체 ${_depPeriodRecs().length}건(${accts}계좌) — 매칭 ${res.matched}`);
  };
- const hadSame = depositDB.records.some(r=>(r.account||'')===acct);
+ const hadSame = depositDB.records.some(r=>(r.periodId||'')===period && (r.account||'')===acct);
  if(hadSame){
-  showConfirm({icon:'🔄',title:'같은 계좌 내역 교체',desc:`이 계좌(<b>${_depMaskAcct(acct)}</b>)의 기존 입금내역을 새 파일로 교체합니다.<br><small style="color:var(--text3)">다른 계좌 내역과 학습 매핑은 그대로 유지됩니다.</small>`,okText:'교체',okStyle:'primary',onOk:doLoad});
+  showConfirm({icon:'🔄',title:'같은 회차·계좌 내역 교체',desc:`<b>${period}</b> 회차의 이 계좌(<b>${_depMaskAcct(acct)}</b>) 기존 입금내역을 새 파일로 교체합니다.<br><small style="color:var(--text3)">다른 회차·다른 계좌 내역과 학습 매핑은 그대로 유지됩니다.</small>`,okText:'교체',okStyle:'primary',onOk:doLoad});
  } else {
-  doLoad();   // 새 계좌 → 바로 추가(다른 계좌와 합산)
+  doLoad();   // 이 회차에 이 계좌 처음 → 바로 추가(합산)
  }
 }
 
