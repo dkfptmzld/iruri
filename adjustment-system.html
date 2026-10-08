@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.91">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.92">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.91">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.92">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.91</title>
+<title>수업기록표 정산 시스템 v17.92</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4385,7 +4385,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.91';
+const SYSTEM_VERSION='v17.92';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4963,8 +4963,9 @@ function _depPanelHTML(title, count, inner){
  return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div><div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
 }
 
-let _depStatusFilter='all', _depStatusQ='';
+let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all';
 function _depSetStatusFilter(k){ _depStatusFilter=k; renderDepUnpaid(); }
+function _depSetRegionFilter(r){ _depRegionFilter=r; renderDepUnpaid(); }
 function _depStatusSearch(v){
  _depStatusQ=v; renderDepUnpaid();
  const si=document.getElementById('depStatusSearch');
@@ -4990,15 +4991,26 @@ function renderDepUnpaid(){
   return { name:c.name, region:c.region||'', paid:!!p, amount:p?p.amount:0, last:p?p.last:'', cnt:p?p.cnt:0 }; });
  const paidCnt=rows.filter(r=>r.paid).length, unpaidCnt=rows.length-paidCnt;
  const q=_depStatusQ.trim();
+ const regions=[...new Set(roster.map(c=>c.region||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+ if(_depRegionFilter!=='all' && !regions.includes(_depRegionFilter)) _depRegionFilter='all'; // 안전장치
  let view=rows.filter(r=> (_depStatusFilter==='all' || (_depStatusFilter==='paid'? r.paid : !r.paid))
+                      && (_depRegionFilter==='all' || r.region===_depRegionFilter)
                       && (!q || r.name.includes(q)) );
- view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || a.name.localeCompare(b.name,'ko')); // 미입금 먼저
+ view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || (a.region||'').localeCompare(b.region||'','ko') || a.name.localeCompare(b.name,'ko')); // 미입금 먼저, 지역·이름順
+ // 선택된 지역 범위의 입금/미입금 요약
+ const scope=rows.filter(r=> _depRegionFilter==='all' || r.region===_depRegionFilter);
+ const scPaid=scope.filter(r=>r.paid).length, scTotal=scope.length;
  const fbtn=(key,label)=>`<button class="btn sm${_depStatusFilter===key?' primary':''}" onclick="_depSetStatusFilter('${key}')">${label}</button>`;
- const head=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-    <span style="font-size:12.5px;color:var(--text2)">입금 <b style="color:var(--green)">${paidCnt}곳</b> · 미입금 <b style="color:var(--red)">${unpaidCnt}곳</b> <span style="color:var(--text3)">/ 명단 ${rows.length}곳</span></span>
+ const rbtn=(key,label)=>`<button class="btn sm${_depRegionFilter===key?' primary':''}" onclick="_depSetRegionFilter('${key}')">${label}</button>`;
+ const head=`<div style="padding:10px 12px 6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:12.5px;color:var(--text2)">${_depRegionFilter==='all'?'전체':esc(_depRegionFilter)} — 입금 <b style="color:var(--green)">${scPaid}곳</b> · 미입금 <b style="color:var(--red)">${scTotal-scPaid}곳</b> <span style="color:var(--text3)">/ ${scTotal}곳</span></span>
     <span style="flex:1"></span>
     ${fbtn('all','전체')} ${fbtn('unpaid','❌ 미입금')} ${fbtn('paid','✅ 입금')}
     <input id="depStatusSearch" value="${esc(q)}" oninput="_depStatusSearch(this.value)" placeholder="센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;">
+  </div>
+  <div style="padding:0 12px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
+    ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
   </div>`;
  const body=view.map(r=>`<tr>
     <td>${esc(r.name)}</td>
