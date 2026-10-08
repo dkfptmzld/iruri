@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.90">
+<meta property="og:title" content="수업기록표 정산 시스템 v17.91">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.90">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v17.91">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.90</title>
+<title>수업기록표 정산 시스템 v17.91</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3152,7 +3152,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 
   <!-- 서브 탭 -->
   <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);flex-wrap:wrap;">
-   <button class="dep-subtab active" data-sub="unpaid"    onclick="_depSwitchSub('unpaid')">미입금 센터</button>
+   <button class="dep-subtab active" data-sub="unpaid"    onclick="_depSwitchSub('unpaid')">센터 입금현황</button>
    <button class="dep-subtab"        data-sub="unmatched" onclick="_depSwitchSub('unmatched')">미등록 입금처</button>
    <button class="dep-subtab"        data-sub="mappings"  onclick="_depSwitchSub('mappings')">매핑 관리</button>
    <button class="dep-subtab"        data-sub="records"   onclick="_depSwitchSub('records')">입금내역</button>
@@ -4385,7 +4385,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.90';
+const SYSTEM_VERSION='v17.91';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4963,14 +4963,52 @@ function _depPanelHTML(title, count, inner){
  return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div><div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
 }
 
+let _depStatusFilter='all', _depStatusQ='';
+function _depSetStatusFilter(k){ _depStatusFilter=k; renderDepUnpaid(); }
+function _depStatusSearch(v){
+ _depStatusQ=v; renderDepUnpaid();
+ const si=document.getElementById('depStatusSearch');
+ if(si){ si.focus(); try{ si.setSelectionRange(si.value.length, si.value.length); }catch(_){}}
+}
+// 센터 입금현황: 전 명단을 ✅입금/❌미입금 + 금액 + 필터/검색으로 한눈에
 function renderDepUnpaid(){
- const {paid,unpaid}=getUnpaidCenters();
  const el=document.getElementById('depSub-unpaid'); if(!el) return;
- if(!depositDB.records.length){ el.innerHTML=_depPanelHTML('미입금 센터',null,`<div class="dep-empty">입금내역이 없습니다. 상단 '가데이터' 또는 엑셀 업로드(STEP4) 후 '매칭 실행'을 눌러주세요.</div>`); return; }
- const rows = unpaid.map(c=>`<tr><td>${esc(c.name)}</td><td style="color:var(--text3)">${esc(c.region||'')}</td></tr>`).join('');
- const inner = `<div style="padding:10px 12px;font-size:12.5px;color:var(--text2);">입금 확인 <b style="color:var(--green)">${paid.length}곳</b> · 미입금 후보 <b style="color:var(--red)">${unpaid.length}곳</b> (명단 ${paid.length+unpaid.length}곳 기준)</div>`
-  + `<table class="dep-table"><thead><tr><th>미입금 후보 센터</th><th>지역</th></tr></thead><tbody>${rows||'<tr><td colspan=2 class="dep-empty">미입금 센터가 없습니다 🎉</td></tr>'}</tbody></table>`;
- el.innerHTML=_depPanelHTML('미입금 센터','(명단 대비)',inner);
+ if(!depositDB.records.length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">입금내역이 없습니다. 상단 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
+ const roster=getDepositRoster();
+ // 매칭된 입금을 센터별로 집계(금액 합·최근 입금일시)
+ const paidMap={};
+ depositDB.records.forEach(r=>{
+  if(r.matchStatus==='matched' && r.matchedCenterName){
+   const k=r.matchedCenterName+'|'+(r.region||'');
+   if(!paidMap[k]) paidMap[k]={amount:0, last:'', cnt:0};
+   paidMap[k].amount+=Number(r.amount)||0; paidMap[k].cnt++;
+   const dt=(r.date||'')+(r.time?(' '+String(r.time).slice(0,5)):'');
+   if(dt>paidMap[k].last) paidMap[k].last=dt;
+  }
+ });
+ const rows=roster.map(c=>{ const p=paidMap[c.name+'|'+(c.region||'')];
+  return { name:c.name, region:c.region||'', paid:!!p, amount:p?p.amount:0, last:p?p.last:'', cnt:p?p.cnt:0 }; });
+ const paidCnt=rows.filter(r=>r.paid).length, unpaidCnt=rows.length-paidCnt;
+ const q=_depStatusQ.trim();
+ let view=rows.filter(r=> (_depStatusFilter==='all' || (_depStatusFilter==='paid'? r.paid : !r.paid))
+                      && (!q || r.name.includes(q)) );
+ view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || a.name.localeCompare(b.name,'ko')); // 미입금 먼저
+ const fbtn=(key,label)=>`<button class="btn sm${_depStatusFilter===key?' primary':''}" onclick="_depSetStatusFilter('${key}')">${label}</button>`;
+ const head=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:12.5px;color:var(--text2)">입금 <b style="color:var(--green)">${paidCnt}곳</b> · 미입금 <b style="color:var(--red)">${unpaidCnt}곳</b> <span style="color:var(--text3)">/ 명단 ${rows.length}곳</span></span>
+    <span style="flex:1"></span>
+    ${fbtn('all','전체')} ${fbtn('unpaid','❌ 미입금')} ${fbtn('paid','✅ 입금')}
+    <input id="depStatusSearch" value="${esc(q)}" oninput="_depStatusSearch(this.value)" placeholder="센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;">
+  </div>`;
+ const body=view.map(r=>`<tr>
+    <td>${esc(r.name)}</td>
+    <td style="color:var(--text3)">${esc(r.region)}</td>
+    <td>${r.paid?'<span class="dep-pill matched">✓ 입금</span>':'<span class="dep-pill unmatched">미입금</span>'}</td>
+    <td>${r.paid?fmtDepWon(r.amount):'<span style="color:var(--text3)">-</span>'}</td>
+    <td style="color:var(--text3)">${esc(r.last||'')}</td>
+  </tr>`).join('');
+ const inner=head+`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody>${body||'<tr><td colspan=5 class="dep-empty">해당 조건의 센터가 없습니다.</td></tr>'}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner);
 }
 
 function renderDepUnmatched(){
