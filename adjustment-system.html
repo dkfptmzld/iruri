@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v17.99">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.00">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v17.99">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.00">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v17.99</title>
+<title>수업기록표 정산 시스템 v18.00</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3240,6 +3240,33 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    </div>
   </div>
  </div>
+
+ <!-- 매핑 수정 모달 -->
+ <div id="depMapEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10050;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);padding:22px;width:400px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,.28);">
+   <div style="font-size:16px;font-weight:700;margin-bottom:2px;">매핑 수정</div>
+   <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">이 취급점이 연결될 센터를 바꿉니다. 저장하면 입금건이 자동 재매칭됩니다.</div>
+   <div style="font-size:12px;color:var(--text2);line-height:1.9;background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;">
+    취급점(키): <b id="depMapEditBranch" style="color:var(--text);"></b>
+   </div>
+   <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);margin-bottom:12px;cursor:pointer;">
+    <input type="checkbox" id="depMapEditExcl" onchange="_depMapEditToggleExcl()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber);">
+    센터 아님 (본인이체·이자 등) — 매칭 제외
+   </label>
+   <div id="depMapEditCenterWrap">
+    <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:5px;">연결할 센터 (검색)</label>
+    <input id="depMapEditCenter" list="depCenterList" placeholder="센터명 입력… 예: 효명 (인천)" autocomplete="off"
+      style="width:100%;height:38px;border:1px solid var(--border2);border-radius:var(--radius);padding:0 12px;font-size:14px;background:var(--surface);color:var(--text);outline:none;">
+   </div>
+   <div style="display:flex;justify-content:space-between;gap:8px;margin-top:18px;">
+    <button class="btn sm" onclick="_depMapEditDelete()" style="color:var(--red);border-color:var(--red);">🗑 삭제</button>
+    <div style="display:flex;gap:8px;">
+     <button class="btn sm" onclick="_depCloseMapEdit()">취소</button>
+     <button class="btn sm primary" onclick="_depMapEditSave()">저장</button>
+    </div>
+   </div>
+  </div>
+ </div>
 </div>
 
 <!-- v17.65: 성장 1등 플로팅 위젯 (접속 현황 위) -->
@@ -4435,7 +4462,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v17.99';
+const SYSTEM_VERSION='v18.00';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4860,6 +4887,15 @@ function matchOneDeposit(rec){
  // 취급점이 센터 1곳에만 연결 → 기재내용 무시 자동 매칭 (갈산 케이스)
  if(centerMaps.length===1){
   const m=centerMaps[0];
+  // 안전장치: 기재가 이 센터와 전혀 안 맞는데 '다른 등록 센터'를 명백히 가리키면 → 미등록(오매칭 방지, 취급점 공유 대비)
+  const gc0=normDepositGijae(rec.depositorName);
+  if(gc0 && gc0.length>=2){
+   const matchesMapped = _depGijaeAlike(gc0, normDepositGijae(m.centerName)) || (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc0, normDepositGijae(s)));
+   if(!matchesMapped){
+    const other = depositDB.mappings.find(x=>!x.isExcluded && x.centerName && x.mapId!==m.mapId && _depGijaeAlike(gc0, normDepositGijae(x.centerName)));
+    if(other) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
+   }
+  }
   return { matchStatus:'matched', matchedCenterName:m.centerName, region:m.region||'', mapId:m.mapId };
  }
  // 여러 센터 → 기재내용 코어로 2차 선택
@@ -5148,7 +5184,7 @@ function renderDepMappings(){
    <td>${m.isExcluded?'<span class="dep-pill excluded">제외(본인/이자)</span>':esc(m.centerName)}</td>
    <td style="color:var(--text3)">${esc(m.region||'')}</td>
    <td style="color:var(--text3);font-size:11.5px;">${esc((m.gijaeSamples||[]).slice(0,3).join(', '))}</td>
-   <td><button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
+   <td style="white-space:nowrap;"><button class="btn sm" onclick="_depEditMapping('${esc(m.mapId)}')">수정</button> <button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
  </tr>`).join('');
  const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
     <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
@@ -5182,6 +5218,43 @@ function _depDoImport(){
  renderDepositView();  // ④
  _depCloseImport();
  showToast(`매핑 ${n}건 가져오기 완료`);   // ⑤
+}
+
+/* 매핑 수정 (연결 센터 변경 / 제외 전환) */
+let _depMapEditId=null;
+function _depEditMapping(mapId){
+ const m=getDepositMappings().find(x=>x.mapId===mapId); if(!m) return;
+ _depMapEditId=mapId;
+ document.getElementById('depMapEditBranch').textContent=m.branchKey;
+ document.getElementById('depMapEditExcl').checked=!!m.isExcluded;
+ document.getElementById('depMapEditCenter').value = m.centerName? (m.centerName+(m.region?(' ('+m.region+')'):'')) : '';
+ document.getElementById('depMapEditCenterWrap').style.display = m.isExcluded?'none':'block';
+ _depPopulateCenterList();
+ document.getElementById('depMapEditModal').style.display='flex';
+}
+function _depCloseMapEdit(){ const el=document.getElementById('depMapEditModal'); if(el) el.style.display='none'; _depMapEditId=null; }
+function _depMapEditToggleExcl(){ document.getElementById('depMapEditCenterWrap').style.display=document.getElementById('depMapEditExcl').checked?'none':'block'; }
+function _depMapEditSave(){
+ const m=getDepositMappings().find(x=>x.mapId===_depMapEditId); if(!m){ _depCloseMapEdit(); return; }
+ const excl=document.getElementById('depMapEditExcl').checked;
+ if(excl){ m.isExcluded=true; m.centerName=''; m.region=''; }
+ else {
+  const v=(document.getElementById('depMapEditCenter').value||'').trim();
+  if(!v){ showToast('센터를 선택하거나 제외를 체크하세요'); return; }
+  const mm=v.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  m.isExcluded=false;
+  if(mm){ m.centerName=mm[1].trim(); m.region=mm[2].trim(); } else { m.centerName=v; m.region=''; }
+ }
+ saveDepositDB();      // ③ (→GAS 자동 push)
+ runMatching();        // ②③ 재매칭
+ renderDepositView();  // ④
+ _depCloseMapEdit();
+ showToast('매핑을 수정했습니다');   // ⑤
+}
+function _depMapEditDelete(){
+ const id=_depMapEditId; if(!id) return;
+ _depCloseMapEdit();
+ _depDelMapping(id);   // 기존 삭제 흐름(확인창 포함)
 }
 
 function renderDepRecords(){
