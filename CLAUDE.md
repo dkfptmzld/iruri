@@ -6,7 +6,8 @@
 
 - 기본은 **패치 단위** 증가 (예: `v14.50` → `v14.51` → `v14.52` …).
 - 수정과 버전 업을 **같은 커밋/PR** 에 묶는다.
-- 버전 문자열은 아래 **4곳을 모두 동일하게** 바꾼다 (하나라도 빠지면 공유 미리보기/표시가 어긋남):
+- 버전 문자열은 아래 **4곳을 모두 동일하게** 바꾼다 (하나라도 빠지면 공유 미리보기/표시가 어긋남).
+  **그리고 `version.json` 도 반드시 같이** 바꾼다(아래 참고):
 
 | 위치 | 형태 |
 |---|---|
@@ -16,6 +17,13 @@
 | `SYSTEM_VERSION` (JS 상수) | `const SYSTEM_VERSION='vX.XX';` |
 
 확인: `grep -nE "정산 시스템 v|SYSTEM_VERSION='v" adjustment-system.html` 로 4곳이 같은 버전인지 검증.
+
+**`version.json` (필수)** — 앱의 '새 버전이 나왔어요 / 업데이트 완료' 알림이 이 파일을 읽는다.
+`"version"` 을 위와 같은 `vX.XX` 로, `"date"` 를 오늘로, `"notes"` 에 바뀐 점 1~3줄(사용자가 읽는 말)을 적는다.
+빠뜨리면 알림에 옛 버전·옛 설명이 뜬다. (v18.09 이후 앱은 더 옛 번호면 알림을 띄우지 않지만, 새 기능 안내가 안 나간다.)
+- `recreation-plan.html?v=X.XX` (2곳, 계획서 도구 캐시 무효화)도 같은 번호로 맞춘다.
+
+확인 한 줄: `grep -nE "정산 시스템 v|SYSTEM_VERSION='v|recreation-plan.html\?v=" adjustment-system.html; grep '"version"' version.json`
 
 ## 프로젝트 메모
 
