@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.09">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.10">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.09">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.10">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.09</title>
+<title>수업기록표 정산 시스템 v18.10</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4541,7 +4541,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.09';
+const SYSTEM_VERSION='v18.10';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4954,45 +4954,62 @@ function _depGijaeAlike(a, b){
  return a===b || a.startsWith(b) || b.startsWith(a);
 }
 
-/* 입금건 1건 → 센터 판정 (mutate 안 함). return {matchStatus, matchedCenterName, region, mapId} */
+/* 입금건 1건 → 센터 판정 (mutate 안 함). return {matchStatus, matchedCenterName, region, mapId}
+   [v18.10] 입금자명(기재내용) 1순위 식별 + 취급점 보조/폴백.
+   - 취급점은 '보내는 쪽 은행 지점'이라 여러 센터가 공유 → 유일 키가 못 됨.
+   - 실제 신원은 입금자명. 센터명/학습 별칭과 대조해 센터를 찾고, 동명이 여럿이면 취급점으로 좁힘.
+   - 입금자명으로 못 찾으면 취급점 매핑으로 폴백(1곳이면 매칭). "애매하면 미등록". */
 function matchOneDeposit(rec){
  const bk = rec.branchKey || normDepositBranch(rec.branchRaw);
- const maps = findDepositMappings(bk);
- if(!maps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };
- const centerMaps = maps.filter(m=>!m.isExcluded && m.centerName);
- const exclMaps   = maps.filter(m=>m.isExcluded);
- // 센터 매핑이 없고 제외(본인/이자)만 있으면 → 제외
- if(!centerMaps.length) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:(exclMaps[0]&&exclMaps[0].mapId)||null };
- // 취급점이 센터 1곳에만 연결 → 기재내용 무시 자동 매칭 (갈산 케이스)
- if(centerMaps.length===1){
-  const m=centerMaps[0];
-  // 안전장치: 기재가 이 센터와 전혀 안 맞는데 '다른 등록 센터'를 명백히 가리키면 → 미등록(오매칭 방지, 취급점 공유 대비)
-  const gc0=normDepositGijae(rec.depositorName);
-  if(gc0 && gc0.length>=2){
-   const matchesMapped = _depGijaeAlike(gc0, normDepositGijae(m.centerName)) || (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc0, normDepositGijae(s)));
-   if(!matchesMapped){
-    // 안전장치 강화: 기재가 '다른 등록 센터명' 또는 '다른 매핑의 기재 샘플'을 명백히 가리키면 → 미등록(오매칭 방지)
-    const otherMap = depositDB.mappings.find(x=>!x.isExcluded && x.mapId!==m.mapId && (
-       (x.centerName && _depGijaeAlike(gc0, normDepositGijae(x.centerName))) ||
-       (x.gijaeSamples||[]).some(s=>_depGijaeAlike(gc0, normDepositGijae(s)))
-    ));
-    const otherRoster = !otherMap && getDepositRoster().some(c=> c.name && c.name!==m.centerName && _depGijaeAlike(gc0, normDepositGijae(c.name)));
-    if(otherMap || otherRoster) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
-   }
-  }
-  return { matchStatus:'matched', matchedCenterName:m.centerName, region:m.region||'', mapId:m.mapId };
- }
- // 여러 센터 → 기재내용 코어로 2차 선택
  const gc = normDepositGijae(rec.depositorName);
- let best=null, bestScore=0;
- centerMaps.forEach(m=>{
-  let score=0;
-  if((m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s)))) score+=2;
-  if(_depGijaeAlike(gc, normDepositGijae(m.centerName))) score+=1;
-  if(score>bestScore){ bestScore=score; best=m; }
- });
- if(best && bestScore>0) return { matchStatus:'matched', matchedCenterName:best.centerName, region:best.region||'', mapId:best.mapId };
- // 애매 → 미등록으로 남겨 사람이 확인 (틀린 매칭 방지)
+ const maps = depositDB.mappings;
+
+ // 0) 이 취급점+기재가 '제외(본인이체·이자)'로 등록돼 있으면 제외
+ if(gc && gc.length>=2){
+  const exclByName = maps.some(m=>m.isExcluded && m.branchKey===bk && (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s))));
+  if(exclByName) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:null };
+ }
+
+ // 1) 입금자명(기재) 우선 — 센터명 또는 학습 별칭과 닮은 센터 후보 수집
+ if(gc && gc.length>=2){
+  const seen={}, hits=[];
+  maps.forEach(m=>{
+   if(m.isExcluded || !m.centerName) return;
+   const nameAlike   = _depGijaeAlike(gc, normDepositGijae(m.centerName));
+   const sampleAlike = (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s)));
+   if(!nameAlike && !sampleAlike) return;
+   const key=m.centerName+'|'+(m.region||'');
+   if(!seen[key]){ seen[key]={centerName:m.centerName, region:m.region||'', score:0, exact:false, hasBranch:false, mapId:m.mapId}; hits.push(seen[key]); }
+   const h=seen[key];
+   h.score += (sampleAlike?2:0) + (nameAlike?1:0);
+   if(gc===normDepositGijae(m.centerName) || (m.gijaeSamples||[]).some(s=>gc===normDepositGijae(s))) h.exact=true;
+   if(m.branchKey && m.branchKey===bk){ h.hasBranch=true; h.mapId=m.mapId; }
+  });
+  if(hits.length){
+   let pick=null;
+   if(hits.length===1){ pick=hits[0]; }
+   else {
+    const byBranch=hits.filter(h=>h.hasBranch);       // ① 취급점 일치 후보가 유일하면
+    if(byBranch.length===1) pick=byBranch[0];
+    else {
+     const exacts=hits.filter(h=>h.exact);            // ② 정확(동일 코어) 일치가 유일하면
+     if(exacts.length===1) pick=exacts[0];
+     else { hits.sort((a,b)=>b.score-a.score); if(hits[0].score>hits[1].score) pick=hits[0]; } // ③ 점수 최고가 유일하면
+    }
+   }
+   if(pick) return { matchStatus:'matched', matchedCenterName:pick.centerName, region:pick.region, mapId:pick.mapId||null };
+   return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true }; // 동명 다수·판단 불가 → 사람 확인
+  }
+ }
+
+ // 2) 입금자명으로 못 찾음 → 취급점 폴백
+ const bmaps = findDepositMappings(bk);
+ if(!bmaps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };
+ const centerMaps = bmaps.filter(m=>!m.isExcluded && m.centerName);
+ const exclMaps   = bmaps.filter(m=>m.isExcluded);
+ if(!centerMaps.length) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:(exclMaps[0]&&exclMaps[0].mapId)||null };
+ if(centerMaps.length===1) return { matchStatus:'matched', matchedCenterName:centerMaps[0].centerName, region:centerMaps[0].region||'', mapId:centerMaps[0].mapId };
+ // 취급점에 센터 여럿인데 기재로도 못 가림 → 미등록
  return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
 }
 
@@ -5314,7 +5331,7 @@ function _depMapSearch(v){
 }
 function _depMapRowsHTML(maps){
  return maps.map(m=>`<tr>
-   <td style="color:var(--text2)">${esc(m.branchKey)}</td>
+   <td style="color:var(--text2)">${m.branchKey?esc(m.branchKey):'<span style="color:var(--text3)">(입금자명 기준)</span>'}</td>
    <td>${m.isExcluded?'<span class="dep-pill excluded">제외(본인/이자)</span>':esc(m.centerName)}</td>
    <td style="color:var(--text3)">${esc(m.region||'')}</td>
    <td style="color:var(--text3);font-size:11.5px;">${esc((m.gijaeSamples||[]).slice(0,3).join(', '))}</td>
@@ -5323,7 +5340,7 @@ function _depMapRowsHTML(maps){
 }
 function _depRenderMapBody(){
  const tb=document.getElementById('depMapBody'); if(!tb) return;
- const all=getDepositMappings().slice().sort((a,b)=>String(a.branchKey).localeCompare(String(b.branchKey)));
+ const all=getDepositMappings().slice().sort((a,b)=>String(a.centerName||'~').localeCompare(String(b.centerName||'~'),'ko')||String(a.branchKey).localeCompare(String(b.branchKey)));
  const q=_depMapQ.trim();
  const maps=!q?all:all.filter(m=>
     (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
@@ -5335,7 +5352,7 @@ function _depRenderMapBody(){
 }
 function renderDepMappings(){
  const el=document.getElementById('depSub-mappings'); if(!el) return;
- const all=getDepositMappings().slice().sort((a,b)=>String(a.branchKey).localeCompare(String(b.branchKey)));
+ const all=getDepositMappings().slice().sort((a,b)=>String(a.centerName||'~').localeCompare(String(b.centerName||'~'),'ko')||String(a.branchKey).localeCompare(String(b.branchKey)));
  const q=_depMapQ.trim();
  const maps=!q?all:all.filter(m=>
     (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
@@ -5343,6 +5360,7 @@ function renderDepMappings(){
  const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
  const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
+    <button class="btn sm" onclick="_depSeedRoster()" title="센터 관리의 모든 센터명을 매핑에 추가 — 입금자명(기재내용) 기준 매칭의 기준 목록">➕ 센터 명단 추가</button>
     <button class="btn sm" onclick="_depOpenConflict()" title="같은 취급점에 서로 다른 입금자명이 섞여 오매칭이 의심되는 경우 점검·분리">🔎 취급점 점검</button>
     <span style="flex:1"></span>
     <input id="depMapSearch" value="${esc(q)}" oninput="_depMapSearch(this.value)" placeholder="센터·취급점·기재 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:160px;">
@@ -5502,6 +5520,25 @@ function _depDelMapping(mapId){
   runMatching();                // ②③
   renderDepositView();          // ④
   showToast('매핑을 삭제했습니다'); // ⑤
+ }});
+}
+
+/* 센터 명단(센터 관리) 전체를 매핑에 시드 — 입금자명 기준 매칭의 타깃 목록.
+   이미 센터로 존재하는(이름+지역) 건 건너뜀. 취급점 없이(branchKey='') 등록되고,
+   입금자명이 센터명과 닮으면 자동 매칭된다(동명은 취급점으로 구분). */
+function _depSeedRoster(){
+ const roster=getDepositRoster();
+ if(!roster.length){ showToast('센터 명단이 비어 있어요 (센터 관리 확인)'); return; }
+ const have=new Set(depositDB.mappings.filter(m=>!m.isExcluded && m.centerName).map(m=>m.centerName+'|'+(m.region||'')));
+ const todo=roster.filter(c=>!have.has(c.name+'|'+(c.region||'')));
+ if(!todo.length){ showToast('이미 모든 센터가 매핑에 있어요'); return; }
+ showConfirm({icon:'➕',title:'센터 명단 추가',desc:`센터 관리의 센터 <b>${todo.length}곳</b>을 매핑에 추가합니다.<br><small style="color:var(--text3)">입금자명(기재내용)이 센터명과 닮으면 자동 매칭됩니다. 기존 매핑·입금내역은 유지됩니다.</small>`,okText:'추가',okStyle:'primary',onOk:()=>{
+  todo.forEach(c=>{
+   depositDB.mappings.push({ mapId:_depUid('map'), branchKey:'', branchRaw:'', centerName:c.name, region:c.region||'', gijaeSamples:[], isExcluded:false, note:'roster', registeredAt:new Date().toISOString(), lastMatchedAt:null });
+  });
+  const res=runMatching();   // ②③ 이름 기준 재매칭 + 저장
+  renderDepositView();       // ④
+  showToast(`센터 ${todo.length}곳 추가 — 이름 기준 재매칭: 성공 ${res.matched} · 미등록 ${res.unmatched}`); // ⑤
  }});
 }
 
