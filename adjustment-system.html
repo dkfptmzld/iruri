@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.43">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.44">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.43">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.44">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.43</title>
+<title>수업기록표 정산 시스템 v18.44</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -408,6 +408,8 @@ tbody tr:hover td{background:var(--surface2);}
  .dep-logtbl td.lw{grid-column:1/-1;} .dep-logtbl td.lw .dep-log-w small{display:inline;margin-left:6px;}
  .dep-logtbl td.lk{grid-row:2;} .dep-logtbl td.lc{grid-row:2;} .dep-logtbl td.lp{display:none;}
  .dep-logtbl td.lu{grid-column:1/-1;text-align:left!important;}
+ .dep-logtbl td{background:transparent!important;}
+ .dep-logtbl tr:hover{background:var(--surface2);}
  .dep-logtbl td.lu:empty{display:none;}
 }
 .mgr-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
@@ -4750,7 +4752,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.43';
+const SYSTEM_VERSION='v18.44';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5622,15 +5624,25 @@ function _depRenderSub(){
 }
 /* v18.26: 변경이력 탭 */
 let _depLogKind='all', _depLogQ='', _depLogLimit=200;
+let _depLogScope='all', _depLogHideUndone=false;   // v18.44: 범위(전체/이 회차) · 되돌린 기록 숨기기
+function _depSetLogScope(k){ _depLogScope=k; _depLogLimit=200; renderDepLog(); }
+function _depToggleLogUndone(){ _depLogHideUndone=!_depLogHideUndone; _depLogLimit=200; renderDepLog(); }
+function _depLogPeriodHit(l){ const cur=_depActivePeriod(); return String(l.period||'').split(',').map(x=>x.trim()).includes(cur); }
+function _depLogIsNetZero(l){   // 되돌려진 기록, 또는 그 되돌리기 자체(서로 상쇄된 짝)
+ if(_depUndoneBy(l.id)) return true;
+ if(l.ref){ const ub=_depUndoneBy(l.ref); if(ub && ub.id===l.id) return true; }
+ return false;
+}
 const _DEP_LOG_KINDS={reg:'센터 등록', map:'매핑', rec:'입금 삭제', upload:'업로드', period:'회차'};
 function _depFmtLogAt(at){
  const d=new Date(at); if(isNaN(d)) return esc(String(at||''));
  const p=n=>String(n).padStart(2,'0');
  return `${d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'. ':''}${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+function _depLogBase(){ return _depLogs.filter(l=>(_depLogScope==='all' || _depLogPeriodHit(l)) && (!_depLogHideUndone || !_depLogIsNetZero(l))); }
 function _depLogFiltered(){
  const q=String(_depLogQ||'').trim().toLowerCase();
- return _depLogs.filter(l=>(_depLogKind==='all'||l.kind===_depLogKind) && (!q || [l.title,l.detail,l.by,l.period].join(' ').toLowerCase().includes(q)))
+ return _depLogBase().filter(l=>(_depLogKind==='all'||l.kind===_depLogKind) && (!q || [l.title,l.detail,l.by,l.period].join(' ').toLowerCase().includes(q)))
   .slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
 }
 function _depLogBodyHTML(list){
@@ -5642,35 +5654,50 @@ function _depLogBodyHTML(list){
    <td style="vertical-align:top;white-space:nowrap;color:var(--text3);font-size:12px;" class="lp">${esc(l.period||'')}</td>
    <td class="lu" style="vertical-align:top;white-space:nowrap;text-align:right;">${_depUndoCell(l)}</td>
   </tr>`).join('');
- const more=list.length>_depLogLimit?`<tr><td colspan=5 style="text-align:center;"><button class="btn sm" onclick="_depLogLimit+=300;_depRenderLogBody()">더 보기 (${list.length-_depLogLimit}건 남음)</button></td></tr>`:'';
+ const more=list.length>_depLogLimit?`<tr><td colspan=5 style="text-align:center;"><button class="dep-tbtn sm" onclick="_depLogLimit+=300;_depRenderLogBody()">더 보기 (${list.length-_depLogLimit}건 남음)</button></td></tr>`:'';
  return rows ? rows+more : `<tr><td colspan=5 class="dep-empty">${_depLogs.length?'조건에 맞는 기록이 없습니다.':'아직 기록이 없어요. 센터 등록·매핑 수정·입금 삭제·업로드를 하면 여기에 쌓여요.'}</td></tr>`;
 }
 function _depUndoCell(l){
  const ub=_depUndoneBy(l.id);
  if(ub) return `<span class="dep-undone" title="${esc(_depFmtLogAt(ub.at).replace(/<[^>]+>/g,''))} · ${esc(ub.by||'')}">↩ 되돌림</span>`;
  if(l.undo || l.hasUndo) return l.ref
-  ? `<button class="btn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="되돌린 것을 다시 원래대로(다시 하기)">↪ 다시 하기</button>`
-  : `<button class="btn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="이 동작 전으로 되돌리기">↩ 되돌리기</button>`;
+  ? `<button class="dep-tbtn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="되돌린 것을 다시 원래대로(다시 하기)">↪ 다시 하기</button>`
+  : `<button class="dep-tbtn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="이 동작 전으로 되돌리기">↩ 되돌리기</button>`;
  return '';
 }
 function _depRenderLogBody(){
  const list=_depLogFiltered();
  const b=document.getElementById('depLogBody'); if(b) b.innerHTML=_depLogBodyHTML(list);
  const c=document.getElementById('depLogCount'); if(c) c.textContent=`(${list.length}${list.length!==_depLogs.length?' / '+_depLogs.length:''}건)`;
+ const sm=document.getElementById('depLogSum'); if(sm) sm.innerHTML=_depLogSumHTML(list);
 }
 function _depLogSearch(v){ _depLogQ=v; _depLogLimit=200; _depRenderLogBody(); }   // 입력창 유지(한글 조합 안 깨짐)
 function _depSetLogKind(k){ _depLogKind=k; _depLogLimit=200; renderDepLog(); }
+function _depLogSumHTML(list){
+ const today=new Date().toDateString(), tn=list.filter(l=>{ const d=new Date(l.at); return !isNaN(d) && d.toDateString()===today; }).length;
+ return `기록 <b style="color:var(--text)">${list.length}건</b>${tn?` <span style="color:var(--text3)">· 오늘 ${tn}건</span>`:''}${_depLogUnsent.length?` <span style="color:var(--amber);" title="클라우드에 아직 못 올린 기록 — 연결되면 자동으로 올라가요">· ⏳ 전송 대기 ${_depLogUnsent.length}건</span>`:''}`;
+}
 function renderDepLog(){
  const el=document.getElementById('depSub-log'); if(!el) return;
  const list=_depLogFiltered();
- const kb=(key,label)=>`<button class="btn sm${_depLogKind===key?' primary':''}" onclick="_depSetLogKind('${key}')">${label}</button>`;
- const bar=`<div style="padding:9px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
-    ${kb('all','전체')}${Object.keys(_DEP_LOG_KINDS).map(k=>kb(k,_DEP_LOG_KINDS[k])).join('')}
+ const base=_depLogBase();
+ const kc=k=>base.filter(l=>k==='all'||l.kind===k).length;
+ const kb=(key,label)=>`<button class="btn sm${_depLogKind===key?' primary':''}" onclick="_depSetLogKind('${key}')">${label} <span style="opacity:.7;font-weight:400;">${kc(key)}</span></button>`;
+ const sb=(key,label)=>`<button class="btn sm${_depLogScope===key?' primary':''}" onclick="_depSetLogScope('${key}')"${key==='period'?' title="지금 고른 회차의 입금내역에 관한 기록만 (매핑 변경은 회차와 상관없어서 빠져요)"':''}>${label}</button>`;
+ // v18.44: 다른 탭과 같은 도구 줄 — 요약·구분·검색 / 범위·되돌린 기록 숨기기
+ const bar=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span id="depLogSum" style="font-size:12.5px;color:var(--text2)">${_depLogSumHTML(list)}</span>
     <span style="flex:1"></span>
-    ${_depLogUnsent.length?`<span style="font-size:11.5px;color:var(--amber);" title="클라우드에 아직 못 올린 기록 — 연결되면 자동으로 올라가요">⏳ 전송 대기 ${_depLogUnsent.length}건</span>`:''}
-    <input value="${esc(_depLogQ)}" oninput="_depLogSearch(this.value)" placeholder="센터·기재·사람 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
+    ${kb('all','전체')} ${Object.keys(_DEP_LOG_KINDS).map(k=>kb(k,_DEP_LOG_KINDS[k])).join(' ')}
+    <input value="${escH(_depLogQ)}" oninput="_depLogSearch(this.value)" placeholder="센터·기재·사람 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
+   </div>
+   <div style="padding:8px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span style="font-size:12px;color:var(--text3);margin-right:2px;">범위</span>
+    ${sb('all','전체')}${sb('period',`이 회차 (${escH(_depActivePeriod())})`)}
+    <span style="flex:1"></span>
+    <button class="btn sm${_depLogHideUndone?' primary':''}" onclick="_depToggleLogUndone()" title="되돌린 기록과 그 되돌리기(서로 상쇄된 짝)를 목록에서 숨겨요">${_depLogHideUndone?'✓ ':''}↩ 되돌린 기록 숨기기</button>
    </div>`;
- const inner=`<table class="dep-table dep-logtbl"><thead><tr><th style="width:120px;">일시 · 누가</th><th style="width:84px;">구분</th><th>내용</th><th style="width:80px;">회차</th><th style="width:96px;"></th></tr></thead><tbody id="depLogBody">${_depLogBodyHTML(list)}</tbody></table>`;
+ const inner=`<table class="dep-table dep-logtbl"><thead><tr><th style="width:120px;">일시 · 누가</th><th style="width:84px;">구분</th><th>내용</th><th style="width:80px;">회차</th><th style="width:110px;"></th></tr></thead><tbody id="depLogBody">${_depLogBodyHTML(list)}</tbody></table>`;
  el.innerHTML=_depPanelHTML('변경이력',`<span id="depLogCount">(${list.length}${list.length!==_depLogs.length?' / '+_depLogs.length:''}건)</span>`,inner,bar);
 }
 // v18.15: bar(도구 줄: 버튼·지역·검색)는 스크롤 상자 '밖'에 둬서 표를 내려도 항상 보이게(표 머리줄은 sticky)
@@ -18956,9 +18983,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.43&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.44&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.43&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.44&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
