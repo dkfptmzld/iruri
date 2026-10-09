@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.18">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.19">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.18">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.19">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.18</title>
+<title>수업기록표 정산 시스템 v18.19</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4556,7 +4556,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.18';
+const SYSTEM_VERSION='v18.19';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4999,6 +4999,11 @@ function matchOneDeposit(rec){
  const bk = rec.branchKey || normDepositBranch(rec.branchRaw);
  const gc = normDepositGijae(rec.depositorName);
  const maps = depositDB.mappings;
+ // v18.19: 매핑 관리에서 '뺀 기재내용'(removedSamples)과 같은 입금자명은 그 센터로 연결하지 않음(이름·취급점 모두)
+ //  → 다른 센터로 못 찾으면 미등록으로 빠져 사람이 다시 등록
+ const _nm=String(rec.depositorName||'').trim();
+ const _blockedC=new Set(); if(_nm) maps.forEach(m=>{ if(m.centerName && (m.removedSamples||[]).some(x=>String(x).trim()===_nm)) _blockedC.add(m.centerName+'|'+(m.region||'')); });
+ const _isBlocked=(m)=> _blockedC.size>0 && _blockedC.has((m.centerName||'')+'|'+(m.region||''));
 
  // 0) 이 취급점+기재가 '제외(본인이체·이자)'로 등록돼 있으면 제외
  if(gc && gc.length>=2){
@@ -5013,6 +5018,7 @@ function matchOneDeposit(rec){
   const seen={}, hits=[];
   maps.forEach(m=>{
    if(m.isExcluded || !m.centerName) return;
+   if(_isBlocked(m)) return;   // v18.19
    const coreC=normDepositGijae(m.centerName), liteC=normDepLite(m.centerName);
    const nameAlike   = _depGijaeAlike(gc, coreC);
    const sampleAlike = (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s)));
@@ -5053,8 +5059,9 @@ function matchOneDeposit(rec){
  // 2) 입금자명으로 못 찾음 → 취급점 폴백
  const bmaps = findDepositMappings(bk);
  if(!bmaps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };
- const centerMaps = bmaps.filter(m=>!m.isExcluded && m.centerName);
+ const centerMaps = bmaps.filter(m=>!m.isExcluded && m.centerName && !_isBlocked(m));   // v18.19: 뺀 기재의 센터는 제외
  const exclMaps   = bmaps.filter(m=>m.isExcluded);
+ if(!centerMaps.length && bmaps.some(m=>!m.isExcluded && m.centerName)) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };   // 막힌 센터뿐 → 미등록
  if(!centerMaps.length) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:(exclMaps[0]&&exclMaps[0].mapId)||null };
  if(centerMaps.length===1) return { matchStatus:'matched', matchedCenterName:centerMaps[0].centerName, region:centerMaps[0].region||'', mapId:centerMaps[0].mapId };
  // 취급점에 센터 여럿인데 기재로도 못 가림 → 미등록
@@ -5162,10 +5169,14 @@ let _depSub = 'unpaid';
 function _depFmtDate(r){ return esc((r.date||'')+(r.time?(' '+String(r.time).slice(0,5)):'')); }
 
 function renderDepositView(){
+ // v18.19: 다시 그려도 보던 위치 유지(매핑 수정·삭제 후 표가 맨 위로 튀던 문제)
+ const _keep={}; try{ document.querySelectorAll('#depositView .dep-scroll').forEach(sc=>{ const k=sc.closest('[id^="depSub-"]'); if(k) _keep[k.id]=sc.scrollTop; }); }catch(_){}
+ const _wy=window.scrollY;
  _depPopulateCenterList();
  _depRenderPeriodSel();
  renderDepDashboard();
  _depRenderSub();
+ try{ Object.keys(_keep).forEach(id=>{ const sc=document.querySelector('#'+id+' .dep-scroll'); if(sc) sc.scrollTop=_keep[id]; }); if(Math.abs(window.scrollY-_wy)>2) window.scrollTo(0,_wy); }catch(_){}
 }
 
 /* 회차 선택 드롭다운 */
@@ -5249,7 +5260,7 @@ function _depRenderSub(){
 }
 // v18.15: bar(도구 줄: 버튼·지역·검색)는 스크롤 상자 '밖'에 둬서 표를 내려도 항상 보이게(표 머리줄은 sticky)
 function _depPanelHTML(title, count, inner, bar){
- return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div>${bar?`<div class="dep-bar">${bar}</div>`:''}<div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
+ return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div>${bar?`<div class="dep-bar">${bar}</div>`:''}<div class="dep-scroll" style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
 }
 
 let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all', _depMapQ='', _depMapRegion='all';
@@ -5458,7 +5469,7 @@ function _depRemoveSample(idsCsv, sample){
   m.removedSamples=m.removedSamples||[]; if(!m.removedSamples.includes(sv)) m.removedSamples.push(sv);
  });
  runMatching(); renderDepositView();
- showToast(`기재내용 "${sv}"을(를) 뺐어요`);
+ showToast(`기재내용 "${sv}"을(를) 뺐어요 — 이 센터로는 다시 연결되지 않아요(다른 센터로 못 찾으면 미등록으로)`);
 }
 function _depDelMappingGroup(idsCsv){
  const ids=String(idsCsv||'').split(',').filter(Boolean);
@@ -17875,9 +17886,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.18&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.19&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.18&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.19&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
