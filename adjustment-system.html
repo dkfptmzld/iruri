@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.27">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.28">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.27">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.28">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.27</title>
+<title>수업기록표 정산 시스템 v18.28</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -269,6 +269,10 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-log-d{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;}
 .dep-log-w{white-space:nowrap;color:var(--text2);font-size:12px;}
 .dep-log-w small{display:block;color:var(--text3);font-size:11px;}
+.dep-rdel{border:none;background:none;cursor:pointer;font-size:14px;opacity:.35;padding:2px 4px;border-radius:6px;}
+.dep-table tr:hover .dep-rdel{opacity:.85;} .dep-rdel:hover{background:var(--red-bg);opacity:1!important;}
+.dep-table tr.dep-rsel td{background:var(--red-bg);}
+@media(max-width:600px){ .dep-rectbl th,.dep-rectbl td{white-space:nowrap;padding:8px 8px;} }
 .dep-undone{display:inline-block;font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:2px 8px;white-space:nowrap;}
 .dep-logtbl tr.is-undone .dep-log-t{color:var(--text3);text-decoration:line-through;}
 @media(max-width:600px){
@@ -4594,7 +4598,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.27';
+const SYSTEM_VERSION='v18.28';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4907,7 +4911,8 @@ const LS_DEPOSIT = 'iruri_deposit_v1';
 let depositDB = {
  mappings: [],  // {mapId,branchKey,branchRaw,centerName,region,gijaeSamples[],isExcluded,note,registeredAt,lastMatchedAt}
  records:  [],  // {depositId,date,time,summary,depositorName,branchRaw,branchKey,amount,matchedCenterName,region,matchStatus,uploadBatchId}
- batches:  []   // {batchId,label,uploadedAt,count}
+ batches:  [],  // {batchId,label,uploadedAt,count}
+ seenCenters: null   // v18.28: 계좌매칭이 이미 본 센터관리 센터('이름|지역'). null = 아직 기준 없음(첫 실행)
 };
 
 function _depUid(prefix){ return (prefix||'id')+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
@@ -4974,7 +4979,54 @@ function _loadDepositDB(){
   depositDB.mappings = Array.isArray(raw.mappings)?raw.mappings:[];
   depositDB.records  = Array.isArray(raw.records) ?raw.records :[];
   depositDB.batches  = Array.isArray(raw.batches) ?raw.batches :[];
+  depositDB.seenCenters = Array.isArray(raw.seenCenters) ? raw.seenCenters : null;
  }
+}
+
+/* ── v18.28: 센터관리에 새로 등록한 센터 → 계좌매칭 매칭 대상에 자동 추가 ──
+   계좌매칭이 한 번 본 센터는 seenCenters 에 기억(기기 간 공유). 매핑 관리에서 일부러 지운 센터는 다시 넣지 않음.
+   첫 실행 때는 지금 센터 명단을 '본 것'으로만 기억(자동 추가 없음) — 빠진 센터는 '➕ 센터 명단 추가'로. */
+/* v18.28: 이미 갈라진 것 정리 — 같은 센터에 취급점 매핑이 있으면 '(입금자명 기준)' 매핑을 거기에 합침(기재·뺀 기재·확인한 이름 모두 옮김) */
+function _depMergeNameOnlyMaps(){
+ const by={};
+ depositDB.mappings.forEach(m=>{ if(m.isExcluded || !m.centerName) return; const k=_depCKey(m.centerName,m.region); (by[k]=by[k]||[]).push(m); });
+ const drop=new Set();
+ Object.values(by).forEach(list=>{
+  const bare=list.filter(m=>!m.branchKey), withB=list.filter(m=>m.branchKey);
+  if(!bare.length || !withB.length) return;
+  const t=withB[0];
+  const uni=(a,b)=>[...new Set([...(a||[]), ...(b||[])].map(x=>String(x)).filter(Boolean))];
+  bare.forEach(m=>{
+   t.gijaeSamples=uni(t.gijaeSamples, m.gijaeSamples);
+   if((m.removedSamples||[]).length) t.removedSamples=uni(t.removedSamples, m.removedSamples);
+   if((m.confirmedNames||[]).length) t.confirmedNames=uni(t.confirmedNames, m.confirmedNames);
+   if(t.removedSamples) t.gijaeSamples=t.gijaeSamples.filter(x=>!t.removedSamples.includes(x));
+   drop.add(m.mapId);
+  });
+ });
+ if(!drop.size) return 0;
+ depositDB.mappings=depositDB.mappings.filter(m=>!drop.has(m.mapId));
+ saveDepositDB();
+ return drop.size;
+}
+function _depCKey(name, region){ return String(name||'').trim()+'|'+String(region||'').trim(); }
+function _depAutoSeedRoster(){
+ const roster=getDepositRoster(); if(!roster.length) return 0;
+ if(!Array.isArray(depositDB.seenCenters)){ depositDB.seenCenters=[...new Set(roster.map(c=>_depCKey(c.name,c.region)))]; saveDepositDB(); return 0; }
+ const seen=new Set(depositDB.seenCenters);
+ const fresh=roster.filter(c=>c.name && !seen.has(_depCKey(c.name,c.region)));
+ if(!fresh.length) return 0;
+ const have=new Set(depositDB.mappings.filter(m=>!m.isExcluded && m.centerName).map(m=>_depCKey(m.centerName,m.region)));
+ // 안전장치: 한꺼번에 10곳 넘게 '새로' 보이면(명단 로딩 중·대량 변경) 자동 추가하지 않고 기억만 — 필요하면 '➕ 센터 명단 추가'
+ const add=fresh.length>10 ? [] : fresh.filter(c=>!have.has(_depCKey(c.name,c.region)));
+ if(add.length){
+  _depLog('map', `센터 자동 추가: ${add.length}곳`, '센터관리에 새로 등록된 센터 → 매칭 대상에 추가\n'+add.slice(0,30).map(c=>_depCName(c.name,c.region)).join(', ')+(add.length>30?` 외 ${add.length-30}곳`:''), '');
+  add.forEach(c=>depositDB.mappings.push({ mapId:_depUid('map'), branchKey:'', branchRaw:'', centerName:c.name, region:c.region||'', gijaeSamples:[], isExcluded:false, note:'auto', registeredAt:new Date().toISOString(), lastMatchedAt:null }));
+ }
+ fresh.forEach(c=>seen.add(_depCKey(c.name,c.region)));
+ depositDB.seenCenters=[...seen];
+ saveDepositDB();
+ return add.length;
 }
 function saveDepositDB(){
  try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }
@@ -4990,6 +5042,11 @@ function findDepositMappings(branchKey){ return depositDB.mappings.filter(m=>m.b
 function upsertDepositMapping({branchKey, branchRaw, centerName, region, gijae, isExcluded, note}){
  // 같은 취급점+센터(+지역) 조합이 있으면 갱신, 없으면 추가(한 취급점에 여러 센터 허용)
  let m=depositDB.mappings.find(x=>x.branchKey===branchKey && x.centerName===(centerName||'') && (x.region||'')===(region||''));
+ // v18.28: 같은 센터의 '(입금자명 기준)'(취급점 없음) 매핑이 있으면 새로 만들지 않고 거기에 취급점을 채움 → 취급점 칩이 '(입금자명 기준)'+'취급점' 두 개로 갈라지지 않게
+ if(!m && branchKey && centerName && !isExcluded){
+  m=depositDB.mappings.find(x=>!x.branchKey && !x.isExcluded && x.centerName===centerName && (x.region||'')===(region||''));
+  if(m){ m.branchKey=branchKey; m.branchRaw=branchRaw||branchKey; }
+ }
  if(!m){
   m={ mapId:_depUid('map'), branchKey, branchRaw:branchRaw||'', centerName:centerName||'', region:region||'',
       gijaeSamples:[], isExcluded:!!isExcluded, note:note||'', registeredAt:new Date().toISOString(), lastMatchedAt:null };
@@ -5508,7 +5565,7 @@ function renderDepUnmatched(){
 function _depDeleteGroup(gi){
  const g=(window._depUnmGroups||[])[gi]; if(!g) return;
  const ids=new Set(g.recs.map(r=>r.depositId));
- showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`<b>${esc(g.core||'')}</b> 묶음의 입금 <b>${ids.size}건</b>을 모두 삭제할까요?<br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 되돌릴 수 없습니다. 한 건만 지우려면 칩의 ✕를 누르세요.</small>`,okText:'모두 삭제',okStyle:'danger',onOk:()=>{
+ showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`<b>${esc(g.core||'')}</b> 묶음의 입금 <b>${ids.size}건</b>을 모두 삭제할까요?<br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 잘못 지웠으면 변경이력에서 되돌릴 수 있어요. 한 건만 지우려면 입금내역 탭에서 지우세요.</small>`,okText:'모두 삭제',okStyle:'danger',onOk:()=>{
   _depLog('rec', `입금 ${ids.size}건 삭제: ${g.core||''}`, g.recs.map(r=>`${_depNormDate(r.date)} ${String(r.time||'').slice(0,5)} · ${r.depositorName||''} · ${fmtDepWon(r.amount)}`).join('\n')+`\n취급점 ${(g.recs[0]||{}).branchRaw||'-'}`, (g.recs[0]||{}).periodId);
   depositDB.records=depositDB.records.filter(r=>!ids.has(r.depositId));
   saveDepositDB(); renderDepositView(); showToast(`입금내역 ${ids.size}건을 삭제했습니다`);
@@ -5771,7 +5828,10 @@ function renderDepRecords(){
  const accts=Object.keys(byAcct).sort();
  if(_depRecAcct!=='all' && !accts.includes(_depRecAcct)) _depRecAcct='all';
  const rs=_depRecAcct==='all' ? all : all.filter(r=>(r.account||'')===_depRecAcct);
- const rows=rs.map(r=>`<tr>
+ // v18.28: 필요 없는 입금 삭제(체크해서 여러 건 / 줄마다 🗑) — 지우면 미등록 입금처·입금현황에서도 빠짐
+ const live=new Set(all.map(r=>r.depositId)); [..._depRecSel].forEach(id=>{ if(!live.has(id)) _depRecSel.delete(id); });
+ const rows=rs.map(r=>`<tr${_depRecSel.has(r.depositId)?' class="dep-rsel"':''}>
+   <td style="width:28px;"><input type="checkbox" class="dep-rchk" data-id="${esc(r.depositId)}" ${_depRecSel.has(r.depositId)?'checked':''} onchange="_depRecToggle(this)" style="width:15px;height:15px;cursor:pointer;"></td>
    <td>${_depFmtDate(r)}</td>
    <td style="color:var(--text3)">${esc(_depMaskAcct(r.account))}</td>
    <td>${esc(r.depositorName)}</td>
@@ -5779,6 +5839,7 @@ function renderDepRecords(){
    <td>${fmtDepWon(r.amount)}</td>
    <td>${_depStatusPill(r)}</td>
    <td>${esc(r.matchedCenterName||'')}${r.region?` <span style="color:var(--text3)">(${esc(r.region)})</span>`:''}</td>
+   <td style="width:34px;text-align:right;"><button type="button" class="dep-rdel" onclick="_depDeleteRecord('${escAttrJS(r.depositId)}')" title="이 입금 삭제">🗑</button></td>
  </tr>`).join('');
  const allAmt=all.reduce((a,r)=>a+(Number(r.amount)||0),0);
  const abtn=(key,label,n,amt)=>`<button class="btn sm${_depRecAcct===key?' primary':''}" onclick="_depSetRecAcct('${escAttrJS(key)}')" style="white-space:nowrap;">${label} <span style="opacity:.75;font-weight:400;">${n}건 · ${fmtDepWon(amt)}</span></button>`;
@@ -5786,8 +5847,40 @@ function renderDepRecords(){
    + abtn('all',`전체${accts.length>1?' ('+accts.length+'개)':''}`,all.length,allAmt)
    + (accts.length>1 ? accts.map(a=>abtn(a,esc(_depMaskAcct(a)),byAcct[a].n,byAcct[a].amt)).join('') : '')
    + `</div>` : '';
- const inner=`<table class="dep-table"><thead><tr><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
- el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건${_depRecAcct!=='all'?' · '+esc(_depMaskAcct(_depRecAcct)):''})`,inner,acctLine);
+ const selBar=`<div id="depRecSelBar" style="padding:7px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);display:${_depRecSel.size?'flex':'none'};align-items:center;gap:8px;flex-wrap:wrap;background:var(--red-bg);">
+    <b id="depRecSelN">${_depRecSel.size}건 선택</b><span id="depRecSelAmt" style="color:var(--text3);"></span><span style="flex:1"></span>
+    <button class="btn sm" onclick="_depRecSelClear()">선택 해제</button>
+    <button class="btn sm" onclick="_depDeleteSelected()" style="color:var(--red);border-color:var(--red);">🗑 선택 삭제</button></div>`;
+ const inner=`<table class="dep-table dep-rectbl"><thead><tr><th style="width:28px;"><input type="checkbox" id="depRecAll" onchange="_depRecToggleAll(this.checked)" title="보이는 입금 모두 선택" style="width:15px;height:15px;cursor:pointer;"></th><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th><th></th></tr></thead><tbody id="depRecBody">${rows||'<tr><td colspan=9 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건${_depRecAcct!=='all'?' · '+esc(_depMaskAcct(_depRecAcct)):''})`,inner,acctLine+selBar);
+ _depRecSelUpdate();
+}
+let _depRecSel=new Set();
+function _depRecSelUpdate(){
+ const n=_depRecSel.size, bar=document.getElementById('depRecSelBar'); if(!bar) return;
+ bar.style.display=n?'flex':'none';
+ const ne=document.getElementById('depRecSelN'); if(ne) ne.textContent=`${n}건 선택`;
+ const amt=depositDB.records.filter(r=>_depRecSel.has(r.depositId)).reduce((a,r)=>a+(Number(r.amount)||0),0);
+ const ae=document.getElementById('depRecSelAmt'); if(ae) ae.textContent=n?`합계 ${fmtDepWon(amt)}`:'';
+ const boxes=[...document.querySelectorAll('#depRecBody .dep-rchk')];
+ const all=document.getElementById('depRecAll'); if(all){ const c=boxes.filter(b=>b.checked).length; all.checked=boxes.length>0 && c===boxes.length; all.indeterminate=c>0 && c<boxes.length; }
+}
+function _depRecToggle(cb){ const id=cb.dataset.id; if(cb.checked) _depRecSel.add(id); else _depRecSel.delete(id); cb.closest('tr')?.classList.toggle('dep-rsel', cb.checked); _depRecSelUpdate(); }
+function _depRecToggleAll(on){ document.querySelectorAll('#depRecBody .dep-rchk').forEach(cb=>{ cb.checked=on; if(on) _depRecSel.add(cb.dataset.id); else _depRecSel.delete(cb.dataset.id); cb.closest('tr')?.classList.toggle('dep-rsel', on); }); _depRecSelUpdate(); }
+function _depRecSelClear(){ _depRecSel.clear(); renderDepRecords(); }
+function _depDeleteSelected(){
+ const recs=depositDB.records.filter(r=>_depRecSel.has(r.depositId)); if(!recs.length){ showToast('선택한 입금이 없어요'); return; }
+ const amt=recs.reduce((a,r)=>a+(Number(r.amount)||0),0);
+ const list=recs.slice(0,8).map(r=>`${_depFmtDate(r)} · ${esc(r.depositorName||'')} · ${fmtDepWon(r.amount)}`).join('<br>')+(recs.length>8?`<br>… 외 ${recs.length-8}건`:'');
+ showConfirm({icon:'🗑️',title:`입금 ${recs.length}건 삭제`,desc:`선택한 입금 <b>${recs.length}건</b>(합계 ${fmtDepWon(amt)})을 삭제할까요?<br><small style="color:var(--text3)">${list}</small><br><small style="color:var(--text3)">미등록 입금처·입금현황에서도 빠져요. 잘못 지웠으면 변경이력에서 되돌릴 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
+  const ids=new Set(recs.map(r=>r.depositId));
+  _depLog('rec', `입금 ${recs.length}건 삭제 (입금내역에서 선택)`, recs.slice(0,40).map(r=>`${_depNormDate(r.date)} ${String(r.time||'').slice(0,5)} · ${r.depositorName||''} · ${fmtDepWon(r.amount)}`).join('\n')+(recs.length>40?`\n… 외 ${recs.length-40}건`:'')+`\n합계 ${fmtDepWon(amt)}`, [...new Set(recs.map(r=>r.periodId))].join(', '));
+  depositDB.records=depositDB.records.filter(r=>!ids.has(r.depositId));   // ①
+  _depRecSel.clear();
+  saveDepositDB();          // ③
+  renderDepositView();      // ④
+  showToast(`입금 ${recs.length}건을 삭제했습니다`);   // ⑤
+ }});
 }
 function _depStatusPill(r){
  if(r.matchStatus==='matched') return '<span class="dep-pill matched">✓ 매칭</span>';
@@ -5894,7 +5987,7 @@ function _depDeleteRecord(depositId){
  const rec=(depositDB.records||[]).find(r=>r.depositId===depositId);
  if(!rec){ showToast('입금내역을 찾을 수 없습니다'); return; }
  const label=`${_depFmtDate(rec)} · ${esc(rec.depositorName||'')} · ${fmtDepWon(rec.amount)}`;
- showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`아래 입금내역을 삭제할까요?<br><small style="color:var(--text3)">${label}</small><br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 되돌릴 수 없습니다.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
+ showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`아래 입금내역을 삭제할까요?<br><small style="color:var(--text3)">${label}</small><br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 잘못 지웠으면 변경이력에서 되돌릴 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
   _depLog('rec', `입금 삭제: ${rec.depositorName||'(기재 없음)'}`, `${_depNormDate(rec.date)} ${String(rec.time||'').slice(0,5)} · ${fmtDepWon(rec.amount)} · 취급점 ${rec.branchRaw||'-'} · 계좌 ${_depMaskAcct(rec.account)}`, rec.periodId);
   depositDB.records = depositDB.records.filter(r=>r.depositId!==depositId); // ①
   saveDepositDB();          // ③
@@ -5924,6 +6017,7 @@ function _depSeedRoster(){
  if(!todo.length){ showToast('이미 모든 센터가 매핑에 있어요'); return; }
  showConfirm({icon:'➕',title:'센터 명단 추가',desc:`센터 관리의 센터 <b>${todo.length}곳</b>을 매핑에 추가합니다.<br><small style="color:var(--text3)">입금자명(기재내용)이 센터명과 닮으면 자동 매칭됩니다. 기존 매핑·입금내역은 유지됩니다.</small>`,okText:'추가',okStyle:'primary',onOk:()=>{
   _depLog('map', `센터 명단 추가: ${todo.length}곳`, todo.slice(0,30).map(c=>_depCName(c.name,c.region)).join(', ')+(todo.length>30?` 외 ${todo.length-30}곳`:''), '');
+  if(Array.isArray(depositDB.seenCenters)){ const sn=new Set(depositDB.seenCenters); todo.forEach(c=>sn.add(_depCKey(c.name,c.region))); depositDB.seenCenters=[...sn]; }
   todo.forEach(c=>{
    depositDB.mappings.push({ mapId:_depUid('map'), branchKey:'', branchRaw:'', centerName:c.name, region:c.region||'', gijaeSamples:[], isExcluded:false, note:'roster', registeredAt:new Date().toISOString(), lastMatchedAt:null });
   });
@@ -6609,6 +6703,7 @@ async function _depSyncMappingsFromGAS(){
     return m;
    });
    depositDB.mappings = data;   // 서버가 정본
+   if(Array.isArray(r.seen) && r.seen.length) depositDB.seenCenters=[...new Set([...(depositDB.seenCenters||[]), ...r.seen])];   // v18.28: 본 센터(합집합). 서버가 비어 있으면 이 기기 기준(첫 실행이면 null 유지)
    try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}  // GAS push 재유발 없이 캐시만
    if(carried) _depSchedulePush(); else _depSetSyncChip('ok');
    return true;
@@ -6628,7 +6723,7 @@ function _depSchedulePush(delay){
  _depGasTimer=setTimeout(async ()=>{
   _depGasTimer=null;
   let ok=true;
-  try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings}); ok=!!(r && r.ok); }catch(_){ ok=false; }
+  try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings, seen:depositDB.seenCenters||undefined}); ok=!!(r && r.ok); }catch(_){ ok=false; }
   if(ok) _depMapPushPending=false;
   const rok=await _depPushRecords();   // v18.25: 바뀐 회차 입금내역도 같이 저장
   _depSetSyncChip(ok && rok ? 'ok' : 'local');   // 실패해도 로컬엔 남음
@@ -6680,7 +6775,9 @@ async function _depSyncFromGAS(){
   const m = await _depSyncMappingsFromGAS();
   const r = await _depSyncRecordsFromGAS();
   const l = await _depSyncLogsFromGAS();   // v18.26: 변경이력
-  if(m || r){ try{ runMatching(); }catch(_){} renderDepositView(); }
+  // v18.28: 서버 매핑을 받은 뒤에만(또는 클라우드 미설정) 새 센터 자동 추가 — 다른 기기가 이미 넣은 걸 중복으로 넣지 않게
+  let sd=0, mg=0; if(m || typeof GAS_URL==='undefined'){ try{ mg=_depMergeNameOnlyMaps(); }catch(_){} try{ sd=_depAutoSeedRoster(); }catch(_){} }
+  if(m || r || sd || mg){ try{ runMatching(); }catch(_){} renderDepositView(); if(sd) showToast(`센터관리에 새로 등록된 센터 ${sd}곳을 계좌매칭에 추가했어요`); }
   else if(l && _depSub==='log') renderDepLog();
  } finally { _depSyncing=false; }
 }
@@ -6696,7 +6793,7 @@ async function _depSavePeriod(){
  if(!n && !_depMapPushPending){ _depSetSyncChip('ok'); showToast('이미 모두 클라우드에 저장돼 있어요'); return; }
  clearTimeout(_depGasTimer); _depSetSyncChip('save'); showToast('클라우드 저장 중…');
  let ok=true;
- try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings}); ok=!!(r&&r.ok); }catch(_){ ok=false; }
+ try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings, seen:depositDB.seenCenters||undefined}); ok=!!(r&&r.ok); }catch(_){ ok=false; }
  if(ok) _depMapPushPending=false;
  const rok=await _depPushRecords();
  _depSetSyncChip(ok&&rok?'ok':'local');
@@ -18362,9 +18459,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.27&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.28&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.27&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.28&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
