@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.40">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.41">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.40">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.41">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.40</title>
+<title>수업기록표 정산 시스템 v18.41</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -271,7 +271,22 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-log-w{white-space:nowrap;color:var(--text2);font-size:12px;}
 .dep-log-w small{display:block;color:var(--text3);font-size:11px;}
 .dep-table tr.dep-rsel td{background:var(--red-bg);}
-@media(max-width:600px){ .dep-rectbl th,.dep-rectbl td{white-space:nowrap;padding:8px 8px;} }
+@media(max-width:600px){
+ .dep-rectbl thead{display:none;}
+ .dep-rectbl tr{display:grid;grid-template-columns:22px 1fr auto;grid-template-areas:"c n m" ". d a" ". b b" ". s x";gap:5px 10px;padding:11px 12px;border-bottom:1px solid var(--border);align-items:center;}
+ .dep-rectbl td{border:none!important;padding:0!important;}
+ .dep-rectbl td.rc{grid-area:c;} .dep-rectbl td.rn{grid-area:n;font-size:13.5px;} .dep-rectbl td.rm{grid-area:m;font-size:14px;}
+ .dep-rectbl td.rd{grid-area:d;font-size:12px;color:var(--text2);} .dep-rectbl td.ra{grid-area:a;font-size:11.5px;text-align:right;}
+ .dep-rectbl td.rb{grid-area:b;font-size:12px;}
+ .dep-rectbl td.rs{grid-area:s;display:flex!important;align-items:center;gap:6px;flex-wrap:wrap;}
+ .dep-rectbl td.rk{display:none;}
+ .dep-rectbl td.rx{grid-area:x;}
+ .dep-rectbl tr td[colspan]{grid-column:1/-1;}
+ .dep-rectbl tr td, .dep-unmtbl tr td{background:transparent!important;}
+ .dep-rectbl tr.dep-rsel{background:var(--red-bg);}
+ .dep-rectbl tr:hover, .dep-unmtbl tr:hover{background:var(--surface2);}
+ .dep-rectbl tr.dep-rsel:hover{background:var(--red-bg);}
+}
 .dcp-pop{position:fixed;z-index:100000;display:none;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:4px;text-align:left;}
 .dcp-it{padding:7px 10px;border-radius:7px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .dcp-it:hover,.dcp-it.on{background:var(--blue-bg);color:var(--blue);}
@@ -303,6 +318,8 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-tbtn.danger:hover{background:var(--red-bg);}
 .dep-tbtn.sm{height:28px;padding:0 11px;font-size:12px;border-radius:8px;}
 .dep-unm-t{font-weight:700;color:var(--text);}
+.dep-rk-m{display:none;font-size:12px;color:var(--text);}
+@media(max-width:600px){ .dep-rk-m{display:inline;} }
 @media(max-width:600px){
  .dep-unmtbl thead{display:none;}
  .dep-unmtbl tr{display:grid;grid-template-columns:1fr auto;grid-template-areas:"t t" "d a" "b x";gap:6px 10px;padding:12px;border-bottom:1px solid var(--border);}
@@ -4718,7 +4735,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.40';
+const SYSTEM_VERSION='v18.41';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6176,6 +6193,46 @@ function _depMapEditDelete(){
 let _depRecAcct='all';   // v18.22: 입금내역 계좌별 보기('all' | account)
 try{ _depRecAcct=sessionStorage.getItem('iruri_dep_acct')||'all'; }catch(_){}
 function _depSetRecAcct(a){ _depRecAcct=a; try{ sessionStorage.setItem('iruri_dep_acct',a); }catch(_){} renderDepRecords(); }
+/* v18.41: 입금내역 — 다른 탭과 같은 도구 줄(요약 · 상태 · 정렬 · 검색) + 계좌 · 선택 삭제 */
+let _depRecStatus='all', _depRecSort='recent', _depRecQ='';
+function _depSetRecStatus(k){ _depRecStatus=k; renderDepRecords(); }
+function _depSetRecSort(k){ _depRecSort=k; renderDepRecords(); }
+function _depRecSearch(v){ _depRecQ=v; _depRenderRecBody(); }   // 입력창 유지(한글 조합 안 깨짐)
+function _depRecView(){
+ const all=_depPeriodRecs();
+ let rs=_depRecAcct==='all' ? all : all.filter(r=>(r.account||'')===_depRecAcct);
+ if(_depRecStatus!=='all') rs=rs.filter(r=>(r.matchStatus||'unmatched')===_depRecStatus);
+ const q=String(_depRecQ||'').trim().toLowerCase();
+ if(q) rs=rs.filter(r=>[r.depositorName,r.branchRaw,r.matchedCenterName,r.region,_depMaskAcct(r.account),String(r.amount),r.date].join(' ').toLowerCase().includes(q));
+ const key=r=>(r.date||'')+' '+(r.time||'');
+ rs=rs.slice().sort(_depRecSort==='amount' ? (x,y)=>(Number(y.amount)||0)-(Number(x.amount)||0) || key(y).localeCompare(key(x)) : (x,y)=>key(y).localeCompare(key(x)));
+ return rs;
+}
+function _depRecBodyHTML(rs){
+ const rows=rs.map(r=>{ const cn=r.matchedCenterName?`${escH(r.matchedCenterName)}${r.region?` <span style="color:var(--text3)">(${escH(r.region)})</span>`:''}`:'';
+  return `<tr${_depRecSel.has(r.depositId)?' class="dep-rsel"':''}>
+   <td class="rc" style="width:28px;"><input type="checkbox" class="dep-rchk" data-id="${escH(r.depositId)}" ${_depRecSel.has(r.depositId)?'checked':''} onchange="_depRecToggle(this)" style="width:15px;height:15px;cursor:pointer;"></td>
+   <td class="rd" style="white-space:nowrap;font-variant-numeric:tabular-nums;">${_depFmtDate(r)}</td>
+   <td class="ra" style="color:var(--text3);white-space:nowrap;">${escH(_depMaskAcct(r.account))}</td>
+   <td class="rn" style="font-weight:600;">${escH(r.depositorName||'')}</td>
+   <td class="rb" style="color:var(--text2);">${escH(r.branchRaw||'')}</td>
+   <td class="rm" style="text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;">${fmtDepWon(r.amount)}</td>
+   <td class="rs">${_depStatusPill(r)}${cn?`<span class="dep-rk-m">→ ${cn}</span>`:''}</td>
+   <td class="rk">${cn}</td>
+   <td class="rx" style="white-space:nowrap;text-align:right;"><button class="dep-tbtn danger sm" onclick="_depDeleteRecord('${escAttrJS(r.depositId)}')" title="이 입금 삭제">삭제</button></td>
+ </tr>`; }).join('');
+ return rows || `<tr><td colspan=9 class="dep-empty">${_depPeriodRecs().length?'조건에 맞는 입금이 없습니다.':'입금내역이 없습니다.'}</td></tr>`;
+}
+function _depRecSummary(rs){
+ const amt=rs.reduce((a,r)=>a+(Number(r.amount)||0),0);
+ return `입금 <b style="color:var(--text)">${rs.length}건</b> <span style="color:var(--text3)">· 합계 ${fmtDepWon(amt)}</span>`;
+}
+function _depRenderRecBody(){
+ const rs=_depRecView();
+ const tb=document.getElementById('depRecBody'); if(tb) tb.innerHTML=_depRecBodyHTML(rs);
+ const sm=document.getElementById('depRecSum'); if(sm) sm.innerHTML=_depRecSummary(rs);
+ _depRecSelUpdate();
+}
 function renderDepRecords(){
  const all=_depPeriodRecs();
  const el=document.getElementById('depSub-records'); if(!el) return;
@@ -6183,32 +6240,31 @@ function renderDepRecords(){
  const byAcct={}; all.forEach(r=>{ const a=r.account||''; const o=byAcct[a]=byAcct[a]||{n:0,amt:0}; o.n++; o.amt+=Number(r.amount)||0; });
  const accts=Object.keys(byAcct).sort();
  if(_depRecAcct!=='all' && !accts.includes(_depRecAcct)) _depRecAcct='all';
- const rs=_depRecAcct==='all' ? all : all.filter(r=>(r.account||'')===_depRecAcct);
- // v18.28: 필요 없는 입금 삭제(체크해서 여러 건 / 줄마다 🗑) — 지우면 미등록 입금처·입금현황에서도 빠짐
  const live=new Set(all.map(r=>r.depositId)); [..._depRecSel].forEach(id=>{ if(!live.has(id)) _depRecSel.delete(id); });
- const rows=rs.map(r=>`<tr${_depRecSel.has(r.depositId)?' class="dep-rsel"':''}>
-   <td style="width:28px;"><input type="checkbox" class="dep-rchk" data-id="${esc(r.depositId)}" ${_depRecSel.has(r.depositId)?'checked':''} onchange="_depRecToggle(this)" style="width:15px;height:15px;cursor:pointer;"></td>
-   <td>${_depFmtDate(r)}</td>
-   <td style="color:var(--text3)">${esc(_depMaskAcct(r.account))}</td>
-   <td>${esc(r.depositorName)}</td>
-   <td style="color:var(--text2)">${esc(r.branchRaw)}</td>
-   <td>${fmtDepWon(r.amount)}</td>
-   <td>${_depStatusPill(r)}</td>
-   <td>${esc(r.matchedCenterName||'')}${r.region?` <span style="color:var(--text3)">(${esc(r.region)})</span>`:''}</td>
-   <td style="white-space:nowrap;text-align:right;"><button class="btn sm" onclick="_depDeleteRecord('${escAttrJS(r.depositId)}')" style="color:var(--red);border-color:var(--red);" title="이 입금 삭제">삭제</button></td>
- </tr>`).join('');
+ const rs=_depRecView();
+ const cnt=k=>all.filter(r=>(_depRecAcct==='all'||(r.account||'')===_depRecAcct) && (k==='all'||(r.matchStatus||'unmatched')===k)).length;
+ const fb=(key,label)=>`<button class="btn sm${_depRecStatus===key?' primary':''}" onclick="_depSetRecStatus('${key}')">${label} <span style="opacity:.7;font-weight:400;">${cnt(key)}</span></button>`;
+ const sb=(key,label)=>`<button class="btn sm${_depRecSort===key?' primary':''}" onclick="_depSetRecSort('${key}')">${label}</button>`;
+ const head=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span id="depRecSum" style="font-size:12.5px;color:var(--text2)">${_depRecSummary(rs)}</span>
+    <span style="flex:1"></span>
+    ${fb('all','전체')} ${fb('matched','✅ 매칭')} ${fb('unmatched','⚠ 미등록')} ${fb('excluded','제외')}
+    <span style="width:1px;height:18px;background:var(--border);"></span>
+    ${sb('recent','🕒 최근순')} ${sb('amount','💰 금액 큰 순')}
+    <input value="${escH(_depRecQ)}" oninput="_depRecSearch(this.value)" placeholder="기재·취급점·센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
+  </div>`;
  const allAmt=all.reduce((a,r)=>a+(Number(r.amount)||0),0);
  const abtn=(key,label,n,amt)=>`<button class="btn sm${_depRecAcct===key?' primary':''}" onclick="_depSetRecAcct('${escAttrJS(key)}')" style="white-space:nowrap;">${label} <span style="opacity:.75;font-weight:400;">${n}건 · ${fmtDepWon(amt)}</span></button>`;
- const acctLine=accts.length? `<div style="padding:9px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;gap:6px;"><span style="color:var(--text3);">계좌</span>`
-   + abtn('all',`전체${accts.length>1?' ('+accts.length+'개)':''}`,all.length,allAmt)
-   + (accts.length>1 ? accts.map(a=>abtn(a,esc(_depMaskAcct(a)),byAcct[a].n,byAcct[a].amt)).join('') : '')
+ const acctLine=accts.length>1 ? `<div style="padding:8px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;gap:6px;"><span style="color:var(--text3);">계좌</span>`
+   + abtn('all',`전체 (${accts.length}개)`,all.length,allAmt)
+   + accts.map(a=>abtn(a,escH(_depMaskAcct(a)),byAcct[a].n,byAcct[a].amt)).join('')
    + `</div>` : '';
  const selBar=`<div id="depRecSelBar" style="padding:7px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);display:${_depRecSel.size?'flex':'none'};align-items:center;gap:8px;flex-wrap:wrap;background:var(--red-bg);">
     <b id="depRecSelN">${_depRecSel.size}건 선택</b><span id="depRecSelAmt" style="color:var(--text3);"></span><span style="flex:1"></span>
-    <button class="btn sm" onclick="_depRecSelClear()">선택 해제</button>
-    <button class="btn sm" onclick="_depDeleteSelected()" style="color:var(--red);border-color:var(--red);">선택 삭제</button></div>`;
- const inner=`<table class="dep-table dep-rectbl"><thead><tr><th style="width:28px;"><input type="checkbox" id="depRecAll" onchange="_depRecToggleAll(this.checked)" title="보이는 입금 모두 선택" style="width:15px;height:15px;cursor:pointer;"></th><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th><th></th></tr></thead><tbody id="depRecBody">${rows||'<tr><td colspan=9 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
- el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건${_depRecAcct!=='all'?' · '+esc(_depMaskAcct(_depRecAcct)):''})`,inner,acctLine+selBar);
+    <button class="dep-tbtn sm" onclick="_depRecSelClear()">선택 해제</button>
+    <button class="dep-tbtn danger sm" onclick="_depDeleteSelected()">선택 삭제</button></div>`;
+ const inner=`<table class="dep-table dep-rectbl"><thead><tr><th style="width:28px;"><input type="checkbox" id="depRecAll" onchange="_depRecToggleAll(this.checked)" title="보이는 입금 모두 선택" style="width:15px;height:15px;cursor:pointer;"></th><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th style="text-align:right;">금액</th><th>상태</th><th>매칭 센터</th><th></th></tr></thead><tbody id="depRecBody">${_depRecBodyHTML(rs)}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('입금내역',`(${all.length}건${_depRecAcct!=='all'?' · '+escH(_depMaskAcct(_depRecAcct)):''})`,inner,head+acctLine+selBar);
  _depRecSelUpdate();
 }
 let _depRecSel=new Set();
@@ -18856,9 +18912,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.40&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.41&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.40&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.41&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
