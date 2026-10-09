@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.11">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.12">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.11">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.12">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.11</title>
+<title>수업기록표 정산 시스템 v18.12</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4541,7 +4541,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.11';
+const SYSTEM_VERSION='v18.12';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5204,7 +5204,7 @@ function _depPanelHTML(title, count, inner){
  return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div><div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
 }
 
-let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all', _depMapQ='';
+let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all', _depMapQ='', _depMapRegion='all';
 function _depSetStatusFilter(k){ _depStatusFilter=k; renderDepUnpaid(); }
 function _depSetRegionFilter(r){ _depRegionFilter=r; renderDepUnpaid(); }
 function _depStatusSearch(v){
@@ -5330,6 +5330,7 @@ function renderDepUnmatched(){
 function _depMapSearch(v){
  _depMapQ=v; _depRenderMapBody();   // 입력창 DOM 유지(한글 조합 안 깨짐), tbody·카운트만 갱신
 }
+function _depSetMapRegion(r){ _depMapRegion=r; renderDepMappings(); }
 function _depMapRowsHTML(maps){
  return maps.map(m=>`<tr>
    <td style="color:var(--text2)">${m.branchKey?esc(m.branchKey):'<span style="color:var(--text3)">(입금자명 기준)</span>'}</td>
@@ -5339,35 +5340,46 @@ function _depMapRowsHTML(maps){
    <td style="white-space:nowrap;"><button class="btn sm" onclick="_depEditMapping('${esc(m.mapId)}')">수정</button> <button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
  </tr>`).join('');
 }
-function _depRenderMapBody(){
- const tb=document.getElementById('depMapBody'); if(!tb) return;
+// 지역+검색어 필터 공통
+function _depMapFiltered(){
  const all=getDepositMappings().slice().sort((a,b)=>String(a.centerName||'~').localeCompare(String(b.centerName||'~'),'ko')||String(a.branchKey).localeCompare(String(b.branchKey)));
  const q=_depMapQ.trim();
- const maps=!q?all:all.filter(m=>
-    (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
-    String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q)));
- const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
+ const maps=all.filter(m=>
+   (_depMapRegion==='all' || (m.region||'')===_depMapRegion) &&
+   (!q || (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
+          String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q))));
+ return { all, maps, q, filtered:(q || _depMapRegion!=='all') };
+}
+function _depRenderMapBody(){
+ const tb=document.getElementById('depMapBody'); if(!tb) return;
+ const {all, maps, q, filtered}=_depMapFiltered();
+ const emptyMsg = filtered ? `조건에 맞는 매핑이 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
  tb.innerHTML = _depMapRowsHTML(maps) || `<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`;
  const cnt=document.getElementById('depMapCount');
- if(cnt) cnt.textContent = q ? `(${maps.length} / ${all.length}개)` : `(${all.length}개)`;
+ if(cnt) cnt.textContent = filtered ? `(${maps.length} / ${all.length}개)` : `(${all.length}개)`;
 }
 function renderDepMappings(){
  const el=document.getElementById('depSub-mappings'); if(!el) return;
- const all=getDepositMappings().slice().sort((a,b)=>String(a.centerName||'~').localeCompare(String(b.centerName||'~'),'ko')||String(a.branchKey).localeCompare(String(b.branchKey)));
- const q=_depMapQ.trim();
- const maps=!q?all:all.filter(m=>
-    (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
-    String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q)));
- const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
- const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+ const {all, maps, q, filtered}=_depMapFiltered();
+ // 지역 목록: 매핑·명단에 존재하는 지역
+ const regionSet=new Set([...all.map(m=>m.region||''), ...getDepositRoster().map(c=>c.region||'')].filter(Boolean));
+ const regions=[...regionSet].sort((a,b)=>a.localeCompare(b,'ko'));
+ if(_depMapRegion!=='all' && !regions.includes(_depMapRegion)) _depMapRegion='all';
+ const rbtn=(key,label)=>`<button class="btn sm${_depMapRegion===key?' primary':''}" onclick="_depSetMapRegion('${key}')">${label}</button>`;
+ const emptyMsg = filtered ? `조건에 맞는 매핑이 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
+ const bar=`<div style="padding:9px 12px 6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
     <button class="btn sm" onclick="_depSeedRoster()" title="센터 관리의 모든 센터명을 매핑에 추가 — 입금자명(기재내용) 기준 매칭의 기준 목록">➕ 센터 명단 추가</button>
     <button class="btn sm" onclick="_depOpenConflict()" title="같은 취급점에 서로 다른 입금자명이 섞여 오매칭이 의심되는 경우 점검·분리">🔎 취급점 점검</button>
     <span style="flex:1"></span>
     <input id="depMapSearch" value="${esc(q)}" oninput="_depMapSearch(this.value)" placeholder="센터·취급점·기재 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:160px;">
+   </div>
+   <div style="padding:0 12px 9px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
+    ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
    </div>`;
  const inner=bar+`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody id="depMapBody">${_depMapRowsHTML(maps)||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
- const countHTML = `<span id="depMapCount">${q?`(${maps.length} / ${all.length}개)`:`(${all.length}개)`}</span>`;
+ const countHTML = `<span id="depMapCount">${filtered?`(${maps.length} / ${all.length}개)`:`(${all.length}개)`}</span>`;
  el.innerHTML=_depPanelHTML('매핑 관리',countHTML,inner);
 }
 
@@ -17712,9 +17724,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.11&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.12&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.11&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.12&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
