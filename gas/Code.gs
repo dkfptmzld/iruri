@@ -143,7 +143,7 @@ function doPost(e) {
     if (action === 'deleteJournalRecord')   return response(deleteJournalRecord(body.id));            // 계획서 일지 삭제
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
-    if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings));         // 계좌매칭: 매핑 저장(전체 교체)
+    if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings, body.seen));         // 계좌매칭: 매핑 저장(전체 교체)
     if (action === 'addDepositLogs')        return response(depAddLogs(body.logs));                   // 계좌매칭: 변경이력 추가(v18.26, 같은 id는 한 번만)
     if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records, body.periods)); // 계좌매칭: 회차 입금내역 저장(periods={회차:[...]} 여러 회차 한 번에)
 
@@ -1538,10 +1538,31 @@ function depGetMappings() {
       note: String(r[7] || ''), registeredAt: String(r[8] || ''), lastMatchedAt: String(r[9] || '')
     });
   }
-  return { ok: true, data: out };
+  return { ok: true, data: out, seen: _depGetSeen() };
 }
 
-function depSaveMappings(mappings) {
+/* v18.28: 계좌매칭이 이미 본 센터관리 센터 목록('이름|지역') — 새로 등록된 센터만 자동 추가하고, 일부러 지운 센터는 다시 안 넣기 위함.
+ *  합집합으로만 늘어남(기기 간 충돌 없음). '계좌매칭_설정' 시트 A1=키, B1=JSON */
+var DEP_META_SHEET = '계좌매칭_설정';
+function _depMetaSheet() {
+  var ss = ss_(), sh = ss.getSheetByName(DEP_META_SHEET);
+  if (!sh) { sh = ss.insertSheet(DEP_META_SHEET); sh.getRange(1, 1, 1, 2).setNumberFormat('@').setValues([['seenCenters', '[]']]); }
+  return sh;
+}
+function _depGetSeen() {
+  try { var v = _depMetaSheet().getRange(1, 2).getDisplayValues()[0][0]; var a = JSON.parse(v || '[]'); return Array.isArray(a) ? a : []; }
+  catch (e) { return []; }
+}
+function _depAddSeen(list) {
+  if (!Array.isArray(list) || !list.length) return;
+  var cur = _depGetSeen(), have = {}, changed = false;
+  cur.forEach(function (k) { have[k] = 1; });
+  list.forEach(function (k) { k = String(k || ''); if (k && !have[k]) { have[k] = 1; cur.push(k); changed = true; } });
+  if (changed) _depMetaSheet().getRange(1, 1, 1, 2).setNumberFormat('@').setValues([['seenCenters', JSON.stringify(cur)]]);
+}
+
+function depSaveMappings(mappings, seen) {
+  try { _depAddSeen(seen); } catch (e) {}
   const sh = _depMapSheet();
   sh.clearContents();
   mappings = mappings || [];
