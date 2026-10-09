@@ -95,6 +95,7 @@ function doGet(e) {
     if (action === 'getDepositMappings')   return response(depGetMappings());                                                    // 계좌매칭: 매핑 조회
     if (action === 'getDepositRecords')    return response(depGetRecords());                                                     // 계좌매칭: 회차 입금내역 조회
     if (action === 'getDepositLogs')       return response(depGetLogs(p.limit));                                                 // 계좌매칭: 변경이력 조회(v18.26)
+    if (action === 'getDepositLogUndo')    return response(depGetLogUndo(p.id));                                                 // 계좌매칭: 되돌리기 정보(v18.27)
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -1637,14 +1638,20 @@ function depSaveRecords(period, records, periods) {
 
 /* ════════ 계좌매칭 — 변경이력 (v18.26) ════════
  *  센터 등록·매핑 수정/삭제·기재 빼기·입금 삭제·업로드·회차 변경을 한 줄씩 쌓는다(추가만, 덮어쓰기 없음).
+ *  v18.27: 줄마다 '되돌리기 정보'(바뀌기 전 매핑·지운 입금)를 함께 보관 → 다른 기기에서도 되돌리기 가능.
  *  앱이 만든 id로 중복을 걸러서, 같은 기록을 여러 번 보내도 한 번만 남는다. 잠금은 doPost 가 처리. */
 var DEP_LOG_SHEET = '계좌매칭_변경이력';
-var DEP_LOG_HEADERS = ['id','at','by','dev','kind','title','detail','period'];
+// v18.27: ref(되돌린 원본 id)·hasUndo + 되돌리기 정보(JSON)를 45,000자씩 undo1~undo8 칸에 나눠 보관(셀 한도 50,000자)
+var DEP_LOG_BASE = ['id','at','by','dev','kind','title','detail','period','ref','hasUndo'];
+var DEP_LOG_UNDO_COLS = 8, DEP_LOG_CHUNK = 45000;
+var DEP_LOG_HEADERS = DEP_LOG_BASE.concat(['undo1','undo2','undo3','undo4','undo5','undo6','undo7','undo8']);
 
 function _depLogSheet() {
   var ss = ss_();
   var sh = ss.getSheetByName(DEP_LOG_SHEET);
-  if (!sh) { sh = ss.insertSheet(DEP_LOG_SHEET); var h = sh.getRange(1, 1, 1, DEP_LOG_HEADERS.length); h.setNumberFormat('@'); h.setValues([DEP_LOG_HEADERS]); }
+  if (!sh) sh = ss.insertSheet(DEP_LOG_SHEET);
+  var h = sh.getRange(1, 1, 1, DEP_LOG_HEADERS.length);
+  if (String(h.getDisplayValues()[0][DEP_LOG_HEADERS.length - 1]) !== DEP_LOG_HEADERS[DEP_LOG_HEADERS.length - 1]) { h.setNumberFormat('@'); h.setValues([DEP_LOG_HEADERS]); }   // 새 시트·예전 머리줄 → 갱신
   return sh;
 }
 
@@ -1653,12 +1660,26 @@ function depGetLogs(limit) {
   var sh = _depLogSheet(), n = sh.getLastRow();
   if (n < 2) return { ok: true, data: [] };
   var start = Math.max(2, n - limit + 1);
-  var v = sh.getRange(start, 1, n - start + 1, DEP_LOG_HEADERS.length).getDisplayValues(), out = [];
+  var v = sh.getRange(start, 1, n - start + 1, DEP_LOG_BASE.length).getDisplayValues(), out = [];   // 되돌리기 정보(큰 칸)는 빼고 읽음
   for (var i = 0; i < v.length; i++) {
     var r = v[i]; if (!r[0]) continue;
-    out.push({ id: r[0], at: r[1], by: r[2], dev: r[3], kind: r[4], title: r[5], detail: r[6], period: r[7] });
+    out.push({ id: r[0], at: r[1], by: r[2], dev: r[3], kind: r[4], title: r[5], detail: r[6], period: r[7], ref: r[8], hasUndo: r[9] });
   }
   return { ok: true, data: out };
+}
+
+function depGetLogUndo(id) {
+  id = String(id || ''); if (!id) return { ok: false, message: 'id 없음' };
+  var sh = _depLogSheet(), n = sh.getLastRow();
+  if (n < 2) return { ok: false, message: '기록 없음' };
+  var ids = sh.getRange(2, 1, n - 1, 1).getDisplayValues();
+  for (var i = ids.length - 1; i >= 0; i--) {
+    if (ids[i][0] !== id) continue;
+    var parts = sh.getRange(i + 2, DEP_LOG_BASE.length + 1, 1, DEP_LOG_UNDO_COLS).getDisplayValues()[0];
+    var txt = parts.join('');
+    return txt ? { ok: true, undo: txt } : { ok: false, message: '되돌리기 정보 없음' };
+  }
+  return { ok: false, message: '기록 없음' };
 }
 
 function depAddLogs(logs) {
@@ -1670,8 +1691,12 @@ function depAddLogs(logs) {
   var rows = [];
   logs.forEach(function (l) {
     var id = String(l.id); if (have[id]) return; have[id] = 1;
+    var u = l.undo ? JSON.stringify(l.undo) : '', chunks = [];
+    if (u.length > DEP_LOG_CHUNK * DEP_LOG_UNDO_COLS) u = '';   // 너무 크면(약 36만 자 초과) 되돌리기 정보는 저장 안 함
+    for (var c = 0; c < DEP_LOG_UNDO_COLS; c++) chunks.push(u.slice(c * DEP_LOG_CHUNK, (c + 1) * DEP_LOG_CHUNK));
     rows.push([ id, String(l.at || ''), String(l.by || ''), String(l.dev || ''), String(l.kind || ''),
-                String(l.title || '').slice(0, 500), String(l.detail || '').slice(0, 5000), String(l.period || '') ]);
+                String(l.title || '').slice(0, 500), String(l.detail || '').slice(0, 5000), String(l.period || ''),
+                String(l.ref || ''), u ? '1' : '' ].concat(chunks));
   });
   if (rows.length) {
     var rg = sh.getRange(Math.max(n, 1) + 1, 1, rows.length, DEP_LOG_HEADERS.length);

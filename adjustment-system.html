@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.26">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.27">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.26">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.27">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.26</title>
+<title>수업기록표 정산 시스템 v18.27</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -269,12 +269,16 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-log-d{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;}
 .dep-log-w{white-space:nowrap;color:var(--text2);font-size:12px;}
 .dep-log-w small{display:block;color:var(--text3);font-size:11px;}
+.dep-undone{display:inline-block;font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:2px 8px;white-space:nowrap;}
+.dep-logtbl tr.is-undone .dep-log-t{color:var(--text3);text-decoration:line-through;}
 @media(max-width:600px){
  .dep-logtbl thead{display:none;}
  .dep-logtbl tr{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;padding:9px 10px;border-bottom:1px solid var(--border);}
  .dep-logtbl td{border:none!important;padding:0!important;}
  .dep-logtbl td.lw{grid-column:1/-1;} .dep-logtbl td.lw .dep-log-w small{display:inline;margin-left:6px;}
  .dep-logtbl td.lk{grid-row:2;} .dep-logtbl td.lc{grid-row:2;} .dep-logtbl td.lp{display:none;}
+ .dep-logtbl td.lu{grid-column:1/-1;text-align:left!important;}
+ .dep-logtbl td.lu:empty{display:none;}
 }
 .mgr-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
 .mgr-sec-head{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
@@ -4590,7 +4594,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.26';
+const SYSTEM_VERSION='v18.27';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5311,14 +5315,23 @@ function _depLogFiltered(){
 }
 function _depLogBodyHTML(list){
  const unsent=new Set(_depLogUnsent);
- const rows=list.slice(0,_depLogLimit).map(l=>`<tr>
+ const rows=list.slice(0,_depLogLimit).map(l=>`<tr${_depUndoneBy(l.id)?' class="is-undone"':''}>
    <td class="lw" style="vertical-align:top;"><div class="dep-log-w">${_depFmtLogAt(l.at)}<small>${esc(l.by||'')}${l.dev?' · '+esc(l.dev):''}${unsent.has(l.id)?' · ⏳ 전송 대기':''}</small></div></td>
    <td class="lk" style="vertical-align:top;"><span class="dep-lk ${esc(l.kind||'')}">${esc(_DEP_LOG_KINDS[l.kind]||l.kind||'기타')}</span></td>
    <td class="lc" style="vertical-align:top;min-width:0;"><div class="dep-log-t">${esc(l.title||'')}</div>${l.detail?`<div class="dep-log-d">${esc(l.detail)}</div>`:''}</td>
    <td style="vertical-align:top;white-space:nowrap;color:var(--text3);font-size:12px;" class="lp">${esc(l.period||'')}</td>
+   <td class="lu" style="vertical-align:top;white-space:nowrap;text-align:right;">${_depUndoCell(l)}</td>
   </tr>`).join('');
- const more=list.length>_depLogLimit?`<tr><td colspan=4 style="text-align:center;"><button class="btn sm" onclick="_depLogLimit+=300;_depRenderLogBody()">더 보기 (${list.length-_depLogLimit}건 남음)</button></td></tr>`:'';
- return rows ? rows+more : `<tr><td colspan=4 class="dep-empty">${_depLogs.length?'조건에 맞는 기록이 없습니다.':'아직 기록이 없어요. 센터 등록·매핑 수정·입금 삭제·업로드를 하면 여기에 쌓여요.'}</td></tr>`;
+ const more=list.length>_depLogLimit?`<tr><td colspan=5 style="text-align:center;"><button class="btn sm" onclick="_depLogLimit+=300;_depRenderLogBody()">더 보기 (${list.length-_depLogLimit}건 남음)</button></td></tr>`:'';
+ return rows ? rows+more : `<tr><td colspan=5 class="dep-empty">${_depLogs.length?'조건에 맞는 기록이 없습니다.':'아직 기록이 없어요. 센터 등록·매핑 수정·입금 삭제·업로드를 하면 여기에 쌓여요.'}</td></tr>`;
+}
+function _depUndoCell(l){
+ const ub=_depUndoneBy(l.id);
+ if(ub) return `<span class="dep-undone" title="${esc(_depFmtLogAt(ub.at).replace(/<[^>]+>/g,''))} · ${esc(ub.by||'')}">↩ 되돌림</span>`;
+ if(l.undo || l.hasUndo) return l.ref
+  ? `<button class="btn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="되돌린 것을 다시 원래대로(다시 하기)">↪ 다시 하기</button>`
+  : `<button class="btn sm" onclick="_depUndo('${escAttrJS(l.id)}')" title="이 동작 전으로 되돌리기">↩ 되돌리기</button>`;
+ return '';
 }
 function _depRenderLogBody(){
  const list=_depLogFiltered();
@@ -5337,7 +5350,7 @@ function renderDepLog(){
     ${_depLogUnsent.length?`<span style="font-size:11.5px;color:var(--amber);" title="클라우드에 아직 못 올린 기록 — 연결되면 자동으로 올라가요">⏳ 전송 대기 ${_depLogUnsent.length}건</span>`:''}
     <input value="${esc(_depLogQ)}" oninput="_depLogSearch(this.value)" placeholder="센터·기재·사람 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
    </div>`;
- const inner=`<table class="dep-table dep-logtbl"><thead><tr><th style="width:120px;">일시 · 누가</th><th style="width:84px;">구분</th><th>내용</th><th style="width:80px;">회차</th></tr></thead><tbody id="depLogBody">${_depLogBodyHTML(list)}</tbody></table>`;
+ const inner=`<table class="dep-table dep-logtbl"><thead><tr><th style="width:120px;">일시 · 누가</th><th style="width:84px;">구분</th><th>내용</th><th style="width:80px;">회차</th><th style="width:96px;"></th></tr></thead><tbody id="depLogBody">${_depLogBodyHTML(list)}</tbody></table>`;
  el.innerHTML=_depPanelHTML('변경이력',`<span id="depLogCount">(${list.length}${list.length!==_depLogs.length?' / '+_depLogs.length:''}건)</span>`,inner,bar);
 }
 // v18.15: bar(도구 줄: 버튼·지역·검색)는 스크롤 상자 '밖'에 둬서 표를 내려도 항상 보이게(표 머리줄은 sticky)
@@ -5677,6 +5690,7 @@ function _depDoImport(){
  if(!txt){ showToast('붙여넣을 데이터가 없어요'); return; }
  let arr; try{ arr=JSON.parse(txt); }catch(e){ showToast('형식 오류 — JSON을 그대로 붙여넣으세요'); return; }
  if(!Array.isArray(arr)){ showToast('배열([ ]) 형식이어야 해요'); return; }
+ _depTxStart();
  let n=0;
  arr.forEach(m=>{
   if(!m || typeof m!=='object') return;
@@ -5722,6 +5736,7 @@ function _depCloseMapEdit(){ const el=document.getElementById('depMapEditModal')
 function _depMapEditToggleExcl(){ document.getElementById('depMapEditCenterWrap').style.display=document.getElementById('depMapEditExcl').checked?'none':'block'; }
 function _depMapEditSave(){
  const m=getDepositMappings().find(x=>x.mapId===_depMapEditId); if(!m){ _depCloseMapEdit(); return; }
+ _depTxStart();
  const _before=_depCName(m.isExcluded?'':m.centerName, m.region);
  const excl=document.getElementById('depMapEditExcl').checked;
  if(excl){ m.isExcluded=true; m.centerName=''; m.region=''; }
@@ -5840,6 +5855,7 @@ function _depSaveReg(){
  const recs=_depRegRecs();
  const on=recs.filter(r=>!_depRegOff.has(_depRegNm(r)));
  if(!on.length){ showToast('등록할 입금을 하나 이상 체크하세요'); return; }
+ _depTxStart();   // v18.27: 되돌리기용 '바뀌기 전' 상태
  const excl=document.getElementById('depRegExcl').checked;
  let centerName='', region='';
  if(!excl){
@@ -6384,17 +6400,102 @@ function _depSetSyncChip(state){
 const LS_DEP_LOG='iruri_dep_log_v1';
 let _depLogs=[], _depLogUnsent=[];
 try{ const o=JSON.parse(localStorage.getItem(LS_DEP_LOG)||'null'); if(o){ _depLogs=Array.isArray(o.logs)?o.logs:[]; _depLogUnsent=Array.isArray(o.unsent)?o.unsent:[]; } }catch(_){}
-function _depSaveLogs(){ try{ if(_depLogs.length>3000) _depLogs=_depLogs.slice(-3000); localStorage.setItem(LS_DEP_LOG, JSON.stringify({logs:_depLogs, unsent:_depLogUnsent})); }catch(_){} }
+function _depSaveLogs(){
+ try{
+  if(_depLogs.length>3000) _depLogs=_depLogs.slice(-3000);
+  const keep=new Set(_depLogUnsent);   // 아직 못 올린 기록은 되돌리기 정보도 꼭 보관
+  _depLogs.forEach((l,i)=>{ if(l.undo && i<_depLogs.length-150 && !keep.has(l.id)){ l.hasUndo='1'; delete l.undo; } });   // 오래된 기록은 필요할 때 서버에서 받아옴
+  localStorage.setItem(LS_DEP_LOG, JSON.stringify({logs:_depLogs, unsent:_depLogUnsent}));
+ }catch(_){}
+}
 function _depActor(){ try{ return window._loggedInTeacher || (typeof _presenceTeacher!=='undefined' && _presenceTeacher) || '관리자'; }catch(_){ return '관리자'; } }
 function _depDevice(){ return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent||'') ? '모바일' : 'PC'; }
 function _depCName(c, r){ return c ? c+(r?` (${r})`:'') : '제외(센터 아님)'; }
-function _depLog(kind, title, detail, period){
+function _depLog(kind, title, detail, period, extra){
  try{
-  const e={ id:_depUid('log'), at:new Date().toISOString(), by:_depActor(), dev:_depDevice(), kind, title:String(title||''), detail:String(detail||''), period:String(period==null?_depActivePeriod():period) };
+  const e={ id:_depUid('log'), at:new Date().toISOString(), by:_depActor(), dev:_depDevice(), kind, title:String(title||''), detail:String(detail||''), period:String(period==null?_depActivePeriod():period), ...(extra||{}) };
+  _depTxStart(); _depTx.entries.push(e);   // 되돌리기 정보는 이 동작이 끝난 뒤(setTimeout 0) 붙임
   _depLogs.push(e); _depLogUnsent.push(e.id); _depSaveLogs();
   _depScheduleLogPush();
   if(_depSub==='log') renderDepLog();
  }catch(err){ console.warn('dep log fail', err); }
+}
+
+/* ── v18.27: 되돌리기 ──
+   동작 시작 때 매핑·입금내역 상태를 찍어 두고(_depTxStart), 동작이 끝나면 '무엇이 바뀌었는지(diff)'만 이력에 붙인다.
+   되돌리기 = 그 diff 를 거꾸로 적용(매핑은 이전 모습으로, 지운 입금은 다시 넣고, 추가된 입금은 뺌).
+   되돌리기도 하나의 동작으로 기록되므로 '되돌리기를 되돌리기(다시 실행)'도 된다. */
+let _depTx=null;
+function _depTxStart(){
+ if(_depTx) return;
+ _depTx={ maps:JSON.parse(JSON.stringify(depositDB.mappings||[])), recs:(depositDB.records||[]).map(r=>({...r})), entries:[] };
+ setTimeout(_depTxFinish, 0);
+}
+function _depMapFull(m){ const o={...m}; delete o.lastMatchedAt; return JSON.stringify(o); }
+function _depMapCore(m){ return _depHash(JSON.stringify([m.branchKey||'',m.centerName||'',m.region||'',!!m.isExcluded,(m.removedSamples||[]).slice().sort(),(m.confirmedNames||[]).slice().sort()])); }
+function _depRecKey(r){ return _depHash((r.periodId||'')+'\u0002'+_depRecSig(r)); }
+function _depRecPack(r){ return [r.periodId||'', r.account||'', _depNormDate(r.date), _depNormTime(r.time), r.summary||'', r.depositorName||'', r.branchRaw||'', r.branchKey||'', Number(r.amount)||0]; }
+function _depRecUnpack(a){ return { depositId:_depUid('dep'), periodId:a[0], account:a[1], date:a[2], time:a[3], summary:a[4], depositorName:a[5], branchRaw:a[6], branchKey:a[7]||normDepositBranch(a[6]), amount:Number(a[8])||0, matchStatus:'unmatched', matchedCenterName:null, region:'', uploadBatchId:'undo' }; }
+function _depTxDiff(before){
+ const bm=new Map(before.maps.map(m=>[m.mapId,m])), am=new Map((depositDB.mappings||[]).map(m=>[m.mapId,m]));
+ const mb=[], ma=[], mh={};
+ bm.forEach((m,id)=>{ const a=am.get(id); if(!a) mb.push(m); else if(_depMapFull(a)!==_depMapFull(m)){ mb.push(m); mh[id]=_depMapCore(a); } });
+ am.forEach((a,id)=>{ if(!bm.has(id)){ ma.push(id); mh[id]=_depMapCore(a); } });
+ const cnt={}; before.recs.forEach(r=>{ const k=_depRecKey(r); cnt[k]=(cnt[k]||0)+1; });
+ const ra=[]; (depositDB.records||[]).forEach(r=>{ const k=_depRecKey(r); if(cnt[k]>0) cnt[k]--; else ra.push(k); });   // 새로 생긴 입금
+ const rr=[]; const left={...cnt}; before.recs.forEach(r=>{ const k=_depRecKey(r); if(left[k]>0){ left[k]--; rr.push(_depRecPack(r)); } });   // 사라진 입금
+ if(!mb.length && !ma.length && !ra.length && !rr.length) return null;
+ return { mb, ma, mh, ra, rr };
+}
+function _depTxFinish(){
+ const tx=_depTx; _depTx=null; if(!tx || !tx.entries.length) return;
+ try{
+  const u=_depTxDiff(tx);
+  if(u){ tx.entries[0].undo=u; tx.entries[0].hasUndo='1'; _depSaveLogs(); if(_depSub==='log') renderDepLog(); }
+ }catch(err){ console.warn('dep undo diff fail', err); }
+}
+// 되돌려졌는지: 이 기록을 가리키는(ref) 되돌리기 기록이 있고, 그 되돌리기가 다시 되돌려지지 않았으면 '되돌림'
+function _depUndoneBy(id, seen){
+ seen=seen||new Set(); if(seen.has(id)) return null; seen.add(id);
+ const us=_depLogs.filter(l=>l.ref===id).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+ for(const u of us){ if(!_depUndoneBy(u.id, seen)) return u; }
+ return null;
+}
+async function _depGetUndo(l){
+ if(l.undo) return l.undo;
+ if(!l.hasUndo || typeof gasGet!=='function' || typeof GAS_URL==='undefined') return null;
+ try{ const r=await gasGet({action:'getDepositLogUndo', id:l.id}, 45000); if(r && r.ok && r.undo){ l.undo=typeof r.undo==='string'?JSON.parse(r.undo):r.undo; return l.undo; } }catch(_){}
+ return null;
+}
+async function _depUndo(id){
+ const l=_depLogs.find(x=>x.id===id); if(!l) return;
+ if(_depUndoneBy(id)){ showToast('이미 되돌린 기록이에요'); return; }
+ showToast('되돌리기 준비 중…');
+ const u=await _depGetUndo(l);
+ if(!u){ showToast('이 기록은 되돌릴 정보가 없어요 (되돌리기 기능 이전 기록이거나 아직 클라우드에 없음)'); return; }
+ // 그 뒤에 바뀐 것 점검
+ const am=new Map(depositDB.mappings.map(m=>[m.mapId,m]));
+ let mChanged=0; Object.keys(u.mh||{}).forEach(mid=>{ const a=am.get(mid); if(!a || _depMapCore(a)!==u.mh[mid]) mChanged++; });
+ const have={}; depositDB.records.forEach(r=>{ const k=_depRecKey(r); have[k]=(have[k]||0)+1; });
+ let rMissing=0; (u.ra||[]).forEach(k=>{ if(have[k]>0) have[k]--; else rMissing++; });
+ const parts=[];
+ if((u.mb||[]).length || (u.ma||[]).length) parts.push(`매핑 ${(u.mb||[]).length+(u.ma||[]).length}개를 이 동작 전으로`);
+ if((u.rr||[]).length) parts.push(`지워진 입금 ${(u.rr||[]).length}건 다시 넣기`);
+ if((u.ra||[]).length) parts.push(`이때 들어온 입금 ${(u.ra||[]).length-rMissing}건 빼기`);
+ const warn=(mChanged||rMissing)?`<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--amber-bg);color:var(--amber);font-size:12px;text-align:left;">⚠ 이 기록 뒤에 ${mChanged?`매핑 ${mChanged}개가 또 바뀌었어요`:''}${mChanged&&rMissing?' · ':''}${rMissing?`입금 ${rMissing}건은 이미 없어요`:''}. 되돌리면 그 매핑은 이 동작 전 모습으로 돌아가요.</div>`:'';
+ showConfirm({icon:'↩️', title:'되돌리기', desc:`<b>${esc(l.title)}</b><br><small style="color:var(--text3)">${esc(_depFmtLogAt(l.at).replace(/<[^>]+>/g,''))} · ${esc(l.by||'')}</small><div style="margin-top:8px;font-size:12.5px;color:var(--text2);">${parts.map(esc).join('<br>')}</div>${warn}`, okText:'되돌리기', okStyle:'primary', onOk:()=>_depApplyUndo(l, u)});
+}
+function _depApplyUndo(l, u){
+ _depTxStart();
+ const addIds=new Set(u.ma||[]);
+ depositDB.mappings=depositDB.mappings.filter(m=>!addIds.has(m.mapId));
+ (u.mb||[]).forEach(m=>{ const c=JSON.parse(JSON.stringify(m)); const i=depositDB.mappings.findIndex(x=>x.mapId===c.mapId); if(i>=0) depositDB.mappings[i]=c; else depositDB.mappings.push(c); });
+ const need={}; (u.ra||[]).forEach(k=>need[k]=(need[k]||0)+1);
+ depositDB.records=depositDB.records.filter(r=>{ const k=_depRecKey(r); if(need[k]>0){ need[k]--; return false; } return true; });
+ (u.rr||[]).forEach(a=>depositDB.records.push(_depRecUnpack(a)));
+ _depLog(l.kind, `되돌리기: ${l.title}`, `${_depFmtLogAt(l.at)} · ${l.by||''} 의 동작을 되돌림`, l.period, {ref:l.id});
+ runMatching(); renderDepositView();
+ showToast('되돌렸어요');
 }
 let _depLogTimer=null, _depLogFails=0;
 function _depScheduleLogPush(delay){
@@ -6419,7 +6520,7 @@ async function _depSyncLogsFromGAS(){
   const r=await gasGet({action:'getDepositLogs', limit:2000}, 45000);
   if(!(r && r.ok===true && Array.isArray(r.data))) return false;
   const have=new Set(_depLogs.map(l=>l.id)); let n=0;
-  r.data.forEach(l=>{ if(l && l.id && !have.has(l.id)){ _depLogs.push(l); have.add(l.id); n++; } });
+  r.data.forEach(l=>{ if(l && l.id && !have.has(l.id)){ if(!l.ref) delete l.ref; if(!l.hasUndo) delete l.hasUndo; _depLogs.push(l); have.add(l.id); n++; } });
   if(n){ _depLogs.sort((a,b)=>String(a.at).localeCompare(String(b.at))); _depSaveLogs(); }
   if(_depLogUnsent.length) _depScheduleLogPush(1000);
   return n>0;
@@ -18261,9 +18362,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.26&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.27&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.26&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.27&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
