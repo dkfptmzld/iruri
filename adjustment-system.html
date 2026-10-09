@@ -3299,6 +3299,23 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   </div>
  </div>
 
+ <!-- 취급점 점검(충돌 분리) 모달 -->
+ <div id="depConflictModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10060;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px);">
+  <div style="background:var(--surface);border-radius:var(--radius-lg);width:640px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column;max-height:88vh;">
+   <div style="padding:16px 20px;background:linear-gradient(135deg,var(--amber) 0%,var(--red) 130%);color:#fff;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+     <div style="font-size:15px;font-weight:800;">🔎 취급점 점검 — 공유 취급점 분리</div>
+     <div style="font-size:11.5px;opacity:.92;margin-top:2px;">같은 취급점에 서로 다른 입금자명이 섞여 오매칭이 의심되는 경우입니다. 입금자명별로 올바른 센터를 지정하세요.</div>
+    </div>
+    <button onclick="_depCloseConflict()" style="background:rgba(255,255,255,.18);border:none;color:#fff;width:28px;height:28px;border-radius:8px;font-size:16px;cursor:pointer;line-height:1;">×</button>
+   </div>
+   <div id="depConflictBody" style="padding:16px 18px;overflow:auto;"></div>
+   <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+    <button class="dep-btn-lg ghost" onclick="_depCloseConflict()">닫기</button>
+   </div>
+  </div>
+ </div>
+
  <!-- 매핑 수정 모달 -->
  <div id="depMapEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10050;align-items:center;justify-content:center;padding:20px;">
   <div style="background:var(--surface);border-radius:var(--radius-lg);padding:22px;width:400px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,.28);">
@@ -4954,8 +4971,13 @@ function matchOneDeposit(rec){
   if(gc0 && gc0.length>=2){
    const matchesMapped = _depGijaeAlike(gc0, normDepositGijae(m.centerName)) || (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc0, normDepositGijae(s)));
    if(!matchesMapped){
-    const other = depositDB.mappings.find(x=>!x.isExcluded && x.centerName && x.mapId!==m.mapId && _depGijaeAlike(gc0, normDepositGijae(x.centerName)));
-    if(other) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
+    // 안전장치 강화: 기재가 '다른 등록 센터명' 또는 '다른 매핑의 기재 샘플'을 명백히 가리키면 → 미등록(오매칭 방지)
+    const otherMap = depositDB.mappings.find(x=>!x.isExcluded && x.mapId!==m.mapId && (
+       (x.centerName && _depGijaeAlike(gc0, normDepositGijae(x.centerName))) ||
+       (x.gijaeSamples||[]).some(s=>_depGijaeAlike(gc0, normDepositGijae(s)))
+    ));
+    const otherRoster = !otherMap && getDepositRoster().some(c=> c.name && c.name!==m.centerName && _depGijaeAlike(gc0, normDepositGijae(c.name)));
+    if(otherMap || otherRoster) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null, ambiguous:true };
    }
   }
   return { matchStatus:'matched', matchedCenterName:m.centerName, region:m.region||'', mapId:m.mapId };
@@ -5321,6 +5343,7 @@ function renderDepMappings(){
  const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
  const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
+    <button class="btn sm" onclick="_depOpenConflict()" title="같은 취급점에 서로 다른 입금자명이 섞여 오매칭이 의심되는 경우 점검·분리">🔎 취급점 점검</button>
     <span style="flex:1"></span>
     <input id="depMapSearch" value="${esc(q)}" oninput="_depMapSearch(this.value)" placeholder="센터·취급점·기재 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:160px;">
    </div>`;
@@ -5480,6 +5503,101 @@ function _depDelMapping(mapId){
   renderDepositView();          // ④
   showToast('매핑을 삭제했습니다'); // ⑤
  }});
+}
+
+/* ═══════════ 충돌 취급점 점검 ═══════════
+   같은 취급점에 서로 다른 입금자명(기재내용) 묶음이 섞여 있고, 그중 기재가
+   현재 매칭된 센터와 '닮지 않은' 묶음이 있으면 → 오매칭 의심으로 surface.
+   기재내용별로 센터를 지정해 분리(같은 취급점 다중 매핑 → 기재 2차 선택). */
+let _depConflicts=[];
+function _depComputeConflicts(){
+ const byBranch={};
+ (depositDB.records||[]).forEach(r=>{ const bk=r.branchKey||normDepositBranch(r.branchRaw); if(bk)(byBranch[bk]=byBranch[bk]||[]).push(r); });
+ const out=[];
+ Object.keys(byBranch).forEach(bk=>{
+  const clusters=[];
+  byBranch[bk].forEach(r=>{
+   const core=normDepositGijae(r.depositorName||''); if(!core) return;
+   let c=clusters.find(cl=>_depGijaeAlike(core, cl.core));
+   if(!c){ c={core, names:new Set(), recs:[], amount:0}; clusters.push(c); }
+   c.names.add(String(r.depositorName||'').trim()); c.recs.push(r); c.amount+=Number(r.amount)||0;
+  });
+  if(clusters.length<2) return;
+  const maps=findDepositMappings(bk).filter(m=>!m.isExcluded && m.centerName);
+  clusters.forEach(cl=>{
+   const res=matchOneDeposit(cl.recs[0]);
+   cl.matched = res.matchStatus==='matched'? res.matchedCenterName : null;
+   cl.matchRegion = res.region||''; cl.status=res.matchStatus;
+   // 센터가 2곳 이상 매핑된 취급점이면 매칭이 '기재내용 기준'으로 이뤄진 것 → 사용자가 분리한 것으로 간주(해결됨).
+   // 센터 1곳(블랭킷 매칭)일 때만 기재가 센터명과 닮았는지로 판정.
+   cl.corroborated = cl.matched ? (maps.length>=2 || _depGijaeAlike(cl.core, normDepositGijae(cl.matched))) : false;
+  });
+  // 매핑돼 있고(≥1), 기재가 센터와 안 닮았는데도 (블랭킷)매칭된 묶음이 있으면 → 검토 대상
+  if(maps.length>=1 && clusters.some(cl=>cl.matched && !cl.corroborated))
+   out.push({ branchKey:bk, clusters, mappedCenters:maps.map(m=>m.centerName+(m.region?`(${m.region})`:'')), mapCount:maps.length });
+ });
+ out.sort((a,b)=> (a.mapCount-b.mapCount) || (b.clusters.length-a.clusters.length));
+ return out;
+}
+function _depOpenConflict(){
+ _depConflicts=_depComputeConflicts();
+ _depPopulateCenterList();
+ _depRenderConflict();
+ const m=document.getElementById('depConflictModal'); if(m) m.style.display='flex';
+}
+function _depCloseConflict(){ const m=document.getElementById('depConflictModal'); if(m) m.style.display='none'; _depConflicts=[]; }
+function _depRenderConflict(){
+ const body=document.getElementById('depConflictBody'); if(!body) return;
+ if(!_depConflicts.length){ body.innerHTML='<div class="dep-empty">검토가 필요한 공유 취급점이 없습니다. 👍<br><small style="color:var(--text3)">같은 취급점에 서로 다른 입금자명이 섞여 오매칭이 의심되는 경우만 표시됩니다.</small></div>'; return; }
+ body.innerHTML=_depConflicts.map((cf,bi)=>{
+  const sev = cf.mapCount<=1
+    ? '<span class="dep-pill" style="background:var(--red-bg);color:var(--red)">🔴 한 센터로 몰림</span>'
+    : '<span class="dep-pill" style="background:var(--amber-bg);color:var(--amber)">🟡 일부 분리됨</span>';
+  const clRows=cf.clusters.map((cl,ci)=>{
+   const names=[...cl.names].slice(0,4).join(', ')+([...cl.names].length>4?' …':'');
+   const curTxt = cl.matched
+     ? `현재 → <b style="color:${cl.corroborated?'var(--green)':'var(--red)'}">${esc(cl.matched)}</b>${cl.corroborated?'':' <span style="color:var(--red);font-size:11px;">(기재 불일치?)</span>'}`
+     : (cl.status==='excluded'?'<span style="color:var(--text3)">제외</span>':'<span style="color:var(--amber)">미등록</span>');
+   const warn = (cl.matched && !cl.corroborated);
+   return `<div style="display:flex;gap:8px;align-items:center;padding:9px 10px;border-radius:var(--radius);background:var(--surface2);margin-top:7px;${warn?'border-left:3px solid var(--red);':''}">
+     <div style="flex:1;min-width:0;">
+       <div style="font-size:12.5px;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(names)}</div>
+       <div style="font-size:11.5px;color:var(--text3);margin-top:2px;">${cl.recs.length}건 · ${fmtDepWon(cl.amount)} · ${curTxt}</div>
+     </div>
+     <input id="depCf_${bi}_${ci}" list="depCenterList" placeholder="이 입금자 → 센터" autocomplete="off"
+       style="width:170px;height:32px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12.5px;background:var(--surface);color:var(--text);outline:none;">
+     <button class="btn sm primary" onclick="_depConflictAssign(${bi},${ci})">지정</button>
+   </div>`;
+  }).join('');
+  return `<div style="border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <b style="font-size:13px;color:var(--text2);">${esc(cf.branchKey)}</b> ${sev}
+      <span style="flex:1"></span>
+      <span style="font-size:11.5px;color:var(--text3);">현재 매핑: ${esc(cf.mappedCenters.join(', ')||'없음')}</span>
+    </div>
+    ${clRows}
+  </div>`;
+ }).join('');
+}
+function _depConflictAssign(bi,ci){
+ const cf=_depConflicts[bi]; if(!cf) return;
+ const cl=cf.clusters[ci]; if(!cl) return;
+ const inp=document.getElementById('depCf_'+bi+'_'+ci);
+ const v=(inp&&inp.value||'').trim();
+ if(!v){ showToast('연결할 센터를 선택하세요'); return; }
+ const mm=v.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+ let centerName=v, region=''; if(mm){ centerName=mm[1].trim(); region=mm[2].trim(); }
+ // ① 이 묶음의 모든 기재내용을 (취급점+센터) 매핑 샘플로 등록
+ cl.recs.forEach(r=>{ upsertDepositMapping({branchKey:cf.branchKey, branchRaw:r.branchRaw, centerName, region, gijae:r.depositorName}); });
+ // ② 오염 정리: 같은 취급점의 '다른 센터' 매핑에서 이 묶음 기재 샘플 제거(1:1 시절 전부 빨려들어간 것)
+ findDepositMappings(cf.branchKey).forEach(om=>{
+  if(om.centerName===centerName && (om.region||'')===region) return;
+  om.gijaeSamples=(om.gijaeSamples||[]).filter(s=> !_depGijaeAlike(normDepositGijae(s), cl.core));
+ });
+ runMatching();        // 전체 재매칭 + 저장
+ renderDepositView();  // 뒤 화면 갱신
+ _depConflicts=_depComputeConflicts(); _depRenderConflict();  // 점검 목록 갱신
+ showToast(`"${centerName}"(으)로 분리했습니다`);
 }
 
 /* 상단 액션 */
