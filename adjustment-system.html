@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.39">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.40">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.39">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.40">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.39</title>
+<title>수업기록표 정산 시스템 v18.40</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -301,6 +301,19 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-tbtn:active{transform:translateY(1px);}
 .dep-tbtn.danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,var(--border2));}
 .dep-tbtn.danger:hover{background:var(--red-bg);}
+.dep-tbtn.sm{height:28px;padding:0 11px;font-size:12px;border-radius:8px;}
+.dep-unm-t{font-weight:700;color:var(--text);}
+@media(max-width:600px){
+ .dep-unmtbl thead{display:none;}
+ .dep-unmtbl tr{display:grid;grid-template-columns:1fr auto;grid-template-areas:"t t" "d a" "b x";gap:6px 10px;padding:12px;border-bottom:1px solid var(--border);}
+ .dep-unmtbl td{border:none!important;padding:0!important;}
+ .dep-unmtbl td.ut{grid-area:t;} .dep-unmtbl td.ud{grid-area:d;font-size:12px;color:var(--text2);} .dep-unmtbl td.ua{grid-area:a;font-size:14px;}
+ .dep-unmtbl td.ub{grid-area:b;font-size:12px;align-self:center;white-space:normal!important;} .dep-unmtbl td.ux{grid-area:x;}
+ .dep-unmtbl td.ud .dep-unm-n{margin:0 0 0 6px;}
+ .dep-unmtbl .dep-gchip{white-space:nowrap;}
+ .dep-unmtbl tr td[colspan]{grid-column:1/-1;}
+}
+.dep-unm-n{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;color:var(--amber);background:var(--amber-bg);border-radius:99px;padding:0 7px;}
 .dep-tbtn.primary{border:none;color:#fff;background:linear-gradient(135deg,var(--green),#1f8f62);box-shadow:0 4px 12px rgba(26,122,80,.28);}
 .dep-tbtn.primary:hover{box-shadow:0 6px 16px rgba(26,122,80,.38);filter:brightness(1.05);}
 .dep-hinfo{font-size:11.5px;font-weight:600;color:var(--blue);background:var(--blue-bg);padding:3px 9px;border-radius:99px;white-space:nowrap;}
@@ -4705,7 +4718,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.39';
+const SYSTEM_VERSION='v18.40';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5686,7 +5699,7 @@ function _depLessonTeachers(ym){
  _depLessonCache[ym]='loading';
  gasGet({action:'getMonthlySnapshot', yearMonth:ym}, 60000).then(r=>{
   _depLessonCache[ym] = (r && r.ok && r.data?.teachers?.length) ? {teachers:r.data.teachers} : 'none';
- }).catch(()=>{ _depLessonCache[ym]='none'; }).finally(()=>{ if(_depSub==='unpaid') renderDepUnpaid(); });
+ }).catch(()=>{ _depLessonCache[ym]='none'; }).finally(()=>{ if(_depSub==='unpaid') renderDepUnpaid(); try{ _depRenderLessonPick(); }catch(_){} });
  return null;
 }
 // 센터 키(이름|지역) → [{teacher, count, total}] (강사별 합산)
@@ -5850,28 +5863,53 @@ function _depUnmatchedGroups(list){
  groups.sort((a,b)=>String(b.recs[b.recs.length-1].date||'').localeCompare(String(a.recs[a.recs.length-1].date||'')));
  return groups;
 }
+/* v18.40: 미등록 입금처 — 센터 입금현황과 같은 도구 줄(요약 · 정렬 · 검색) */
+let _depUnmQ='', _depUnmSort='recent';
+function _depSetUnmSort(k){ _depUnmSort=k; renderDepUnmatched(); }
+function _depUnmSearch(v){ _depUnmQ=v; _depRenderUnmBody(); }   // 입력창 유지(한글 조합 안 깨짐), tbody만 갱신
+function _depUnmBodyHTML(groups){
+ const _md=(d)=>{ const m=String(d||'').match(/\d{4}-(\d{2})-(\d{2})/); return m?(+m[1])+'/'+(+m[2]):String(d||''); };
+ const q=String(_depUnmQ||'').trim().toLowerCase();
+ let view=groups.map((g,gi)=>({g,gi})).filter(({g})=> !q || [g.core, g.branchRaw, ...g.names].join(' ').toLowerCase().includes(q));
+ const lastOf=g=>{ const r=g.recs[g.recs.length-1]||{}; return (r.date||'')+(r.time||''); };
+ if(_depUnmSort==='amount') view.sort((a,b)=>b.g.amount-a.g.amount);
+ else if(_depUnmSort==='count') view.sort((a,b)=>b.g.recs.length-a.g.recs.length || b.g.amount-a.g.amount);
+ else view.sort((a,b)=>lastOf(b.g).localeCompare(lastOf(a.g)));
+ const rows=view.map(({g,gi})=>{
+  const names=[...g.names];
+  const title=names.length===1? names[0] : (g.core+' · 기재내용 '+names.length+'가지');
+  const chips=g.recs.map(r=>`<span class="dep-gchip"><i>${escH(_md(r.date))}</i>${escH(String(r.depositorName||'').trim()||'(빈칸)')}<b>${fmtDepWon(r.amount)}</b></span>`).join('');   // v18.24: 기재 칩은 보기만
+  const first=g.recs[0], last=g.recs[g.recs.length-1];
+  const span=g.recs.length>1? `${escH(_md(first.date))} ~ ${escH(_md(last.date))}` : _depFmtDate(first);
+  const del = g.recs.length>1
+   ? `<button class="dep-tbtn danger sm" onclick="_depDeleteGroup(${gi})" title="이 묶음의 입금 ${g.recs.length}건을 모두 삭제">삭제</button>`
+   : `<button class="dep-tbtn danger sm" onclick="_depDeleteRecord('${escAttrJS(first.depositId)}')" title="이 입금내역을 삭제합니다">삭제</button>`;
+  return `<tr>
+   <td class="ud" style="white-space:nowrap;vertical-align:top;">${span}<div class="dep-unm-n">${g.recs.length}건</div></td>
+   <td class="ut" style="vertical-align:top;min-width:0;"><div class="dep-unm-t">${escH(title)}</div><div class="dep-gchips">${chips}</div></td>
+   <td class="ub" style="color:var(--text2);vertical-align:top;white-space:nowrap;">${escH(g.branchRaw)}</td>
+   <td class="ua" style="vertical-align:top;white-space:nowrap;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;">${fmtDepWon(g.amount)}</td>
+   <td class="ux" style="white-space:nowrap;vertical-align:top;text-align:right;"><button class="dep-tbtn primary sm" onclick="openDepRegister('${escAttrJS(first.depositId)}',${gi})">센터 등록</button> ${del}</td>
+ </tr>`;
+ }).join('');
+ return rows || `<tr><td colspan=5 class="dep-empty">${groups.length?'검색과 맞는 미등록 입금처가 없습니다.':'미등록 입금처가 없습니다 🎉'}</td></tr>`;
+}
+function _depRenderUnmBody(){ const tb=document.getElementById('depUnmBody'); if(tb) tb.innerHTML=_depUnmBodyHTML(window._depUnmGroups||[]); }
 function renderDepUnmatched(){
  const list=_depPeriodRecs().filter(r=>r.matchStatus==='unmatched');
  const el=document.getElementById('depSub-unmatched'); if(!el) return;
  const groups=_depUnmatchedGroups(list);
  window._depUnmGroups=groups;
- const _md=(d)=>{ const m=String(d||'').match(/\d{4}-(\d{2})-(\d{2})/); return m?(+m[1])+'/'+(+m[2]):String(d||''); };
- const rows=groups.map((g,gi)=>{
-  const names=[...g.names];
-  const title=names.length===1? names[0] : (g.core+' · 기재내용 '+names.length+'가지');
-  const chips=g.recs.map(r=>`<span class="dep-gchip"><i>${esc(_md(r.date))}</i>${esc(String(r.depositorName||'').trim()||'(빈칸)')}<b>${fmtDepWon(r.amount)}</b></span>`).join('');   // v18.24: 기재 칩은 보기만(삭제 ✕ 없음 — 빼기는 '센터 등록' 창에서)
-  const first=g.recs[0], last=g.recs[g.recs.length-1];
-  const span=g.recs.length>1? `${esc(_md(first.date))} ~ ${esc(_md(last.date))}` : _depFmtDate(first);
-  return `<tr>
-   <td style="white-space:nowrap;vertical-align:top;">${span}<div style="font-size:11px;color:var(--text3);">${g.recs.length}건</div></td>
-   <td style="vertical-align:top;min-width:0;"><div style="font-weight:600;">${esc(title)}</div><div class="dep-gchips">${chips}</div></td>
-   <td style="color:var(--text2);vertical-align:top;">${esc(g.branchRaw)}</td>
-   <td style="vertical-align:top;white-space:nowrap;">${fmtDepWon(g.amount)}</td>
-   <td style="white-space:nowrap;vertical-align:top;"><button class="btn sm primary" onclick="openDepRegister('${esc(first.depositId)}',${gi})">센터 등록</button>${g.recs.length>1?` <button class="btn sm" onclick="_depDeleteGroup(${gi})" style="color:var(--red);border-color:var(--red);" title="이 묶음의 입금 ${g.recs.length}건을 모두 삭제">삭제</button>`:` <button class="btn sm" onclick="_depDeleteRecord('${esc(first.depositId)}')" style="color:var(--red);border-color:var(--red);" title="이 입금내역을 삭제합니다">삭제</button>`}</td>
- </tr>`;
- }).join('');
- const inner=`<table class="dep-table"><thead><tr><th>입금일</th><th>기재내용 (입금 건별)</th><th>취급점</th><th>금액</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan=5 class="dep-empty">미등록 입금처가 없습니다.</td></tr>'}</tbody></table>`;
- el.innerHTML=_depPanelHTML('미등록 입금처',`(${groups.length}곳 · ${list.length}건)`,inner);
+ const amt=list.reduce((a,r)=>a+(Number(r.amount)||0),0);
+ const sbtn=(key,label)=>`<button class="btn sm${_depUnmSort===key?' primary':''}" onclick="_depSetUnmSort('${key}')">${label}</button>`;
+ const head=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
+    <span style="font-size:12.5px;color:var(--text2)">미등록 <b style="color:var(--amber)">${groups.length}곳</b> · ${list.length}건 <span style="color:var(--text3)">· 합계 ${fmtDepWon(amt)}</span></span>
+    <span style="flex:1"></span>
+    ${sbtn('recent','🕒 최근순')} ${sbtn('amount','💰 금액 큰 순')} ${sbtn('count','🔁 건수 많은 순')}
+    <input value="${escH(_depUnmQ)}" oninput="_depUnmSearch(this.value)" placeholder="기재내용·취급점 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
+  </div>`;
+ const inner=`<table class="dep-table dep-unmtbl"><thead><tr><th>입금일</th><th>기재내용 (입금 건별)</th><th>취급점</th><th style="text-align:right;">금액</th><th></th></tr></thead><tbody id="depUnmBody">${_depUnmBodyHTML(groups)}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('미등록 입금처',`(${groups.length}곳 · ${list.length}건)`,inner,head);
 }
 function _depDeleteGroup(gi){
  const g=(window._depUnmGroups||[])[gi]; if(!g) return;
@@ -18818,9 +18856,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.39&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.40&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.39&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.40&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
