@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.21">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.22">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.21">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.22">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.21</title>
+<title>수업기록표 정산 시스템 v18.22</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -230,6 +230,17 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-bchip button:hover{color:var(--red);}
 .dep-gchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}   /* v18.16: 취급점 점검 — 입금 건별 기재내용 */
 .dep-gchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:2px 7px;max-width:100%;}
+/* v18.22: 미등록 입금처 등록 — 같이 묶이는 입금 목록(체크 해제 = 이번 등록에서 뺌) */
+.dep-reglist{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);}
+.dep-regrow{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:12.5px;cursor:pointer;user-select:none;margin:0;}
+.dep-regrow:last-child{border-bottom:none;}
+.dep-regrow input{width:15px;height:15px;flex:0 0 auto;margin:0;cursor:pointer;}
+.dep-regrow .rd{flex:0 0 auto;color:var(--text2);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.dep-regrow .rn{flex:1 1 auto;min-width:0;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dep-regrow .ra{flex:0 0 auto;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.dep-regrow.off{background:var(--surface2);}
+.dep-regrow.off .rd,.dep-regrow.off .rn,.dep-regrow.off .ra{color:var(--text3);text-decoration:line-through;font-weight:400;}
+.dep-regrow.single{cursor:default;}
 .dep-gchip i{font-style:normal;color:var(--text3);font-variant-numeric:tabular-nums;}
 .dep-gchip .dep-gx{border:none;background:none;color:var(--text3);cursor:pointer;font-size:10.5px;padding:0 0 0 2px;line-height:1;}
 .dep-gchip .dep-gx:hover{color:var(--red);}
@@ -3231,8 +3242,11 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">이 취급점을 센터에 연결하면, 다음부터 같은 취급점 입금은 자동 매칭됩니다.</div>
    <div style="font-size:12px;color:var(--text2);line-height:1.9;background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;">
     <div>취급점(키): <b id="depRegBranch" style="color:var(--text);"></b></div>
-    <div>기재내용: <span id="depRegGijae" style="color:var(--text);"></span></div>
     <div>금액: <span id="depRegAmt" style="color:var(--text);"></span></div>
+   </div>
+   <div id="depRegListWrap" style="margin:-4px 0 14px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 8px;font-size:12px;color:var(--text2);margin-bottom:5px;"><span>같이 등록되는 입금</span><span id="depRegListHint" style="font-size:11px;color:var(--text3);"></span></div>
+    <div id="depRegList" class="dep-reglist"></div>
    </div>
    <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);margin-bottom:12px;cursor:pointer;">
     <input type="checkbox" id="depRegExcl" onchange="_depRegToggleExcl()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber);">
@@ -4558,7 +4572,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.21';
+const SYSTEM_VERSION='v18.22';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5006,10 +5020,11 @@ function matchOneDeposit(rec){
  const _nm=String(rec.depositorName||'').trim();
  const _blockedC=new Set(); if(_nm) maps.forEach(m=>{ if(m.centerName && (m.removedSamples||[]).some(x=>String(x).trim()===_nm)) _blockedC.add(m.centerName+'|'+(m.region||'')); });
  const _isBlocked=(m)=> _blockedC.size>0 && _blockedC.has((m.centerName||'')+'|'+(m.region||''));
+ const _exclBlocked=(m)=> !!_nm && m.isExcluded && (m.removedSamples||[]).some(x=>String(x).trim()===_nm);   // v18.22: '제외' 등록에서 뺀 입금자명
 
  // 0) 이 취급점+기재가 '제외(본인이체·이자)'로 등록돼 있으면 제외
  if(gc && gc.length>=2){
-  const exclByName = maps.some(m=>m.isExcluded && m.branchKey===bk && (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s))));
+  const exclByName = maps.some(m=>m.isExcluded && !_exclBlocked(m) && m.branchKey===bk && (m.gijaeSamples||[]).some(s=>_depGijaeAlike(gc, normDepositGijae(s))));
   if(exclByName) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:null };
  }
 
@@ -5062,7 +5077,8 @@ function matchOneDeposit(rec){
  const bmaps = findDepositMappings(bk);
  if(!bmaps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };
  const centerMaps = bmaps.filter(m=>!m.isExcluded && m.centerName && !_isBlocked(m));   // v18.19: 뺀 기재의 센터는 제외
- const exclMaps   = bmaps.filter(m=>m.isExcluded);
+ const exclMaps   = bmaps.filter(m=>m.isExcluded && !_exclBlocked(m));   // v18.22
+ if(!centerMaps.length && !exclMaps.length) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };   // 막힌 매핑뿐 → 미등록
  if(!centerMaps.length && bmaps.some(m=>!m.isExcluded && m.centerName)) return { matchStatus:'unmatched', matchedCenterName:null, region:'', mapId:null };   // 막힌 센터뿐 → 미등록
  if(!centerMaps.length) return { matchStatus:'excluded', matchedCenterName:null, region:'', mapId:(exclMaps[0]&&exclMaps[0].mapId)||null };
  if(centerMaps.length===1) return { matchStatus:'matched', matchedCenterName:centerMaps[0].centerName, region:centerMaps[0].region||'', mapId:centerMaps[0].mapId };
@@ -5684,28 +5700,64 @@ function _depStatusPill(r){
 
 /* 등록 모달 */
 let _depRegTarget=null;
-let _depRegGroup=null;   // v18.18: 미등록 묶음 등록 시 같은 묶음의 나머지 입금 건
+let _depRegGroup=null;   // v18.18: 미등록 묶음 등록 시 같은 묶음의 입금 건(대상 포함)
+let _depRegOff=new Set(); // v18.22: 이번 등록에서 뺀 입금자명(같은 이름은 매칭이 같이 움직이므로 이름 단위)
+// v18.22: "2026-07-08" + "14:32:10" → "7월 8일 14:32"
+function _depFmtMDT(r){
+ const m=String(r.date||'').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+ const d=m ? `${+m[2]}월 ${+m[3]}일` : String(r.date||'');
+ const t=r.time ? ' '+String(r.time).slice(0,5) : '';
+ return esc(d+t);
+}
+function _depRegRecs(){ return _depRegGroup || (_depRegTarget?[_depRegTarget]:[]); }
+function _depRegNm(r){ return String(r.depositorName||'').trim(); }
+function _depRegRender(){
+ const recs=_depRegRecs().slice().sort((a,b)=>((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+ const single=recs.length<=1;
+ const box=document.getElementById('depRegList');
+ box.innerHTML=recs.map(r=>{
+  const off=_depRegOff.has(_depRegNm(r));
+  return `<label class="dep-regrow${off?' off':''}${single?' single':''}">`
+   +(single?'':`<input type="checkbox" ${off?'':'checked'} onchange="_depRegToggle('${escAttrJS(r.depositId)}')">`)
+   +`<span class="rd">${_depFmtMDT(r)}</span><span class="rn" title="${esc(r.depositorName||'')}">${esc(r.depositorName||'(기재 없음)')}</span><span class="ra">${fmtDepWon(r.amount)}</span></label>`;
+ }).join('');
+ const on=recs.filter(r=>!_depRegOff.has(_depRegNm(r)));
+ const amt=on.reduce((a,r)=>a+(Number(r.amount)||0),0);
+ document.getElementById('depRegAmt').textContent = single ? fmtDepWon(amt) : `${fmtDepWon(amt)} (${on.length}/${recs.length}건)`;
+ const hint=document.getElementById('depRegListHint');
+ const names=new Set(recs.map(_depRegNm));
+ hint.textContent = single ? '' : (on.length<recs.length ? `${recs.length-on.length}건 뺌 — 미등록에 남아요` : (names.size<recs.length ? '체크 해제 = 빼기 (같은 기재는 함께)' : '체크 해제 = 빼기'));
+}
+function _depRegToggle(depositId){
+ const r=_depRegRecs().find(x=>x.depositId===depositId); if(!r) return;
+ const nm=_depRegNm(r);
+ if(_depRegOff.has(nm)) _depRegOff.delete(nm); else _depRegOff.add(nm);
+ _depRegRender();
+}
 function openDepRegister(depositId, gi){
  const rec=depositDB.records.find(r=>r.depositId===depositId); if(!rec) return;
  _depRegTarget=rec;
  const g=(gi!=null && window._depUnmGroups) ? window._depUnmGroups[gi] : null;
  _depRegGroup = (g && g.recs.length>1) ? g.recs.slice() : null;
+ _depRegOff=new Set();
  document.getElementById('depRegBranch').textContent=rec.branchKey||normDepositBranch(rec.branchRaw);
- document.getElementById('depRegGijae').textContent=_depRegGroup ? [...new Set(_depRegGroup.map(r=>String(r.depositorName||'').trim()))].join(', ') : (rec.depositorName||'');
- document.getElementById('depRegAmt').textContent=_depRegGroup ? `${fmtDepWon(_depRegGroup.reduce((a,r)=>a+(Number(r.amount)||0),0))} (${_depRegGroup.length}건)` : fmtDepWon(rec.amount);
+ _depRegRender();
  document.getElementById('depRegExcl').checked=false;
  document.getElementById('depRegCenter').value='';
  document.getElementById('depRegCenterWrap').style.display='block';
  _depPopulateCenterList();
  document.getElementById('depRegModal').style.display='flex';
 }
-function _depCloseReg(){ const m=document.getElementById('depRegModal'); if(m) m.style.display='none'; _depRegTarget=null; _depRegGroup=null; }
+function _depCloseReg(){ const m=document.getElementById('depRegModal'); if(m) m.style.display='none'; _depRegTarget=null; _depRegGroup=null; _depRegOff=new Set(); }
 function _depRegToggleExcl(){
  const on=document.getElementById('depRegExcl').checked;
  document.getElementById('depRegCenterWrap').style.display=on?'none':'block';
 }
 function _depSaveReg(){
  if(!_depRegTarget) return;
+ const recs=_depRegRecs();
+ const on=recs.filter(r=>!_depRegOff.has(_depRegNm(r)));
+ if(!on.length){ showToast('등록할 입금을 하나 이상 체크하세요'); return; }
  const excl=document.getElementById('depRegExcl').checked;
  let centerName='', region='';
  if(!excl){
@@ -5714,16 +5766,26 @@ function _depSaveReg(){
   const m=v.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
   if(m){ centerName=m[1].trim(); region=m[2].trim(); } else { centerName=v; }
  }
- const res=registerDepositMapping(_depRegTarget,{centerName,region,isExcluded:excl}); // ①②③
+ const target = on.includes(_depRegTarget) ? _depRegTarget : on[0];   // v18.22: 대상 건을 뺐으면 남은 첫 건 기준
+ const offNames=[..._depRegOff].filter(Boolean);
+ // v18.22: 뺀 입금자명은 이 센터(또는 제외)로 연결되지 않도록 먼저 막아 둠 → 등록 후에도 미등록에 남음
+ if(offNames.length){
+  const bk0=target.branchKey||normDepositBranch(target.branchRaw);
+  const m0=upsertDepositMapping({branchKey:bk0, branchRaw:target.branchRaw, centerName:excl?'':centerName, region, isExcluded:excl});
+  m0.removedSamples=m0.removedSamples||[];
+  offNames.forEach(n=>{ if(!m0.removedSamples.includes(n)) m0.removedSamples.push(n); m0.gijaeSamples=(m0.gijaeSamples||[]).filter(x=>String(x).trim()!==n); });
+ }
+ const res=registerDepositMapping(target,{centerName,region,isExcluded:excl}); // ①②③
  // v18.18: 같은 묶음의 다른 입금자명도 같은 매핑에 등록 → 다시 매칭
- if(_depRegGroup){
-  const bk=_depRegTarget.branchKey||normDepositBranch(_depRegTarget.branchRaw);
-  _depRegGroup.forEach(r=>{ if(r===_depRegTarget) return; upsertDepositMapping({branchKey:bk, branchRaw:r.branchRaw, centerName:excl?'':centerName, region, gijae:r.depositorName, isExcluded:excl}); });
-  const rr=runMatching(); res.rematched=Math.max(res.rematched, _depRegGroup.filter(r=>r.matchStatus!=='unmatched').length);
+ if(recs.length>1){
+  const bk=target.branchKey||normDepositBranch(target.branchRaw);
+  on.forEach(r=>{ if(r===target) return; upsertDepositMapping({branchKey:bk, branchRaw:r.branchRaw, centerName:excl?'':centerName, region, gijae:r.depositorName, isExcluded:excl}); });
+  runMatching(); res.rematched=Math.max(res.rematched, on.filter(r=>r.matchStatus!=='unmatched').length);
  }
  renderDepositView();   // ④
  _depCloseReg();
- showToast(excl?`제외 처리 완료 (${res.rematched}건 반영)`:`"${esc(centerName)}" 연결 완료 — 같은 취급점 ${res.rematched}건 자동 매칭`); // ⑤
+ const offN=recs.length-on.length, offTxt=offN?` · ${offN}건은 미등록에 남김`:'';
+ showToast(excl?`제외 처리 완료 (${res.rematched}건 반영)${offTxt}`:`"${esc(centerName)}" 연결 완료 — ${res.rematched}건 자동 매칭${offTxt}`); // ⑤
 }
 function _depDeleteRecord(depositId){
  const rec=(depositDB.records||[]).find(r=>r.depositId===depositId);
@@ -17947,9 +18009,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.21&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.22&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.21&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.22&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
