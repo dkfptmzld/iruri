@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.32">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.33">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.32">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.33">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.32</title>
+<title>수업기록표 정산 시스템 v18.33</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4600,7 +4600,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.32';
+const SYSTEM_VERSION='v18.33';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5670,7 +5670,7 @@ function _depMapRowsHTML(maps){
  return _depMapGroups(maps).map(g=>{
   const multi=g.maps.length>1;
   const brCell = multi
-   ? g.maps.map(m=>`<span class="dep-bchip" onclick="_depEditMapping('${esc(m.mapId)}')" title="눌러서 이 취급점의 연결 수정">${m.branchKey?esc(m.branchKey):'(입금자명 기준)'}<button type="button" onclick="event.stopPropagation();_depDelMapping('${esc(m.mapId)}')" title="이 취급점만 삭제">✕</button></span>`).join('')
+   ? g.maps.map(m=>`<span class="dep-bchip" onclick="_depEditMapping('${esc(m.mapId)}')" title="눌러서 이 취급점의 연결 수정">${m.branchKey?esc(m.branchKey):'(입금자명 기준)'}<button type="button" onclick="event.stopPropagation();_depDetachBranch('${esc(m.mapId)}')" title="이 취급점만 센터에서 분리(기재내용은 센터에 그대로)">✕</button></span>`).join('')
    : (g.maps[0].branchKey?esc(g.maps[0].branchKey):'<span style="color:var(--text3)">(입금자명 기준)</span>');
   const sm=g.samples;
   const ids=g.maps.map(m=>m.mapId).join(',');
@@ -6081,6 +6081,43 @@ function _depDeleteRecord(depositId){
  }});
 }
 
+/* v18.33: 취급점 칩 ✕ = 취급점만 분리 — 매핑을 통째로 지우지 않고, 그 매핑의 기재내용·뺀 기재·확인한 이름은
+   같은 센터의 다른 매핑으로 옮긴 뒤 이 취급점 연결만 끊음. 기재내용으로 찾던 입금은 그대로 매칭, 이 취급점으로만 찾던 입금은 미등록으로. */
+function _depDetachBranch(mapId){
+ const m=getDepositMappings().find(x=>x.mapId===mapId); if(!m) return;
+ const sib=getDepositMappings().filter(x=>x.mapId!==m.mapId && !x.isExcluded && x.centerName===m.centerName && (x.region||'')===(m.region||''));
+ const cn=_depCName(m.centerName, m.region), bk0=m.branchKey||'(입금자명 기준)';
+ // 이 취급점 매핑에만 있는 기재내용 — 센터에 남길지 고름(기본: 센터 이름과 닮았거나 직접 확인한 이름만 체크)
+ const sibS=new Set(sib.flatMap(x=>(x.gijaeSamples||[]).map(v=>String(v).trim())));
+ const conf=new Set((m.confirmedNames||[]).map(v=>String(v).trim()));
+ const coreC=normDepositGijae(m.centerName);
+ const own=[...new Set((m.gijaeSamples||[]).map(v=>String(v).trim()).filter(v=>v && !sibS.has(v)))];
+ const likeC=v=>conf.has(v) || _depGijaeAlike(normDepositGijae(v), coreC) || (normDepLite(v)||'').includes(normDepLite(m.centerName)||'\u0000');
+ const pick=own.length ? `<div style="margin-top:10px;text-align:left;font-size:12.5px;">
+   <div style="color:var(--text2);margin-bottom:4px;">이 취급점으로 들어온 기재내용 — <b>체크한 것만 ${esc(cn)}에 남겨요</b> <span style="color:var(--text3)">(체크 해제 = 미등록으로)</span></div>
+   <div style="max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:8px;">${own.map((v,i)=>`<label style="display:flex;align-items:center;gap:7px;padding:6px 9px;border-bottom:1px solid var(--border);cursor:pointer;"><input type="checkbox" class="dep-dtk" data-i="${i}" ${likeC(v)?'checked':''} style="width:15px;height:15px;">${esc(v)}</label>`).join('')}</div></div>` : '';
+ showConfirm({icon:'✂️',title:'취급점 분리',desc:`<b>${esc(bk0)}</b> 취급점을 <b>${esc(cn)}</b>에서 분리할까요?<br><small style="color:var(--text3)">이 취급점으로만 찾던 입금은 미등록으로 돌아가요. 매핑 전체를 지우려면 오른쪽 '삭제'를 쓰세요.</small>${pick}`,okText:'분리',okStyle:'primary',onOk:()=>{
+  const keep=new Set(), drop=[];
+  document.querySelectorAll('#confirmOverlay .dep-dtk').forEach(cb=>{ const v=own[+cb.dataset.i]; if(v==null) return; if(cb.checked) keep.add(v); else drop.push(v); });
+  _depLog('map', `취급점 분리: ${bk0} ✂ ${cn}`, (keep.size?`센터에 남긴 기재: ${[...keep].join(', ')}`:'센터에 남긴 기재 없음')+(drop.length?`\n미등록으로 보낸 기재: ${drop.join(', ')}`:''), '');
+  const uni=(a,b)=>[...new Set([...(a||[]), ...(b||[])].map(x=>String(x)).filter(Boolean))];
+  const keepS=(m.gijaeSamples||[]).filter(v=>!drop.includes(String(v).trim()));
+  const keepC=(m.confirmedNames||[]).filter(v=>!drop.includes(String(v).trim()));
+  const t = sib[0] || null;
+  if(t){
+   t.gijaeSamples=uni(t.gijaeSamples, keepS);
+   t.removedSamples=uni(t.removedSamples, [...(m.removedSamples||[]), ...drop]);
+   if(keepC.length) t.confirmedNames=uni(t.confirmedNames, keepC);
+   if(!t.removedSamples.length) delete t.removedSamples;
+   removeDepositMapping(m.mapId);
+  } else {   // 혼자면 취급점만 비우고 '(입금자명 기준)'으로 남김
+   m.branchKey=''; m.branchRaw=''; m.gijaeSamples=keepS; m.confirmedNames=keepC;
+   if(drop.length) m.removedSamples=uni(m.removedSamples, drop);
+  }
+  runMatching(); renderDepositView();
+  showToast(`${bk0}을(를) ${cn}에서 분리했어요`+(drop.length?` — 기재 ${drop.length}개는 미등록으로`:''));
+ }});
+}
 function _depDelMapping(mapId){
  showConfirm({icon:'🗑️',title:'매핑 삭제',desc:'이 취급점↔센터 매핑을 삭제할까요?<br><small style="color:var(--text3)">관련 입금건은 미등록으로 되돌아갑니다.</small>',okText:'삭제',okStyle:'danger',onOk:()=>{
   { const m=getDepositMappings().find(x=>x.mapId===mapId); if(m) _depLog('map', `매핑 삭제: ${_depCName(m.isExcluded?'':m.centerName, m.region)}`, `취급점 ${m.branchKey||'(입금자명 기준)'}${(m.gijaeSamples||[]).length?` · 기재 ${m.gijaeSamples.slice(0,8).join(', ')}${m.gijaeSamples.length>8?' 외':''}`:''}`, ''); }
@@ -18544,9 +18581,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.32&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.33&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.32&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.33&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
