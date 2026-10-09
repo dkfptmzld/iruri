@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.24">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.25">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.24">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.25">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.24</title>
+<title>수업기록표 정산 시스템 v18.25</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3213,7 +3213,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
     <button class="btn sm primary" onclick="_depOpenUploadModal()" title="우리은행 거래내역 엑셀 업로드 → 매칭">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" multiple style="display:none" onchange="_depOnExcelFile(this)">
-    <button class="btn sm" onclick="_depSavePeriod()" title="이 회차 입금내역을 클라우드(구글시트)에 저장">💾 회차 저장</button>
+    <button class="btn sm" onclick="_depSavePeriod()" title="입금내역·매핑은 바뀔 때마다 자동으로 클라우드에 저장돼요. 이 버튼은 기다리지 않고 바로 저장">💾 지금 저장</button>
     <button class="btn sm" onclick="_depClear()" style="color:var(--red);border-color:var(--red);">초기화</button>
    </div>
   </div>
@@ -4572,7 +4572,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.24';
+const SYSTEM_VERSION='v18.25';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6291,14 +6291,90 @@ function _depSetSyncChip(state){
  c.textContent=s[0]; c.style.background=s[1]; c.style.color=s[2];
 }
 
+/* ── v18.25: 입금내역도 자동 공유 ──
+   · 회차별 '지문(sig)'을 마지막 동기화 시점(base)과 비교 → 바뀐 회차만 자동 저장(빈 회차 = 서버에서도 삭제)
+   · 탭 열 때/화면 복귀 시 서버를 받아 합침: 이 기기에 저장 안 된 변경이 있는 회차는 내 것 유지·업로드, 나머지는 서버가 정본 */
+const LS_DEP_SYNC='iruri_dep_sync_v1';
+let _depSyncBase=null;   // {period: sig} — 마지막으로 서버와 맞춘 상태. null = 아직 한 번도 안 맞춤(첫 실행)
+try{ const o=JSON.parse(localStorage.getItem(LS_DEP_SYNC)||'null'); if(o && o.base && typeof o.base==='object') _depSyncBase=o.base; }catch(_){}
+function _depSaveSyncBase(){ try{ localStorage.setItem(LS_DEP_SYNC, JSON.stringify({base:_depSyncBase})); }catch(_){} }
+function _depNormDate(d){
+ const s=String(d||'').trim(); if(!s) return '';
+ let m=s.match(/^(\d{4})\s*[.\-\/]\s*(\d{1,2})\s*[.\-\/]\s*(\d{1,2})/);
+ if(m) return `${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`;
+ m=s.match(/^[A-Z][a-z]{2} ([A-Z][a-z]{2}) (\d{1,2}) (\d{4})/);   // 예전 시트의 Date 문자열
+ if(m){ const mi='JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1])/3+1; if(mi>0) return `${m[3]}-${String(mi).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}`; }
+ return s;
+}
+function _depNormTime(t){
+ const s=String(t||'').trim(); if(!s) return '';
+ const m=s.match(/(오전|오후|AM|PM)?\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?/i); if(!m) return s;
+ let h=+m[2]; const ap=String(m[1]||m[5]||'').toUpperCase();
+ if((ap==='오후'||ap==='PM') && h<12) h+=12;
+ if((ap==='오전'||ap==='AM') && h===12) h=0;
+ return `${String(h).padStart(2,'0')}:${m[3]}:${m[4]||'00'}`;
+}
+function _depNormPeriodId(p){
+ const s=String(p||'').trim();
+ const m=s.match(/^(\d{4})\s*[.\-\/]\s*(\d{1,2})(?:\s*[.\-\/]\s*(\d{1,2}))?\.?$/);
+ if(m && (!m[3] || +m[3]===1)) return m[1]+'-'+String(m[2]).padStart(2,'0');
+ const d=s.match(/^[A-Z][a-z]{2} ([A-Z][a-z]{2}) 0?1 (\d{4})/);
+ if(d){ const mi='JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(d[1])/3+1; if(mi>0) return d[2]+'-'+String(mi).padStart(2,'0'); }
+ return s;
+}
+function _depHash(str){ let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h+str.charCodeAt(i))|0; } return (h>>>0).toString(36); }
+function _depRecSig(r){ return [r.account||'', _depNormDate(r.date), _depNormTime(r.time), r.summary||'', String(r.depositorName||'').trim(), r.branchRaw||'', r.branchKey||'', Number(r.amount)||0].join('\u0001'); }
+function _depPeriodSigs(recs){
+ const by={}; (recs||[]).forEach(r=>{ const p=r.periodId||''; if(!p) return; (by[p]=by[p]||[]).push(_depRecSig(r)); });
+ const out={}; Object.keys(by).forEach(p=>{ out[p]=by[p].length+':'+_depHash(by[p].sort().join('\n')); }); return out;
+}
+function _depDirtyPeriods(){
+ if(!_depSyncBase) return [];
+ const cur=_depPeriodSigs(depositDB.records);
+ return [...new Set([...Object.keys(cur), ...Object.keys(_depSyncBase)])].filter(p=>cur[p]!==_depSyncBase[p]);
+}
+function _depRecPayload(r){ return { account:r.account||'', date:_depNormDate(r.date), time:_depNormTime(r.time), summary:r.summary||'', depositorName:r.depositorName||'', branchRaw:r.branchRaw||'', branchKey:r.branchKey||'', amount:Number(r.amount)||0, matchStatus:r.matchStatus||'unmatched', matchedCenterName:r.matchedCenterName||'', region:r.region||'' }; }
+
+let _depMapPushPending=false, _depRecPushing=false, _depRecPushAgain=false;
+async function _depPushRecords(){
+ if(typeof gasPost!=='function' || typeof GAS_URL==='undefined' || !_depSyncBase) return true;
+ if(_depRecPushing){ _depRecPushAgain=true; return true; }
+ const dirty=_depDirtyPeriods(); if(!dirty.length) return true;
+ _depRecPushing=true;
+ const sigs=_depPeriodSigs(depositDB.records), periods={};
+ dirty.forEach(p=>{ periods[p]=depositDB.records.filter(r=>(r.periodId||'')===p).map(_depRecPayload); });
+ let ok=false;
+ try{
+  const r=await gasPost({action:'saveDepositRecords', periods}, 90000);
+  if(r && r.ok && Array.isArray(r.periods)) ok=true;
+  else if(r && r.ok){   // 예전 GAS(여러 회차 미지원) → 회차별로 한 번씩
+   ok=true;
+   for(const p of dirty){ const r2=await gasPost({action:'saveDepositRecords', period:p, records:periods[p]}, 90000); if(!(r2&&r2.ok)) ok=false; }
+  }
+ }catch(_){ ok=false; }
+ if(ok){ dirty.forEach(p=>{ if(sigs[p]) _depSyncBase[p]=sigs[p]; else delete _depSyncBase[p]; }); _depSaveSyncBase(); }
+ _depRecPushing=false;
+ if(_depRecPushAgain){ _depRecPushAgain=false; return _depPushRecords(); }
+ return ok;
+}
+
 async function _depSyncMappingsFromGAS(){
  if(typeof gasGet!=='function' || typeof GAS_URL==='undefined'){ _depSetSyncChip('local'); return false; }
  try{
   const r = await gasGet({action:'getDepositMappings'}, 45000);
   if(r && r.ok===true && Array.isArray(r.data)){
-   depositDB.mappings = r.data;   // 서버가 정본
+   if(_depMapPushPending) return false;   // v18.25: 이 기기에서 저장 대기 중인 매핑 변경이 있으면 덮어쓰지 않음
+   // v18.25: 예전 서버본엔 '뺀 기재'·'확인한 이름'이 없음 → 이 기기 값을 살려서 합치고 다시 저장
+   const loc={}; depositDB.mappings.forEach(m=>{ if(m.mapId) loc[m.mapId]=m; });
+   let carried=false;
+   const data=r.data.map(m=>{
+    const l=loc[m.mapId]; if(!l) return m;
+    ['removedSamples','confirmedNames'].forEach(k=>{ if(m[k]===undefined && Array.isArray(l[k]) && l[k].length){ m[k]=l[k].slice(); carried=true; } });
+    return m;
+   });
+   depositDB.mappings = data;   // 서버가 정본
    try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}  // GAS push 재유발 없이 캐시만
-   _depSetSyncChip('ok');
+   if(carried) _depSchedulePush(); else _depSetSyncChip('ok');
    return true;
   }
   // 서버는 응답했으나 액션 미구현({ok:false}) → 아직 GAS 미설정
@@ -6307,57 +6383,86 @@ async function _depSyncMappingsFromGAS(){
  return false;
 }
 
-let _depGasTimer=null;
-function _depSchedulePush(){
+let _depGasTimer=null, _depPushFails=0;
+function _depSchedulePush(delay){
  if(typeof gasPost!=='function' || typeof GAS_URL==='undefined') return;
  _depSetSyncChip('save');
+ _depMapPushPending=true;   // 저장 끝날 때까지 서버 매핑으로 덮어쓰지 않음
  clearTimeout(_depGasTimer);
- _depGasTimer=setTimeout(()=>{
-  gasPost({action:'saveDepositMappings', mappings:depositDB.mappings})
-   .then(r=>{ _depSetSyncChip(r && r.ok ? 'ok' : 'local'); })
-   .catch(()=>{ _depSetSyncChip('local'); });  // 실패해도 로컬엔 남음
- }, 2500);
+ _depGasTimer=setTimeout(async ()=>{
+  _depGasTimer=null;
+  let ok=true;
+  try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings}); ok=!!(r && r.ok); }catch(_){ ok=false; }
+  if(ok) _depMapPushPending=false;
+  const rok=await _depPushRecords();   // v18.25: 바뀐 회차 입금내역도 같이 저장
+  _depSetSyncChip(ok && rok ? 'ok' : 'local');   // 실패해도 로컬엔 남음
+  if(ok && rok) _depPushFails=0;
+  else if(++_depPushFails<=5) _depSchedulePush(30000);   // 오프라인·혼잡 → 30초 뒤 다시(최대 5번)
+ }, delay||2500);
 }
 
-/* 저장된 회차 입금내역을 GAS에서 받아 로컬에 '없는 회차만' 채움(작업 중 로컬 회차 보존) */
+/* 서버 입금내역을 받아 회차별로 합침(v18.25) */
 async function _depSyncRecordsFromGAS(){
  if(typeof gasGet!=='function' || typeof GAS_URL==='undefined') return false;
  try{
   const r = await gasGet({action:'getDepositRecords'}, 60000);
-  if(r && r.ok===true && Array.isArray(r.data)){
-   const localPeriods=new Set(depositDB.records.map(x=>x.periodId||''));
-   const add=r.data.filter(x=>!localPeriods.has(x.periodId||'')).map(x=>({ ...x, depositId:x.depositId||_depUid('dep'), uploadBatchId:x.uploadBatchId||'gas' }));
-   if(add.length){
-    depositDB.records = depositDB.records.concat(add);
-    try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}
-    return true;
+  if(!(r && r.ok===true && Array.isArray(r.data))) return false;
+  if(_depRegTarget || _depRecPushing) return false;   // 등록 창을 쓰는 중이거나 저장 중이면 다음 기회에
+  const server=r.data.map(x=>({ ...x, periodId:_depNormPeriodId(x.periodId), date:_depNormDate(x.date), time:_depNormTime(x.time),
+    depositId:_depUid('dep'), uploadBatchId:'gas', matchedCenterName:x.matchedCenterName||null, matchStatus:x.matchStatus||'unmatched' }));
+  const sSig=_depPeriodSigs(server), lSig=_depPeriodSigs(depositDB.records), base=_depSyncBase;
+  const take=new Set();   // 서버본으로 바꿀 회차
+  [...new Set([...Object.keys(sSig), ...Object.keys(lSig)])].forEach(p=>{
+   if(lSig[p]===sSig[p]) return;                                  // 같음 → 그대로
+   if(base){
+    if(lSig[p]!==base[p]) return;                                 // 이 기기에 저장 안 된 변경 → 내 것 유지(곧 업로드)
+    take.add(p);                                                  // 다른 기기가 바꿈/지움 → 서버본
+   } else {                                                       // 첫 동기화(업데이트 직후)
+    if(!sSig[p]) return;                                          // 이 기기에만 있는 회차 → 업로드
+    if(!lSig[p]){ take.add(p); return; }
+    const mine=depositDB.records.some(x=>(x.periodId||'')===p && x.uploadBatchId && x.uploadBatchId!=='gas');
+    if(!mine) take.add(p);                                        // 이 기기에서 직접 올린 회차면 내 것, 아니면 서버본
    }
+  });
+  if(take.size){
+   depositDB.records = depositDB.records.filter(x=>!take.has(x.periodId||'')).concat(server.filter(x=>take.has(x.periodId||'')));
+   depositDB.batches = (depositDB.batches||[]).filter(b=>!take.has(b.period));
   }
+  _depSyncBase = sSig; _depSaveSyncBase();   // 서버와 맞춘 기준점
+  try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}
+  if(_depDirtyPeriods().length) _depSchedulePush();   // 내 쪽 변경분 업로드
+  return take.size>0;
  }catch(e){}
  return false;
 }
 
-/* 탭 열 때: 매핑+회차 입금내역 동기화 → 반영 후 재매칭(수동 '매칭 실행' 불필요) */
+/* 탭 열 때·화면 복귀 시: 매핑+입금내역 동기화 → 반영 후 재매칭 */
+let _depSyncing=false;
 async function _depSyncFromGAS(){
- const m = await _depSyncMappingsFromGAS();
- const r = await _depSyncRecordsFromGAS();
- if(m || r){ try{ runMatching(); }catch(_){} renderDepositView(); }
+ if(_depSyncing) return; _depSyncing=true;
+ try{
+  const m = await _depSyncMappingsFromGAS();
+  const r = await _depSyncRecordsFromGAS();
+  if(m || r){ try{ runMatching(); }catch(_){} renderDepositView(); }
+ } finally { _depSyncing=false; }
 }
+document.addEventListener('visibilitychange', ()=>{
+ try{ if(document.visibilityState==='visible' && document.getElementById('depositView') && document.getElementById('depositView').style.display!=='none' && document.getElementById('depositView').offsetParent!==null) _depSyncFromGAS(); }catch(_){}
+});
 
-/* 💾 이 회차 입금내역을 클라우드(구글시트)에 저장 */
-function _depSavePeriod(){
- const period=_depActivePeriod();
- const recs=_depPeriodRecs();
- if(!recs.length){ showToast(`[${period}] 저장할 입금내역이 없어요`); return; }
+/* 💾 지금 저장 — 자동 저장을 기다리지 않고 바로 클라우드에 올림 */
+async function _depSavePeriod(){
  if(typeof gasPost!=='function' || typeof GAS_URL==='undefined'){ showToast('클라우드에 연결되지 않았어요'); return; }
- _depSetSyncChip('save');
- showToast(`[${period}] 클라우드 저장 중…`);
- gasPost({action:'saveDepositRecords', period:period, records:recs})
-  .then(r=>{
-   if(r && r.ok){ _depSetSyncChip('ok'); showToast(`[${period}] ${recs.length}건 클라우드 저장 완료`); }
-   else { _depSetSyncChip('local'); showToast('저장 실패 — GAS에 계좌매칭 저장기능이 배포됐는지 확인하세요'); }
-  })
-  .catch(()=>{ _depSetSyncChip('local'); showToast('저장 실패(오프라인/혼잡)'); });
+ if(!_depSyncBase){ showToast('클라우드 확인 중이에요 — 잠시 후 다시 눌러주세요'); _depSyncFromGAS(); return; }
+ const n=_depDirtyPeriods().length;
+ if(!n && !_depMapPushPending){ _depSetSyncChip('ok'); showToast('이미 모두 클라우드에 저장돼 있어요'); return; }
+ clearTimeout(_depGasTimer); _depSetSyncChip('save'); showToast('클라우드 저장 중…');
+ let ok=true;
+ try{ const r=await gasPost({action:'saveDepositMappings', mappings:depositDB.mappings}); ok=!!(r&&r.ok); }catch(_){ ok=false; }
+ if(ok) _depMapPushPending=false;
+ const rok=await _depPushRecords();
+ _depSetSyncChip(ok&&rok?'ok':'local');
+ showToast(ok&&rok ? `클라우드 저장 완료${n?` (회차 ${n}개)`:''}` : '저장 실패 — 잠시 후 다시 눌러주세요(로컬엔 남아 있어요)');
 }
 
 /** v12.68: centers의 schedule.fee → DB.centerFees 재구성 (GAS 동기화 대체) */
@@ -18019,9 +18124,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.24&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.25&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.24&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.25&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
