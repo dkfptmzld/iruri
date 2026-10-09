@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.46">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.47">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.46">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.47">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.46</title>
+<title>수업기록표 정산 시스템 v18.47</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -294,28 +294,40 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-tlink{color:var(--blue);text-decoration:none;font-weight:600;cursor:pointer;border-bottom:1px dashed color-mix(in srgb,var(--blue) 40%,transparent);}
 .dep-tlink:hover{border-bottom-style:solid;}
 .ts-ov{position:fixed;inset:0;z-index:10060;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:18px;}
-.ts-card{position:relative;background:var(--surface);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(920px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}
-.ts-x{position:absolute;right:12px;top:12px;width:30px;height:30px;border:none;border-radius:9px;background:var(--surface2);color:var(--text2);cursor:pointer;font-size:14px;}
-.ts-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 54px 14px 20px;border-bottom:1px solid var(--border);background:radial-gradient(120% 160% at 0% 0%,rgba(26,122,80,.10),transparent 60%);}
-.ts-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:17px;}
-.ts-name{font-size:17px;font-weight:800;color:var(--text);} .ts-sub{font-size:12px;color:var(--text3);margin-top:2px;}
-.ts-sum{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
-.ts-sum>div{border:1px solid var(--border);border-radius:11px;padding:6px 11px;background:var(--surface);display:flex;flex-direction:column;min-width:86px;}
-.ts-sum small{font-size:10.5px;color:var(--text3);} .ts-sum b{font-size:14px;color:var(--text);font-variant-numeric:tabular-nums;}
+.ts-card{position:relative;background:var(--surface);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(1320px,96vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.ts-x{position:absolute;right:14px;top:14px;width:32px;height:32px;border:none;border-radius:9px;background:var(--surface2);color:var(--text2);cursor:pointer;font-size:14px;}
+.ts-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:18px 60px 16px 24px;border-bottom:1px solid var(--border);background:radial-gradient(120% 160% at 0% 0%,rgba(26,122,80,.10),transparent 60%);}
+.ts-av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.ts-name{font-size:19px;font-weight:800;color:var(--text);} .ts-sub{font-size:12.5px;color:var(--text3);margin-top:2px;}
+.ts-sum{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap;}
+.ts-sum>div{border:1px solid var(--border);border-radius:12px;padding:7px 14px;background:var(--surface);display:flex;flex-direction:column;min-width:100px;}
+.ts-sum small{font-size:11px;color:var(--text3);} .ts-sum b{font-size:15.5px;color:var(--text);font-variant-numeric:tabular-nums;}
 .ts-sum .hl{border-color:var(--blue);background:var(--blue-bg);} .ts-sum .hl b{color:var(--blue);}
-.ts-wrap{overflow:auto;padding:0 0 8px;}
-.ts-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
-.ts-tbl th{position:sticky;top:0;background:var(--surface2);color:var(--text3);font-size:11.5px;font-weight:600;padding:8px 8px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;}
-.ts-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;}
-.ts-tbl td.tsD{font-weight:800;color:var(--text);background:var(--surface2);vertical-align:middle;}
-.ts-tbl tr.tsDay td{background:transparent;padding:3px 8px;font-size:10.5px;color:var(--text3);border-bottom:none;}
-.ts-tbl tr.tsDay td.tsD{background:var(--surface2);}
-.ts-tbl td.tsC{text-align:left;color:var(--text);font-weight:600;}
-.ts-tbl td.tsN{text-align:right;font-variant-numeric:tabular-nums;}
-.ts-tbl tr.tsHit td:not(.tsD){background:var(--blue-bg);} .ts-tbl tr.tsHit td.tsC{color:var(--blue);}
-.tsO{color:var(--green);font-weight:800;} .tsX{color:var(--text3);opacity:.6;} .tsT{color:var(--amber);font-weight:800;}
+.ts-wrap{overflow:auto;padding:0 8px 10px;}
+.ts-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px;table-layout:fixed;}
+.ts-tbl col.tsColC{width:30%;} .ts-tbl col.tsColW{width:auto;} .ts-tbl col.tsColN{width:9%;}
+.ts-tbl th{position:sticky;top:0;z-index:2;background:var(--surface);color:var(--text3);font-size:12px;font-weight:700;padding:11px 10px;border-bottom:2px solid var(--border2);text-align:center;white-space:nowrap;}
+.ts-tbl td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;}
+.ts-tbl td.tsC{text-align:left;color:var(--text);font-weight:600;padding-left:22px;overflow:hidden;text-overflow:ellipsis;}
+.ts-tbl td.tsN{text-align:right;font-variant-numeric:tabular-nums;} .ts-tbl td.tsFee{color:var(--text3);}
+/* 요일 머리줄 — 요일마다 색, 날짜는 주 칸에 맞춰 굵게 */
+.ts-tbl tr.tsDayH td{--dc:var(--text2);--db:var(--surface2);background:var(--db);border-top:14px solid var(--surface);border-bottom:1px solid color-mix(in srgb,var(--dc) 35%,transparent);padding:9px 10px;font-weight:700;color:var(--dc);}
+.ts-tbl tr.tsDayH:first-child td{border-top-width:6px;}
+.ts-tbl tr.tsDayH td:first-child{border-radius:10px 0 0 0;} .ts-tbl tr.tsDayH td:last-child{border-radius:0 10px 0 0;}
+.ts-tbl td.tsDayName{text-align:left;}
+.tsDayBadge{display:inline-block;padding:2px 11px;border-radius:99px;background:var(--dc);color:#fff;font-size:12.5px;font-weight:800;margin-right:8px;}
+.tsDayName small{font-size:11px;font-weight:600;color:var(--text3);}
+.ts-tbl td.tsDt{font-size:12.5px;}
+.ts-tbl td.tsDaySum{font-size:12.5px;}
+.ts-tbl tr.tsd0 td{--dc:#2563eb;--db:rgba(37,99,235,.08);} .ts-tbl tr.tsd1 td{--dc:#0f9d6b;--db:rgba(15,157,107,.08);} .ts-tbl tr.tsd2 td{--dc:#c2410c;--db:rgba(194,65,12,.08);}
+.ts-tbl tr.tsd3 td{--dc:#7c3aed;--db:rgba(124,58,237,.08);} .ts-tbl tr.tsd4 td{--dc:#b45309;--db:rgba(180,83,9,.09);} .ts-tbl tr.tsd5 td{--dc:#0e7490;--db:rgba(14,116,144,.08);} .ts-tbl tr.tsd6 td{--dc:#be123c;--db:rgba(190,18,60,.08);}
+.ts-tbl tr.tsRow:hover td{background:var(--surface2);}
+.ts-tbl tr.tsHit td{background:var(--blue-bg);} .ts-tbl tr.tsHit td.tsC{color:var(--blue);box-shadow:inset 3px 0 0 var(--blue);}
+.ts-tbl tfoot td{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--border2);border-bottom:none;font-weight:800;color:var(--text);padding:11px 10px;}
+.tsO{color:var(--green);font-weight:800;font-size:14px;} .tsX{color:var(--text3);opacity:.55;} .tsT{color:var(--amber);font-weight:800;}
 .tsSub{font-size:10.5px;font-weight:600;color:var(--amber);background:var(--amber-bg);border-radius:99px;padding:1px 6px;}
-@media(max-width:600px){ .ts-ov{padding:8px;} .ts-head{padding:14px 46px 12px 14px;} .ts-sum{margin-left:0;width:100%;} .ts-sum>div{flex:1;min-width:0;} }
+@media(max-width:600px){ .ts-ov{padding:8px;} .ts-head{padding:14px 46px 12px 14px;} .ts-sum{margin-left:0;width:100%;} .ts-sum>div{flex:1;min-width:0;padding:6px 9px;}
+ .ts-wrap{padding:0 4px 8px;} .ts-tbl{table-layout:auto;min-width:640px;font-size:12.5px;} .ts-tbl td.tsC{padding-left:12px;} }
 .dep-lc{vertical-align:top;white-space:nowrap;font-size:12.5px;line-height:1.7;}
 .dep-lsum{border-top:1px dashed var(--border2);margin-top:2px;font-weight:700;color:var(--text);}
 .dep-ddiff{display:inline-block;font-size:11px;font-weight:700;color:var(--red);background:var(--red-bg);border-radius:99px;padding:1px 7px;margin-left:4px;white-space:nowrap;}
@@ -4794,7 +4806,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.46';
+const SYSTEM_VERSION='v18.47';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5874,21 +5886,27 @@ function _depShowTeacherSheet(name, center, region){
  const mark=v=>{ const x=String(v||'').toUpperCase(); return x==='O'?'<span class="tsO">O</span>':(v==='△'?'<span class="tsT">△</span>':(x==='X'?'<span class="tsX">X</span>':'<span class="tsX">·</span>')); };
  const cKey=String(center||'')+'|'+String(region||'');
  let cnt=0, sum=0, cCnt=0, cSum=0;
+ const DAYF={월:'월요일',화:'화요일',수:'수요일',목:'목요일',금:'금요일',토:'토요일',일:'일요일'};
+ // v18.47: 요일마다 색 막대 머리줄(요일·날짜·요일 소계) → 그 아래 센터 줄. 요일 사이는 굵은 구분선
  const body=days.map(d=>{
   const dg=(t.dayGroups||[]).find(g=>g.day===d); const dates=(dg&&dg.dates)||[];
   const ls=byDay[d];
-  const _tsDt=v=>{ if(v==null||v==='') return ''; const x=String(v), m=x.match(/^\d{4}-\d{1,2}-(\d{1,2})/); if(m) return (+m[1])+'일'; if(/^\d{1,2}$/.test(x)) return (+x)+'일'; return escH(x); };
-  const head=`<tr class="tsDay"><td class="tsD" rowspan="${ls.length+1}">${escH(d)}</td><td></td>${Array.from({length:nW},(_,i)=>`<td class="tsDt">${_tsDt(dates[i])}</td>`).join('')}<td></td><td></td><td></td></tr>`;
-  return head+ls.map(l=>{
-   const c=Number(l.count)||0, tot=Number(l.total!=null?l.total:(Number(l.feePer)||0)*c)||0; cnt+=c; sum+=tot;
+  const _tsDt=v=>{ if(v==null||v==='') return '—'; const x=String(v), m=x.match(/^\d{4}-\d{1,2}-(\d{1,2})/); if(m) return (+m[1])+'일'; if(/^\d{1,2}$/.test(x)) return (+x)+'일'; return escH(x); };
+  let dCnt=0, dSum=0;
+  const rows=ls.map(l=>{
+   const c=Number(l.count)||0, tot=Number(l.total!=null?l.total:(Number(l.feePer)||0)*c)||0; cnt+=c; sum+=tot; dCnt+=c; dSum+=tot;
    const lr=l.region||((DB.centers||[]).filter(x=>x.name===l.center).length===1?((DB.centers||[]).find(x=>x.name===l.center).region||''):'');
    const hit=(String(l.center||'')+'|'+lr)===cKey || (!lr && l.center===center); if(hit){ cCnt+=c; cSum+=tot; }
-   return `<tr class="${hit?'tsHit':''}"><td class="tsC">${escH(l.center||'')}${l.isSubstitute?` <span class="tsSub">보강${l.substituteFor?' ('+escH(l.substituteFor)+')':''}</span>`:''}</td>${Array.from({length:nW},(_,i)=>`<td class="tsA">${mark((l.attend||[])[i])}</td>`).join('')}<td class="tsN">${c}</td><td class="tsN">${(Number(l.feePer)||0).toLocaleString('ko-KR')}</td><td class="tsN"><b>${tot.toLocaleString('ko-KR')}</b></td></tr>`;
+   return `<tr class="tsRow${hit?' tsHit':''}"><td class="tsC">${escH(l.center||'')}${l.isSubstitute?` <span class="tsSub">보강${l.substituteFor?' ('+escH(l.substituteFor)+')':''}</span>`:''}</td>${Array.from({length:nW},(_,i)=>`<td class="tsA">${mark((l.attend||[])[i])}</td>`).join('')}<td class="tsN">${c}회</td><td class="tsN tsFee">${(Number(l.feePer)||0).toLocaleString('ko-KR')}</td><td class="tsN"><b>${tot.toLocaleString('ko-KR')}</b></td></tr>`;
   }).join('');
+  const di=Math.max(0,DAYS.indexOf(d));
+  const head=`<tr class="tsDayH tsd${di}"><td class="tsDayName"><span class="tsDayBadge">${escH(DAYF[d]||d)}</span><small>${ls.length}개 센터</small></td>${Array.from({length:nW},(_,i)=>`<td class="tsDt">${_tsDt(dates[i])}</td>`).join('')}<td class="tsN tsDaySum">${dCnt}회</td><td></td><td class="tsN tsDaySum">${dSum.toLocaleString('ko-KR')}</td></tr>`;
+  return head+rows;
  }).join('');
  const html=`<div class="ts-head"><div class="ts-av">${escH(String(name).slice(0,1))}</div><div><div class="ts-name">${escH(name)} 강사</div><div class="ts-sub">${escH(ym)} 수업기록표 · 읽기 전용</div></div>
    <div class="ts-sum"><div><small>총 수업</small><b>${cnt}회</b></div><div><small>수업료 합계</small><b>${fmtDepWon(sum)}</b></div><div class="hl"><small>${escH(center)} 분</small><b>${cCnt}회 · ${fmtDepWon(cSum)}</b></div></div></div>
-  <div class="ts-wrap"><table class="ts-tbl"><thead><tr><th>요일</th><th>센터명</th>${Array.from({length:nW},(_,i)=>`<th>${i+1}주</th>`).join('')}<th>횟수</th><th>수업료</th><th>금액</th></tr></thead><tbody>${body||`<tr><td colspan="${nW+5}" class="dep-empty">수업 기록이 없어요</td></tr>`}</tbody></table></div>`;
+  <div class="ts-wrap"><table class="ts-tbl"><colgroup><col class="tsColC">${Array.from({length:nW},()=>'<col class="tsColW">').join('')}<col class="tsColN"><col class="tsColN"><col class="tsColN"></colgroup><thead><tr><th style="text-align:left;">요일 · 센터명</th>${Array.from({length:nW},(_,i)=>`<th>${i+1}주</th>`).join('')}<th>횟수</th><th>수업료</th><th>금액</th></tr></thead><tbody>${body||`<tr><td colspan="${nW+4}" class="dep-empty">수업 기록이 없어요</td></tr>`}</tbody>
+   <tfoot><tr><td class="tsC">합계</td>${Array.from({length:nW},()=>'<td></td>').join('')}<td class="tsN">${cnt}회</td><td></td><td class="tsN">${sum.toLocaleString('ko-KR')}</td></tr></tfoot></table></div>`;
  let ov=document.getElementById('depTsOverlay');
  if(!ov){ ov=document.createElement('div'); ov.id='depTsOverlay'; ov.className='ts-ov'; ov.addEventListener('click',e=>{ if(e.target===ov) ov.style.display='none'; }); document.body.appendChild(ov);
   document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const o=document.getElementById('depTsOverlay'); if(o) o.style.display='none'; } }); }
@@ -19060,9 +19078,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.46&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.47&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.46&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.47&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
