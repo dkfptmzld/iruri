@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.36">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.37">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.36">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.37">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.36</title>
+<title>수업기록표 정산 시스템 v18.37</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4606,7 +4606,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.36';
+const SYSTEM_VERSION='v18.37';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5607,8 +5607,9 @@ function _depUnpaidBodyHTML(rows){
  let view=rows.filter(r=> (_depStatusFilter==='all' || (_depStatusFilter==='diff' ? (r.hasL && r.paid && r.diff!==0) : (_depStatusFilter==='paid'? r.paid : !r.paid)))
                       && (_depRegionFilter==='all' || r.region===_depRegionFilter)
                       && (!q || r.name.includes(q)) );
- // v18.36: 금액 차이 보기 = 입금된 곳 중 수업기록표 총액과 다른 곳, 차이가 큰 순
- if(_depStatusFilter==='diff') view.sort((a,b)=> Math.abs(b.diff)-Math.abs(a.diff) || a.name.localeCompare(b.name,'ko'));
+ // v18.37: 금액 차이 보기 = 입금된 곳 중 수업기록표 총액과 다른 곳 — 지역(서울→인천→수원→기타) 순, 그 안에서 가나다 순
+ const _rgO=rg=>{ const i=['서울','인천','수원'].indexOf(rg||''); return i<0?9:i; };
+ if(_depStatusFilter==='diff') view.sort((a,b)=> _rgO(a.region)-_rgO(b.region) || (a.region||'').localeCompare(b.region||'','ko') || a.name.localeCompare(b.name,'ko'));
  else view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || (a.region||'').localeCompare(b.region||'','ko') || a.name.localeCompare(b.name,'ko'));
  const body=view.map(r=>`<tr>
     <td><a href="#" onclick="event.preventDefault();openCenterByKey('${esc(r.name)}','${esc(r.region)}')" title="센터 수정/삭제" style="color:var(--blue);font-weight:600;text-decoration:none;cursor:pointer;">${esc(r.name)}</a></td>
@@ -5661,7 +5662,7 @@ function renderDepUnpaid(){
  const head=`<div style="padding:10px 12px 6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <span style="font-size:12.5px;color:var(--text2)">${_depRegionFilter==='all'?'전체':esc(_depRegionFilter)} — 입금 <b style="color:var(--green)">${scPaid}곳</b> · 미입금 <b style="color:var(--red)">${scTotal-scPaid}곳</b> <span style="color:var(--text3)">/ ${scTotal}곳</span></span>
     <span style="flex:1"></span>
-    ${fbtn('all','전체')} ${fbtn('unpaid','❌ 미입금')} ${fbtn('paid','✅ 입금')} ${lessonLoaded?fbtn('diff',`⚠ 금액 차이 ${diffCnt}`).replace('<button ','<button title="입금된 센터 중 입금액이 수업기록표 총액과 다른 곳 — 차이가 큰 순" '):''}
+    ${fbtn('all','전체')} ${fbtn('unpaid','❌ 미입금')} ${fbtn('paid','✅ 입금')} ${lessonLoaded?fbtn('diff',`⚠ 금액 차이 ${diffCnt}`).replace('<button ','<button title="입금된 센터 중 입금액이 수업기록표 총액과 다른 곳 — 서울·인천·수원 순, 가나다 순" '):''}
     <button class="btn sm" onclick="_depCopyUnpaid()" title="미입금 센터를 지역별로 복사(카톡 붙여넣기용)">📋 미입금 복사</button>
     <input id="depStatusSearch" value="${esc(q)}" oninput="_depStatusSearch(this.value)" placeholder="센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;">
   </div>
@@ -18698,9 +18699,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.36&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.37&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.36&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.37&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
