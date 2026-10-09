@@ -94,6 +94,7 @@ function doGet(e) {
     if (action === 'getJournalRecords')    return response(getJournalRecords(p.center, p.teacher, p.year, p.month, p.region));   // 계획서 일지
     if (action === 'getDepositMappings')   return response(depGetMappings());                                                    // 계좌매칭: 매핑 조회
     if (action === 'getDepositRecords')    return response(depGetRecords());                                                     // 계좌매칭: 회차 입금내역 조회
+    if (action === 'getDepositLogs')       return response(depGetLogs(p.limit));                                                 // 계좌매칭: 변경이력 조회(v18.26)
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
@@ -142,6 +143,7 @@ function doPost(e) {
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
     if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings));         // 계좌매칭: 매핑 저장(전체 교체)
+    if (action === 'addDepositLogs')        return response(depAddLogs(body.logs));                   // 계좌매칭: 변경이력 추가(v18.26, 같은 id는 한 번만)
     if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records, body.periods)); // 계좌매칭: 회차 입금내역 저장(periods={회차:[...]} 여러 회차 한 번에)
 
     return response({ ok: false, message: '알 수 없는 action' });
@@ -1630,4 +1632,51 @@ function depSaveRecords(period, records, periods) {
   if (all.length > 1) sh.getRange(2, 9, all.length - 1, 1).setNumberFormat('0');   // 금액만 숫자
   out.setValues(all);                                                  // 전체 재기록(배치)
   return { ok: true, period: String(period || ''), periods: Object.keys(map), count: cnt };
+}
+
+
+/* ════════ 계좌매칭 — 변경이력 (v18.26) ════════
+ *  센터 등록·매핑 수정/삭제·기재 빼기·입금 삭제·업로드·회차 변경을 한 줄씩 쌓는다(추가만, 덮어쓰기 없음).
+ *  앱이 만든 id로 중복을 걸러서, 같은 기록을 여러 번 보내도 한 번만 남는다. 잠금은 doPost 가 처리. */
+var DEP_LOG_SHEET = '계좌매칭_변경이력';
+var DEP_LOG_HEADERS = ['id','at','by','dev','kind','title','detail','period'];
+
+function _depLogSheet() {
+  var ss = ss_();
+  var sh = ss.getSheetByName(DEP_LOG_SHEET);
+  if (!sh) { sh = ss.insertSheet(DEP_LOG_SHEET); var h = sh.getRange(1, 1, 1, DEP_LOG_HEADERS.length); h.setNumberFormat('@'); h.setValues([DEP_LOG_HEADERS]); }
+  return sh;
+}
+
+function depGetLogs(limit) {
+  limit = Math.min(Math.max(Number(limit) || 1500, 1), 5000);
+  var sh = _depLogSheet(), n = sh.getLastRow();
+  if (n < 2) return { ok: true, data: [] };
+  var start = Math.max(2, n - limit + 1);
+  var v = sh.getRange(start, 1, n - start + 1, DEP_LOG_HEADERS.length).getDisplayValues(), out = [];
+  for (var i = 0; i < v.length; i++) {
+    var r = v[i]; if (!r[0]) continue;
+    out.push({ id: r[0], at: r[1], by: r[2], dev: r[3], kind: r[4], title: r[5], detail: r[6], period: r[7] });
+  }
+  return { ok: true, data: out };
+}
+
+function depAddLogs(logs) {
+  logs = (logs || []).filter(function (l) { return l && l.id; });
+  var ids = logs.map(function (l) { return String(l.id); });
+  if (!logs.length) return { ok: true, added: 0, ids: ids };
+  var sh = _depLogSheet(), n = sh.getLastRow(), have = {};
+  if (n >= 2) sh.getRange(2, 1, n - 1, 1).getDisplayValues().forEach(function (r) { have[r[0]] = 1; });
+  var rows = [];
+  logs.forEach(function (l) {
+    var id = String(l.id); if (have[id]) return; have[id] = 1;
+    rows.push([ id, String(l.at || ''), String(l.by || ''), String(l.dev || ''), String(l.kind || ''),
+                String(l.title || '').slice(0, 500), String(l.detail || '').slice(0, 5000), String(l.period || '') ]);
+  });
+  if (rows.length) {
+    var rg = sh.getRange(Math.max(n, 1) + 1, 1, rows.length, DEP_LOG_HEADERS.length);
+    rg.setNumberFormat('@');   // 글자 그대로(날짜·숫자 자동변환 방지)
+    rg.setValues(rows);
+  }
+  return { ok: true, added: rows.length, ids: ids };
 }
