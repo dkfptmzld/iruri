@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.55">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.56">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.55">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.56">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.55</title>
+<title>수업기록표 정산 시스템 v18.56</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4888,7 +4888,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.55';
+const SYSTEM_VERSION='v18.56';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -11183,7 +11183,7 @@ function _almUpdateCenters(ti){
  });
  const custom = document.createElement('option');
  custom.value = '__custom__'; custom.textContent = '✏️ 직접 입력...';
- sel.appendChild(custom);
+ sel.insertBefore(custom, sel.options[1]||null); // v18.56: 잘 보이게 맨 위(안내 문구 바로 다음)
  _almAutoFee();
 }
 
@@ -18059,7 +18059,7 @@ async function githubUpload(){
   setBtn(spinIcon + ' 인코딩 중...', '#24292e');
   // 현재 화면 저장 후 홈으로 이동 (DOM 최소화 목적)
   const prevState = { data: STATE.data, cur: STATE.cur };
-  ['settleView','teachersView','centersView','historyView','submissionsView','changelogView'].forEach(id=>{
+  ['settleView','teachersView','centersView','historyView','submissionsView','changelogView','signupsView','depositView','receiptsView'].forEach(id=>{
    const el=document.getElementById(id); if(el) el.style.display='none';
   });
   await new Promise(r=>setTimeout(r, 150)); // DOM 갱신 대기
@@ -18563,7 +18563,7 @@ function _showLandingUI(){
   sessionStorage.setItem('iruri_nav_flag', '1');
  }
  // 모든 화면 숨기기
- ['loginScreen','teacherInputScreen','adminTopbar','settleView','teachersView','centersView','historyView','submissionsView','changelogView'].forEach(id=>{
+ ['loginScreen','teacherInputScreen','adminTopbar','settleView','teachersView','centersView','historyView','submissionsView','changelogView','signupsView','depositView','receiptsView'].forEach(id=>{
  const el=document.getElementById(id);
  if(el) el.style.display='none';
  });
@@ -19115,7 +19115,7 @@ function adminLogout(){
  // stopAdminAutoLogout();
  // removeAdminAutoLogoutUI();
  document.getElementById('adminTopbar').classList.remove('visible');
- ['settleView','teachersView','centersView','historyView','submissionsView','changelogView'].forEach(id=>{
+ ['settleView','teachersView','centersView','historyView','submissionsView','changelogView','signupsView','depositView','receiptsView'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.style.display='none';
  });
  document.getElementById('modeSelectScreen').style.display='flex';
@@ -19169,9 +19169,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.55&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.56&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.55&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.56&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -20212,6 +20212,8 @@ function enterTeacherMode(){
  document.getElementById('modeSelectScreen').style.display = 'none';
  document.getElementById('loginScreen').style.display = 'none';
  document.getElementById('teacherInputScreen').style.display = 'block';
+ // v18.56: 관리자 화면(계좌매칭 등)이 수업기록표 작성 화면 아래에 남아 보이지 않게
+ ['settleView','teachersView','centersView','historyView','submissionsView','changelogView','signupsView','depositView','receiptsView'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
  document.body.classList.add('ti-mode'); // v14.70: 관리자용 강사선택 바 숨김
  initTeacherInput();
  startAutoSave(); // v11.20: 자동저장 시작
@@ -20272,7 +20274,7 @@ const TEACHER_TUTORIAL_STEPS = [
  {title:"1️⃣ 강사 이름 확인", desc:"강사님 이름이 자동으로 입력돼 있어요. 본인 이름이 맞는지 확인해주세요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:10px;font-size:10px;'><div style='font-size:9px;color:#888;margin-bottom:5px;'>강사 이름</div><div style='background:white;border:1.5px solid #1A7A50;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between;'><span>박기남</span><span style='color:#1A7A50;font-size:16px;'>✓</span></div><div style='font-size:9px;color:#888;margin-top:6px;'>이름이 다르다면 정확한 이름으로 다시 입력해주세요</div></div>", target:"#ti-teacher-display"},
  {title:"2️⃣ 정산받을 년/월 선택", desc:"정산받으실 달을 선택하세요. 보통 <b>이전 달</b>을 선택합니다.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:10px;font-size:10px;'><div style='font-size:9px;color:#888;margin-bottom:6px;'>📌 예: 5월에 작성하면 4월 선택</div><div style='display:flex;gap:6px;'><div style='flex:1.2;'><div style='font-size:9px;color:#888;margin-bottom:3px;'>년도</div><div style='background:white;border:1.5px solid #E2E0D8;border-radius:6px;padding:7px 10px;font-size:12px;display:flex;justify-content:space-between;align-items:center;'><span>2026</span><span style='color:#888;font-size:10px;'>▾</span></div></div><div style='flex:1;'><div style='font-size:9px;color:#888;margin-bottom:3px;'>월</div><div style='background:white;border:1.5px solid #BA7517;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:600;color:#856404;display:flex;justify-content:space-between;align-items:center;'><span>4월</span><span style='font-size:10px;'>▾</span></div></div></div></div>", target:"#ti-year"},
  {title:"3️⃣ 요일과 센터 자동 표시", desc:"등록된 요일별 센터가 자동으로 나타나요. 드롭다운에서 다른 센터로 바꿀 수 있어요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:8px 10px;font-size:10px;'><div style='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:0.5px solid #E2E0D8;'><span style='width:20px;text-align:center;font-size:11px;font-weight:700;color:#1A7A50;'>월</span><div style='flex:1;background:white;border:1px solid #E2E0D8;border-radius:5px;padding:5px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;'><span>효명</span><span style='color:#888;font-size:10px;'>▾</span></div></div><div style='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:0.5px solid #E2E0D8;'><span style='width:20px;'></span><div style='flex:1;background:white;border:1px solid #E2E0D8;border-radius:5px;padding:5px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;'><span>다사랑</span><span style='color:#888;font-size:10px;'>▾</span></div></div><div style='display:flex;align-items:center;gap:6px;padding:5px 0;'><span style='width:20px;text-align:center;font-size:11px;font-weight:700;color:#1A7A50;'>화</span><div style='flex:1;background:white;border:1px solid #E2E0D8;border-radius:5px;padding:5px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;'><span>정다운</span><span style='color:#888;font-size:10px;'>▾</span></div></div></div>", target:".ti-tutorial-day1-row"},
- {title:"  ✏️ 직접 추가 (목록에 없는 센터)", desc:"센터명이 목록에 없으면 드롭다운 맨 아래 <b>직접 입력</b>을 선택하세요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:8px 10px;font-size:10px;'><div style='background:white;border:1px solid #E2E0D8;border-radius:6px;overflow:hidden;'><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;'>효명</div><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;'>다사랑</div><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;color:#888;'>정다운</div><div style='padding:6px 10px;font-size:11px;font-weight:600;color:#1A7A50;background:#F8FDF8;'>✏️ 직접 입력 (목록에 없는 센터)</div></div></div>", target:"#ti-first-center-row"},
+ {title:"  ✏️ 직접 추가 (목록에 없는 센터)", desc:"센터명이 목록에 없으면 드롭다운 맨 위 <b>직접 입력</b>을 선택하세요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:8px 10px;font-size:10px;'><div style='background:white;border:1px solid #E2E0D8;border-radius:6px;overflow:hidden;'><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;font-weight:600;color:#1A7A50;background:#F8FDF8;'>✏️ 직접 입력 (목록에 없는 센터)</div><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;'>효명</div><div style='padding:6px 10px;border-bottom:0.5px solid #F0EDE8;font-size:11px;'>다사랑</div><div style='padding:6px 10px;font-size:11px;color:#888;'>정다운</div></div></div>", target:"#ti-first-center-row"},
  {title:"4️⃣ 출석 표시 (가장 중요!)", desc:"수업 날짜 칸을 클릭하면 <b>O → X → △ → 빈칸</b> 순서로 바뀌어요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:10px;font-size:10px;'><div style='display:flex;gap:6px;justify-content:center;margin-bottom:8px;'><div style='padding:6px 14px;background:#E8F5EE;color:#1A7A50;border-radius:5px;font-weight:700;font-size:13px;'>O</div><span style='color:#888;align-self:center;'>→</span><div style='padding:6px 14px;background:#FBEAEA;color:#A03020;border-radius:5px;font-weight:700;font-size:13px;'>X</div><span style='color:#888;align-self:center;'>→</span><div style='padding:6px 14px;background:#FFFBEC;color:#856404;border-radius:5px;font-weight:700;font-size:13px;'>△</div></div><div style='display:flex;gap:6px;justify-content:center;font-size:9px;color:#666;'><span style='width:42px;text-align:center;'><b>O</b> 수업·보강</span><span style='width:16px;'></span><span style='width:42px;text-align:center;'><b>X</b> 휴강</span><span style='width:16px;'></span><span style='width:42px;text-align:center;'><b>△</b> 모의수업</span></div></div>", target:".ti-tutorial-day1-attend"},
  {title:"5️⃣ 보강 표시", desc:"다른 강사 대신 수업하셨다면 센터명 왼쪽 <b>보강 체크박스</b>를 누르고 원래 강사 이름을 선택하세요.<div style='margin-top:10px;background:#FAFAF8;border-radius:8px;padding:8px 10px;font-size:10px;'><div style='display:flex;align-items:center;gap:6px;padding:6px 8px;background:white;border:1px solid #E2E0D8;border-radius:6px;margin-bottom:5px;'><input type='checkbox' checked disabled style='accent-color:#1A7A50;width:13px;height:13px;'><span style='font-size:10px;font-weight:600;color:#1A7A50;'>보강</span><span style='color:#ddd;'>|</span><div style='flex:1;border:1.5px solid #1A7A50;border-radius:5px;padding:4px 8px;font-size:11px;background:#F8FDF8;color:#1A7A50;font-weight:500;display:flex;justify-content:space-between;align-items:center;'><span>방진수 강사</span><span style='font-size:10px;'>▾</span></div></div><div style='font-size:9px;color:#888;'>보강 센터명 옆에 <b>보강</b> 표시가 생겨요</div></div>", target:"#ti-first-center-row"},
  {title:"6️⃣ 특이사항 메모", desc:"<b>6가지 카테고리</b> 버튼 중 하나를 누르면 날짜·센터·내용 입력 카드가 펼쳐져요. <b>+ 항목 추가</b>로 여러 날짜를 한 번에 등록할 수 있어요.<div style='margin-top:10px;padding:10px;background:#FAFAF8;border-radius:6px;font-size:10px;'><div style='color:#888;margin-bottom:6px;'>📌 카테고리 버튼:</div><div style='display:flex;gap:4px;flex-wrap:wrap;'><span style='background:#FCEBEB;color:#A32D2D;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 휴강</span><span style='background:#FAEEDA;color:#633806;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 보강</span><span style='background:#E8F5EE;color:#0F6E56;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 신규(모의)</span><span style='background:#EEE8FA;color:#5A3AB0;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 주차료</span><span style='background:#CCFBF1;color:#0F766E;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 물품</span><span style='background:#F0F9FF;color:#0369A1;padding:2px 8px;border-radius:12px;font-size:9px;font-weight:600;'>+ 기타</span></div></div>", target:"#ti-note-section"},
@@ -20552,7 +20554,7 @@ window.addEventListener('scroll', () => {
 
 function switchToTeacherMode(){
  document.getElementById('adminTopbar').classList.remove('visible');
- ['settleView','teachersView','centersView','historyView','submissionsView','changelogView'].forEach(id=>{
+ ['settleView','teachersView','centersView','historyView','submissionsView','changelogView','signupsView','depositView','receiptsView'].forEach(id=>{
  const el = document.getElementById(id);
  if(el) el.style.display = 'none';
  });
@@ -21103,7 +21105,7 @@ function renderTiLedger(){
  }
  const customO=document.createElement('option');
  customO.value='__custom__'; customO.textContent='✏️ 직접 입력...';
- centerSel.appendChild(customO);
+ centerSel.insertBefore(customO, centerSel.options[1]||null); // v18.56: 잘 보이게 맨 위(-- 센터 선택 -- 바로 다음)
  }
 
  updateCenterOptions();
@@ -21807,7 +21809,7 @@ function renderTiNotes(){
    const currentInList = monthCenters.includes(note.center);
    const centerOptions = monthCenters.map(c=>`<option value="${c}" ${c===note.center?'selected':''}>${c}</option>`).join('');
    const extraOption = note.center && !currentInList ? `<option value="${note.center}" selected>${note.center} (직접 입력)</option>` : '';
-   centerFieldHtml = `<select class="tn-center" style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;cursor:pointer;background:white;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{tiNotes[${i}].center=v.trim();renderTiNotes();});this.value=tiNotes[${i}].center||'';}else{tiNotes[${i}].center=this.value;}"><option value="">센터 선택...</option>${centerOptions}${extraOption}<option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 신규 센터 직접 입력</option></select>`;
+   centerFieldHtml = `<select class="tn-center" style="min-width:120px;height:32px;border:1.5px solid #E2E0D8;border-radius:6px;padding:0 8px;font-size:12px;outline:none;flex:1;cursor:pointer;background:white;" onfocus="this.style.borderColor='#1A7A50'" onblur="this.style.borderColor='#E2E0D8'" onchange="if(this.value==='__custom__'){showInputModal('센터명 직접 입력','센터명을 입력하세요',v=>{tiNotes[${i}].center=v.trim();renderTiNotes();});this.value=tiNotes[${i}].center||'';}else{tiNotes[${i}].center=this.value;}"><option value="">센터 선택...</option><option value="__custom__" style="color:#1A7A50;font-weight:600;">+ 신규 센터 직접 입력</option>${centerOptions}${extraOption}</select>`;
   }
  }
 
