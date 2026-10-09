@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.37">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.38">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.37">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.38">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.37</title>
+<title>수업기록표 정산 시스템 v18.38</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -280,6 +280,24 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-lsum{border-top:1px dashed var(--border2);margin-top:2px;font-weight:700;color:var(--text);}
 .dep-ddiff{display:inline-block;font-size:11px;font-weight:700;color:var(--red);background:var(--red-bg);border-radius:99px;padding:1px 7px;margin-left:4px;white-space:nowrap;}
 .dep-dok{display:inline-block;font-size:11px;color:var(--green);margin-left:4px;white-space:nowrap;}
+.dep-hctl{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+.dep-hrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.dep-hlbl{font-size:12px;color:var(--text3);min-width:74px;}
+.dep-hinfo{font-size:11.5px;color:var(--text3);}
+.dep-mpick{position:relative;}
+.dep-mbtn{height:30px;min-width:150px;display:inline-flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;}
+.dep-mcaret{font-size:10px;color:var(--text3);}
+.dep-mmenu{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:60;min-width:100%;max-height:300px;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.18);padding:4px;}
+.dep-mmenu.open{display:block;}
+.dep-mit{padding:6px 10px;border-radius:7px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap;}
+.dep-mit:hover{background:var(--surface2);} .dep-mit.on{background:var(--blue-bg);color:var(--blue);font-weight:600;}
+.dep-mit small{color:var(--text3);font-weight:400;margin-left:6px;}
+.dep-psel{position:relative;display:inline-flex;align-items:center;}
+.dep-psel select{height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 50px 0 10px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;max-width:240px;}
+.dep-pedit{position:absolute;right:24px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:6px;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;line-height:22px;padding:0;}
+.dep-pedit:hover{background:var(--surface2);color:var(--blue);}
+.dep-pstack{display:flex;flex-direction:column;gap:3px;}
+.dep-pstack .btn.sm{height:24px;padding:0 9px;font-size:11.5px;line-height:22px;}
 .dep-undone{display:inline-block;font-size:11px;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:2px 8px;white-space:nowrap;}
 .dep-logtbl tr.is-undone .dep-log-t{color:var(--text3);text-decoration:line-through;}
 @media(max-width:600px){
@@ -3236,17 +3254,32 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     <div style="font-size:18px;font-weight:700;">💳 계좌매칭 <span style="font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-bg);padding:2px 8px;border-radius:10px;">입금센터 대사</span> <span id="depSyncChip" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--surface2);color:var(--text3);">클라우드 확인 중…</span></div>
     <div style="font-size:13px;color:var(--text3);margin-top:2px;">우리은행 입금내역을 취급점으로 센터에 매칭 · 명단 대비 미입금 센터를 찾습니다</div>
    </div>
-   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
-    <span style="font-size:12px;color:var(--text3);">회차</span>
-    <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차 선택 — 업로드/보기 대상" style="height:30px;border:1px solid var(--border2);border-radius:8px;padding:0 8px;font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer;"></select>
-    <button class="btn sm" onclick="_depRenamePeriod()" title="현재 회차 이름 수정">✎ 이름수정</button>
-    <button class="btn sm" onclick="_depAddPeriod()" title="새 회차 추가">＋ 회차</button>
-    <button class="btn sm" onclick="_depDeletePeriod()" title="지금 고른 회차를 통째로 삭제(입금내역 포함)" style="color:var(--red);border-color:var(--red);">🗑 회차 삭제</button>
+   <div class="dep-hctl">
+    <!-- v18.38: 수업기록표 달 선택(회차 위) -->
+    <div class="dep-hrow">
+     <span class="dep-hlbl">📋 수업기록표</span>
+     <div class="dep-mpick" id="depLessonPick">
+      <button type="button" class="dep-mbtn" id="depLessonBtn" onclick="_depLessonMenuToggle(event)" title="센터 입금현황에서 강사·수업횟수·총액을 가져올 달"><span id="depLessonBtnTx">-</span><span class="dep-mcaret">▾</span></button>
+      <div class="dep-mmenu" id="depLessonMenu"></div>
+     </div>
+     <span id="depLessonInfo" class="dep-hinfo"></span>
+    </div>
+    <div class="dep-hrow">
+    <span class="dep-hlbl">회차</span>
+    <div class="dep-psel">
+     <select id="depPeriodSel" onchange="_depOnPeriodChange(this.value)" title="회차 선택 — 업로드/보기 대상"></select>
+     <button type="button" class="dep-pedit" onclick="_depRenamePeriod()" title="현재 회차 이름 수정">✎</button>
+    </div>
+    <div class="dep-pstack">
+     <button class="btn sm" onclick="_depAddPeriod()" title="새 회차 추가">＋ 회차</button>
+     <button class="btn sm" onclick="_depDeletePeriod()" title="지금 고른 회차를 통째로 삭제(입금내역 포함)" style="color:var(--red);border-color:var(--red);">🗑 회차 삭제</button>
+    </div>
     <span style="width:1px;height:20px;background:var(--border);margin:0 2px;"></span>
     <button class="btn sm primary" onclick="_depOpenUploadModal()" title="우리은행 거래내역 엑셀 업로드 → 매칭">📁 엑셀 업로드</button>
     <input id="depExcelFile" type="file" accept=".xlsx,.xls" multiple style="display:none" onchange="_depOnExcelFile(this)">
     <button class="btn sm" onclick="_depSavePeriod()" title="입금내역·매핑은 바뀔 때마다 자동으로 클라우드에 저장돼요. 이 버튼은 기다리지 않고 바로 저장">💾 지금 저장</button>
     <button class="btn sm" onclick="_depClear()" style="color:var(--red);border-color:var(--red);">초기화</button>
+    </div>
    </div>
   </div>
 
@@ -4606,7 +4639,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.37';
+const SYSTEM_VERSION='v18.38';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5318,6 +5351,7 @@ function renderDepositView(){
 
 /* 회차 선택 드롭다운 */
 function _depRenderPeriodSel(){
+ try{ _depRenderLessonPick(); }catch(_){}
  const sel=document.getElementById('depPeriodSel'); if(!sel) return;
  const cur=_depActivePeriod();
  const periods=_depAllPeriods();
@@ -5549,6 +5583,28 @@ function _depActiveLessonYm(){
  if(_depLessonYm) return _depLessonYm;
  return _depYmFromPeriod(_depActivePeriod()) || _depLessonMonths()[0] || null;
 }
+// v18.38: 상단 '수업기록표' 달 선택 — 10개 넘으면 스크롤
+function _depRenderLessonPick(){
+ const tx=document.getElementById('depLessonBtnTx'); if(!tx) return;
+ const lym=_depActiveLessonYm(), lms=_depLessonMonths(); if(lym && !lms.includes(lym)) lms.unshift(lym);
+ tx.textContent=lym||'(정산 기록 없음)';
+ const st=_depLessonCache[lym];
+ const tl=lym ? _depLessonTeachers(lym) : null;
+ const info=document.getElementById('depLessonInfo');
+ if(info) info.textContent = !lym ? '' : (st==='loading' ? '불러오는 중…' : (tl && tl.length ? `강사 ${tl.length}명` : (tl ? '이 달 기록 없음' : '불러오는 중…')));
+ const menu=document.getElementById('depLessonMenu');
+ if(menu) menu.innerHTML=lms.map(m=>`<div class="dep-mit${m===lym?' on':''}" onclick="_depPickLessonYm('${escAttrJS(m)}')">${escH(m)}</div>`).join('') || '<div class="dep-mit" style="color:var(--text3)">정산 기록 없음</div>';
+}
+function _depLessonMenuToggle(e){
+ if(e) e.stopPropagation();
+ const menu=document.getElementById('depLessonMenu'); if(!menu) return;
+ const open=!menu.classList.contains('open');
+ _depRenderLessonPick(); menu.classList.toggle('open', open);
+ if(open){ const on=menu.querySelector('.dep-mit.on'); if(on) on.scrollIntoView({block:'nearest'}); }
+}
+function _depPickLessonYm(m){ const menu=document.getElementById('depLessonMenu'); if(menu) menu.classList.remove('open'); _depSetLessonYm(m); }
+document.addEventListener('click',e=>{ const menu=document.getElementById('depLessonMenu'); if(menu && menu.classList.contains('open') && !e.target.closest('#depLessonPick')) menu.classList.remove('open'); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const menu=document.getElementById('depLessonMenu'); if(menu) menu.classList.remove('open'); } });
 function _depSetLessonYm(v){ _depLessonYm=v||null; try{ if(v) localStorage.setItem('iruri_dep_lesson_ym',v); else localStorage.removeItem('iruri_dep_lesson_ym'); }catch(_){} renderDepUnpaid(); }
 function _depLessonTeachers(ym){
  if(!ym) return null;
@@ -5648,9 +5704,6 @@ function renderDepUnpaid(){
  if(!_depPeriodRecs().length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">이 회차(${esc(_depActivePeriod())})에 입금내역이 없습니다. 회차를 확인하고 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
  const {roster, rows, lessonLoaded}=_depComputeUnpaidRows();
  const paidCnt=rows.filter(r=>r.paid).length;
- const lym=_depActiveLessonYm(), lms=_depLessonMonths(); if(lym && !lms.includes(lym)) lms.unshift(lym);
- const lst=_depLessonCache[lym];
- const lInfo = !lym ? '정산 기록 없음' : (lst==='loading' ? '불러오는 중…' : (lessonLoaded ? `강사 ${(_depLessonTeachers(lym)||[]).length}명` : '이 달 기록 없음'));
  const diffCnt=rows.filter(r=>r.hasL && r.paid && r.diff!==0 && (_depRegionFilter==='all' || r.region===_depRegionFilter)).length;
  const q=_depStatusQ.trim();
  const regions=[...new Set(roster.map(c=>c.region||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
@@ -5669,15 +5722,10 @@ function renderDepUnpaid(){
   <div style="padding:0 12px 10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
     <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
-    <span style="flex:1"></span>
-    <span style="font-size:12px;color:var(--text3);">📋 수업기록표</span>
-    <select onchange="_depSetLessonYm(this.value)" title="센터별 강사·수업횟수·총액을 가져올 달" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 6px;font-size:12px;background:var(--surface);color:var(--text);">
-     ${lms.length?lms.map(m=>`<option value="${esc(m)}"${m===lym?' selected':''}>${esc(m)}</option>`).join(''):'<option value="">(정산 기록 없음)</option>'}
-    </select>
-    <span style="font-size:11.5px;color:var(--text3);">${esc(lInfo)}</span>
   </div>`;
  const inner=`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>강사명</th><th style="text-align:right;">수업횟수</th><th style="text-align:right;">총액</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody id="depUnpaidBody">${_depUnpaidBodyHTML(rows)}</tbody></table>`;
  el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner,head);
+ _depRenderLessonPick();
 }
 
 // 현재 회차·현재 지역필터 기준 미입금 센터를 지역별로 묶어 카톡 붙여넣기용 텍스트로 복사
@@ -18699,9 +18747,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.37&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.38&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.37&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.38&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
