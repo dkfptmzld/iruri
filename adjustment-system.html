@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.16">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.17">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.16">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.17">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.16</title>
+<title>수업기록표 정산 시스템 v18.17</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -219,6 +219,13 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-table th,.dep-table td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);}
 .dep-table th{color:var(--text2);font-weight:600;font-size:12px;background:var(--surface2);position:sticky;top:0;z-index:1;}
 .dep-bar{background:var(--surface);border-bottom:1px solid var(--border);}
+.dep-schip{display:inline-flex;align-items:center;gap:2px;margin:1px 4px 1px 0;padding:0 2px 0 7px;border:1px solid var(--border);border-radius:7px;background:var(--surface);font-size:11px;color:var(--text2);white-space:nowrap;}   /* v18.17 기재 칩 */
+.dep-schip button{border:none;background:none;color:var(--text3);cursor:pointer;font-size:10.5px;padding:0 3px;line-height:1.4;}
+.dep-schip button:hover{color:var(--red);}
+.dep-bchip{display:inline-flex;align-items:center;gap:4px;margin:1px 4px 1px 0;padding:1px 4px 1px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);cursor:pointer;font-size:12px;white-space:nowrap;}   /* v18.17 */
+.dep-bchip:hover{border-color:var(--green);}
+.dep-bchip button{border:none;background:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 3px;line-height:1;}
+.dep-bchip button:hover{color:var(--red);}
 .dep-gchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}   /* v18.16: 취급점 점검 — 입금 건별 기재내용 */
 .dep-gchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:2px 7px;max-width:100%;}
 .dep-gchip i{font-style:normal;color:var(--text3);font-variant-numeric:tabular-nums;}
@@ -4547,7 +4554,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.16';
+const SYSTEM_VERSION='v18.17';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -4953,6 +4960,7 @@ function upsertDepositMapping({branchKey, branchRaw, centerName, region, gijae, 
   if(isExcluded!==undefined) m.isExcluded=!!isExcluded;
   if(note!==undefined)       m.note=note;
  }
+ if(gijae && Array.isArray(m.removedSamples)) m.removedSamples=m.removedSamples.filter(x=>x!==gijae);   // v18.17: 직접 다시 연결하면 '뺀 기재' 해제
  if(gijae && !m.gijaeSamples.includes(gijae)) m.gijaeSamples.push(gijae);
  return m;
 }
@@ -5068,7 +5076,7 @@ function runMatching(batchId){
    if(m){
     m.lastMatchedAt = (rec.date||'') + (rec.time?(' '+rec.time):'');
     const g = rec.depositorName;
-    if(g && !(m.gijaeSamples||[]).includes(g)){ (m.gijaeSamples=m.gijaeSamples||[]).push(g); }
+    if(g && !(m.gijaeSamples||[]).includes(g) && !(m.removedSamples||[]).includes(g)){ (m.gijaeSamples=m.gijaeSamples||[]).push(g); }   // v18.17: 사용자가 뺀 기재는 다시 학습 안 함
    }
   } else if(r.matchStatus==='excluded'){ excluded++; }
   else { unmatched++; }
@@ -5369,14 +5377,60 @@ function _depMapSearch(v){
  _depMapQ=v; _depRenderMapBody();   // 입력창 DOM 유지(한글 조합 안 깨짐), tbody·카운트만 갱신
 }
 function _depSetMapRegion(r){ _depMapRegion=r; renderDepMappings(); }
+/* v18.17: 매핑 관리는 '센터 한 줄'로 묶어 보여준다 — 같은 센터가 달마다 다른 계좌(취급점)로 보내도
+ *  (예: 88등촌 ← 우리[마곡역], 우리[발산역]) 한 줄에 취급점 칩 여러 개. 데이터(취급점별 매핑)·매칭은 그대로. */
+function _depMapGroups(maps){
+ const order=[], by={};
+ maps.forEach(m=>{
+  const k=(m.isExcluded||!m.centerName) ? 'x|'+m.mapId : (m.centerName+'|'+(m.region||''));
+  if(!by[k]){ by[k]={key:k, maps:[], centerName:m.centerName, region:m.region||'', isExcluded:!!m.isExcluded, samples:[]}; order.push(k); }
+  const g=by[k]; g.maps.push(m);
+  (m.gijaeSamples||[]).forEach(x=>{ const t=String(x||'').trim(); if(t && !g.samples.includes(t)) g.samples.push(t); });
+ });
+ return order.map(k=>by[k]);
+}
 function _depMapRowsHTML(maps){
- return maps.map(m=>`<tr>
-   <td style="color:var(--text2)">${m.branchKey?esc(m.branchKey):'<span style="color:var(--text3)">(입금자명 기준)</span>'}</td>
-   <td>${m.isExcluded?'<span class="dep-pill excluded">제외(본인/이자)</span>':esc(m.centerName)}</td>
-   <td style="color:var(--text3)">${esc(m.region||'')}</td>
-   <td style="color:var(--text3);font-size:11.5px;">${esc((m.gijaeSamples||[]).slice(0,3).join(', '))}</td>
-   <td style="white-space:nowrap;"><button class="btn sm" onclick="_depEditMapping('${esc(m.mapId)}')">수정</button> <button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
- </tr>`).join('');
+ return _depMapGroups(maps).map(g=>{
+  const multi=g.maps.length>1;
+  const brCell = multi
+   ? g.maps.map(m=>`<span class="dep-bchip" onclick="_depEditMapping('${esc(m.mapId)}')" title="눌러서 이 취급점의 연결 수정">${m.branchKey?esc(m.branchKey):'(입금자명 기준)'}<button type="button" onclick="event.stopPropagation();_depDelMapping('${esc(m.mapId)}')" title="이 취급점만 삭제">✕</button></span>`).join('')
+   : (g.maps[0].branchKey?esc(g.maps[0].branchKey):'<span style="color:var(--text3)">(입금자명 기준)</span>');
+  const sm=g.samples;
+  const ids=g.maps.map(m=>m.mapId).join(',');
+  // v18.17: 기재내용을 칩으로 — ✕로 그 기재만 빼기(매핑은 유지)
+  const shown=sm.map(x=>`<span class="dep-schip">${esc(x)}<button type="button" onclick="_depRemoveSample('${esc(ids)}','${escAttrJS(x)}')" title="이 기재내용만 빼기">✕</button></span>`).join('');
+  const editBtn = multi
+   ? `<button class="btn sm" onclick="showToast('취급점 칩을 눌러 하나씩 수정하세요')" title="취급점이 ${g.maps.length}개예요 — 칩을 눌러 각각 수정">수정</button>`
+   : `<button class="btn sm" onclick="_depEditMapping('${esc(g.maps[0].mapId)}')">수정</button>`;
+  const delBtn = multi
+   ? `<button class="btn sm" onclick="_depDelMappingGroup('${esc(ids)}')" style="color:var(--red);border-color:var(--red);" title="이 센터의 취급점 ${g.maps.length}개 매핑을 모두 삭제">삭제</button>`
+   : `<button class="btn sm" onclick="_depDelMapping('${esc(g.maps[0].mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button>`;
+  return `<tr>
+   <td style="color:var(--text2)">${brCell}</td>
+   <td>${g.isExcluded?'<span class="dep-pill excluded">제외(본인/이자)</span>':esc(g.centerName)}${multi?` <span class="dep-pill" style="background:var(--surface2);color:var(--text3);">취급점 ${g.maps.length}</span>`:''}</td>
+   <td style="color:var(--text3);white-space:nowrap;">${esc(g.region)}</td>
+   <td style="color:var(--text3);font-size:11.5px;">${shown}</td>
+   <td style="white-space:nowrap;">${editBtn} ${delBtn}</td>
+ </tr>`;
+ }).join('');
+}
+/* v18.17: 매핑에서 기재내용 하나만 빼기 — 같은 센터의 모든 취급점 매핑에서 제거하고, 다음 매칭 때 다시 쌓이지 않게 기억 */
+function _depRemoveSample(idsCsv, sample){
+ const ids=String(idsCsv||'').split(',').filter(Boolean); const sv=String(sample||'');
+ getDepositMappings().filter(m=>ids.includes(m.mapId)).forEach(m=>{
+  m.gijaeSamples=(m.gijaeSamples||[]).filter(x=>String(x).trim()!==sv.trim());
+  if(Array.isArray(m.confirmedNames)) m.confirmedNames=m.confirmedNames.filter(x=>String(x).trim()!==sv.trim());
+  m.removedSamples=m.removedSamples||[]; if(!m.removedSamples.includes(sv)) m.removedSamples.push(sv);
+ });
+ runMatching(); renderDepositView();
+ showToast(`기재내용 "${sv}"을(를) 뺐어요`);
+}
+function _depDelMappingGroup(idsCsv){
+ const ids=String(idsCsv||'').split(',').filter(Boolean);
+ showConfirm({icon:'🗑️',title:'센터 매핑 전체 삭제',desc:`이 센터에 연결된 취급점 <b>${ids.length}개</b> 매핑을 모두 삭제할까요?<br><small style="color:var(--text3)">하나만 지우려면 취급점 칩의 ✕를 누르세요. 다른 방법(입금자명)으로 못 찾는 입금건은 미등록으로 돌아갑니다.</small>`,okText:'모두 삭제',okStyle:'danger',onOk:()=>{
+  ids.forEach(id=>removeDepositMapping(id));
+  runMatching(); renderDepositView(); showToast(`매핑 ${ids.length}개를 삭제했습니다`);
+ }});
 }
 // 지역+검색어 필터 공통
 function _depMapFiltered(){
@@ -5394,7 +5448,8 @@ function _depRenderMapBody(){
  const emptyMsg = filtered ? `조건에 맞는 매핑이 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
  tb.innerHTML = _depMapRowsHTML(maps) || `<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`;
  const cnt=document.getElementById('depMapCount');
- if(cnt) cnt.textContent = filtered ? `(${maps.length} / ${all.length}개)` : `(${all.length}개)`;
+ const _gc=_depMapGroups(maps).length, _ga=_depMapGroups(all).length;
+ if(cnt) cnt.textContent = filtered ? `(${_gc} / ${_ga}곳)` : `(${_ga}곳 · 매핑 ${all.length}개)`;
 }
 function renderDepMappings(){
  const el=document.getElementById('depSub-mappings'); if(!el) return;
@@ -5417,7 +5472,8 @@ function renderDepMappings(){
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
    </div>`;
  const inner=`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody id="depMapBody">${_depMapRowsHTML(maps)||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
- const countHTML = `<span id="depMapCount">${filtered?`(${maps.length} / ${all.length}개)`:`(${all.length}개)`}</span>`;
+ const _gc=_depMapGroups(maps).length, _ga=_depMapGroups(all).length;
+ const countHTML = `<span id="depMapCount">${filtered?`(${_gc} / ${_ga}곳)`:`(${_ga}곳 · 매핑 ${all.length}개)`}</span>`;
  el.innerHTML=_depPanelHTML('매핑 관리',countHTML,inner,bar);
 }
 
@@ -17775,9 +17831,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.16&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.17&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.16&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.17&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
