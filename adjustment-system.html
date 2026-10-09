@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.05">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.06">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.05">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.06">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.05</title>
+<title>수업기록표 정산 시스템 v18.06</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4513,7 +4513,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.05';
+const SYSTEM_VERSION='v18.06';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5625,7 +5625,10 @@ function _depCommitUploadQueue(items){
  _depPeriodRecs().forEach(r=>{ if(r.matchStatus==='matched'&&r.matchedCenterName) paidSet.add(r.matchedCenterName+'|'+(r.region||'')); });
  const unpaid=roster.filter(c=> !paidSet.has(c.name+'|'+(c.region||'')) );
  const byRegion={}; unpaid.forEach(c=>{ const rg=c.region||'기타'; byRegion[rg]=(byRegion[rg]||0)+1; });
- return { matched:res.matched, unmatched:res.unmatched, excluded:res.excluded,
+ const denom=res.matched+res.unmatched;
+ const matchRate = denom>0 ? Math.round(res.matched/denom*100) : 0;   // 입금 건 중 센터 매칭된 비율
+ const payRate = roster.length>0 ? Math.round((roster.length-unpaid.length)/roster.length*100) : 0; // 명단 중 입금 완료 비율
+ return { matched:res.matched, unmatched:res.unmatched, excluded:res.excluded, matchRate, payRate,
           newCount:allNew.length, periods, period:_depActivePeriod(),
           rosterTotal:roster.length, paidCnt:roster.length-unpaid.length, unpaidCnt:unpaid.length, byRegion };
 }
@@ -5646,7 +5649,9 @@ function _depShowUploadResult(s){
   <div style="padding:22px 22px 6px;text-align:center;">
    <div style="font-size:34px;line-height:1;">✅</div>
    <div style="font-size:17px;font-weight:800;margin-top:7px;color:var(--text);">매칭 완료</div>
-   <div style="font-size:12.5px;color:var(--text3);margin-top:3px;">회차 <b style="color:var(--text2)">${esc(s.periods.join(', '))}</b> · 입금 <b style="color:var(--text2)">${s.newCount}건</b> 반영</div>
+   <div style="margin-top:10px;font-size:40px;font-weight:800;color:var(--green);letter-spacing:-1px;line-height:1;">${s.matchRate}<span style="font-size:20px;">%</span></div>
+   <div style="font-size:12px;color:var(--text3);margin-top:3px;">매칭률 — 입금 ${s.matched+s.unmatched}건 중 <b style="color:var(--green)">${s.matched}건</b> 센터 매칭</div>
+   <div style="font-size:12px;color:var(--text3);margin-top:6px;">회차 <b style="color:var(--text2)">${esc(s.periods.join(', '))}</b> · 입금 <b style="color:var(--text2)">${s.newCount}건</b> 반영</div>
   </div>
   <div style="display:flex;gap:9px;padding:14px 22px 2px;">
    ${tile('입금 확인', s.paidCnt+'곳', 'var(--green)')}
