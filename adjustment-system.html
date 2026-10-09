@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.07">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.08">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.07">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.08">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.07</title>
+<title>수업기록표 정산 시스템 v18.08</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3304,8 +3304,12 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   <div style="background:var(--surface);border-radius:var(--radius-lg);padding:22px;width:400px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,.28);">
    <div style="font-size:16px;font-weight:700;margin-bottom:2px;">매핑 수정</div>
    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">이 취급점이 연결될 센터를 바꿉니다. 저장하면 입금건이 자동 재매칭됩니다.</div>
-   <div style="font-size:12px;color:var(--text2);line-height:1.9;background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;">
+   <div style="font-size:12px;color:var(--text2);line-height:1.9;background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;">
     취급점(키): <b id="depMapEditBranch" style="color:var(--text);"></b>
+   </div>
+   <div id="depMapEditGijaeWrap" style="margin-bottom:14px;">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:5px;">📝 기재내용 이력 <span style="color:var(--text3);font-weight:400;">(이 취급점으로 들어온 입금자명)</span></div>
+    <div id="depMapEditGijae" style="font-size:12.5px;color:var(--text);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;max-height:88px;overflow:auto;line-height:1.7;"></div>
    </div>
    <label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);margin-bottom:12px;cursor:pointer;">
     <input type="checkbox" id="depMapEditExcl" onchange="_depMapEditToggleExcl()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber);">
@@ -4520,7 +4524,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.07';
+const SYSTEM_VERSION='v18.08';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5164,16 +5168,12 @@ let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all', _depMapQ='';
 function _depSetStatusFilter(k){ _depStatusFilter=k; renderDepUnpaid(); }
 function _depSetRegionFilter(r){ _depRegionFilter=r; renderDepUnpaid(); }
 function _depStatusSearch(v){
- _depStatusQ=v; renderDepUnpaid();
- const si=document.getElementById('depStatusSearch');
- if(si){ si.focus(); try{ si.setSelectionRange(si.value.length, si.value.length); }catch(_){}}
+ _depStatusQ=v; _depRenderUnpaidBody();   // 입력창 DOM 유지(한글 조합 안 깨짐), tbody만 갱신
 }
 // 센터 입금현황: 전 명단을 ✅입금/❌미입금 + 금액 + 필터/검색으로 한눈에
-function renderDepUnpaid(){
- const el=document.getElementById('depSub-unpaid'); if(!el) return;
- if(!_depPeriodRecs().length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">이 회차(${esc(_depActivePeriod())})에 입금내역이 없습니다. 회차를 확인하고 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
+// 센터별 입금 집계 → rows (이름/지역/입금여부/금액/최근)
+function _depComputeUnpaidRows(){
  const roster=getDepositRoster();
- // 매칭된 입금을 센터별로 집계(금액 합·최근 입금일시) — 선택 회차만
  const paidMap={};
  _depPeriodRecs().forEach(r=>{
   if(r.matchStatus==='matched' && r.matchedCenterName){
@@ -5186,15 +5186,38 @@ function renderDepUnpaid(){
  });
  const rows=roster.map(c=>{ const p=paidMap[c.name+'|'+(c.region||'')];
   return { name:c.name, region:c.region||'', paid:!!p, amount:p?p.amount:0, last:p?p.last:'', cnt:p?p.cnt:0 }; });
- const paidCnt=rows.filter(r=>r.paid).length, unpaidCnt=rows.length-paidCnt;
+ return { roster, rows };
+}
+// 현재 필터·검색어 기준 tbody HTML
+function _depUnpaidBodyHTML(rows){
  const q=_depStatusQ.trim();
- const regions=[...new Set(roster.map(c=>c.region||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
- if(_depRegionFilter!=='all' && !regions.includes(_depRegionFilter)) _depRegionFilter='all'; // 안전장치
  let view=rows.filter(r=> (_depStatusFilter==='all' || (_depStatusFilter==='paid'? r.paid : !r.paid))
                       && (_depRegionFilter==='all' || r.region===_depRegionFilter)
                       && (!q || r.name.includes(q)) );
- view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || (a.region||'').localeCompare(b.region||'','ko') || a.name.localeCompare(b.name,'ko')); // 미입금 먼저, 지역·이름順
- // 선택된 지역 범위의 입금/미입금 요약
+ view.sort((a,b)=> (Number(a.paid)-Number(b.paid)) || (a.region||'').localeCompare(b.region||'','ko') || a.name.localeCompare(b.name,'ko'));
+ const body=view.map(r=>`<tr>
+    <td><a href="#" onclick="event.preventDefault();openCenterByKey('${esc(r.name)}','${esc(r.region)}')" title="센터 수정/삭제" style="color:var(--blue);font-weight:600;text-decoration:none;cursor:pointer;">${esc(r.name)}</a></td>
+    <td style="color:var(--text3)">${esc(r.region)}</td>
+    <td>${r.paid?'<span class="dep-pill matched">✓ 입금</span>':'<span class="dep-pill unmatched">미입금</span>'}</td>
+    <td>${r.paid?fmtDepWon(r.amount):'<span style="color:var(--text3)">-</span>'}</td>
+    <td style="color:var(--text3)">${esc(r.last||'')}</td>
+  </tr>`).join('');
+ return body||'<tr><td colspan=5 class="dep-empty">해당 조건의 센터가 없습니다.</td></tr>';
+}
+// 검색 중에는 tbody만 교체(입력창 DOM 유지 → 한글 조합 깨짐 방지)
+function _depRenderUnpaidBody(){
+ const tb=document.getElementById('depUnpaidBody'); if(!tb) return;
+ const {rows}=_depComputeUnpaidRows();
+ tb.innerHTML=_depUnpaidBodyHTML(rows);
+}
+function renderDepUnpaid(){
+ const el=document.getElementById('depSub-unpaid'); if(!el) return;
+ if(!_depPeriodRecs().length){ el.innerHTML=_depPanelHTML('센터 입금현황',null,`<div class="dep-empty">이 회차(${esc(_depActivePeriod())})에 입금내역이 없습니다. 회차를 확인하고 '📁 엑셀 업로드' 후 '🔍 매칭 실행'을 눌러주세요.</div>`); return; }
+ const {roster, rows}=_depComputeUnpaidRows();
+ const paidCnt=rows.filter(r=>r.paid).length;
+ const q=_depStatusQ.trim();
+ const regions=[...new Set(roster.map(c=>c.region||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+ if(_depRegionFilter!=='all' && !regions.includes(_depRegionFilter)) _depRegionFilter='all'; // 안전장치
  const scope=rows.filter(r=> _depRegionFilter==='all' || r.region===_depRegionFilter);
  const scPaid=scope.filter(r=>r.paid).length, scTotal=scope.length;
  const fbtn=(key,label)=>`<button class="btn sm${_depStatusFilter===key?' primary':''}" onclick="_depSetStatusFilter('${key}')">${label}</button>`;
@@ -5210,14 +5233,7 @@ function renderDepUnpaid(){
     <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
   </div>`;
- const body=view.map(r=>`<tr>
-    <td><a href="#" onclick="event.preventDefault();openCenterByKey('${esc(r.name)}','${esc(r.region)}')" title="센터 수정/삭제" style="color:var(--blue);font-weight:600;text-decoration:none;cursor:pointer;">${esc(r.name)}</a></td>
-    <td style="color:var(--text3)">${esc(r.region)}</td>
-    <td>${r.paid?'<span class="dep-pill matched">✓ 입금</span>':'<span class="dep-pill unmatched">미입금</span>'}</td>
-    <td>${r.paid?fmtDepWon(r.amount):'<span style="color:var(--text3)">-</span>'}</td>
-    <td style="color:var(--text3)">${esc(r.last||'')}</td>
-  </tr>`).join('');
- const inner=head+`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody>${body||'<tr><td colspan=5 class="dep-empty">해당 조건의 센터가 없습니다.</td></tr>'}</tbody></table>`;
+ const inner=head+`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody id="depUnpaidBody">${_depUnpaidBodyHTML(rows)}</tbody></table>`;
  el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner);
 }
 
@@ -5272,33 +5288,45 @@ function renderDepUnmatched(){
 }
 
 function _depMapSearch(v){
- _depMapQ=v; renderDepMappings();
- const si=document.getElementById('depMapSearch');
- if(si){ si.focus(); try{ si.setSelectionRange(si.value.length, si.value.length); }catch(_){}}
+ _depMapQ=v; _depRenderMapBody();   // 입력창 DOM 유지(한글 조합 안 깨짐), tbody·카운트만 갱신
 }
-function renderDepMappings(){
- const all=getDepositMappings().slice().sort((a,b)=>String(a.branchKey).localeCompare(String(b.branchKey)));
- const el=document.getElementById('depSub-mappings'); if(!el) return;
- const q=_depMapQ.trim();
- const maps=!q?all:all.filter(m=>
-    (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
-    String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q)));
- const rows=maps.map(m=>`<tr>
+function _depMapRowsHTML(maps){
+ return maps.map(m=>`<tr>
    <td style="color:var(--text2)">${esc(m.branchKey)}</td>
    <td>${m.isExcluded?'<span class="dep-pill excluded">제외(본인/이자)</span>':esc(m.centerName)}</td>
    <td style="color:var(--text3)">${esc(m.region||'')}</td>
    <td style="color:var(--text3);font-size:11.5px;">${esc((m.gijaeSamples||[]).slice(0,3).join(', '))}</td>
    <td style="white-space:nowrap;"><button class="btn sm" onclick="_depEditMapping('${esc(m.mapId)}')">수정</button> <button class="btn sm" onclick="_depDelMapping('${esc(m.mapId)}')" style="color:var(--red);border-color:var(--red);">삭제</button></td>
  </tr>`).join('');
+}
+function _depRenderMapBody(){
+ const tb=document.getElementById('depMapBody'); if(!tb) return;
+ const all=getDepositMappings().slice().sort((a,b)=>String(a.branchKey).localeCompare(String(b.branchKey)));
+ const q=_depMapQ.trim();
+ const maps=!q?all:all.filter(m=>
+    (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
+    String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q)));
+ const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
+ tb.innerHTML = _depMapRowsHTML(maps) || `<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`;
+ const cnt=document.getElementById('depMapCount');
+ if(cnt) cnt.textContent = q ? `(${maps.length} / ${all.length}개)` : `(${all.length}개)`;
+}
+function renderDepMappings(){
+ const el=document.getElementById('depSub-mappings'); if(!el) return;
+ const all=getDepositMappings().slice().sort((a,b)=>String(a.branchKey).localeCompare(String(b.branchKey)));
+ const q=_depMapQ.trim();
+ const maps=!q?all:all.filter(m=>
+    (m.centerName||'').includes(q) || (m.region||'').includes(q) ||
+    String(m.branchKey||'').includes(q) || (m.gijaeSamples||[]).some(g=>String(g).includes(q)));
+ const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
  const bar=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
     <button class="btn sm primary" onclick="_depOpenImport()" title="전달받은 매핑 JSON을 한 번에 등록">📋 매핑 가져오기</button>
     <span style="flex:1"></span>
     <input id="depMapSearch" value="${esc(q)}" oninput="_depMapSearch(this.value)" placeholder="센터·취급점·기재 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:160px;">
    </div>`;
- const emptyMsg = q ? `'${esc(q)}' 검색 결과가 없습니다.` : '등록된 매핑이 없습니다. \'📋 매핑 가져오기\'로 일괄 등록할 수 있어요.';
- const inner=bar+`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
- const count = q ? `(${maps.length} / ${all.length}개)` : `(${all.length}개)`;
- el.innerHTML=_depPanelHTML('매핑 관리',count,inner);
+ const inner=bar+`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody id="depMapBody">${_depMapRowsHTML(maps)||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
+ const countHTML = `<span id="depMapCount">${q?`(${maps.length} / ${all.length}개)`:`(${all.length}개)`}</span>`;
+ el.innerHTML=_depPanelHTML('매핑 관리',countHTML,inner);
 }
 
 /* 매핑 일괄 가져오기 (JSON 붙여넣기) */
@@ -5337,6 +5365,15 @@ function _depEditMapping(mapId){
  document.getElementById('depMapEditExcl').checked=!!m.isExcluded;
  document.getElementById('depMapEditCenter').value = m.centerName? (m.centerName+(m.region?(' ('+m.region+')'):'')) : '';
  document.getElementById('depMapEditCenterWrap').style.display = m.isExcluded?'none':'block';
+ // 기재내용 이력: 저장된 샘플 + 실제 입금내역에서 이 취급점으로 들어온 입금자명(중복 제거)
+ const gEl=document.getElementById('depMapEditGijae');
+ if(gEl){
+  const live=(depositDB.records||[]).filter(r=>r.branchKey===m.branchKey).map(r=>String(r.depositorName||'').trim()).filter(Boolean);
+  const names=[...new Set([...(m.gijaeSamples||[]).map(s=>String(s).trim()).filter(Boolean), ...live])];
+  gEl.innerHTML = names.length
+    ? names.map(n=>`<span style="display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:2px 9px;margin:0 4px 4px 0;">${esc(n)}</span>`).join('')
+    : '<span style="color:var(--text3)">기록된 기재내용이 없습니다</span>';
+ }
  _depPopulateCenterList();
  document.getElementById('depMapEditModal').style.display='flex';
 }
