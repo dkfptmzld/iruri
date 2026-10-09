@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.06">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.07">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.06">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.07">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.06</title>
+<title>수업기록표 정산 시스템 v18.07</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -224,7 +224,14 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-pill.unmatched{background:var(--red-bg);color:var(--red);}
 .dep-pill.excluded{background:var(--surface2);color:var(--text3);}
 .dep-empty{text-align:center;padding:36px 20px;color:var(--text3);font-size:13px;}
-@media(max-width:600px){#depDashCards{grid-template-columns:repeat(2,1fr)!important;}}
+.dep-btn-lg{height:46px;min-width:130px;padding:0 26px;border-radius:12px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;transition:transform .12s ease,box-shadow .15s ease,opacity .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.dep-btn-lg.ghost{background:var(--surface);border:1.5px solid var(--border2);color:var(--text2);}
+.dep-btn-lg.ghost:hover{background:var(--surface2);border-color:var(--text3);}
+.dep-btn-lg.primary{background:linear-gradient(135deg,var(--green),var(--blue));border:none;color:#fff;box-shadow:0 6px 18px rgba(26,122,80,.32);}
+.dep-btn-lg.primary:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(26,122,80,.42);}
+.dep-btn-lg.primary:active{transform:translateY(0);}
+.dep-btn-lg:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none;}
+@media(max-width:600px){#depDashCards{grid-template-columns:repeat(2,1fr)!important;}.dep-btn-lg{min-width:0;flex:1;}}
 .mgr-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
 .mgr-sec-head{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);gap:8px;flex-wrap:wrap;}
 .mgr-sec-head span{font-size:13px;font-weight:600;}
@@ -3271,9 +3278,9 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
      <input type="checkbox" id="depAutoSplit" style="width:15px;height:15px;cursor:pointer;accent-color:var(--green);"> 월 자동분배 <span style="color:var(--text3)">(여러 달치 한 파일일 때)</span>
     </label>
 
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
-     <button class="btn sm" onclick="_depCloseUpload()">취소</button>
-     <button class="btn sm primary" id="depUploadMatchBtn" onclick="_depRunUploadMatch()" disabled style="min-width:84px;">🔍 매칭</button>
+    <div style="display:flex;justify-content:center;gap:12px;margin-top:22px;">
+     <button class="dep-btn-lg ghost" onclick="_depCloseUpload()">취소</button>
+     <button class="dep-btn-lg primary" id="depUploadMatchBtn" onclick="_depRunUploadMatch()" disabled>🔍 매칭</button>
     </div>
    </div>
 
@@ -4513,7 +4520,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.06';
+const SYSTEM_VERSION='v18.07';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5637,7 +5644,7 @@ function _depShowUploadResult(s){
  document.getElementById('depUploadProgress').style.display='none';
  const el=document.getElementById('depUploadResult'); el.style.display='block';
  if(!s){ el.innerHTML=`<div style="padding:26px;text-align:center;color:var(--red)">결과를 계산하지 못했어요. 입금내역 탭에서 확인해주세요.</div>
-   <div style="display:flex;justify-content:flex-end;gap:8px;padding:0 22px 20px;"><button class="btn sm primary" onclick="_depCloseUpload()">닫기</button></div>`; return; }
+   <div style="display:flex;justify-content:center;gap:8px;padding:0 22px 22px;"><button class="dep-btn-lg primary" onclick="_depCloseUpload()">닫기</button></div>`; return; }
  const regions=Object.keys(s.byRegion).sort((a,b)=>s.byRegion[b]-s.byRegion[a]||a.localeCompare(b,'ko'));
  const chips=regions.length? regions.map(rg=>
    `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--red-bg);color:var(--red);font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;">${esc(rg)} <b style="font-size:13px;">${s.byRegion[rg]}</b></span>`
@@ -5663,9 +5670,9 @@ function _depShowUploadResult(s){
    <div style="font-size:12.5px;font-weight:700;color:var(--text2);margin-bottom:9px;">📍 지역별 미입금 ${s.unpaidCnt?`(${s.unpaidCnt}곳)`:''}</div>
    <div style="display:flex;flex-wrap:wrap;gap:7px;">${chips}</div>
   </div>
-  <div style="display:flex;justify-content:flex-end;gap:8px;padding:18px 22px 20px;">
-   <button class="btn sm" onclick="_depCloseUpload()">닫기</button>
-   <button class="btn sm primary" onclick="_depCloseUpload();_depSwitchSub('unpaid');_depSetStatusFilter('unpaid');">미입금 자세히 보기</button>
+  <div style="display:flex;justify-content:center;gap:12px;padding:20px 22px 22px;">
+   <button class="dep-btn-lg ghost" onclick="_depCloseUpload()">닫기</button>
+   <button class="dep-btn-lg primary" onclick="_depCloseUpload();_depSwitchSub('unpaid');_depSetStatusFilter('unpaid');">미입금 자세히 보기</button>
   </div>`;
 }
 
