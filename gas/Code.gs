@@ -143,7 +143,7 @@ function doPost(e) {
     if (action === 'deleteJournalRecord')   return response(deleteJournalRecord(body.id));            // 계획서 일지 삭제
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
-    if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings, body.seen));         // 계좌매칭: 매핑 저장(전체 교체)
+    if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings, body.seen, body.periods));         // 계좌매칭: 매핑 저장(전체 교체)
     if (action === 'addDepositLogs')        return response(depAddLogs(body.logs));                   // 계좌매칭: 변경이력 추가(v18.26, 같은 id는 한 번만)
     if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records, body.periods)); // 계좌매칭: 회차 입금내역 저장(periods={회차:[...]} 여러 회차 한 번에)
 
@@ -1538,7 +1538,7 @@ function depGetMappings() {
       note: String(r[7] || ''), registeredAt: String(r[8] || ''), lastMatchedAt: String(r[9] || '')
     });
   }
-  return { ok: true, data: out, seen: _depGetSeen() };
+  return { ok: true, data: out, seen: _depGetSeen(), periods: _depMetaGet('periods') };
 }
 
 /* v18.28: 계좌매칭이 이미 본 센터관리 센터 목록('이름|지역') — 새로 등록된 센터만 자동 추가하고, 일부러 지운 센터는 다시 안 넣기 위함.
@@ -1561,8 +1561,24 @@ function _depAddSeen(list) {
   if (changed) _depMetaSheet().getRange(1, 1, 1, 2).setNumberFormat('@').setValues([['seenCenters', JSON.stringify(cur)]]);
 }
 
-function depSaveMappings(mappings, seen) {
+// v18.36: 회차 목록(빈 회차 포함) — 덮어쓰기. '계좌매칭_설정' 시트에서 A열=키, B열=JSON 인 줄
+function _depMetaGet(key) {
+  try {
+    var v = _depMetaSheet().getDataRange().getDisplayValues();
+    for (var i = 0; i < v.length; i++) if (v[i][0] === key) { var a = JSON.parse(v[i][1] || 'null'); return Array.isArray(a) ? a : null; }
+  } catch (e) {}
+  return null;
+}
+function _depMetaSet(key, arr) {
+  var sh = _depMetaSheet(), v = sh.getDataRange().getDisplayValues(), row = -1;
+  for (var i = 0; i < v.length; i++) if (v[i][0] === key) { row = i + 1; break; }
+  if (row < 0) row = v.length + 1;
+  sh.getRange(row, 1, 1, 2).setNumberFormat('@').setValues([[key, JSON.stringify(arr)]]);
+}
+
+function depSaveMappings(mappings, seen, periods) {
   try { _depAddSeen(seen); } catch (e) {}
+  try { if (Array.isArray(periods)) _depMetaSet('periods', periods.map(String)); } catch (e) {}
   const sh = _depMapSheet();
   sh.clearContents();
   mappings = mappings || [];
