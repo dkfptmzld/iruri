@@ -142,7 +142,7 @@ function doPost(e) {
     if (action === 'combineJournalDocs')    return response(combineJournalDocs(body.ids));            // 계획서 일지 WORD 합치기
     if (action === 'zipJournalDocs')        return response(zipJournalDocs(body.ids));                // 계획서 일지 ZIP
     if (action === 'saveDepositMappings')   return response(depSaveMappings(body.mappings));         // 계좌매칭: 매핑 저장(전체 교체)
-    if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records)); // 계좌매칭: 회차 입금내역 저장
+    if (action === 'saveDepositRecords')    return response(depSaveRecords(body.period, body.records, body.periods)); // 계좌매칭: 회차 입금내역 저장(periods={회차:[...]} 여러 회차 한 번에)
 
     return response({ ok: false, message: '알 수 없는 action' });
   } catch (err) { return response({ ok: false, message: err.toString() }); }
@@ -1507,11 +1507,12 @@ function zipJournalDocs(ids) {
  *  대표님이 계좌매칭 탭에서 학습한 '취급점→센터' 매핑을 구글시트에 영속한다.
  *  앱: 탭 열 때 getDepositMappings 로 서버 정본을 받고, 매핑이 바뀌면
  *      saveDepositMappings 로 전체 매핑 배열을 통째로 저장(배치 쓰기)한다.
- *  ※ 입금내역은 저장하지 않는다(매달 엑셀 재업로드로 복원 가능). 계좌번호도 없음(민감도 낮음).
+ *  ※ v18.25: 매핑 전체를 'json' 열에도 보관(뺀 기재·확인한 이름까지 공유).
  *  ※ 저장 잠금은 doPost 가 이미 처리하므로 여기선 잠그지 않는다(이중잠금 방지).
  *  ※ 이 스크립트는 openById 방식이라 반드시 ss_() 를 쓴다(getActiveSpreadsheet 는 null). */
 var DEP_MAP_SHEET = '계좌매칭_매핑';
-var DEP_MAP_HEADERS = ['mapId','branchKey','branchRaw','centerName','region','gijaeSamples','isExcluded','note','registeredAt','lastMatchedAt'];
+var DEP_MAP_HEADERS = ['mapId','branchKey','branchRaw','centerName','region','gijaeSamples','isExcluded','note','registeredAt','lastMatchedAt','json'];
+// v18.25: 'json' 열 = 매핑 전체(뺀 기재 removedSamples·확인한 이름 confirmedNames 등)를 그대로 보관 → 기기 간 손실 없이 공유
 
 function _depMapSheet() {
   const ss = ss_();
@@ -1521,10 +1522,11 @@ function _depMapSheet() {
 }
 
 function depGetMappings() {
-  const sh = _depMapSheet(), vals = sh.getDataRange().getValues(), out = [];
+  const sh = _depMapSheet(), vals = sh.getDataRange().getDisplayValues(), out = [];
   for (let i = 1; i < vals.length; i++) {
     const r = vals[i];
     if (!r[0]) continue;
+    if (r[10]) { try { const o = JSON.parse(r[10]); if (o && o.mapId) { out.push(o); continue; } } catch (e) {} }   // v18.25: 전체 보관본 우선
     out.push({
       mapId: String(r[0]), branchKey: String(r[1]), branchRaw: String(r[2]),
       centerName: String(r[3]), region: String(r[4]),
@@ -1539,15 +1541,15 @@ function depGetMappings() {
 function depSaveMappings(mappings) {
   const sh = _depMapSheet();
   sh.clearContents();
-  sh.getRange(1, 1, 1, DEP_MAP_HEADERS.length).setValues([DEP_MAP_HEADERS]);
   mappings = mappings || [];
-  if (mappings.length) {
-    const rows = mappings.map(function (m) {
-      return [ m.mapId || '', m.branchKey || '', m.branchRaw || '', m.centerName || '', m.region || '',
-               (m.gijaeSamples || []).join('|'), !!m.isExcluded, m.note || '', m.registeredAt || '', m.lastMatchedAt || '' ];
-    });
-    sh.getRange(2, 1, rows.length, DEP_MAP_HEADERS.length).setValues(rows);   // 배치 쓰기(한 번에)
-  }
+  const rows = [DEP_MAP_HEADERS].concat(mappings.map(function (m) {
+    return [ m.mapId || '', m.branchKey || '', m.branchRaw || '', m.centerName || '', m.region || '',
+             (m.gijaeSamples || []).join('|'), m.isExcluded ? 'true' : 'false', m.note || '', m.registeredAt || '', m.lastMatchedAt || '',
+             JSON.stringify(m) ];
+  }));
+  const rg = sh.getRange(1, 1, rows.length, DEP_MAP_HEADERS.length);
+  rg.setNumberFormat('@');   // v18.25: 글자 그대로 저장(숫자·날짜 자동변환 방지)
+  rg.setValues(rows);        // 배치 쓰기(한 번에)
   return { ok: true, count: mappings.length };
 }
 
@@ -1565,32 +1567,67 @@ function _depRecSheet() {
   return sh;
 }
 
+// v18.25: 예전에 시트가 날짜·숫자로 자동변환해 버린 칸을 원래 글자로 되돌림
+//  회차 '2026-08' → 날짜(2026-08-01)로 바뀐 칸은 'yyyy-MM', 입금일은 'yyyy-MM-dd', 숫자(계좌번호 등)는 숫자 그대로
+function _depCell(raw, disp, kind) {
+  if (raw instanceof Date) {
+    if (kind === 'time') return String(disp);
+    var tz = ss_().getSpreadsheetTimeZone();
+    if (kind === 'period') return Utilities.formatDate(raw, tz, Utilities.formatDate(raw, tz, 'dd') === '01' ? 'yyyy-MM' : 'yyyy-MM-dd');
+    return Utilities.formatDate(raw, tz, 'yyyy-MM-dd');
+  }
+  if (typeof raw === 'number' && kind !== 'time') return String(raw);
+  return String(disp);
+}
+function _depRecRow(raw, disp) {
+  var K = ['period', 'text', 'date', 'time', 'text', 'text', 'text', 'text'];
+  var row = [];
+  for (var j = 0; j < DEP_REC_HEADERS.length; j++) row.push(j === 8 ? (Number(raw[j]) || Number(String(disp[j]).replace(/[^0-9.-]/g, '')) || 0) : _depCell(raw[j], disp[j], K[j] || 'text'));
+  return row;
+}
+
 function depGetRecords() {
-  var sh = _depRecSheet(), v = sh.getDataRange().getValues(), out = [];
+  // v18.25: 보이는 글자 그대로 읽음(예전에 날짜/시간으로 자동변환된 칸도 '2026. 8. 5' 같은 글자로 → 앱이 정리)
+  var rg = _depRecSheet().getDataRange(), v = rg.getValues(), d = rg.getDisplayValues(), out = [];
   for (var i = 1; i < v.length; i++) {
-    var r = v[i];
-    if (!r[0] && !r[7]) continue;
+    if (!d[i][0] && !d[i][7]) continue;
+    var r = _depRecRow(v[i], d[i]);
     out.push({
       periodId: String(r[0]), account: String(r[1]), date: String(r[2]), time: String(r[3]),
       summary: String(r[4]), depositorName: String(r[5]), branchRaw: String(r[6]), branchKey: String(r[7]),
-      amount: Number(r[8]) || 0, matchStatus: String(r[9] || 'unmatched'),
+      amount: r[8], matchStatus: String(r[9] || 'unmatched'),
       matchedCenterName: (r[10] === '' ? null : String(r[10])), region: String(r[11] || '')
     });
   }
   return { ok: true, data: out };
 }
 
-function depSaveRecords(period, records) {
-  var sh = _depRecSheet(), v = sh.getDataRange().getValues(), keep = [];
-  for (var i = 1; i < v.length; i++) { if (v[i][0] && String(v[i][0]) !== String(period)) keep.push(v[i]); }  // 다른 회차 보존
-  records = records || [];
-  var add = records.map(function (m) {
-    return [ String(period), m.account || '', m.date || '', m.time || '', m.summary || '', m.depositorName || '',
-             m.branchRaw || '', m.branchKey || '', Number(m.amount) || 0, m.matchStatus || 'unmatched',
-             m.matchedCenterName || '', m.region || '' ];
+function depSaveRecords(period, records, periods) {
+  // v18.25: periods={회차:[입금...]} 로 여러 회차를 한 번에 교체(빈 배열 = 그 회차 삭제). 예전 방식(period+records)도 지원.
+  var map = {};
+  if (periods && typeof periods === 'object') { for (var k in periods) map[String(k)] = periods[k] || []; }
+  else map[String(period)] = records || [];
+  var sh = _depRecSheet(), rg = sh.getDataRange(), v = rg.getValues(), d = rg.getDisplayValues(), keep = [];
+  for (var i = 1; i < v.length; i++) {
+    if (!d[i][0]) continue;
+    var row = _depRecRow(v[i], d[i]);
+    if (map.hasOwnProperty(row[0])) continue;   // 교체할 회차는 버림, 나머지 회차 보존(글자로 정리해서 다시 씀)
+    keep.push(row);
+  }
+  var add = [], cnt = 0;
+  Object.keys(map).forEach(function (p) {
+    (map[p] || []).forEach(function (m) {
+      add.push([ p, m.account || '', m.date || '', m.time || '', m.summary || '', m.depositorName || '',
+                 m.branchRaw || '', m.branchKey || '', Number(m.amount) || 0, m.matchStatus || 'unmatched',
+                 m.matchedCenterName || '', m.region || '' ]);
+      cnt++;
+    });
   });
   var all = [DEP_REC_HEADERS].concat(keep).concat(add);
   sh.clearContents();
-  sh.getRange(1, 1, all.length, DEP_REC_HEADERS.length).setValues(all);  // 전체 재기록(배치)
-  return { ok: true, period: String(period), count: add.length };
+  var out = sh.getRange(1, 1, all.length, DEP_REC_HEADERS.length);
+  out.setNumberFormat('@');                                            // 글자 그대로(회차 '2026-08'·날짜·시간 자동변환 방지)
+  if (all.length > 1) sh.getRange(2, 9, all.length - 1, 1).setNumberFormat('0');   // 금액만 숫자
+  out.setValues(all);                                                  // 전체 재기록(배치)
+  return { ok: true, period: String(period || ''), periods: Object.keys(map), count: cnt };
 }
