@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.50">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.51">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.50">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.51">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.50</title>
+<title>수업기록표 정산 시스템 v18.51</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -324,7 +324,31 @@ tbody tr:hover td{background:var(--surface2);}
 .ts-tbl tr.tsRow:hover td{background:var(--surface2);}
 .ts-tbl tr.tsHit td{background:var(--blue-bg);} .ts-tbl tr.tsHit td.tsC{color:var(--blue);box-shadow:inset 3px 0 0 var(--blue);}
 .ts-tbl tfoot td{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--border2);border-bottom:none;font-weight:800;color:var(--text);padding:11px 10px;}
-.ts-card-x{width:min(1320px,96vw);background:var(--bg,#f5f4f0);}
+/* v18.51: 시안 A — 요일·날짜·보강·출결은 차분한 회색, 누른 센터 줄만 진한 파랑 + '◀ 이 센터' */
+.ts-card-x .tsx .tsx-day{background:var(--surface2);color:var(--text2);box-shadow:none;border:1px solid var(--border2);}
+.ts-card-x .tsx .lesson-table tr.date-hdr-row{--dc:var(--text3)!important;--db:var(--surface2)!important;}
+.ts-card-x .tsx-date{border-color:var(--border2);color:var(--text3);background:transparent;}
+.ts-card-x .tsx .att-o .tsx-att,.ts-card-x .tsx .att-tri .tsx-att{background:transparent;}
+.ts-card-x .tsx .sub-badge{background:transparent;color:var(--text3);border:1px solid var(--border2);}
+.ts-card-x .tsx .lesson-table tr.ts-hit td:not(.day-cell){background:#2563eb!important;color:#fff!important;}
+.ts-card-x .tsx .lesson-table tr.ts-hit td.center-td{color:#fff!important;box-shadow:none!important;}
+.ts-card-x .tsx .lesson-table tr.ts-hit td.center-td::after{content:'◀ 이 센터';margin-left:10px;font-size:11px;font-weight:800;background:#fff;color:#2563eb;border-radius:99px;padding:2px 8px;}
+.ts-card-x .tsx .lesson-table tr.ts-hit .tsx-att{color:#fff!important;opacity:1!important;}
+.ts-card-x .tsx .lesson-table tr.ts-hit .sub-badge{color:#fff;border-color:rgba(255,255,255,.6);}
+/* 여백 넉넉히 */
+.ts-ov:has(.ts-card-x){padding:36px;}
+.ts-card-x .ts-bar{padding:14px 22px;font-size:14px;}
+.ts-card-x .ts-scroll{padding:26px 28px 30px;}
+.ts-card-x .tsx{gap:18px;}
+.ts-card-x .tsx-hero{padding:20px 24px;border-radius:18px;}
+.ts-card-x .tsx-card{border-radius:18px;}
+.ts-card-x .tsx .lesson-table th{padding:13px 12px;}
+.ts-card-x .tsx .lesson-table td{padding:11px 12px;font-size:13.5px;}
+.ts-card-x .tsx .lesson-table td.center-td,.ts-card-x .tsx .lesson-table th.center-th{padding-left:18px;}
+.ts-card-x .tsx .lesson-table td.amt{padding-right:18px;}
+.ts-card-x .tsx .lesson-table tr.date-hdr-row td{padding:7px 12px;}
+.ts-card-x .tsx .lesson-table td.day-cell{width:64px;}
+.ts-card-x{width:min(1240px,94vw);max-height:88vh;border-radius:22px;background:var(--bg,#f5f4f0);}
 .ts-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);}
 .ts-bar small{font-weight:500;color:var(--text3);}
 .ts-x2{border:1px solid var(--border2);background:var(--surface);border-radius:9px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;font-family:inherit;}
@@ -388,7 +412,7 @@ tbody tr:hover td{background:var(--surface2);}
 .tsx .settle-table td[style*="#bbb"]{color:var(--text3)!important;font-weight:500;}
 .tsx .settle-table .plus{color:var(--green)!important;}
 .tsx .settle-table .final-row td{background:linear-gradient(135deg,var(--green),#1f8f62)!important;color:#fff!important;font-weight:800;font-size:14px;}
-@media(max-width:600px){ .ts-scroll{padding:8px;} .ts-bar small{display:none;} .tsx-hero{padding:12px;} .tsx-kpis{margin-left:0;width:100%;} .tsx-kpi{flex:1;min-width:0;padding:7px 9px;} .tsx-kpi b{font-size:13.5px;white-space:nowrap;} .tsx-kpi.pay b{font-size:14.5px;} .tsx .lesson-table{min-width:640px;} .tsx-bottom{grid-template-columns:1fr;} }
+@media(max-width:600px){ .ts-ov:has(.ts-card-x){padding:10px;} .ts-card-x .ts-scroll{padding:12px;} .ts-card-x .ts-bar{padding:10px 14px;} .ts-card-x .tsx-hero{padding:14px;} .ts-scroll{padding:8px;} .ts-bar small{display:none;} .tsx-hero{padding:12px;} .tsx-kpis{margin-left:0;width:100%;} .tsx-kpi{flex:1;min-width:0;padding:7px 9px;} .tsx-kpi b{font-size:13.5px;white-space:nowrap;} .tsx-kpi.pay b{font-size:14.5px;} .tsx .lesson-table{min-width:640px;} .tsx-bottom{grid-template-columns:1fr;} }
 .tsO{color:var(--green);font-weight:800;font-size:14px;} .tsX{color:var(--text3);opacity:.55;} .tsT{color:var(--amber);font-weight:800;}
 .tsSub{font-size:10.5px;font-weight:600;color:var(--amber);background:var(--amber-bg);border-radius:99px;padding:1px 6px;}
 @media(max-width:600px){ .ts-ov{padding:8px;} .ts-head{padding:14px 46px 12px 14px;} .ts-sum{margin-left:0;width:100%;} .ts-sum>div{flex:1;min-width:0;padding:6px 9px;}
@@ -4871,7 +4895,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.50';
+const SYSTEM_VERSION='v18.51';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5950,7 +5974,7 @@ function _depShowTeacherSheet(name, center, region){
  // 누른 센터 분
  let cCnt=0, cSum=0;
  (t.lessons||[]).forEach(l=>{ const lr=l.region||((DB.centers||[]).filter(x=>x.name===l.center).length===1?((DB.centers||[]).find(x=>x.name===l.center).region||''):''); if(l.center===center && (!lr || lr===(region||''))){ cCnt+=Number(l.count)||0; cSum+=Number(l.total)||0; } });
- // v18.49: 구성은 정산 PDF 그대로, 모양은 계좌매칭 스타일(히어로 머리 · 요약 카드 · 요일 색 배지 · 둥근 카드)
+ // v18.49: 구성은 정산 PDF 그대로, 모양은 계좌매칭 스타일 / v18.51: 차분한 색 + 누른 센터만 진하게(시안 A), 특이사항·정산 뺌, 여백 넉넉히
  const page=`<div class="tsx">
   <div class="tsx-hero">
    <div class="tsx-av">${escH(String(t.name||'').slice(0,1))}</div>
@@ -5966,10 +5990,6 @@ function _depShowTeacherSheet(name, center, region){
   </div>
   <div class="tsx-card tsx-tblwrap">
    <table class="lesson-table"><thead><tr><th style="width:56px;">요일</th><th class="center-th">센터명</th>${P.weekHeaders}<th class="num-th">횟수</th><th class="fee-th">수업료</th><th class="amt-th">금액</th></tr></thead><tbody>${P.bodyRows}</tbody></table>
-  </div>
-  <div class="tsx-bottom">
-   <div class="tsx-card tsx-note"><div class="tsx-ctitle">📝 특이사항</div><div class="note-content">${P.noteHtml}</div></div>
-   <div class="tsx-card tsx-settle"><div class="tsx-ctitle">💰 정산</div><table class="settle-table">${P.summaryRows.join('')}</table></div>
   </div>
  </div>`;
  let ov=document.getElementById('depTsOverlay');
@@ -19150,9 +19170,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.50&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.51&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.50&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.51&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
