@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.14">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.15">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.14">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.15">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.14</title>
+<title>수업기록표 정산 시스템 v18.15</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -217,7 +217,9 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-subtab.active{color:var(--green);border-bottom-color:var(--green);font-weight:700;}
 .dep-table{width:100%;border-collapse:collapse;font-size:13px;}
 .dep-table th,.dep-table td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);}
-.dep-table th{color:var(--text2);font-weight:600;font-size:12px;background:var(--surface2);position:sticky;top:0;}
+.dep-table th{color:var(--text2);font-weight:600;font-size:12px;background:var(--surface2);position:sticky;top:0;z-index:1;}
+.dep-bar{background:var(--surface);border-bottom:1px solid var(--border);}   /* v18.15: 표 위 도구 줄(고정) */
+.dep-bar > div:last-child{border-bottom:none !important;}
 .dep-table tr:hover td{background:var(--surface2);}
 .dep-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;}
 .dep-pill.matched{background:var(--green-bg);color:var(--green);}
@@ -4541,7 +4543,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.14';
+const SYSTEM_VERSION='v18.15';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5221,8 +5223,9 @@ function _depRenderSub(){
  else if(_depSub==='mappings') renderDepMappings();
  else renderDepRecords();
 }
-function _depPanelHTML(title, count, inner){
- return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div><div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
+// v18.15: bar(도구 줄: 버튼·지역·검색)는 스크롤 상자 '밖'에 둬서 표를 내려도 항상 보이게(표 머리줄은 sticky)
+function _depPanelHTML(title, count, inner, bar){
+ return `<div class="mgr-section"><div class="mgr-sec-head"><b>${title}</b>${count!=null?` <span style="color:var(--text3);font-weight:400;font-size:12px;">${count}</span>`:''}</div>${bar?`<div class="dep-bar">${bar}</div>`:''}<div style="overflow:auto;max-height:62vh;">${inner}</div></div>`;
 }
 
 let _depStatusFilter='all', _depStatusQ='', _depRegionFilter='all', _depMapQ='', _depMapRegion='all';
@@ -5294,8 +5297,8 @@ function renderDepUnpaid(){
     <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
   </div>`;
- const inner=head+`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody id="depUnpaidBody">${_depUnpaidBodyHTML(rows)}</tbody></table>`;
- el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner);
+ const inner=`<table class="dep-table"><thead><tr><th>센터명</th><th>지역</th><th>상태</th><th>입금액</th><th>최근 입금</th></tr></thead><tbody id="depUnpaidBody">${_depUnpaidBodyHTML(rows)}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('센터 입금현황',`(입금 ${paidCnt} / 명단 ${rows.length})`,inner,head);
 }
 
 // 현재 회차·현재 지역필터 기준 미입금 센터를 지역별로 묶어 카톡 붙여넣기용 텍스트로 복사
@@ -5399,9 +5402,9 @@ function renderDepMappings(){
     <span style="font-size:12px;color:var(--text3);margin-right:2px;">지역</span>
     ${rbtn('all','전체')}${regions.map(rg=>rbtn(rg,esc(rg))).join('')}
    </div>`;
- const inner=bar+`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody id="depMapBody">${_depMapRowsHTML(maps)||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
+ const inner=`<table class="dep-table"><thead><tr><th>취급점(키)</th><th>연결 센터</th><th>지역</th><th>기재내용 이력</th><th></th></tr></thead><tbody id="depMapBody">${_depMapRowsHTML(maps)||`<tr><td colspan=5 class="dep-empty">${emptyMsg}</td></tr>`}</tbody></table>`;
  const countHTML = `<span id="depMapCount">${filtered?`(${maps.length} / ${all.length}개)`:`(${all.length}개)`}</span>`;
- el.innerHTML=_depPanelHTML('매핑 관리',countHTML,inner);
+ el.innerHTML=_depPanelHTML('매핑 관리',countHTML,inner,bar);
 }
 
 /* 매핑 일괄 가져오기 (JSON 붙여넣기) */
@@ -5493,8 +5496,8 @@ function renderDepRecords(){
  const byAcct={}; rs.forEach(r=>{ const a=r.account||''; byAcct[a]=(byAcct[a]||0)+1; });
  const acctLine=Object.keys(byAcct).length? `<div style="padding:9px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);">불러온 계좌 ${Object.keys(byAcct).length}개 · `
    + Object.entries(byAcct).map(([a,n])=>`${_depMaskAcct(a)} <b>${n}건</b>`).join(' · ') + `</div>` : '';
- const inner=acctLine+`<table class="dep-table"><thead><tr><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
- el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건)`,inner);
+ const inner=`<table class="dep-table"><thead><tr><th>입금일시</th><th>계좌</th><th>기재내용</th><th>취급점</th><th>금액</th><th>상태</th><th>매칭 센터</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class="dep-empty">입금내역이 없습니다.</td></tr>'}</tbody></table>`;
+ el.innerHTML=_depPanelHTML('입금내역',`(${rs.length}건)`,inner,acctLine);
 }
 function _depStatusPill(r){
  if(r.matchStatus==='matched') return '<span class="dep-pill matched">✓ 매칭</span>';
@@ -17746,9 +17749,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.14&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.15&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.14&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.15&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
