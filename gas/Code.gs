@@ -621,7 +621,10 @@ function syncCenters(centers, force) {
     for (let i = 1; i < v.length; i++) {
       const nm = String(v[i][0]||'').trim(); if (!nm) continue;
       const key = nm + '||' + String(v[i][1]||'').trim();
-      const tt = [v[i][3],v[i][4],v[i][5],v[i][6]].map(x=>String(x||'').trim()).filter(Boolean).sort().join(',');
+      // v18.63: 강사 칸은 4개뿐이라 강사 5명 이상 센터가 매번 '수정'으로 잡히던 문제 → JSON전체(14열)의 강사 목록으로 비교
+      let tl = [v[i][3],v[i][4],v[i][5],v[i][6]];
+      try { const j = v[i][13] ? JSON.parse(String(v[i][13])) : null; if (j && Array.isArray(j.teachers)) tl = j.teachers; } catch (e) {}
+      const tt = tl.map(x=>String(x||'').trim()).filter(Boolean).sort().join(',');
       old[key] = [String(v[i][2]||0), tt].join('|'); // 수업료|강사들
     }
     const ch = [], seen = {};
