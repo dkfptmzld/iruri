@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.62">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.63">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.62">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.63">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.62</title>
+<title>수업기록표 정산 시스템 v18.63</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4917,7 +4917,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.62';
+const SYSTEM_VERSION='v18.63';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17170,22 +17170,41 @@ async function syncAllToDB(force){
     _done=true; clearTimeout(_watchdog); _syncInFlight=false;                        // 재진입 잠금 해제 후 force 재동기화
     return syncAllToDB(true);
    }
-   const lines=[];
-   const _fmt=(r,label,unit,localLen)=>{
+   // v18.63: 확인창은 '삭제·급감' 때만 뜬다 → 삭제 항목을 크게, 이 기기에서 지운 건지(삭제 도장) 표시.
+   //  추가·수정은 위험하지 않으니 회색 한 줄로만(예전엔 같은 목록에 섞여 '왜 이게 또?' 헷갈림)
+   const lines=[]; let _unknownDel=0;
+   const _fmt=(r,label,unit,localLen,isCenter)=>{
     if(!(r&&r.blocked)) return;
     if(Array.isArray(r.changes) && r.changes.length){
-     lines.push(`<b>${label} ${r.changeCount||r.changes.length}건 변경</b>`);
-     r.changes.slice(0,12).forEach(c=>lines.push(`&nbsp;· ${esc(String(c))}`));
-     if(r.changes.length>12) lines.push(`&nbsp;· 외 ${r.changes.length-12}건…`);
+     const nm=c=>String(c).replace(/^\s*(추가|수정|삭제)\s*:\s*/,'');
+     const dels=r.changes.filter(c=>/^\s*삭제/.test(String(c))).map(nm);
+     const adds=r.changes.filter(c=>/^\s*추가/.test(String(c))).map(nm);
+     const mods=r.changes.filter(c=>/^\s*수정/.test(String(c))).map(nm);
+     if(dels.length){
+      lines.push(`<div style="text-align:left;margin:8px 0 4px;font-weight:800;color:var(--red);">🗑 ${label} 삭제 ${dels.length}${unit}</div>`);
+      dels.slice(0,15).forEach(n=>{
+       const mine = isCenter ? _getCenterTombs().some(t=>String(t.name||'').trim()===n.trim()) : null;
+       if(isCenter && !mine) _unknownDel++;
+       const tag = mine===true ? '<span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-bg);border-radius:99px;padding:1px 8px;margin-left:6px;">이 기기에서 삭제함</span>'
+                 : mine===false ? '<span style="font-size:11px;font-weight:700;color:var(--red);background:var(--red-bg);border-radius:99px;padding:1px 8px;margin-left:6px;">확인 필요 — 이 기기엔 없는 센터</span>' : '';
+       lines.push(`<div style="text-align:left;padding:3px 0 3px 10px;"><b>${escH(n)}</b>${tag}</div>`);
+      });
+      if(dels.length>15) lines.push(`<div style="text-align:left;padding-left:10px;color:var(--text3);">외 ${dels.length-15}${unit}…</div>`);
+     }
+     const etc=[adds.length?`추가 ${adds.length}`:'', mods.length?`수정 ${mods.length}`:''].filter(Boolean).join(' · ');
+     if(etc) lines.push(`<div style="text-align:left;margin-top:6px;font-size:12px;color:var(--text3);">함께 반영되는 ${label} ${etc}${adds.length?` (추가: ${adds.slice(0,6).map(escH).join(', ')}${adds.length>6?' 외':''})`:''}</div>`);
     } else {
-     lines.push(`<b>${label} ${r.curCount}${unit} → ${localLen}${unit}</b> (대폭 감소)`);
+     lines.push(`<div style="text-align:left;margin:8px 0;"><b>${label} ${r.curCount}${unit} → ${localLen}${unit}</b> (대폭 감소)</div>`);
     }
    };
-   _fmt(tr,'강사','명',DB.teachers.length); _fmt(cr,'센터','개',DB.centers.length);
+   _fmt(tr,'강사','명',DB.teachers.length,false); _fmt(cr,'센터','곳',DB.centers.length,true);
    _updateSyncChip(false, now, 0, 0);
    if(btn){ btn.innerHTML=orig; btn.disabled=false; }
-   showConfirm({icon:'⚠️', title:'한 번에 여러 건 변경 감지',
-     desc:`아래 내용을 서버에 반영하려고 해요:<br>${lines.join('<br>')}<br><br><small style="color:var(--red)">의도한 변경이면 <b>반영</b>, 실수 같으면 <b>취소</b>하세요. 취소하면 하나도 반영되지 않아요.</small>`,
+   const _guide = _unknownDel
+     ? `<b>'확인 필요'</b> 센터는 이 기기에서 지운 기록이 없어요. 다른 기기에서 새로 추가된 센터일 수 있으니 <b>취소</b> 후 새로고침해서 다시 확인하세요.`
+     : `직접 지운 센터가 맞으면 <b>반영</b>을 누르세요. 취소하면 아무것도 반영되지 않고, 다음 동기화 때 다시 물어봐요.`;
+   showConfirm({icon:'🗑', title:'삭제를 서버에 반영할까요?',
+     desc:`${lines.join('')}<div style="margin-top:12px;font-size:12px;line-height:1.6;color:var(--text2);text-align:left;">${_guide}</div>`,
      okText:'확인하고 반영', okStyle:'danger', cancelText:'취소', onOk:()=>syncAllToDB(true)});
    return false;
   }
@@ -19305,9 +19324,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.62&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.63&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.62&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.63&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
