@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.67">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.68">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.67">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.68">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.67</title>
+<title>수업기록표 정산 시스템 v18.68</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -871,6 +871,11 @@ body.edit-mode-active .ledger-wrap textarea {
 #actionFlash .af-msg{font-size:17px;font-weight:700;color:#23211C;text-align:center;letter-spacing:-.2px;line-height:1.4;}
 #actionFlash .af-sub{font-size:13px;font-weight:500;color:#8A8676;text-align:center;line-height:1.5;margin-top:-8px;max-width:280px;}
 #actionFlash.err .af-sub{color:#C0392B;background:#FDECEA;border-radius:9px;padding:8px 12px;margin-top:0;}
+#actionFlash .af-bar{width:240px;max-width:70vw;margin-top:-6px;}   /* v18.68: % 막대 */
+#actionFlash .af-track{height:9px;border-radius:99px;background:#F0EFE9;overflow:hidden;}
+#actionFlash .af-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#1A7A50,#2DB76E);transition:width .25s ease;}
+#actionFlash .af-meta{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;font-variant-numeric:tabular-nums;color:#9B9888;}
+#actionFlash .af-meta b{color:#1A7A50;}
 @media(max-width:600px){#actionFlash .af-card{padding:30px 30px;min-width:200px;}#actionFlash .af-msg{font-size:16px;}#actionFlash .af-sub{font-size:12.5px;}}
 /* v16.34: 업데이트 알림 배너 */
 .upd-banner{position:fixed;top:0;left:0;right:0;z-index:12000;transform:translateY(-105%);transition:transform .32s cubic-bezier(.2,.9,.3,1);pointer-events:none;}
@@ -3807,6 +3812,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   <div style="height:8px;background:#EDEBE4;border-radius:5px;overflow:hidden;margin-bottom:16px;">
    <div id="submitProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#1A7A50,#25A468);border-radius:5px;transition:width .35s ease;"></div>
   </div>
+  <div style="display:flex;justify-content:space-between;margin:-10px 0 14px;font-size:12px;font-variant-numeric:tabular-nums;"><b id="submitProgressPct" style="color:#1A7A50;">0%</b><span id="submitProgressEta" style="color:#9B9888;"></span></div>
   <div id="submitProgressTasks" style="display:flex;flex-direction:column;gap:13px;margin-bottom:18px;"></div>
   <button id="submitProgressClose" onclick="_closeSubmitProgress()" disabled style="width:100%;height:44px;border:none;border-radius:10px;background:#1A7A50;color:#fff;font-size:14px;font-weight:700;cursor:not-allowed;opacity:.35;">닫기</button>
  </div>
@@ -3832,6 +3838,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  <div class="af-card">
   <div class="af-ico" id="afIco"><div class="af-spin"></div></div>
   <div class="af-msg" id="afMsg"></div>
+  <div class="af-bar" id="afBar" style="display:none;"><div class="af-track"><div class="af-fill" id="afFill"></div></div><div class="af-meta"><b id="afPct">0%</b><span id="afEta"></span></div></div>
   <div class="af-sub" id="afSub" style="display:none;"></div>
  </div>
 </div>
@@ -4917,7 +4924,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.67';
+const SYSTEM_VERSION='v18.68';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17435,11 +17442,33 @@ function showBusyToast(msg){
  const m=document.getElementById('afMsg'); if(m) m.textContent=msg||'처리 중…';
  const s=document.getElementById('afSub'); if(s){ s.textContent=''; s.style.display='none'; }
  el.classList.add('show');
+ _afProgStart(msg);   // v18.68: % 막대
  // 안전장치: 완료 신호가 안 오면 20초 뒤 자동으로 닫힘(화면이 잠기지 않도록)
- _afTimer=setTimeout(()=>{ _actionActive=false; el.classList.remove('show'); _afTimer=null; }, 20000);
+ _afTimer=setTimeout(()=>{ _actionActive=false; el.classList.remove('show'); _afTimer=null; _afProgEnd(false); }, 20000);
+}
+/* v18.68: '처리 중…' % 막대 — 동작(문구)별로 걸린 시간을 학습해 진행률·남은 시간 계산(완료 전엔 95%까지) */
+let _afProg=null;
+function _afProgStart(msg){
+ const bar=document.getElementById('afBar'); if(!bar) return;
+ if(_afProg && _afProg.iv) clearInterval(_afProg.iv);
+ const key='af:'+_loaderKey(msg||'처리 중');
+ _afProg={key, est:_loaderEstGet(key, 2500), t0:Date.now(), iv:null};
+ bar.style.display='block';
+ const draw=()=>{ if(!_afProg) return; const ms=Date.now()-_afProg.t0, p=Math.min(95, Math.round(ms/_afProg.est*100)), left=_afProg.est-ms;
+  const f=document.getElementById('afFill'), pc=document.getElementById('afPct'), et=document.getElementById('afEta');
+  if(f) f.style.width=p+'%'; if(pc) pc.textContent=p+'%'; if(et) et.textContent= left>800 ? `약 ${Math.ceil(left/1000)}초 남음` : '거의 다 됐어요…'; };
+ draw(); _afProg.iv=setInterval(draw, 150);
+}
+function _afProgEnd(ok){
+ if(!_afProg) return;
+ clearInterval(_afProg.iv);
+ if(ok) _loaderEstLearn(_afProg.key, Date.now()-_afProg.t0, 2500);
+ _afProg=null;
+ const bar=document.getElementById('afBar'); if(bar) bar.style.display='none';
 }
 function _afResult(msg, ok, sub){
  const el=document.getElementById('actionFlash'); if(!el) return;
+ _afProgEnd(ok);   // v18.68
  if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; }
  el.classList.remove('ok','err'); el.classList.add(ok?'ok':'err');
  const ico=document.getElementById('afIco'); if(ico) ico.textContent = ok?'✓':'✕';
@@ -18206,7 +18235,8 @@ function showLoader(msg='불러오는 중...', sub='', ms=15000, opts){
   el.classList.add('show');
   if(_loaderTimer) clearTimeout(_loaderTimer);
   if(ms > 0) _loaderTimer = setTimeout(()=>hideLoader('timeout'), ms);
-  _loaderProgSetup(opts && opts.progress);   // v18.67: % 막대(선택)
+  // v18.68: 모든 로딩에 % 막대(끄려면 opts.progress=false). 화면 문구별로 걸린 시간을 따로 학습
+  _loaderProgSetup((opts && opts.progress===false) ? null : ((opts && opts.progress) || {key:_loaderKey(msg), est:_loaderDefEst(msg)}));
   // v15.42: 경과 초 표시 — 멈춘 건지 진행 중인지 바로 알 수 있게 0.1초 단위로 카운트업
   const elp = document.getElementById('loaderElapsed');
   if(_loaderTick){ clearInterval(_loaderTick); _loaderTick=null; }
@@ -18238,6 +18268,8 @@ function showLoader(msg='불러오는 중...', sub='', ms=15000, opts){
    실제 진행률은 알 수 없어서 '보통 걸리는 시간'(이 기기에서 실제로 걸린 시간을 학습, 기본 est)으로 계산.
    끝나기 전엔 95%에서 대기, 정상 완료(hideLoader())면 100% + 걸린 시간 학습(시간초과·그만 기다리기는 학습 안 함) */
 let _loaderProg=null;
+function _loaderKey(msg){ return String(msg||'').replace(/\d+/g,'#').replace(/[.…\s]+$/,'').trim()||'loader'; }
+function _loaderDefEst(msg){ const m=String(msg||''); if(/GitHub|깃허브/i.test(m)) return 40000; if(/로그인/.test(m)) return 4000; if(/저장|영수증|불러오/.test(m)) return 3000; return 5000; }
 function _loaderEstGet(k, def){ try{ const m=JSON.parse(localStorage.getItem(SYNC_EST_KEY)||'{}'); return Number(m['loader:'+k])||def||5000; }catch(_){ return def||5000; } }
 function _loaderEstLearn(k, ms, def){ try{ const m=JSON.parse(localStorage.getItem(SYNC_EST_KEY)||'{}'); const prev=Number(m['loader:'+k])||def||5000; m['loader:'+k]=Math.round(prev*0.6+Math.max(500,Math.min(ms,120000))*0.4); localStorage.setItem(SYNC_EST_KEY, JSON.stringify(m)); }catch(_){} }
 function _loaderProgSetup(pg){
@@ -19477,9 +19509,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.67&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.68&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.67&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.68&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -22950,6 +22982,7 @@ function _showSubmitProgress(tasks){
 
  title.textContent = '관리자에게 제출 중';
  bar.style.width = '0%';
+ _subProgStart(tasks.length);   // v18.68: % · 남은 시간
  closeBtn.disabled = true;
  closeBtn.style.opacity = '0.35';
  closeBtn.style.cursor = 'not-allowed';
@@ -22992,8 +23025,7 @@ function _updateSubmitTask(i, status){
   icon.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A7A50" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
   stat.style.color='#1A7A50'; stat.textContent='완료';
   _submitTaskDone++;
-  const pct = Math.round((_submitTaskDone/_submitTaskCount)*100);
-  document.getElementById('submitProgressBar').style.width = pct+'%';
+  _subProgDraw();   // v18.68: 단계 완료 반영(시간 기반 진행률과 큰 쪽)
   if(_submitTaskDone>=_submitTaskCount) _onAllSubmitDone();
  } else if(status==='error'){
   icon.style.background='#FEE2E2';
@@ -23004,12 +23036,40 @@ function _updateSubmitTask(i, status){
  }
 }
 
+/* v18.68: 제출 진행 % — 단계 수 기준만 쓰면 한 단계 동안 멈춰 보여서, 단계당 평균 시간(학습)으로 부드럽게 채움 */
+let _subProg=null;
+function _subProgStart(n){
+ if(_subProg && _subProg.iv) clearInterval(_subProg.iv);
+ const per=_loaderEstGet('submitTask', 4000);
+ _subProg={n:Math.max(1,n), per, t0:Date.now(), last:0, iv:null};
+ _subProgDraw(); _subProg.iv=setInterval(_subProgDraw, 200);
+}
+function _subProgDraw(){
+ if(!_subProg) return;
+ const ms=Date.now()-_subProg.t0, total=_subProg.per*_subProg.n;
+ const byTask=_submitTaskCount? _submitTaskDone/_submitTaskCount*100 : 0;
+ const p=Math.max(_subProg.last, Math.min(95, Math.max(byTask, ms/total*100)));
+ _subProg.last=p;
+ const bar=document.getElementById('submitProgressBar'), pc=document.getElementById('submitProgressPct'), et=document.getElementById('submitProgressEta');
+ if(bar) bar.style.width=Math.round(p)+'%'; if(pc) pc.textContent=Math.round(p)+'%';
+ const left=Math.max(total-ms, (_submitTaskCount-_submitTaskDone)*_subProg.per*0.3);
+ if(et) et.textContent = left>800 ? `약 ${Math.ceil(left/1000)}초 남음` : '거의 다 됐어요…';
+}
+function _subProgEnd(){
+ if(!_subProg) return;
+ clearInterval(_subProg.iv);
+ _loaderEstLearn('submitTask', (Date.now()-_subProg.t0)/_subProg.n, 4000);
+ _subProg=null;
+ const pc=document.getElementById('submitProgressPct'), et=document.getElementById('submitProgressEta');
+ if(pc) pc.textContent='100%'; if(et) et.textContent='완료';
+}
 function _onAllSubmitDone(){
  const title = document.getElementById('submitProgressTitle');
  const bar = document.getElementById('submitProgressBar');
  const closeBtn = document.getElementById('submitProgressClose');
  if(title) title.textContent = '제출 완료';
  if(bar) bar.style.width = '100%';
+ _subProgEnd();   // v18.68
  if(closeBtn){ closeBtn.disabled=false; closeBtn.style.opacity='1'; closeBtn.style.cursor='pointer'; }
  setTimeout(()=>_closeSubmitProgress(), 2000);
 }
