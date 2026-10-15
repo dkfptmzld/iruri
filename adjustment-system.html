@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.68">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.69">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.68">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.69">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.68</title>
+<title>수업기록표 정산 시스템 v18.69</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -1133,6 +1133,10 @@ body.edit-mode-active .ledger-wrap textarea {
 .all-tr{cursor:pointer;}
 .all-tr:hover td{background:var(--green-bg)!important;}
 .loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--text2);font-size:14px;}
+.ip-bar{width:170px;max-width:80%;margin:8px auto 0;}   /* v18.69 */
+.ip-track{height:6px;border-radius:99px;background:var(--surface2,#F0EFE9);overflow:hidden;}
+.ip-track i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#1A7A50,#2DB76E);transition:width .25s ease;}
+.ip-pct{font-size:11px;color:var(--text3,#9B9888);margin-top:4px;text-align:center;font-variant-numeric:tabular-nums;}
 .spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -3750,7 +3754,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    <span style="font-size:13px;font-weight:700;color:white;">👥 접속 현황</span>
    <button onclick="_refreshPresenceWidget()" title="새로고침" style="background:rgba(255,255,255,.2);border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;">↺</button>
   </div>
-  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div></div>
+  <div id="presenceList" style="padding:10px;max-height:280px;overflow-y:auto;"><div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...<div class="ip-bar" data-ipk="presence" data-ipe="3000"><div class="ip-track"><i></i></div><div class="ip-pct">0%</div></div></div></div>
   <div style="padding:8px 12px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);text-align:right;" id="presenceUpdatedAt">업데이트 오후 09:01:33</div>
  </div>
 </div>
@@ -3774,7 +3778,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
  </div>
  </div>
  <div id="receipts-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
- <div style="color:var(--text3);font-size:13px;padding:20px;">불러오는 중...</div>
+ <div style="color:var(--text3);font-size:13px;padding:20px;grid-column:1/-1;text-align:center;">불러오는 중...<div class="ip-bar" data-ipk="receipts" data-ipe="3000"><div class="ip-track"><i></i></div><div class="ip-pct">0%</div></div></div>
  </div>
  </div>
 </div>
@@ -4924,7 +4928,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.68';
+const SYSTEM_VERSION='v18.69';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7284,6 +7288,7 @@ function _depSetSyncChip(state){
  };
  const s=map[state]||map.wait;
  c.textContent=s[0]; c.style.background=s[1]; c.style.color=s[2];
+ if(state==='save' || state==='wait') _btnProg(c, 'depChip_'+state, state==='save'?3000:4000);   // v18.69
 }
 
 /* ── v18.26: 계좌매칭 변경이력 ──
@@ -10057,7 +10062,7 @@ function renderTeacherReceiptsTab(ti){
  </div>
  <div id="admin-receipt-upload-status" style="display:none;font-size:12px;color:#1A7A50;padding:8px 12px;background:#F0FAF4;border-radius:8px;margin-bottom:10px;"></div>
  <div id="teacher-receipts-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
- <div style="color:var(--text3);font-size:13px;padding:16px;">불러오는 중...</div>
+ <div style="color:var(--text3);font-size:13px;padding:16px;grid-column:1/-1;text-align:center;">불러오는 중...${_ipBar('teacherReceipts',3000)}</div>
  </div>
  </div>`;
 
@@ -11473,7 +11478,7 @@ async function saveAndNotify(ti){
  if(!t || !t.yearMonth) return;
 
  const btn = event?.currentTarget;
- if(btn){ btn.textContent='저장 중...'; btn.disabled=true; btn.style.background='#888'; }
+ if(btn){ btn.textContent='저장 중...'; btn.disabled=true; btn.style.background='#888'; _btnProg(btn,'saveRecord',3000); }
 
  // localStorage 즉시 저장
  saveMonthlySnapshot(t.yearMonth, STATE.data, false);
@@ -12652,7 +12657,7 @@ async function _sendScheduleRequest(name){
  const t=(DB.teachers||[]).find(x=>x&&x.name===name);
  const msg=(document.getElementById('schReqMsg')?.value||'').trim();
  const btn=document.getElementById('schSendBtn');
- if(btn){ btn.disabled=true; btn.textContent='보내는 중…'; }
+ if(btn){ btn.disabled=true; btn.textContent='보내는 중…'; _btnProg(btn,'schReq',3000); }
  try{
   const r=await gasPost({action:'submitScheduleRequest', teacher:name, region:(t&&t.region)||'', changes:ch, message:msg});
   if(r && r.ok!==false){
@@ -16028,11 +16033,18 @@ function markAllSettled(){
    targets.forEach(t=>{ t.settleStatus='done'; });
    try{ lsSave(); }catch(e){}
    try{ saveMonthlySnapshot(ym, STATE.data); }catch(e){}
-   // GAS 정산이력 업데이트 (각 강사, 백그라운드)
-   targets.forEach(t=>{ try{ gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note||'', notesData:t.notesData||null}).catch(()=>{}); }catch(e){} });
    try{ _renderSidebarYM(ym); }catch(e){}
    try{ _renderNewTeacherList(); }catch(e){}
-   showToast(`✅ ${targets.length}명 정산완료 처리됨`);
+   // GAS 정산이력 업데이트 (각 강사) — v18.69: 진행률(n/N명 · %) 표시하며 기다린 뒤 완료 안내
+   showLoader(`미정산 ${targets.length}명 정산완료 처리 중...`, `0/${targets.length}명 완료`, 120000, {progress:{key:'settleDoneEach', est:3000, total:targets.length, unit:'명'}});
+   let _done=0, _fail=0;
+   Promise.all(targets.map(t=>{
+     let pr; try{ pr=gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:ym, note:t.note||'', notesData:t.notesData||null}); }catch(e){ pr=Promise.reject(e); }
+     return Promise.resolve(pr).then(r=>{ if(r && r.ok===false) _fail++; }).catch(()=>{ _fail++; }).finally(()=>{ _done++; _loaderStep(_done); });
+   })).then(()=>{
+     hideLoader();
+     showToast(_fail ? `⚠ ${targets.length}명 중 ${targets.length-_fail}명 정산완료 (${_fail}명은 서버 반영 실패 — 다시 시도해 주세요)` : `✅ ${targets.length}명 정산완료 처리됨`);
+   });
   }});
 }
 
@@ -16742,7 +16754,7 @@ function _renderPresenceWidget(list){
   *  window 에 붙지 않는다 → 강사 목록이 멀쩡히 있어도 항상 '비어있다'고 판단해서
   *  앱을 열 때마다 강사 전체 조회를 한 번씩 더 보내고 있었다. → DB 를 직접 본다. */
  if(!(typeof DB !== 'undefined' && DB.teachers && DB.teachers.length)){
-  listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...</div>';
+  listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">강사 목록 불러오는 중...'+_ipBar('presence',3000)+'</div>';
   gasGet({action:'getTeachers', teacher:'', isAdmin:'true'}).then(r=>{
    if(r.ok && r.data?.length){
     DB.teachers = r.data;
@@ -16838,7 +16850,7 @@ async function renderSubmissionsView(){
  const doneEl    = document.getElementById('subDoneList');
  if(!pendingEl) return;
 
- pendingEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">불러오는 중...</div>';
+ pendingEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">불러오는 중...'+_ipBar('pendingSubs',4000)+'</div>';
 
  try{
   const [rPending, rDone, rPresence] = await Promise.all([
@@ -17140,7 +17152,7 @@ async function syncSnapshotsToGAS(){
 
  // 미저장 변경사항 있으면 먼저 flush
  if(_pendingSaveYm && _pendingSaveData){
-  if(btn){ btn.innerHTML = ICON_SVG + ' 저장 중...'; btn.disabled=true; }
+  if(btn){ btn.innerHTML = ICON_SVG + ' 저장 중...'; btn.disabled=true; _btnProg(btn,'ledgerSave',4000); }
   // 타이머 표시 오버레이
   const overlay = document.createElement('div');
   overlay.id = '_syncOverlay';
@@ -17166,7 +17178,7 @@ async function syncSnapshotsToGAS(){
   overlay.remove();
  }
 
- if(btn){ btn.innerHTML = ICON_SVG + ' 업로드 중...'; btn.disabled=true; }
+ if(btn){ btn.innerHTML = ICON_SVG + ' 업로드 중...'; btn.disabled=true; _btnProg(btn,'ledgerUpload',8000); }
 
  const PREFIX = 'iruri_monthly_';
  const keys = [];
@@ -17229,6 +17241,7 @@ async function syncAllToDB(force){
   showToast('⚠️ 네트워크 응답이 없어 동기화를 완료하지 못했어요. 잠시 후 다시 시도해 주세요');
  }, _SYNC_BTN_HARD_MS);
  if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:white;animation:spin 1s linear infinite"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> 동기화 중...'; btn.disabled=true; }
+ if(btn) _btnProg(btn,'dbSync',6000);   // v18.69
  if(chip){ chip.style.display='none'; }
  try{
   if(_done) return false; // 워치독이 이미 처리
@@ -17626,7 +17639,7 @@ function _doClearChangelog(){
 }
 async function _doApplyAllSubs(){
  const btn = document.getElementById('applyAllBtn');
- if(btn){ btn.disabled=true; btn.textContent='반영 중...'; }
+ if(btn){ btn.disabled=true; btn.textContent='반영 중...'; _btnProg(btn,'applyAll',5000); }
  showBusyToast(`${_subPendingData.length}건 반영 중…`);   // v16.28
  _applySubmissions([..._subPendingData]);
  for(const s of _subPendingData){
@@ -18283,22 +18296,62 @@ function _loaderProgSetup(pg){
       +'<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;font-variant-numeric:tabular-nums;"><b id="loaderPct" style="color:#1A7A50;">0%</b><span id="loaderEta" style="color:#9B9888;"></span></div>';
     const sub=document.getElementById('loaderSub'); if(sub && sub.nextSibling) card.insertBefore(bar, sub.nextSibling); else card.appendChild(bar);
   }
-  _loaderProg={ key:pg.key||'loader', def:pg.est||5000, est:_loaderEstGet(pg.key||'loader', pg.est), t0:Date.now() };
+  _loaderProg={ key:pg.key||'loader', def:pg.est||5000, est:_loaderEstGet(pg.key||'loader', pg.est), t0:Date.now(), total:pg.total||0, done:0, unit:pg.unit||'건' };
   bar.style.display='block'; if(spin) spin.style.display='none';
   _loaderProgRender(0);
 }
+function _loaderStep(done){ if(_loaderProg && _loaderProg.total){ _loaderProg.done=Math.min(done,_loaderProg.total); _loaderProgRender(Date.now()-_loaderProg.t0); } }
 function _loaderProgRender(ms){
   if(!_loaderProg) return;
   const f=document.getElementById('loaderFill'), pc=document.getElementById('loaderPct'), et=document.getElementById('loaderEta'); if(!f) return;
-  const p=Math.min(95, Math.round(ms/_loaderProg.est*100)), left=_loaderProg.est-ms;
+  let p, left;
+  if(_loaderProg.total){   // v18.69: 개수 기반(예: 미정산 전체 완료) — 끝난 개수와 시간 중 큰 쪽, 학습값은 '한 건당 시간'
+    const T=_loaderProg.total, D=_loaderProg.done, all=_loaderProg.est*T;
+    p = D>=T ? 100 : Math.min(95, Math.round(Math.max(D/T, ms/all)*100));
+    left = D>0 ? (T-D)*(ms/D) : (all-ms);   // 몇 명 끝났으면 실제 속도로 남은 시간 계산
+    const sub=document.getElementById('loaderSub'); if(sub) sub.textContent=`${D}/${T}${_loaderProg.unit} 완료`;
+  } else { p=Math.min(95, Math.round(ms/_loaderProg.est*100)); left=_loaderProg.est-ms; }
   f.style.width=p+'%'; if(pc) pc.textContent=p+'%';
-  if(et) et.textContent = left>800 ? `약 ${Math.ceil(left/1000)}초 남음` : '거의 다 됐어요…';
+  if(et) et.textContent = p>=100 ? '완료' : (left>800 ? `약 ${Math.ceil(left/1000)}초 남음` : '거의 다 됐어요…');
 }
+/* v18.69: 버튼·칩 안의 '저장 중…/확인 중…' 옆에 % — 그 코드가 버튼 글자를 원래대로 바꾸면 스스로 멈추고 걸린 시간 학습 */
+function _btnProg(btn, key, est){
+  if(!btn) return;
+  if(btn._bpIv){ clearInterval(btn._bpIv); btn._bpIv=null; }
+  const base=btn.innerHTML, k='btn:'+key, d=est||3000, e=_loaderEstGet(k, d), t0=Date.now();
+  let last=null;
+  const tick=()=>{
+    if(!btn.isConnected){ clearInterval(btn._bpIv); btn._bpIv=null; return; }
+    if(last!==null && btn.innerHTML!==last){ clearInterval(btn._bpIv); btn._bpIv=null; const ms=Date.now()-t0; if(ms>300) _loaderEstLearn(k, ms, d); return; }
+    const p=Math.min(95, Math.round((Date.now()-t0)/e*100));
+    btn.innerHTML = base + ' <span class="bp-pct" style="font-variant-numeric:tabular-nums;opacity:.85;">'+p+'%</span>';
+    last=btn.innerHTML;
+  };
+  tick(); btn._bpIv=setInterval(tick, 200);
+}
+/* v18.69: 목록 자리의 '불러오는 중…' 아래 작은 % 막대 — 보이기 시작한 순간부터 재고, 내용이 들어와 사라지면 걸린 시간 학습 */
+function _ipBar(key, est){ return '<div class="ip-bar" data-ipk="'+key+'" data-ipe="'+(est||3000)+'"><div class="ip-track"><i></i></div><div class="ip-pct">0%</div></div>'; }
+(function(){
+  const act=new Map();
+  setInterval(()=>{
+    try{
+      document.querySelectorAll('.ip-bar').forEach(el=>{ if(!act.has(el)){ const k='ip:'+(el.dataset.ipk||'x'), d=Number(el.dataset.ipe)||3000; act.set(el,{k,d,e:_loaderEstGet(k,d),t0:null}); } });
+      act.forEach((o,el)=>{
+        if(!el.isConnected){ if(o.t0) _loaderEstLearn(o.k, Date.now()-o.t0, o.d); act.delete(el); return; }
+        if(el.offsetParent===null) return;          // 아직 안 보임(접힌 상세 등) → 시작 안 함
+        if(!o.t0) o.t0=Date.now();
+        const ms=Date.now()-o.t0, p=Math.min(95, Math.round(ms/o.e*100)), left=o.e-ms;
+        const i=el.querySelector('.ip-track i'), t=el.querySelector('.ip-pct');
+        if(i) i.style.width=p+'%'; if(t) t.textContent=p+'%'+(left>800?' · 약 '+Math.ceil(left/1000)+'초':'');
+      });
+    }catch(_){}
+  }, 250);
+})();
 function hideLoader(reason){
   const el = document.getElementById('globalLoader');
   if(!el) return;
   if(_loaderProg){   // v18.67
-    if(reason!=='timeout' && reason!=='cancel' && el.classList.contains('show')) _loaderEstLearn(_loaderProg.key, Date.now()-_loaderProg.t0, _loaderProg.def);
+    if(reason!=='timeout' && reason!=='cancel' && el.classList.contains('show')) _loaderEstLearn(_loaderProg.key, (Date.now()-_loaderProg.t0)/(_loaderProg.total||1), _loaderProg.def);
     const f=document.getElementById('loaderFill'), pc=document.getElementById('loaderPct'), et=document.getElementById('loaderEta');
     if(f) f.style.width='100%'; if(pc) pc.textContent='100%'; if(et) et.textContent='완료';
     _loaderProg=null;
@@ -18315,7 +18368,7 @@ function hideLoader(reason){
 function showSidebarSkeleton(){
   const scroll = document.querySelector('.teacher-scroll');
   if(!scroll) return;
-  scroll.innerHTML = Array.from({length:6}, ()=>`
+  scroll.innerHTML = _ipBar('sidebarMonth',3000) + Array.from({length:6}, ()=>`
     <div class="skel-row">
       <div class="skel skel-avatar"></div>
       <div class="skel-info">
@@ -18536,7 +18589,7 @@ async function doLogin(){
 
  // ── localStorage에 없으면 GAS 검증 필요 (첫 로그인 또는 새 기기) ──
  const btn = document.querySelector('#login-form button[onclick="doLogin()"]');
- if(btn){ btn.disabled=true; btn.textContent='확인 중...'; }
+ if(btn){ btn.disabled=true; btn.textContent='확인 중...'; _btnProg(btn,'login',4000); }
  showLoader('로그인 확인 중...', '처음 로그인 시 잠시 기다려주세요', 50000);
 
  gasPost({ action:'loginCheck', teacher:name, hashedPw:newHash, legacyPw:oldHash })
@@ -18638,7 +18691,7 @@ async function doSignup(){
 
  const dbTeacher = DB.teachers.find(t=>t.name===name);
  const btn = document.querySelector('#signup-form button[onclick="doSignup()"]');
- if(btn){ btn.disabled=true; btn.textContent='확인 중...'; }
+ if(btn){ btn.disabled=true; btn.textContent='확인 중...'; _btnProg(btn,'signupCheck',3000); }
  err.style.display='none';
 
  // v14.92: 이미 가입(계정 존재)한 사람이 다시 회원가입하면 → 안내 후 로그인 화면으로
@@ -18655,7 +18708,7 @@ async function doSignup(){
   _signupClearAndGoLogin(name, 'ℹ️ 이미 가입된 계정이 있습니다. 로그인해주세요', false);
   return;
  }
- if(btn){ btn.textContent='처리 중...'; }
+ if(btn){ btn.textContent='처리 중...'; _btnProg(btn,'signup',3000); }
  const _newHash = await sha256(pw);
 
  // 이미 명단에 있는 기존 강사 → 즉시 비밀번호 설정/로그인 (기존 흐름 유지)
@@ -18741,7 +18794,7 @@ async function doResetPw(){
 
  // 통과 → 새 비밀번호 설정
  const btn = document.querySelector('#reset-form button[onclick="doResetPw()"]');
- if(btn){ btn.disabled=true; btn.textContent='처리 중...'; }
+ if(btn){ btn.disabled=true; btn.textContent='처리 중...'; _btnProg(btn,'resetPw',3000); }
  err.style.display='none';
  const newHash = await sha256(pw);
  gasPost({ action:'signupAccount', teacher:name, hashedPw:newHash })
@@ -18760,7 +18813,7 @@ function _refreshSignupsBadge(){ try{ gasGet({action:'getPendingSignups'}).then(
 function renderSignupsView(){
  const list=document.getElementById('signupsList');
  if(!list) return;
- list.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">불러오는 중...</div>';
+ list.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px;">불러오는 중...'+_ipBar('signups',3000)+'</div>';
  gasGet({action:'getPendingSignups'})
   .then(r=>{
    const items=(r&&r.ok&&Array.isArray(r.data))?r.data:[];
@@ -19509,9 +19562,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.68&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.69&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.68&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.69&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -20065,7 +20118,7 @@ function loadSubmissions(){
  // → 같은 기기에서 강사→관리자 전환 시 자동 삭제 버그 방지
  // 항상 GAS에서 최신 데이터 조회 후 관리자가 명시적으로 반영
  const applyBtn = document.getElementById('applyBtn');
- if(applyBtn){ applyBtn.textContent='반영 중...'; applyBtn.disabled=true; applyBtn.style.opacity='0.7'; }
+ if(applyBtn){ applyBtn.textContent='반영 중...'; applyBtn.disabled=true; applyBtn.style.opacity='0.7'; _btnProg(applyBtn,'applySub',4000); }
  localStorage.removeItem('ti_submissions'); // 구버전 캐시 잔재 제거
 
  // GAS에서 조회
@@ -22926,6 +22979,7 @@ function _doSubmitTiData(teacher, year, month, account, validGroups, unregCenter
  // ── Google Sheets에 제출 ──
  const btn = document.querySelector('button[onclick="submitTiData()"]');
  if(btn){ btn.disabled=true; btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> 제출 중...'; }
+ if(btn) _btnProg(btn,'submitBtn',6000);   // v18.69
 
  // 수업 기록 먼저 제출
  gasPost({ action:'submitRecord', data: submitData })
@@ -23233,7 +23287,7 @@ function _renderHistoryCards(history) {
      </div>
     </div>
     <div class="history-detail" style="display:none;padding:0;border-top:1px solid #E5E2D0;">
-     <div style="padding:12px 0;color:#888;font-size:11px;text-align:center;">불러오는 중...</div>
+     <div style="padding:12px 0;color:#888;font-size:11px;text-align:center;">불러오는 중...${_ipBar('historyDetail',3000)}</div>
     </div>
    </div>
   `;
@@ -23452,7 +23506,7 @@ function toggleHistoryEntry(cardElement) {
   // 로딩 표시
   detail.innerHTML = `<div style="padding:20px;text-align:center;color:#888;font-size:11px;">
    <div style="display:inline-block;width:20px;height:20px;border:2px solid #E5E2D0;border-top-color:#1A7A50;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-   <div style="margin-top:8px;">불러오는 중...</div>
+   <div style="margin-top:8px;">불러오는 중...</div>${_ipBar('historyDetail',3000)}
   </div>
   <style>@keyframes spin { to { transform: rotate(360deg); } }</style>`;
 
@@ -27626,7 +27680,7 @@ function _pushToGAS(){
  if(_syncInFlight){ _autoSyncTimer = setTimeout(_pushToGAS, 4000); return; }
  _showUnsyncedBadge(false);
  const chip = document.getElementById('syncStatusChip');
- if(chip){ chip.style.display='inline-block'; chip.style.background='#FFF3CD'; chip.style.color='#856404'; chip.textContent='↑ GAS 동기화 중…'; }
+ if(chip){ chip.style.display='inline-block'; chip.style.background='#FFF3CD'; chip.style.color='#856404'; chip.textContent='↑ GAS 동기화 중…'; _btnProg(chip,'gasChip',6000); }
  // syncAllToDB는 이미 구현되어 있음 — 강사+센터 GAS push
  syncAllToDB().then((res)=>{
   if(res===false){ _showUnsyncedBadge(true); if(chip){ chip.style.display='none'; } return; }   // v14.55: 차단/실패면 완료표시 안 함
