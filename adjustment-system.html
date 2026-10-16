@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.69">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.70">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.69">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.70">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.69</title>
+<title>수업기록표 정산 시스템 v18.70</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4928,7 +4928,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.69';
+const SYSTEM_VERSION='v18.70';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -19562,9 +19562,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.69&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.70&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.69&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.70&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -25371,6 +25371,47 @@ function _aggregateYears(months){
 }
 
 /* ═══ v15.75: 지역별 성장 화면 (대항전 · 지표카드 · 추이 · 점유율 · 성장률) ═══ */
+/* v18.70: 성장추이 — 매출이 오르고 내린 이유. 센터별로 쪼개서 네 갈래로 나눔(합 = 전체 증감, 정확히 일치)
+ *  ① 새로 수업한 센터(지난 기간 0 → 이번 기간 있음)  ② 수업이 없어진 센터(있음 → 0)
+ *  ③ 수업 횟수 변화 = (이번 횟수 − 지난 횟수) × 지난 회당 금액   ④ 회당 금액 변화 = (이번 회당 − 지난 회당) × 이번 횟수
+ *     (④는 수업료 인상·인하, 또는 단가가 다른 강사 수업 비중이 바뀐 경우) */
+function _growthWhy(c, p){
+ const cats={
+  newC: {key:'newC', label:'새로 수업한 센터', ico:'🆕', amt:0, items:[]},
+  goneC:{key:'goneC',label:'수업이 없어진 센터', ico:'📉', amt:0, items:[]},
+  vol:  {key:'vol',  label:'수업 횟수 변화', ico:'🔢', amt:0, items:[]},
+  price:{key:'price',label:'회당 금액 변화', ico:'💲', amt:0, items:[]}
+ };
+ const cR=(c&&c.centerRev)||{}, pR=(p&&p.centerRev)||{};
+ new Set([...Object.keys(cR), ...Object.keys(pR)]).forEach(n=>{
+  const cr=cR[n]||{rev:0,cnt:0}, pr=pR[n]||{rev:0,cnt:0};
+  const cOn=cr.rev>0, pOn=pr.rev>0;
+  if(!pOn && cOn){ cats.newC.amt+=cr.rev; cats.newC.items.push({n, amt:cr.rev, note:`${cr.cnt}회`}); return; }
+  if(pOn && !cOn){ cats.goneC.amt-=pr.rev; cats.goneC.items.push({n, amt:-pr.rev, note:`${pr.cnt}회 → 0회`}); return; }
+  if(!pOn && !cOn) return;
+  const pp=pr.cnt?pr.rev/pr.cnt:0, cp=cr.cnt?cr.rev/cr.cnt:0;
+  const v=(cr.cnt-pr.cnt)*pp, pz=(cr.rev-pr.rev)-v;
+  if(Math.abs(v)>=1){ cats.vol.amt+=v; cats.vol.items.push({n, amt:v, note:`${pr.cnt}회 → ${cr.cnt}회`}); }
+  if(Math.abs(pz)>=1){ cats.price.amt+=pz; cats.price.items.push({n, amt:pz, note:`회당 ${Math.round(pp).toLocaleString()} → ${Math.round(cp).toLocaleString()}원`}); }
+ });
+ return Object.values(cats).filter(x=>Math.round(x.amt)!==0)
+  .map(x=>{ x.items.sort((a,b)=>Math.abs(b.amt)-Math.abs(a.amt)); return x; })
+  .sort((a,b)=>Math.abs(b.amt)-Math.abs(a.amt));
+}
+// 그 달 요일별 횟수(월~금) — 수업 횟수가 달력 때문에 바뀐 건지 알려주기용
+function _ymWeekdayCounts(ym){
+ const m=String(ym||'').match(/(\d{4})\D+?(\d{1,2})/); if(!m) return null;
+ const y=+m[1], mo=+m[2], last=new Date(y, mo, 0).getDate(), cnt=[0,0,0,0,0,0,0];
+ for(let d=1; d<=last; d++) cnt[new Date(y, mo-1, d).getDay()]++;
+ return cnt;
+}
+function _growthCalNote(curYm, prevYm){
+ const a=_ymWeekdayCounts(curYm), b=_ymWeekdayCounts(prevYm); if(!a||!b) return '';
+ const D=['일','월','화','수','목','금','토'], ch=[];
+ for(let i=1;i<=5;i++) if(a[i]!==b[i]) ch.push(`${D[i]}요일 ${a[i]}번(지난달 ${b[i]}번)`);
+ if(!ch.length) return '📅 달력상 요일 수는 지난달과 같아요 — 횟수 변화는 휴강·보강·수업 추가 때문이에요';
+ return '📅 달력 영향: 이번 달은 '+ch.join(', ')+'이에요';
+}
 function _renderRegionKpis(){
  const target=document.getElementById('regionKpiArea');
  if(!target) return;
@@ -25425,6 +25466,8 @@ function _renderRegionKpis(){
      ${x.d===null?'':`<span style="font-size:12px;font-weight:800;color:${x.d>0?'#8EEFB6':(x.d<0?'#FF9B9B':'rgba(255,255,255,.65)')};">${x.d>0?'▲ +':(x.d<0?'▼ −':'±')}${man(Math.abs(x.d))}</span>`}
     </div>
     <div style="font-size:11px;opacity:.85;margin-top:3px;">매출 ${man(x.rev)}${x.d!==null?` <span style="opacity:.7;">(지난달 ${man(prev.R[x.r].revenue)})</span>`:''} · 센터 ${cur.R[x.r].centers.size}곳</div>
+    ${(()=>{ if(!prev||!prev.R[x.r]) return ''; const w=_growthWhy(cur.R[x.r], prev.R[x.r]).slice(0,2); if(!w.length) return '';
+       return `<div style="font-size:11px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.18);line-height:1.5;">💬 ${w.map(y=>`${y.label} <b style="color:${y.amt>0?'#8EEFB6':'#FF9B9B'};">${y.amt>0?'+':'−'}${man(Math.abs(y.amt))}</b>`).join(' · ')}</div>`; })()}
    </div>`).join('');
  const vsBox=`
   <div style="background:linear-gradient(135deg,#243B34,#1A7A50);border-radius:20px;padding:19px 21px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px;">
@@ -25588,10 +25631,33 @@ function _renderRegionKpis(){
      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;"><span style="font-size:23px;font-weight:900;color:${c1};letter-spacing:-.02em;line-height:1.05;">${man(c.revenue)}</span>${p?dTag(pct(c.revenue,p.revenue)):''}</div></div>
     ${p?cmpLine(p.revenue,c.revenue):''}
     ${panel('rgrev'+idx, cRevInner)}
+    ${(()=>{ // v18.70: 매출이 오르고 내린 이유
+      if(!p) return '';
+      const why=_growthWhy(c,p), dRev=c.revenue-p.revenue;
+      if(!why.length) return `<div style="font-size:10.5px;color:#9B9888;margin-top:6px;">💬 ${isYear?'지난해':'지난달'}와 센터별 매출이 같아요</div>`;
+      const sg=v=>(v>0?'+':'−')+man(Math.abs(v)), col=v=>v>0?'#16A34A':'#DC2626';
+      const sum=why.slice(0,3).map(x=>`<span style="white-space:nowrap;">${x.ico} ${x.label} <b style="color:${col(x.amt)};">${sg(x.amt)}</b></span>`).join('<span style="color:#C9C5B8;"> · </span>');
+      const calNote=(!isYear && why.some(x=>x.key==='vol')) ? _growthCalNote(cur.ym, prev.ym) : '';
+      const det=why.map(x=>{
+        const rows=x.items.slice(0,8).map(it=>`<div onclick="event.stopPropagation();_rgOpenCenter('${escAttrJS(it.n)}')" title="눌러서 센터 정보 수정" style="display:flex;justify-content:space-between;gap:8px;padding:3px 4px;font-size:11.5px;cursor:pointer;border-radius:6px;" onmouseover="this.style.background='#F2F0E8'" onmouseout="this.style.background=''"><span>${esc(it.n)} <span style="color:#9B9888;font-size:10.5px;">${esc(it.note)}</span></span><b style="color:${col(it.amt)};white-space:nowrap;">${sg(it.amt)}</b></div>`).join('');
+        const more=x.items.length>8?`<div style="font-size:10.5px;color:#9B9888;padding:2px 4px;">외 ${x.items.length-8}곳</div>`:'';
+        const hint={newC:`${isYear?'지난해':'지난달'}엔 수업이 없다가 이번에 수업한 센터`, goneC:`${isYear?'지난해':'지난달'}엔 수업했는데 이번엔 수업(O)이 없는 센터`, vol:'같은 센터에서 수업 횟수가 늘거나 줄어든 만큼', price:'수업료 인상·인하, 또는 단가가 다른 강사 수업 비중이 바뀐 만큼'}[x.key];
+        return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#3A3832;"><span>${x.ico} ${x.label} <span style="font-weight:600;color:#9B9888;font-size:10.5px;">${x.items.length}곳</span></span><span style="color:${col(x.amt)};">${sg(x.amt)}</span></div>
+          <div style="font-size:10.5px;color:#9B9888;margin:1px 0 3px;">${hint}</div>${rows}${more}${x.key==='vol'&&calNote?`<div style="font-size:10.5px;color:#7A6A3A;background:#FFF9EC;border-radius:7px;padding:5px 8px;margin-top:4px;">${esc(calNote)}</div>`:''}</div>`;
+      }).join('');
+      return `<div onclick="_rgTog('rgwhy${idx}')" style="cursor:pointer;user-select:none;margin-top:8px;background:#F7F6F1;border:1px solid #ECE9DF;border-radius:10px;padding:8px 10px;">
+        <div style="font-size:11px;font-weight:800;color:#5A5750;">💬 매출이 ${dRev>=0?'오른':'내린'} 이유 ${_chev('rgwhy'+idx)}</div>
+        <div style="font-size:11.5px;line-height:1.7;margin-top:2px;">${sum}</div></div>
+       <div id="rgwhy${idx}" style="display:none;background:#FAFAF7;border:1px solid #EDEAE0;border-radius:10px;padding:10px 11px;margin:4px 0 6px;">${det}
+        <div style="border-top:1px dashed #E2DFD4;margin-top:4px;padding-top:6px;font-size:10.5px;color:#9B9888;">${isYear?'지난해':'지난달'} ${man(p.revenue)} ${why.map(x=>`${x.amt>0?'+':'−'} ${man(Math.abs(x.amt))}`).join(' ')} = <b style="color:#3A3832;">${man(c.revenue)}</b></div></div>`;
+    })()}
     <div style="margin-top:11px;">
      <div style="${_Ld}margin-bottom:2px;">영업이익 <span onclick="_rgTog('rgprof${idx}')" title="매출에서 강사료와 비용을 뺀, 실제로 남는 돈" style="cursor:pointer;display:inline-block;font-size:10px;font-weight:800;color:#7A776C;background:#EFEDE4;border-radius:50%;width:15px;height:15px;line-height:15px;text-align:center;margin-left:2px;">?</span></div>
      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;"><span style="font-size:16px;font-weight:800;color:${profit<0?'#DC2626':'inherit'};line-height:1.05;">${man(profit)}</span>${(p&&pProfit)?dTag(pct(profit,pProfit)):''}</div></div>
     ${(p&&pProfit!==null)?cmpLine(pProfit,profit):''}
+    ${(()=>{ if(!p||pProfit===null) return ''; const dr=c.revenue-p.revenue, dl=c.labor-p.labor, dc=c.cost-p.cost; if(Math.abs(dr)<1&&Math.abs(dl)<1&&Math.abs(dc)<1) return '';
+       const f=(v,inv)=>{ const good=inv?v<0:v>0; return `<b style="color:${Math.abs(v)<1?'#9B9888':(good?'#16A34A':'#DC2626')};">${v>0?'+':(v<0?'−':'±')}${man(Math.abs(v))}</b>`; };
+       return `<div style="font-size:10.5px;color:#9B9888;margin-top:2px;line-height:1.5;">💬 이유: 매출 ${f(dr)} · 강사료 ${f(dl,true)} · 비용 ${f(dc,true)} <span style="color:#B5B1A5;">(강사료·비용은 늘면 이익이 줄어요)</span></div>`; })()}
     <div id="rgprof${idx}" style="display:none;background:#FAFAF7;border:1px solid #EDEAE0;border-radius:10px;padding:9px 11px;margin:4px 0 6px;font-size:11px;color:#6A6760;line-height:1.55;">
      <b>영업이익</b>이란, 매출에서 <b>강사료(세전)</b>와 <b>비용</b>을 뺀 실제로 회사에 남는 돈이에요.<br>
      <span style="color:#9B9888;">매출 ${man(c.revenue)} − 강사료 ${man(c.labor)} − 비용 ${man(c.cost)} = <b style="color:${profit<0?'#DC2626':'#16A34A'};">${man(profit)}</b></span>
