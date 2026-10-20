@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.73">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.74">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.73">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.74">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.73</title>
+<title>수업기록표 정산 시스템 v18.74</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4930,7 +4930,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.73';
+const SYSTEM_VERSION='v18.74';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12748,26 +12748,38 @@ function _scBadge(name){
 function _scOnLanding(name){
  if(!name) return;
  _scLocal(); _scBadge(name);
- _scFetch().then(()=>{
+ // v18.74: 로그인하자마자 바로 — 이 기기에 저장된 요청 정보(앱을 열 때 미리 받아 둠)로 먼저 띄우고, 서버 답은 확인용
+ //  (예전엔 서버 답(수 초)을 기다리느라 늦게 떠서, 그 사이 '내 스케줄'을 누르면 그 위에 뜨는 것처럼 보였음)
+ let tries=0, timer=null;
+ const want=()=>_scActive() && !_scIsDone(name);
+ const key=()=>'sc_shown_'+(_scCamp&&_scCamp.id)+'_'+name+'_'+(sessionStorage.getItem('sc_login_at')||'s');
+ const go=()=>{
+  timer=null;
+  if(!want() || sessionStorage.getItem(key())) return;
+  const g=document.getElementById('scGuideOverlay'); if(g && getComputedStyle(g).display!=='none') return;
+  const sched=document.getElementById('schedOverlay');
+  if(sched && getComputedStyle(sched).display!=='none'){ sessionStorage.setItem(key(),'1'); return; }   // 이미 내 스케줄을 열었으면(안내 띠가 있음) 위에 띄우지 않음
+  const busy=['confirmOverlay','noticeModal'].some(id=>{ const e=document.getElementById(id); return e && getComputedStyle(e).display!=='none'; })
+    || [...document.querySelectorAll('.mnl-ov')].some(e=>getComputedStyle(e).display!=='none');   // 공지·업무 매뉴얼이 떠 있으면 닫힌 뒤에
+  const home=document.getElementById('modeSelectScreen');
+  if(!home || getComputedStyle(home).display==='none' || busy){ if(++tries<240) timer=setTimeout(go,250); return; }
+  sessionStorage.setItem(key(),'1');
+  _scOpenGuide(name);
+ };
+ if(want()) timer=setTimeout(go, 300);                      // 저장된 정보로 바로
+ _scFetch().then(()=>{                                      // 서버 최신 정보로 확인
   _scBadge(name);
-  if(!_scActive() || _scIsDone(name)) return;
-  // v18.73: 로그인할 때마다(완료 전까지) 다시 보여줌 — 같은 로그인 안에서 홈으로 돌아올 때·새로고침은 1번만
-  const k='sc_shown_'+_scCamp.id+'_'+name+'_'+(sessionStorage.getItem('sc_login_at')||'s');
-  if(sessionStorage.getItem(k)) return;
-  // 공지·매뉴얼 팝업이 떠 있으면 닫힌 뒤에 보여줌
-  let tries=0;
-  const go=()=>{
-   const busy=['confirmOverlay','noticeModal'].some(id=>{ const e=document.getElementById(id); return e && getComputedStyle(e).display!=='none'; })
-     || [...document.querySelectorAll('.mnl-ov')].some(e=>getComputedStyle(e).display!=='none');   // 업무 매뉴얼(첫 로그인)이 떠 있으면 닫힌 뒤에
-   const home=document.getElementById('modeSelectScreen');
-   if(!home || getComputedStyle(home).display==='none'){ if(++tries<120) setTimeout(go,500); return; }
-   if(busy && ++tries<120){ setTimeout(go,500); return; }
-   sessionStorage.setItem(k,'1');
-   _scOpenGuide(name);
-  };
-  setTimeout(go, 1200);
+  // 정보가 오기 전에 내 스케줄을 열었으면 안내 띠가 보이게 다시 그림(수정 중이면 건드리지 않음)
+  try{ const so=document.getElementById('schedOverlay'); if(so && getComputedStyle(so).display!=='none' && !_schEditMode && !_schCurShowFee && !so.querySelector('.sc-band')) _schRenderOverlay(name,false); }catch(_){}
+  if(!want()){                                              // 끝났거나 이미 완료 → 자동으로 띄운 안내는 닫음
+   if(timer){ clearTimeout(timer); timer=null; }
+   return;
+  }
+  if(!timer) timer=setTimeout(go, 100);
  });
 }
+// v18.74: 앱을 열면 로그인 전에 미리 요청 정보를 받아 둠 → 로그인하자마자 팝업
+setTimeout(()=>{ try{ if(typeof GAS_URL!=='undefined' && GAS_URL) _scFetch(); }catch(_){} }, 800);
 
 /* ── 강사: 내 스케줄 화면 안내 띠 ── */
 function _scBannerHTML(name, edit){
@@ -19983,9 +19995,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.73&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.74&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.73&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.74&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
