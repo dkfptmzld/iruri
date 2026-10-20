@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.70">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.71">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.70">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.71">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.70</title>
+<title>수업기록표 정산 시스템 v18.71</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2297,6 +2297,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    <div style="font-size:36px;margin-bottom:8px;">📢</div>
    <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px;">강사 공지하기</div>
    <div style="font-size:13px;color:#888;">올리면 강사 로그인 시 1회 확인 팝업이 떠요</div>
+   <button type="button" onclick="document.getElementById('noticeModal').style.display='none';_scAdminOpen()" style="margin-top:12px;width:100%;height:40px;border:1.5px solid #2563EB;border-radius:10px;background:#EFF6FF;color:#1D4ED8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📅 스케줄 작성 요청 (카드뉴스 안내 · 작성 현황)</button>
   </div>
   <!-- 현재 공지 상태 -->
   <div id="noticeStatus" style="font-size:12px;color:#666;background:#f8f7f2;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;">현재 게시 중인 공지가 없어요</div>
@@ -3332,6 +3333,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
 
   <!-- v16.08: 강사 스케줄 수정요청 알림 (센터관리 탭) -->
   <div id="schedReqBanner" style="display:none;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;"></div>
+  <div id="schedCampBar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;"></div>
 
   <!-- 지역별 통계 (v15.13: 숨김 — 요소는 유지해 renderRegionStats 호환) -->
   <div class="region-stats" style="display:none;">
@@ -4928,7 +4930,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.70';
+const SYSTEM_VERSION='v18.71';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12511,6 +12513,7 @@ function _schRenderOverlay(name, showFee){
    <div style="flex:1;min-width:170px;font-size:15px;font-weight:800;">${(function(){try{return esc(_schTitle(name));}catch(_){return _schTitle(name);}})()}${edit?' <span style="white-space:nowrap;display:inline-block;font-size:11px;font-weight:700;color:#B45309;background:#FFFBEB;border:1px solid #FCD34D;border-radius:20px;padding:1px 8px;">✏️ 수정 모드</span>':''}</div>
    ${headBtns}
   </div>
+  ${canRequest?_scBannerHTML(name, edit):''}
   <div class="sch-cards">${edit?_schEditCardsHTML(name):_schCardsHTML(name, showFee)}</div>
   <div class="sch-table">${_schTableHTML(name, showFee, !edit, edit)}</div>
   ${edit ? `<div id="schAddSection" style="margin-top:12px;padding:12px 14px;background:#F4FAF6;border:1px solid #CDE8D8;border-radius:10px;">
@@ -12662,6 +12665,7 @@ async function _sendScheduleRequest(name){
   const r=await gasPost({action:'submitScheduleRequest', teacher:name, region:(t&&t.region)||'', changes:ch, message:msg});
   if(r && r.ok!==false){
    _schEditMode=false; _schEdits={}; _schAdds=[];
+   try{ if(_scActive() && !_scIsDone(name)) _scMarkDone(name,'request'); }catch(_){}   // v18.71: 스케줄 작성 요청 완료
    try{ showToast('📬 수정 요청을 보냈어요 — 관리자 확인 후 반영됩니다'); }catch(_){}
    _schRenderOverlay(name, false);
   } else {
@@ -12674,6 +12678,363 @@ async function _sendScheduleRequest(name){
  }
 }
 function closeSchedule(){ const ov=document.getElementById('schedOverlay'); if(ov) ov.style.display='none'; _schEditMode=false; _schEdits={}; _schAdds=[]; }
+
+/* ═══ v18.71: 스케줄 작성 요청 (관리자 → 강사) ═══
+ *  - 관리자: 요청 시작(제목·안내·마감일) / 현황(완료·미완료, 미완료 명단 복사) / 끝내기
+ *  - 강사: 로그인 후 카드뉴스 사용법 → '지금 작성하기', 홈 '내 스케줄' 카드에 '작성 필요' 표시,
+ *          내 스케줄 화면 안내 띠(작성 방법 · 바뀐 것 없어요). 수정 요청을 보내거나 '바뀐 것 없어요'를 누르면 완료
+ *  - 저장: 기존 시스템설정(getSystemSettings/saveSystemSettings) — 요청은 'schedCampaign', 완료는 강사별 'schedDone|이름' 한 줄씩
+ *          (강사마다 다른 줄이라 동시에 눌러도 서로 덮어쓰지 않음, Code.gs 변경 없음) */
+const SC_KEY='schedCampaign', SC_DONE_PREFIX='schedDone|', LS_SC='iruri_sched_camp', LS_SC_DONE='iruri_sched_done';
+let _scCamp=null, _scDone={};
+function _scLocal(){
+ try{ _scCamp=JSON.parse(localStorage.getItem(LS_SC)||'null'); }catch(_){ _scCamp=null; }
+ try{ _scDone=JSON.parse(localStorage.getItem(LS_SC_DONE)||'{}')||{}; }catch(_){ _scDone={}; }
+}
+_scLocal();
+async function _scFetch(){
+ try{
+  const r=await gasGet({action:'getSystemSettings'});
+  if(!(r && r.ok && r.data)) return false;
+  let c=null; try{ c=r.data[SC_KEY] ? JSON.parse(String(r.data[SC_KEY])) : null; }catch(_){ c=null; }
+  const d={};
+  Object.keys(r.data).forEach(k=>{ if(k.indexOf(SC_DONE_PREFIX)===0){ try{ d[k.slice(SC_DONE_PREFIX.length)]=JSON.parse(String(r.data[k])); }catch(_){} } });
+  // 이 기기에서 방금 완료했는데 서버에 아직 없으면 유지
+  Object.keys(_scDone).forEach(n=>{ const x=_scDone[n]; if(x && c && x.cid===c.id && !(d[n] && d[n].cid===c.id)) d[n]=x; });
+  _scCamp=c; _scDone=d;
+  try{ localStorage.setItem(LS_SC, JSON.stringify(c)); localStorage.setItem(LS_SC_DONE, JSON.stringify(d)); }catch(_){}
+  return true;
+ }catch(_){ return false; }
+}
+function _scActive(){ return !!(_scCamp && _scCamp.on && _scCamp.id); }
+function _scIsDone(name){ const d=_scDone[name]; return !!(_scActive() && d && d.cid===_scCamp.id); }
+function _scDeadline(){
+ const v=_scCamp && _scCamp.deadline; if(!v) return '';
+ const d=new Date(v+'T00:00:00'); if(isNaN(d)) return '';
+ return `${d.getMonth()+1}/${d.getDate()}(${'일월화수목금토'[d.getDay()]})`;
+}
+function _scWhen(iso){ const d=new Date(iso); return isNaN(d)?'':`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+
+/* ── 강사: 완료 처리 ── */
+function _scMarkDone(name, how){
+ if(!_scActive() || !name) return;
+ const rec={cid:_scCamp.id, at:new Date().toISOString(), how:how||'nochange'};
+ _scDone[name]=rec;
+ try{ localStorage.setItem(LS_SC_DONE, JSON.stringify(_scDone)); }catch(_){}
+ const kv={}; kv[SC_DONE_PREFIX+name]=JSON.stringify(rec);
+ try{ gasPost({action:'saveSystemSettings', settings:kv}).catch(()=>{}); }catch(_){}
+ _scBadge(name);
+}
+function _scNoChange(name){
+ showConfirm({icon:'✅', title:'지금 스케줄이 모두 맞나요?',
+  desc:'요일·센터·시간·주소가 모두 맞으면 <b>확인</b>을 눌러 주세요.<br><small style="color:var(--text3)">다른 곳이 있으면 취소하고 <b>✏️ 수정 요청</b>으로 고쳐서 보내 주세요.</small>',
+  okText:'네, 모두 맞아요', okStyle:'primary', cancelText:'취소',
+  onOk:()=>{ _scMarkDone(name,'nochange'); showToast('✅ 확인 완료 — 고마워요!'); try{ const ov=document.getElementById('schedOverlay'); if(ov && ov.style.display!=='none') _schRenderOverlay(name,false); }catch(_){} }});
+}
+
+/* ── 강사: 홈 '내 스케줄' 카드 표시 ── */
+function _scBadge(name){
+ const card=document.getElementById('card-myschedule'); if(!card) return;
+ let b=card.querySelector('.sc-badge');
+ const need=_scActive() && name && !_scIsDone(name);
+ if(!need){ if(b) b.remove(); return; }
+ if(getComputedStyle(card).position==='static') card.style.position='relative';
+ if(!b){ b=document.createElement('span'); b.className='sc-badge'; card.appendChild(b); }
+ const dl=_scDeadline();
+ b.innerHTML='✏️ 작성 필요'+(dl?`<small>~${dl}</small>`:'');
+}
+
+/* ── 강사: 홈에 들어올 때 ── */
+function _scOnLanding(name){
+ if(!name) return;
+ _scLocal(); _scBadge(name);
+ _scFetch().then(()=>{
+  _scBadge(name);
+  if(!_scActive() || _scIsDone(name)) return;
+  if(sessionStorage.getItem('iruri_admin_session')) return;               // 관리자 화면에서는 자동으로 띄우지 않음
+  const k='sc_shown_'+_scCamp.id+'_'+name;
+  if(sessionStorage.getItem(k)) return;                                   // 이번 접속에서 이미 보여줌
+  // 공지·매뉴얼 팝업이 떠 있으면 닫힌 뒤에 보여줌
+  let tries=0;
+  const go=()=>{
+   const busy=['confirmOverlay','noticeModal'].some(id=>{ const e=document.getElementById(id); return e && getComputedStyle(e).display!=='none'; })
+     || [...document.querySelectorAll('.mnl-ov')].some(e=>getComputedStyle(e).display!=='none');   // 업무 매뉴얼(첫 로그인)이 떠 있으면 닫힌 뒤에
+   const home=document.getElementById('modeSelectScreen');
+   if(!home || getComputedStyle(home).display==='none'){ if(++tries<120) setTimeout(go,500); return; }
+   if(busy && ++tries<120){ setTimeout(go,500); return; }
+   sessionStorage.setItem(k,'1');
+   _scOpenGuide(name);
+  };
+  setTimeout(go, 1200);
+ });
+}
+
+/* ── 강사: 내 스케줄 화면 안내 띠 ── */
+function _scBannerHTML(name, edit){
+ if(!_scActive()) return '';
+ _scInjectCss();
+ const q=`'${escAttrJS(name)}'`;
+ const dl=_scDeadline();
+ if(_scIsDone(name)){
+  const d=_scDone[name];
+  return `<div class="sc-band ok"><span>✅ <b>스케줄 확인 완료</b> · ${_scWhen(d.at)} (${d.how==='request'?'수정 요청 보냄':'바뀐 것 없음'})</span><button type="button" onclick="_scOpenGuide(${q},{fromSchedule:true})">📖 작성 방법</button></div>`;
+ }
+ if(edit){
+  return `<div class="sc-band"><span>📝 <b>빨간 점선 칸</b>은 비어 있는 칸이에요. 아는 정보는 채워 주세요 · 바뀐 곳만 고치고 아래 <b>요청 보내기</b></span><button type="button" onclick="_scOpenGuide(${q},{fromSchedule:true,start:3})">📖 작성 방법</button></div>`;
+ }
+ return `<div class="sc-band need">
+   <div style="flex:1;min-width:200px;"><b>📢 ${escH(_scCamp.title||'내 스케줄 확인·작성 부탁드려요')}</b>${dl?` <span class="sc-dl">마감 ${dl}</span>`:''}
+    <div style="font-size:12px;margin-top:3px;color:#7A5A12;">아래 내용이 맞는지 확인해 주세요. 다르면 <b>✏️ 수정 요청</b>, 모두 맞으면 <b>✅ 바뀐 것 없어요</b>를 눌러 주세요.</div></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button type="button" onclick="_scOpenGuide(${q},{fromSchedule:true})">📖 작성 방법</button>
+    <button type="button" class="pri" onclick="_scNoChange(${q})">✅ 바뀐 것 없어요</button>
+   </div></div>`;
+}
+
+/* ── 카드뉴스 사용법 ── */
+function _scGuideSlides(){
+ const dl=_scDeadline();
+ const pill=(t,c)=>`<span class="scg-pill" style="background:${c};">${t}</span>`;
+ const field=(ico,lb,val,note,empty)=>`<div class="scg-frow"><span class="scg-flb">${ico} ${lb}</span><span class="scg-fin${empty?' empty':''}">${val}</span></div>${note?`<div class="scg-fnote">${note}</div>`:''}`;
+ return [
+  { band:'#2563EB', step:'안내', emoji:'📅', title:'내 스케줄을<br>확인·작성해 주세요',
+    body:`센터별 <b>수업 요일·시간·주소</b>가 정확해야<br>일정 안내와 정산이 정확해져요.${dl?`<div class="scg-dl">⏰ 마감 ${dl}</div>`:''}`,
+    mock:`<div class="scg-list"><div>📅 내 스케줄 열기</div><div>🔍 맞는지 확인</div><div>✏️ 다르면 수정 요청</div><div>✅ 맞으면 '바뀐 것 없어요'</div></div><div class="scg-tip">옆으로 넘겨 보세요 →</div>` },
+  { band:'#2563EB', step:'1단계', emoji:'👆', title:'홈 화면에서<br>[내 스케줄]을 눌러요',
+    body:'로그인하면 나오는 첫 화면이에요.<br>빨간 <b>✏️ 작성 필요</b> 표시가 붙어 있어요.',
+    mock:`<div class="scg-home"><div class="scg-hic">📅</div><div class="scg-ht">내 스케줄</div><div class="scg-hs">내 수업 요일·시간을<br>확인하고 인쇄합니다</div><span class="scg-hb">✏️ 작성 필요</span></div>` },
+  { band:'#0F766E', step:'2단계', emoji:'🔍', title:'내 수업이<br>맞는지 확인해요',
+    body:'요일별로 센터가 나와요. 아래 4가지를 봐 주세요.',
+    mock:`<div class="scg-check"><div>✅ <b>요일</b> — 이 요일에 가는 게 맞나요?</div><div>✅ <b>센터</b> — 빠지거나 그만둔 센터는 없나요?</div><div>✅ <b>시간</b> — 시작~끝 시간이 맞나요?</div><div>✅ <b>주소</b> — 비어 있지 않나요?</div></div><div class="scg-tip">모두 맞으면 → 마지막 장으로</div>` },
+  { band:'#B45309', step:'3단계', emoji:'✏️', title:'다르면 [✏️ 수정 요청]을<br>누르고 고쳐요',
+    body:'센터마다 칸이 나와요. <b>바뀐 곳만</b> 고치면 돼요.',
+    mock:`<div class="scg-card"><div class="scg-cn">○○주간보호센터</div>
+      ${field('🕐','시간','10:00 ~ 11:00','눌러서 시작·끝 시간을 골라요')}
+      ${field('📍','주소','주소를 넣어 주세요','<b style="color:#DC2626">빨간 점선 = 비어 있는 칸</b> · 꼭 채워 주세요',true)}
+      ${field('📌','특이',pill('4주','#E5E7EB')+' '+pill('5주','#1A7A50'),'그 달 <b>5번째 주</b>에도 수업하면 5주, 4번만 하면 4주')}
+      ${field('✉️','메일','이메일 (선택)','센터 담당자 메일 — 아는 경우만')}</div>` },
+  { band:'#1A7A50', step:'4단계', emoji:'➕', title:'새 수업·주말 수업은<br>[＋ 센터 추가]',
+    body:'목록에 없는 센터는 화면 아래 <b>＋ 센터 추가</b>로 넣어요.',
+    mock:`<div class="scg-card add"><div class="scg-cn">＋ 새 센터</div>
+      ${field('📆','요일','토','')}
+      ${field('📍','주소','서울시 ○○구 ○○로 12','주소를 넣으면 <b>센터명·지역이 자동</b>으로 채워져요')}
+      ${field('🏢','센터명','(자동)','다르면 고쳐 주세요')}
+      ${field('🕐','시간','14:00 ~ 15:00','')}
+      ${field('✉️','이메일','(선택)','강사료는 관리자가 정해요')}</div>` },
+  { band:'#1A7A50', step:'5단계', emoji:'📬', title:'다 고쳤으면<br>요청을 보내요',
+    body:'하고 싶은 말은 메모 칸에 적어 주세요.<br>관리자가 확인하고 반영하면 끝이에요.',
+    mock:`<div class="scg-memo">예) 효명센터 시간이 바뀌었어요. 확인 부탁드려요.</div><div class="scg-send">📬 관리자에게 수정 요청 보내기</div><div class="scg-tip">보내면 자동으로 <b>확인 완료</b> ✅</div>` },
+  { band:'#16A34A', step:'바뀐 게 없다면', emoji:'✅', title:'모두 맞으면<br>[바뀐 것 없어요]',
+    body:'내 스케줄 화면 위 안내 띠의 버튼을 한 번만 눌러 주세요.<br>그것만으로 <b>확인 완료</b>예요.',
+    mock:`<div class="scg-send ok">✅ 바뀐 것 없어요</div><div class="scg-tip">완료하면 홈의 '작성 필요' 표시가 사라져요</div>`, last:true }
+ ];
+}
+let _scgIdx=0, _scgName='', _scgOpts={};
+function _scOpenGuide(name, opts){
+ _scgName=name||window._loggedInTeacher||''; _scgOpts=opts||{}; _scgIdx=Math.max(0, Math.min(6, (opts&&opts.start)||0));
+ _scInjectCss();
+ let ov=document.getElementById('scGuideOverlay');
+ if(!ov){
+  ov=document.createElement('div'); ov.id='scGuideOverlay';
+  ov.onclick=(e)=>{ if(e.target===ov) _scCloseGuide(); };
+  document.body.appendChild(ov);
+ }
+ const S=_scGuideSlides();
+ ov.innerHTML=`<div class="scg-box">
+   <button type="button" class="scg-x" onclick="_scCloseGuide()" aria-label="닫기">✕</button>
+   <div class="scg-view"><div class="scg-track" id="scgTrack">${S.map((s,i)=>`
+    <div class="scg-slide">
+     <div class="scg-top" style="background:${s.band};"><span class="scg-step">${s.step}</span><span class="scg-no">${i+1}/${S.length}</span><div class="scg-emoji">${s.emoji}</div><div class="scg-title">${s.title}</div></div>
+     <div class="scg-body"><div class="scg-text">${s.body}</div><div class="scg-mock">${s.mock}</div></div>
+    </div>`).join('')}</div></div>
+   <div class="scg-dots" id="scgDots">${S.map((_,i)=>`<i onclick="_scGo(${i})"></i>`).join('')}</div>
+   <div class="scg-nav" id="scgNav"></div>
+  </div>`;
+ ov.style.display='flex';
+ // 손가락으로 넘기기
+ const view=ov.querySelector('.scg-view'); let x0=null;
+ view.addEventListener('touchstart',e=>{ x0=e.touches[0].clientX; },{passive:true});
+ view.addEventListener('touchend',e=>{ if(x0==null) return; const dx=e.changedTouches[0].clientX-x0; x0=null; if(Math.abs(dx)>40) _scGo(_scgIdx+(dx<0?1:-1)); });
+ _scGo(_scgIdx);
+}
+function _scGo(i){
+ const n=7; _scgIdx=Math.max(0, Math.min(n-1, i));
+ const tr=document.getElementById('scgTrack'); if(tr) tr.style.transform=`translateX(-${_scgIdx*100}%)`;
+ document.querySelectorAll('#scgDots i').forEach((d,k)=>d.classList.toggle('on', k===_scgIdx));
+ const nav=document.getElementById('scgNav'); if(!nav) return;
+ const q=`'${escAttrJS(_scgName)}'`;
+ const last=_scgIdx===n-1;
+ const prev=_scgIdx>0?`<button type="button" class="scg-b" onclick="_scGo(${_scgIdx-1})">← 이전</button>`:`<button type="button" class="scg-b" onclick="_scCloseGuide()">나중에 할게요</button>`;
+ let next;
+ if(!last) next=`<button type="button" class="scg-b pri" onclick="_scGo(${_scgIdx+1})">다음 →</button>`;
+ else if(_scgOpts.preview) next=`<button type="button" class="scg-b pri" onclick="_scCloseGuide()">닫기</button>`;
+ else if(_scgOpts.fromSchedule) next=`<button type="button" class="scg-b pri" onclick="_scCloseGuide()">알겠어요</button>`;
+ else next=`<button type="button" class="scg-b pri" onclick="_scCloseGuide();openSchedule(${q},false)">📅 지금 작성하기</button>`;
+ nav.innerHTML=prev+next;
+}
+function _scCloseGuide(){ const ov=document.getElementById('scGuideOverlay'); if(ov) ov.style.display='none'; }
+document.addEventListener('keydown', e=>{ const ov=document.getElementById('scGuideOverlay'); if(!ov || ov.style.display==='none') return; if(e.key==='ArrowRight') _scGo(_scgIdx+1); else if(e.key==='ArrowLeft') _scGo(_scgIdx-1); else if(e.key==='Escape') _scCloseGuide(); });
+
+function _scInjectCss(){
+ if(document.getElementById('scCss')) return;
+ const st=document.createElement('style'); st.id='scCss';
+ st.textContent=`
+ .sc-badge{position:absolute;top:-9px;right:-9px;background:#DC2626;color:#fff;font-size:11px;font-weight:800;border-radius:99px;padding:4px 9px;box-shadow:0 4px 10px rgba(220,38,38,.35);white-space:nowrap;line-height:1.2;text-align:center;animation:scPulse 2s ease-in-out infinite;}
+ .sc-badge small{display:block;font-size:9.5px;font-weight:700;opacity:.9;}
+ @keyframes scPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+ .sc-band{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#F4F7FB;border:1px solid #D6E2F2;font-size:12.5px;color:#334155;line-height:1.5;}
+ .sc-band.need{background:#FFF8E6;border:1.5px solid #F2C960;color:#5A4210;}
+ .sc-band.ok{background:#EDF8F1;border:1px solid #BFE3CE;color:#166534;}
+ .sc-band button{height:32px;padding:0 12px;border-radius:9px;border:1px solid #CFCBBE;background:#fff;color:#4A4740;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+ .sc-band button.pri{background:#16A34A;border-color:#16A34A;color:#fff;}
+ .sc-dl{display:inline-block;font-size:11px;font-weight:800;color:#B91C1C;background:#FEE2E2;border-radius:99px;padding:1px 8px;margin-left:4px;}
+ #scGuideOverlay{position:fixed;inset:0;z-index:10050;background:rgba(15,23,20,.55);display:none;align-items:center;justify-content:center;padding:14px;}
+ .scg-box{position:relative;width:min(400px,94vw);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+ .scg-x{position:absolute;top:10px;right:10px;z-index:3;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:15px;cursor:pointer;}
+ .scg-view{overflow:hidden;}
+ .scg-track{display:flex;transition:transform .35s cubic-bezier(.2,.8,.2,1);}
+ .scg-slide{flex:0 0 100%;min-width:100%;display:flex;flex-direction:column;}
+ .scg-top{color:#fff;padding:20px 20px 18px;position:relative;}
+ .scg-step{display:inline-block;font-size:11px;font-weight:800;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;}
+ .scg-no{position:absolute;top:22px;right:52px;font-size:11px;font-weight:700;opacity:.8;}
+ .scg-emoji{font-size:38px;margin-top:10px;line-height:1;}
+ .scg-title{font-size:21px;font-weight:900;line-height:1.3;margin-top:8px;letter-spacing:-.3px;}
+ .scg-body{padding:16px 20px 6px;min-height:300px;}
+ .scg-text{font-size:13.5px;color:#4A4740;line-height:1.65;word-break:keep-all;}
+ .scg-mock{margin-top:14px;}
+ .scg-dl{margin-top:10px;display:inline-block;font-size:13px;font-weight:800;color:#B91C1C;background:#FEE2E2;border-radius:10px;padding:6px 12px;}
+ .scg-list div,.scg-check div{background:#F6F5F0;border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:13px;color:#3A3832;}
+ .scg-tip{font-size:12px;color:#9B9888;text-align:center;margin-top:8px;}
+ .scg-home{position:relative;width:180px;margin:6px auto 0;background:#fff;border:2px solid #2563EB;border-radius:18px;padding:18px 16px;box-shadow:0 8px 22px rgba(37,99,235,.18);}
+ .scg-hic{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#4B8FE3,#2563EB);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px;}
+ .scg-ht{font-size:15px;font-weight:800;color:#1E3A5F;} .scg-hs{font-size:11px;color:#6B8AA8;margin-top:4px;line-height:1.5;}
+ .scg-hb{position:absolute;top:-10px;right:-10px;background:#DC2626;color:#fff;font-size:11px;font-weight:800;border-radius:99px;padding:4px 9px;}
+ .scg-card{border:1.5px solid #E5E2D8;border-radius:14px;padding:10px 12px;background:#FCFBF8;}
+ .scg-card.add{border-color:#CDE8D8;background:#F4FAF6;}
+ .scg-cn{font-size:13.5px;font-weight:800;color:#1A1916;margin-bottom:6px;}
+ .scg-frow{display:flex;align-items:center;gap:8px;margin-top:5px;}
+ .scg-flb{flex:0 0 64px;font-size:12px;font-weight:700;color:#6A6760;}
+ .scg-fin{flex:1;font-size:12.5px;background:#fff;border:1.5px solid #D8D5CB;border-radius:8px;padding:5px 9px;color:#1A1916;}
+ .scg-fin.empty{border:1.5px dashed #E8B4B4;background:#FFF8F8;color:#B98A8A;}
+ .scg-fnote{font-size:11px;color:#8A867A;margin:2px 0 4px 72px;line-height:1.45;}
+ .scg-pill{display:inline-block;font-size:11px;font-weight:800;border-radius:7px;padding:2px 9px;color:#fff;}
+ .scg-pill[style*="E5E7EB"]{color:#6B7280;}
+ .scg-memo{border:1.5px solid #D8D5CB;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#8A867A;background:#fff;}
+ .scg-send{margin-top:10px;height:46px;border-radius:12px;background:#1A7A50;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(26,122,80,.28);}
+ .scg-send.ok{background:#16A34A;margin-top:4px;}
+ .scg-dots{display:flex;justify-content:center;gap:6px;padding:8px 0 2px;}
+ .scg-dots i{width:7px;height:7px;border-radius:99px;background:#D8D5CB;cursor:pointer;transition:width .2s;}
+ .scg-dots i.on{width:20px;background:#1A7A50;}
+ .scg-nav{display:flex;gap:8px;padding:10px 16px 16px;}
+ .scg-b{flex:1;height:46px;border-radius:12px;border:1px solid #D8D5CB;background:#fff;color:#4A4740;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+ .scg-b.pri{flex:1.4;border:none;background:linear-gradient(135deg,#1A7A50,#1f8f62);color:#fff;box-shadow:0 6px 16px rgba(26,122,80,.28);}
+ #scAdminOverlay{position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:12px;}
+ .sca-box{background:#fff;border-radius:18px;width:min(640px,96vw);max-height:calc(100vh - 24px);overflow:auto;padding:20px 22px;}
+ .sca-in{width:100%;border:1px solid #E2E0D8;border-radius:10px;padding:10px 12px;font-size:13px;font-family:inherit;box-sizing:border-box;}
+ .sca-lb{font-size:12px;font-weight:700;color:#666;margin:12px 0 6px;display:block;}
+ .sca-col{flex:1;min-width:220px;border:1px solid #ECE9DF;border-radius:12px;padding:10px 12px;max-height:340px;overflow:auto;}
+ .sca-col h4{margin:0 0 8px;font-size:13px;}
+ .sca-item{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:4px 0;border-bottom:1px dashed #EEE;}
+ `;
+ document.head.appendChild(st);
+}
+
+/* ── 관리자: 요청 시작·현황·끝내기 ── */
+async function _scAdminOpen(){
+ _scInjectCss();
+ let ov=document.getElementById('scAdminOverlay');
+ if(!ov){ ov=document.createElement('div'); ov.id='scAdminOverlay'; ov.onclick=(e)=>{ if(e.target===ov) ov.style.display='none'; }; ov.innerHTML='<div class="sca-box" id="scaBox"></div>'; document.body.appendChild(ov); }
+ ov.style.display='flex';
+ const box=document.getElementById('scaBox');
+ box.innerHTML='<div style="padding:30px;text-align:center;color:#9B9888;font-size:13px;">현황 불러오는 중...'+(typeof _ipBar==='function'?_ipBar('scAdmin',3000):'')+'</div>';
+ await _scFetch();
+ _scAdminRender();
+}
+function _scTargets(){ return (DB.teachers||[]).filter(t=>t && t.name).map(t=>({name:t.name, region:t.region||'기타'})); }
+function _scAdminRender(){
+ const box=document.getElementById('scaBox'); if(!box) return;
+ const head=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><div style="font-size:30px;">📅</div><div style="flex:1;"><div style="font-size:18px;font-weight:800;">스케줄 작성 요청</div><div style="font-size:12.5px;color:#888;">강사들에게 '내 스케줄' 확인·작성을 요청하고 누가 했는지 봐요</div></div><button class="btn sm" onclick="document.getElementById('scAdminOverlay').style.display='none'">닫기</button></div>`;
+ if(!_scActive()){
+  const defMsg='홈 화면의 [내 스케줄]에서 수업 요일·시간·주소가 맞는지 확인해 주세요. 다르면 [✏️ 수정 요청]으로 고쳐서 보내고, 모두 맞으면 [✅ 바뀐 것 없어요]를 눌러 주세요.';
+  box.innerHTML=head+`
+   <div style="background:#F6F5F0;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#5A5750;line-height:1.7;margin-top:10px;">
+    시작하면 강사가 로그인할 때 <b>카드뉴스 사용법</b>이 뜨고, 홈의 <b>내 스케줄</b> 카드에 <b style="color:#DC2626;">✏️ 작성 필요</b>가 붙어요.<br>
+    강사가 <b>수정 요청을 보내거나</b> <b>'바뀐 것 없어요'</b>를 누르면 완료로 잡혀요.</div>
+   <label class="sca-lb">제목</label><input id="scaTitle" class="sca-in" maxlength="40" value="내 스케줄 확인·작성 부탁드려요">
+   <label class="sca-lb">안내 문구 <span style="font-weight:400;color:#aaa;">(카드뉴스 앞에 공지로도 보여요)</span></label><textarea id="scaMsg" class="sca-in" rows="3">${escH(defMsg)}</textarea>
+   <label class="sca-lb">마감일 <span style="font-weight:400;color:#aaa;">(선택)</span></label><input id="scaDl" type="date" class="sca-in" style="max-width:200px;">
+   <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+    <button class="btn" onclick="_scOpenGuide('',{preview:true})" style="flex:1;">📖 강사에게 보이는 사용법 미리보기</button>
+    <button class="btn primary" onclick="_scAdminStart()" style="flex:1.3;background:#2563EB;border-color:#2563EB;color:#fff;font-weight:700;">📢 요청 시작하기</button>
+   </div>`;
+  return;
+ }
+ const T=_scTargets(), done=T.filter(t=>_scIsDone(t.name)), todo=T.filter(t=>!_scIsDone(t.name));
+ const pct=T.length?Math.round(done.length/T.length*100):0;
+ const byReg={}; todo.forEach(t=>{ (byReg[t.region]=byReg[t.region]||[]).push(t.name); });
+ const regs=Object.keys(byReg).sort((a,b)=>{ const o=['서울','인천','수원']; const ia=o.indexOf(a), ib=o.indexOf(b); return (ia<0?9:ia)-(ib<0?9:ib) || a.localeCompare(b,'ko'); });
+ const todoHtml=regs.map(r=>`<div style="font-size:11.5px;font-weight:800;color:#6A6760;margin:6px 0 3px;">${escH(r)} ${byReg[r].length}명</div><div style="font-size:12.5px;line-height:1.8;">${byReg[r].sort((a,b)=>a.localeCompare(b,'ko')).map(n=>`<span style="display:inline-block;background:#FEF2F2;color:#B91C1C;border-radius:7px;padding:1px 8px;margin:0 4px 4px 0;">${escH(n)}</span>`).join('')}</div>`).join('') || '<div style="font-size:12.5px;color:#16A34A;">모두 완료했어요 🎉</div>';
+ const doneHtml=done.sort((a,b)=>String(_scDone[b.name].at).localeCompare(String(_scDone[a.name].at))).map(t=>{ const d=_scDone[t.name]; return `<div class="sca-item"><span><b>${escH(t.name)}</b> <span style="color:#9B9888;font-size:11px;">${escH(t.region)}</span></span><span style="white-space:nowrap;color:${d.how==='request'?'#B45309':'#16A34A'};font-size:11.5px;">${d.how==='request'?'📬 수정 요청':'✅ 바뀐 것 없음'} · ${_scWhen(d.at)}</span></div>`; }).join('') || '<div style="font-size:12.5px;color:#9B9888;">아직 없어요</div>';
+ const dl=_scDeadline();
+ box.innerHTML=head+`
+  <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:12px;padding:12px 14px;margin-top:10px;">
+   <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;"><b style="font-size:14px;">📢 ${escH(_scCamp.title||'')}</b><span style="font-size:11.5px;color:#64748B;">${_scWhen(_scCamp.startedAt)} 시작${dl?` · 마감 <b style="color:#B91C1C;">${dl}</b>`:''}</span></div>
+   <div style="display:flex;align-items:center;gap:10px;margin-top:10px;"><div style="flex:1;height:12px;border-radius:99px;background:#DBEAFE;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#2563EB,#16A34A);border-radius:99px;"></div></div><b style="font-size:15px;">${done.length}/${T.length}명 · ${pct}%</b></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+   <div class="sca-col"><h4>❌ 아직 안 함 <span style="color:#B91C1C;">${todo.length}명</span></h4>${todoHtml}</div>
+   <div class="sca-col"><h4>✅ 완료 <span style="color:#16A34A;">${done.length}명</span></h4>${doneHtml}</div>
+  </div>
+  <div style="font-size:11.5px;color:#9B9888;margin-top:8px;line-height:1.6;">📬 수정 요청 내용은 <b>센터 관리 → 📬 스케줄 수정요청</b>에서 확인·반영해요.</div>
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+   <button class="btn" onclick="_scCopyTodo()" ${todo.length?'':'disabled'} style="flex:1.3;">📋 안 한 사람 명단 복사 (카톡용)</button>
+   <button class="btn" onclick="_scOpenGuide('',{preview:true})" style="flex:1;">📖 사용법 미리보기</button>
+   <button class="btn" onclick="_scAdminOpen()" style="flex:.8;">🔄 새로고침</button>
+   ${typeof _openSchedReqPanel==='function'?`<button class="btn" onclick="document.getElementById('scAdminOverlay').style.display='none';_openSchedReqPanel()" style="flex:1;">📬 수정요청 보기</button>`:''}
+   <button class="btn" onclick="_scAdminStop()" style="flex:.9;color:#DC2626;border-color:#F3C4C4;">요청 끝내기</button>
+  </div>`;
+}
+function _scAdminStart(){
+ const title=(document.getElementById('scaTitle')?.value||'').trim()||'내 스케줄 확인·작성 부탁드려요';
+ const message=(document.getElementById('scaMsg')?.value||'').trim();
+ const deadline=(document.getElementById('scaDl')?.value||'').trim();
+ const now=new Date().toISOString();
+ const c={id:'SC'+Date.now(), on:true, title, message, deadline, startedAt:now};
+ _scCamp=c; try{ localStorage.setItem(LS_SC, JSON.stringify(c)); }catch(_){}
+ showBusyToast('스케줄 작성 요청 시작 중…');
+ gasPost({action:'saveSystemSettings', settings:{[SC_KEY]: JSON.stringify(c)}})
+  .then(r=>{ showToast(r && r.ok!==false ? '📢 요청을 시작했어요 — 강사가 로그인하면 사용법이 떠요' : '⚠ 서버 저장 실패 — 잠시 후 다시 시도해 주세요'); _scAdminRender(); try{ _scRenderAdminBar(); }catch(_){} })
+  .catch(()=>{ showToast('⚠ 서버 연결 실패 — 잠시 후 다시 시도해 주세요'); _scAdminRender(); });
+}
+function _scAdminStop(){
+ showConfirm({icon:'🛑', title:'스케줄 작성 요청을 끝낼까요?', desc:'강사 화면의 안내·작성 필요 표시가 사라져요.<br><small style="color:var(--text3)">완료 기록은 남아요. 새로 시작하면 모두 다시 해야 해요.</small>', okText:'끝내기', okStyle:'danger', cancelText:'취소', onOk:()=>{
+  const c=Object.assign({}, _scCamp||{}, {on:false, endedAt:new Date().toISOString()});
+  _scCamp=c; try{ localStorage.setItem(LS_SC, JSON.stringify(c)); }catch(_){}
+  gasPost({action:'saveSystemSettings', settings:{[SC_KEY]: JSON.stringify(c)}}).then(()=>showToast('요청을 끝냈어요')).catch(()=>showToast('⚠ 서버 저장 실패'));
+  _scAdminRender(); try{ _scRenderAdminBar(); }catch(_){}
+ }});
+}
+function _scCopyTodo(){
+ const T=_scTargets().filter(t=>!_scIsDone(t.name));
+ const byReg={}; T.forEach(t=>{ (byReg[t.region]=byReg[t.region]||[]).push(t.name); });
+ const dl=_scDeadline();
+ const lines=[`[내 스케줄 확인 요청] 아직 확인하지 않은 강사님 (${T.length}명)${dl?' · 마감 '+dl:''}`, ''];
+ Object.keys(byReg).sort().forEach(r=>lines.push(`${r}: ${byReg[r].sort((a,b)=>a.localeCompare(b,'ko')).join(', ')}`));
+ lines.push('', '홈 화면 → [내 스케줄] → 맞는지 확인 후', '다르면 [✏️ 수정 요청], 모두 맞으면 [✅ 바뀐 것 없어요]를 눌러 주세요 🙏');
+ const txt=lines.join('\n');
+ (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>showToast('📋 명단을 복사했어요 — 카톡에 붙여넣기 하세요')).catch(()=>{ try{ prompt('아래 내용을 복사하세요', txt); }catch(_){} });
+}
+// 센터 관리 위쪽 현황 띠
+function _scRenderAdminBar(){
+ const host=document.getElementById('schedCampBar'); if(!host) return;
+ if(!_scActive()){
+  host.innerHTML=`<span style="font-size:12.5px;color:#6A6760;">📅 강사들에게 '내 스케줄' 확인·작성을 요청할 수 있어요</span><button class="btn sm" onclick="_scAdminOpen()" style="gap:4px;">📢 스케줄 작성 요청하기</button>`;
+  return;
+ }
+ const T=_scTargets(), n=T.filter(t=>_scIsDone(t.name)).length, dl=_scDeadline();
+ host.innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;background:#2563EB;color:#fff;font-size:12.5px;font-weight:800;border-radius:20px;padding:5px 12px;">📢 스케줄 작성 요청 진행 중</span><span style="font-size:12.5px;"><b>${n}/${T.length}명</b> 완료${dl?` · 마감 ${dl}`:''}</span><button class="btn sm" onclick="_scAdminOpen()">현황 보기</button>`;
+}
+
 
 /* ═══ 비상연락망 (관리자 전용 — 관리자 모드에서만 접근, PIN 없음) ═══
  *  강사 관리(DB.teachers)의 지역·연락처를 그대로 사용(자동 연동).
@@ -12840,6 +13201,7 @@ async function _loadSchedRequests(silent){
   _schReqCache = (r && r.ok!==false && Array.isArray(r.data)) ? r.data : [];
  }catch(_){ _schReqCache=[]; }
  _renderSchedReqBanner();
+ try{ _scRenderAdminBar(); _scFetch().then(()=>{ try{ _scRenderAdminBar(); }catch(_){} }); }catch(_){}   // v18.71
 }
 function _renderSchedReqBanner(){
  const host=document.getElementById('schedReqBanner');
@@ -17909,6 +18271,8 @@ function _confirmCancel(){
   ['history-modal-overlay',()=>{ try{ closeHistoryModal(); }catch(_){} }],
   ['maintenanceModal',   el=>el.style.display='none'],
   ['ios-install-modal',  el=>el.style.display='none'],
+  ['scGuideOverlay',     ()=>{ try{ _scCloseGuide(); }catch(_){} }],   // v18.71
+  ['scAdminOverlay',     el=>el.style.display='none'],
   ['schedReqOverlay',    el=>el.style.display='none'],
   ['schedOverlay',       ()=>{ try{ closeSchedule(); }catch(_){} }],
   ['emgOverlay',         ()=>{ try{ closeEmergencyContacts(); }catch(_){} }],
@@ -18982,6 +19346,7 @@ function _showLandingUI(){
  // v16.41: 승인 후 첫 로그인 강사에게 업무 메뉴얼 자동 표시 (계정별 1회)
  if(!sessionStorage.getItem('iruri_admin_session')){
    try{ if(typeof _mnlMaybeAutoShow==='function') _mnlMaybeAutoShow(teacher); }catch(e){}
+   try{ if(typeof _scOnLanding==='function') _scOnLanding(teacher); }catch(e){}   // v18.71: 스케줄 작성 요청
  }
  } else {
  if(userInfo) userInfo.style.display='none';
@@ -19562,9 +19927,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.70&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.71&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.70&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.71&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
