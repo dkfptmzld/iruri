@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.76">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.77">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.76">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.77">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.76</title>
+<title>수업기록표 정산 시스템 v18.77</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -4930,7 +4930,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.76';
+const SYSTEM_VERSION='v18.77';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7853,7 +7853,7 @@ window.addEventListener('load', ()=>{
  // Sheets 센터 DB 백그라운드 동기화 (v6: 전체 필드 포함)
  gasGet({ action: 'getCenters', v: _dbVerGet('centers') })
   .then(r => {
-   if(r && r.unchanged) return;   // v15.87: 서버가 그대로 → 센터 전체 수신 생략
+   if(r && r.unchanged){ window._ctrPulled=true; return; }   // v15.87: 서버가 그대로 → 센터 전체 수신 생략 (v18.77: 서버 목록 확인됨)
    if(r.ok && r.data && r.data.length > 0){
     // 스케줄 데이터 유효성 확인: 스케줄이 하나도 없으면 구버전 Sheets 데이터 → 무시
     const hasSchedule = r.data.some(c => c.schedule && c.schedule.length > 0);
@@ -7866,7 +7866,7 @@ window.addEventListener('load', ()=>{
     const dedupMap1 = new Map();
     r.data.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap1.has(key)) dedupMap1.set(key,c); });
     const dedupedCenters1 = Array.from(dedupMap1.values());
-    try{ _applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
+    try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
     // v15.52: 병합(union) — 사람이 삭제(도장)한 것만 빠지고, GAS에 없던 로컬 센터는 살려서 재저장. 구조적으로 유실 불가.
     const _mrg1 = _mergeCenters(dedupedCenters1);
     DB.centers = _mrg1.merged;
@@ -7878,6 +7878,7 @@ window.addEventListener('load', ()=>{
     // v11.7: GAS에서 받은 원본 데이터에도 자동 정리 적용 (cross-region + 보강 이력 제거)
     cleanInvalidData();
     _dbVerSet('centers', r.version);   // v15.87: 반영을 끝낸 뒤에만 버전 저장
+    window._ctrPulled=true;   // v18.77
     if(document.getElementById('centersView')?.style.display === 'block'){
      renderRegionStats(); populateTeacherFilter(); renderCenterTreeView();
     }
@@ -8080,7 +8081,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    _dbVerSet('teachers|a', r.version);   // v15.87
   } else if(tab === 'centers'){
    const r = await gasGet({action:'getCenters', v:_dbVerGet('centers')}, 45000, 'centers');
-   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); return; }   // v15.87: 서버 그대로
+   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); window._ctrPulled=true; return; }   // v15.87: 서버 그대로
    if(!r.ok || !r.data?.length) return;
    _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록
    // v11.30 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
@@ -8090,7 +8091,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     console.warn('[센터탭 동기화] 스케줄 없는 GAS 데이터 → 무시');
     return;
    }
-   let _tombRemoved2=0; try{ _tombRemoved2=_applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
+   let _tombRemoved2=0; try{ _tombRemoved2=_applyServerCenterTombs(r.tombs, r.data); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
    if(_tombRemoved2){ try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); _initCenterShadow(); renderFn(); }catch(_){} }
    if(JSON.stringify(r.data) !== JSON.stringify(DB.centers)){
     // v15.52: 병합(union) + 삭제 도장 반영 + 로컬 전용 센터 재저장 (앱 시작 동기화와 동일 정책)
@@ -8106,6 +8107,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     try{ _srvFresh('centers', DB.centers.length+'곳'); }catch(_){}   // v15.89
    }
    _dbVerSet('centers', r.version);   // v15.87
+   window._ctrPulled=true;   // v18.77
   }
  } catch(e){ console.warn('탭 동기화 실패:', e); }
 }
@@ -11417,7 +11419,7 @@ function _almUpdateCenters(ti){
  // 표시할 센터 필터링
  let ctrs;
  if(isSub && forTeacher){
-  ctrs = dbCenters.filter(c=>c.teachers&&c.teachers.includes(forTeacher));
+  ctrs = dbCenters.filter(c=>_ctrHasTeacher(c, forTeacher));   // v18.77
   if(!ctrs.length) ctrs = dbCenters; // 폴백: 전체
  } else if(isSub){
   ctrs = dbCenters;
@@ -13706,7 +13708,11 @@ const CENTER_TOMB_KEY='iruri_center_tombstones';
 function _tombKey(n,r){ return String(n||'').trim()+'||'+String(r||'').trim(); }
 function _getCenterTombs(){ try{ return JSON.parse(localStorage.getItem(CENTER_TOMB_KEY)||'[]'); }catch(_){ return []; } }
 function _isCenterTombed(n,r){ const k=_tombKey(n,r); return _getCenterTombs().some(x=>_tombKey(x.name,x.region)===k); }
-function _addCenterTomb(n,r){ const t=_getCenterTombs(); const k=_tombKey(n,r); if(!t.some(x=>_tombKey(x.name,x.region)===k)){ t.push({name:n,region:r||'',at:new Date().toISOString()}); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} } }
+function _addCenterTomb(n,r,src){ const t=_getCenterTombs(); const k=_tombKey(n,r); if(!t.some(x=>_tombKey(x.name,x.region)===k)){ const e={name:n,region:r||'',at:new Date().toISOString()}; if(src) e.src=src; t.push(e); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} } }
+/* v18.77: 예전엔 서버 삭제기록을 받아 이 기기에 쌓기만 하고 지우지 않아서, 관리자가 센터를 다시 추가해도(서버 삭제기록 해제)
+   강사 기기에선 계속 숨겨지고, 다른 관리자 기기는 그 센터를 서버에서 다시 지워 버렸음(예: '괜찮은'이 자꾸 빠짐).
+   → 이 기기 업데이트 후 한 번은 센터 전체를 다시 받아 삭제기록을 서버 기준으로 맞춤 */
+try{ if(!localStorage.getItem('iruri_tombfix_1877')){ const o=JSON.parse(localStorage.getItem(LS_DBVER)||'{}'); delete o.centers; localStorage.setItem(LS_DBVER, JSON.stringify(o)); localStorage.setItem('iruri_tombfix_1877','1'); } }catch(_){}
 function _removeCenterTomb(n,r){ const k=_tombKey(n,r); const t=_getCenterTombs().filter(x=>_tombKey(x.name,x.region)!==k); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} }
 
 /* GAS 재시도 래퍼 (실패 시 지수 백오프로 최대 tries회) */
@@ -13758,9 +13764,29 @@ function _persistCentersAfterMerge(localOnly, tombedOnGas){
 /* v16.20: 서버 공용 삭제기록을 로컬에 반영.
  *  서버가 "이 센터 삭제됨"이라고 알려주면 → 로컬 삭제도장에 추가하고, 캐시에 남은 그 센터를 조용히 제거.
  *  → 삭제한 기기가 아니어도 부활을 막는다(핵심). 다시 추가된 센터는 서버가 삭제기록을 지워 보내므로 영향 없음. */
-function _applyServerCenterTombs(tombs){
- if(!Array.isArray(tombs) || !tombs.length) return 0;
- tombs.forEach(t=>{ if(t && t.name!=null) try{ _addCenterTomb(t.name, t.region); }catch(_){} });
+function _applyServerCenterTombs(tombs, srvCenters){
+ if(!Array.isArray(tombs)) return 0;
+ // v18.77: 서버가 다시 살린 센터(서버 목록에 있고 서버 삭제기록엔 없음)는 이 기기의 삭제 도장도 해제.
+ //  단, 이 기기에서 방금(30분 안) 지운 센터는 서버 반영 전일 수 있어 그대로 둠
+ if(Array.isArray(srvCenters)){
+  try{
+   const srvTomb=new Set(tombs.filter(t=>t && t.name!=null).map(t=>_tombKey(t.name,t.region)));
+   const alive=new Set(srvCenters.filter(c=>c && c.name!=null).map(c=>_tombKey(c.name,c.region)));
+   const now=Date.now(), cur=_getCenterTombs(), freed=[];
+   const keep=cur.filter(x=>{
+    const k=_tombKey(x.name,x.region);
+    if(srvTomb.has(k) || !alive.has(k)) return true;
+    const fresh = x.src!=='srv' && (now-(Date.parse(x.at)||0)) < 30*60*1000;
+    if(fresh) return true;
+    freed.push(x.name+(x.region?`(${x.region})`:'')); return false;
+   });
+   if(freed.length){
+    localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(keep));
+    try{ pushErrorLog('센터 삭제기록 정리', `서버에 다시 등록된 센터의 옛 삭제기록을 이 기기에서 지웠어요: ${freed.join(', ')}`); }catch(_){}
+   }
+  }catch(_){}
+ }
+ tombs.forEach(t=>{ if(t && t.name!=null) try{ _addCenterTomb(t.name, t.region, 'srv'); }catch(_){} });
  let removed=0;
  if(DB.centers && DB.centers.length){
   const before=DB.centers.length;
@@ -17712,7 +17738,31 @@ async function _uploadSnapshotsBg(tasks){
   }
  } finally { _snapBgRunning = false; }
 }
+/* v18.77: 서버 센터 목록을 아직 한 번도 못 받았으면(앱 시작 직후·느린 회선) 먼저 받아서 합친 뒤 올림.
+   센터 전체 저장(syncCenters)은 1곳 삭제는 확인 없이 통과하므로, 옛 목록으로 올리면 다른 기기에서 막 추가한 센터가 조용히 지워질 수 있었음 */
+async function _ctrPullBeforePush(){
+ if(window._ctrPulled || typeof gasGet!=='function') return true;
+ try{
+  const r=await gasGet({action:'getCenters'}, 30000);
+  if(r && r.ok && Array.isArray(r.data) && r.data.length && r.data.some(c=>c.schedule && c.schedule.length)){
+   try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}
+   // 이 기기 값은 그대로 두고(방금 고친 내용 보존), 서버에만 있는 센터(지운 기록 없음)만 더함
+   const have=new Set((DB.centers||[]).map(c=>_tombKey(c.name,c.region)));
+   let add=0; r.data.forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(have.has(k) || _isCenterTombed(c.name,c.region)) return; have.add(k); DB.centers.push(c); add++; });
+   try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+   if(add){ try{ pushErrorLog('센터 자동 보존 (동기화 전)', `서버에만 있던 센터 ${add}곳을 지우지 않고 합쳤어요`); }catch(_){} }
+   try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+   if(r.version) _dbVerSet('centers', r.version);
+   window._ctrPulled=true;
+  }
+ }catch(_){}
+ return !!window._ctrPulled;
+}
 async function syncAllToDB(force){
+ if(!(await _ctrPullBeforePush())){   // v18.77
+  showToast('⚠️ 서버 센터 목록을 확인하지 못해 동기화를 미뤘어요. 잠시 후 다시 시도해 주세요');
+  return false;
+ }
  const btn = document.getElementById('syncDBBtn');
  const chip = document.getElementById('syncStatusChip');
  // 버튼 원본은 알려진 정상 HTML로 복구(이전에 스피너 상태로 끊긴 경우에도 안전)
@@ -20052,9 +20102,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.76&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.77&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.76&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.77&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -21967,13 +22017,13 @@ function renderTiLedger(){
 
  if(isS && forTeacher){
  // 보강: 해당 강사 담당 센터만
- displayCtrs = DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(forTeacher));
+ displayCtrs = DB.centers.filter(ct=>_ctrHasTeacher(ct, forTeacher));   // v18.77
  } else if(isS && !forTeacher){
  // 보강 체크했지만 강사 미선택: 전체
  displayCtrs = DB.centers;
  } else {
  // 일반: 본인 담당 센터만
- displayCtrs = teacher ? DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(teacher)) : DB.centers;
+ displayCtrs = teacher ? DB.centers.filter(ct=>_ctrHasTeacher(ct, teacher)) : DB.centers;   // v18.77: 스케줄에만 있는 센터도
  }
  const sorted=[...displayCtrs].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
 
@@ -22939,6 +22989,8 @@ function onTeacherSelect(){
 }
 
 // 강사의 센터별 스케줄 조회 (교시 순서 반영)
+// v18.77: 강사 담당 센터 = 담당강사 목록 또는 스케줄에 이 강사가 있는 센터(수업 행을 만드는 getTeacherSchedule 과 같은 기준 → 드롭다운에 '센터 선택'으로 비어 보이지 않게)
+function _ctrHasTeacher(ct, t){ return !!ct && ((Array.isArray(ct.teachers) && ct.teachers.includes(t)) || (Array.isArray(ct.schedule) && ct.schedule.some(s=>s && (s.teacher===t || (Array.isArray(s.teachers) && s.teachers.includes(t)))))); }
 function getTeacherSchedule(teacher){
  const result = {}; // {요일: [{name, region, order}, ...]}
  const unscheduled = []; // schedule 없거나 본인 days 없는 센터 (v11.19)
@@ -24663,12 +24715,12 @@ function renderMobileLedger(){
     const forT = c.substituteFor;
     let displayCtrs;
     if(isS && forT){
-     displayCtrs = DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(forT));
+     displayCtrs = DB.centers.filter(ct=>_ctrHasTeacher(ct, forT));   // v18.77
     } else if(isS && !forT){
      displayCtrs = DB.centers;
     } else {
      // 일반: 본인 담당 센터만 (PC 버전과 동일)
-     displayCtrs = teacherName ? DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(teacherName)) : DB.centers;
+     displayCtrs = teacherName ? DB.centers.filter(ct=>_ctrHasTeacher(ct, teacherName)) : DB.centers;   // v18.77: 스케줄에만 있는 센터도
     }
     const sorted=[...displayCtrs].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
     const prev = centerSel.value;
