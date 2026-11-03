@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.83">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.84">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.83">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.84">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.83</title>
+<title>수업기록표 정산 시스템 v18.84</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5145,7 +5145,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.83';
+const SYSTEM_VERSION='v18.84';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -20228,9 +20228,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.83&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.84&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.83&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.84&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -29344,16 +29344,44 @@ function changeFontSize(dir){
   const SLOT_LABELS = ['18:00','18:20','18:40','19:00','19:20','19:40','20:00','20:20'];
   const STORE_KEY = 'iruri_recruit_slots_v1';
 
-  /* ── 로컬스토리지 기반 슬롯 상태 ── */
+  /* ── 슬롯 상태: 이 기기 신청 + 서버 신청 현황(v18.84) ── */
+  let _srvSlots = null;   // 서버에서 받은 {시간: {taken} 또는 {name,phone,at}}
   function getSlots(){
+    let d={};
+    try{ d = JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{}; }catch(e){ d={}; }
+    if(_srvSlots) Object.keys(_srvSlots).forEach(t=>{ if(!d[t]) d[t]=_srvSlots[t]; });
+    return d;
+  }
+  /* v18.84: 서버 신청 현황 받기 — 예전엔 신청이 그 기기에만 있어서 다른 사람 신청이 안 보이고 같은 시간에 여러 명이 신청될 수 있었음 */
+  async function fetchSlots(isAdmin){
     try{
-      const d = JSON.parse(localStorage.getItem(STORE_KEY)||'{}');
-      return d;
-    }catch(e){ return {}; }
+      if(typeof gasGet!=='function' || typeof GAS_URL==='undefined' || !GAS_URL) return false;
+      const r = await gasGet({action:'getRecruitSlots', date:RECRUIT_DATE, isAdmin: isAdmin?'true':'false'}, 20000);
+      if(r && r.ok && r.data && typeof r.data==='object'){ _srvSlots = r.data; return true; }
+    }catch(e){}
+    return false;
   }
   function saveSlots(d){
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(d)); }catch(e){}
   }
+
+  /* v18.84: 서버 저장 전(v18.78~83)에 이 기기에서 한 신청 → 앱을 열면 서버로 한 번 다시 보냄(같은 사람이면 서버가 중복 무시) */
+  async function resendLocal(){
+    let mine={}; try{ mine=JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{}; }catch(_){ return; }
+    if(typeof gasPost!=='function' || typeof GAS_URL==='undefined' || !GAS_URL) return;
+    let changed=false;
+    for(const t of Object.keys(mine)){
+      const e=mine[t]; if(!e || !e.name || !e.phone || e.sent) continue;
+      try{
+        const r=await gasPost({ action:'recruitApply', data:{ name:e.name, phone:e.phone, time:t, date:RECRUIT_DATE, appliedAt:new Date(e.at||Date.now()).toISOString() } }, 20000);
+        if(r && r.ok){ e.sent=true; changed=true; }
+        else if(r && r.taken){ e.sent=true; changed=true; try{ if(typeof pushErrorLog==='function') pushErrorLog('면접 신청 시간 겹침', `${e.name}(${e.phone})님이 이 기기에서 ${RECRUIT_DATE} ${t}에 신청했지만 서버엔 다른 분이 먼저 있어요 — 시간 조정 필요`); }catch(_){} }
+        else break;   // 서버가 아직 예전 버전 → 다음에 다시
+      }catch(_){ break; }
+    }
+    if(changed) saveSlots(mine);
+  }
+  setTimeout(()=>{ try{ resendLocal(); }catch(_){} }, 5000);
 
   /* ── 슬롯 렌더 ── */
   function renderSlots(){
@@ -29397,7 +29425,7 @@ function changeFontSize(dir){
   };
 
   /* ── 신청 완료 ── */
-  window.submitRecruitApply = function(){
+  window.submitRecruitApply = async function(){
     const name = (document.getElementById('recruitName').value||'').trim();
     const phone = (document.getElementById('recruitPhone').value||'').trim();
     const time = window._recruitSelectedTime;
@@ -29415,8 +29443,32 @@ function changeFontSize(dir){
       return;
     }
 
-    booked[time] = { name, phone, at: Date.now() };
-    saveSlots(booked);
+    /* v18.84: 서버에 먼저 신청 → 그 사이 다른 기기에서 같은 시간을 신청했으면 막힘 */
+    const btn = document.querySelector('#recruitForm button[onclick="submitRecruitApply()"]');
+    const btnTxt = btn ? btn.textContent : '';
+    if(btn){ btn.disabled=true; btn.textContent='신청하는 중…'; btn.style.opacity='.7'; }
+    let srv = null;
+    try{
+      if(typeof gasPost==='function' && typeof GAS_URL!=='undefined' && GAS_URL)
+        srv = await gasPost({ action:'recruitApply', data:{ name, phone, time, date: RECRUIT_DATE, appliedAt: new Date().toISOString() } }, 20000);
+    }catch(_){ srv = null; }
+    if(btn){ btn.disabled=false; btn.textContent=btnTxt; btn.style.opacity='1'; }
+    if(srv && srv.taken){
+      alert('방금 다른 분이 해당 시간을 신청했습니다.\n다른 시간을 선택해주세요.');
+      await fetchSlots(false);
+      document.getElementById('recruitForm').style.display='none';
+      document.getElementById('recruitTimeSec').style.display='block';
+      renderSlots();
+      return;
+    }
+    if(!(srv && srv.ok)){
+      // 서버가 아직 예전 버전이거나 연결이 안 됨 → 이 기기에만 저장하고 관리자에게 알리도록 안내
+      try{ if(typeof pushErrorLog==='function') pushErrorLog('면접 신청 서버 저장 실패', `${name} · ${phone} · ${RECRUIT_DATE} ${time}`); }catch(_){}
+    }
+
+    let mine={}; try{ mine=JSON.parse(localStorage.getItem(STORE_KEY)||'{}')||{}; }catch(_){ mine={}; }   // 이 기기 신청만 저장(서버 현황은 섞지 않음)
+    mine[time] = { name, phone, at: Date.now(), sent: !!(srv && srv.ok) };
+    saveSlots(mine);
 
     document.getElementById('recruitForm').style.display='none';
     document.getElementById('recruitTimeSec').style.display='none';
@@ -29427,18 +29479,9 @@ function changeFontSize(dir){
       `면접 당일 교구교체 후 대기해 주세요.<br>문의사항은 관리자에게 연락 주세요.`;
     document.getElementById('recruitDone').style.display='block';
 
-    /* ── GAS 시트에도 저장 (비동기, 실패해도 화면엔 영향 없음) ── */
-    try{
-      if(typeof GAS_URL !== 'undefined' && GAS_URL){
-        fetch(GAS_URL, {
-          method:'POST',
-          body: JSON.stringify({
-            action: 'recruitApply',
-            data: { name, phone, time, date: RECRUIT_DATE, appliedAt: new Date().toISOString() }
-          })
-        }).catch(()=>{});
-      }
-    }catch(_){}
+    if(!(srv && srv.ok)){
+      document.getElementById('recruitDoneMsg').insertAdjacentHTML('beforeend', `<br><br><span style="color:#B45309;font-size:12px;">⚠ 인터넷 연결이 불안정해 서버에 저장되지 않았을 수 있어요. 관리자에게 신청 사실을 꼭 알려주세요.</span>`);
+    }
   };
 
   /* ── 모달 열기/닫기 ── */
@@ -29453,6 +29496,7 @@ function changeFontSize(dir){
     if(document.getElementById('recruitName')) document.getElementById('recruitName').value='';
     if(document.getElementById('recruitPhone')) document.getElementById('recruitPhone').value='';
     renderSlots();
+    fetchSlots(false).then(ok=>{ if(ok) renderSlots(); });   // v18.84: 다른 사람 신청 반영
   };
   window.closeRecruitModal = function(){
     document.getElementById('recruitOverlay').style.display='none';
@@ -29469,29 +29513,35 @@ function changeFontSize(dir){
 
   /* ── 관리자 전용: 신청자 목록 조회 ── */
   window.openRecruitAdmin = function(){
+    _renderRecruitAdmin(false);
+    const listEl = document.getElementById('recruitAdminList');
+    if(listEl) listEl.insertAdjacentHTML('afterbegin', '<div id="recruitAdminLoading" style="font-size:11.5px;color:#7C3AED;margin-bottom:8px;">☁️ 서버 신청 현황 불러오는 중…</div>');
+    fetchSlots(true).then(ok=>{ if(document.getElementById('recruitAdminOverlay').style.display==='block') _renderRecruitAdmin(ok); });
+  };
+  function _renderRecruitAdmin(fromServer){
     const overlay = document.getElementById('recruitAdminOverlay');
     const listEl = document.getElementById('recruitAdminList');
     if(!overlay||!listEl) return;
 
-    const booked = getSlots();
+    const booked = fromServer ? Object.assign({}, _srvSlots||{}) : getSlots();
     const entries = SLOT_LABELS.map(t=>({ time:t, info: booked[t]||null }));
     const total = entries.filter(e=>e.info).length;
 
     listEl.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div style="font-size:13px;color:#6B7280;">총 <strong style="color:#5B21B6;">${total}명</strong> 신청 / 7슬롯</div>
-        <div style="font-size:11px;color:#9CA3AF;">이 기기 기준 · 실시간</div>
+        <div style="font-size:13px;color:#6B7280;">총 <strong style="color:#5B21B6;">${total}명</strong> 신청 / ${SLOT_LABELS.length}슬롯</div>
+        <div style="font-size:11px;color:#9CA3AF;">${fromServer?'서버 기준 · 모든 기기':'이 기기 기준'}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
         ${entries.map(e=>{
           if(e.info){
-            const d = new Date(e.info.at);
+            const d = new Date(isNaN(Number(e.info.at)) ? e.info.at : Number(e.info.at));
             const appliedStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             return `<div style="background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
               <div style="width:40px;height:40px;background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0;">${e.time.replace(':','<br style="line-height:.8">').substring(0,2)}<br style="line-height:.5">${e.time.substring(3)}</div>
               <div style="flex:1;min-width:0;">
-                <div style="font-size:14px;font-weight:700;color:#4C1D95;">${esc(e.info.name)}</div>
-                <div style="font-size:12px;color:#7C3AED;margin-top:1px;">${esc(e.info.phone)}</div>
+                <div style="font-size:14px;font-weight:700;color:#4C1D95;">${escH(e.info.name||'(이름 없음)')}</div>
+                <div style="font-size:12px;color:#7C3AED;margin-top:1px;">${escH(e.info.phone||'')}</div>
                 <div style="font-size:10px;color:#A78BFA;margin-top:2px;">신청: ${appliedStr}</div>
               </div>
               <div style="font-size:11px;font-weight:700;color:#7C3AED;background:#EDE9FE;padding:4px 10px;border-radius:8px;white-space:nowrap;">${e.time}</div>
@@ -29504,15 +29554,14 @@ function changeFontSize(dir){
           }
         }).join('')}
       </div>
-      <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#92400E;line-height:1.6;">
-        ⚠️ 신청자 정보는 <strong>이 기기의 앱에만</strong> 저장됩니다.<br>
-        다른 기기에서 신청한 경우 여기에 표시되지 않을 수 있어요.
-      </div>
+      ${fromServer
+        ? `<div style="margin-top:14px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#166534;line-height:1.6;">✅ 모든 기기의 신청이 구글 시트 <b>'면접신청'</b> 탭에 모여요. 신청을 취소하려면 그 줄의 <b>상태</b> 칸에 '취소'라고 적으면 그 시간이 다시 열려요.</div>`
+        : `<div style="margin-top:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#92400E;line-height:1.6;">⚠️ 서버 신청 현황을 불러오지 못해 <strong>이 기기</strong> 기준으로 보여드려요. 서버(GAS)를 새로 배포했는지 확인해주세요.</div>`}
     `;
 
     overlay.style.display='block';
     document.body.style.overflow='hidden';
-  };
+  }
   window.closeRecruitAdmin = function(){
     document.getElementById('recruitAdminOverlay').style.display='none';
     document.body.style.overflow='';
