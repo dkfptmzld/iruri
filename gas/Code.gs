@@ -77,6 +77,7 @@ function doGet(e) {
     const action = p.action;
     if (action === 'getSubmissions')       return response(getSubmissions());
     if (action === 'getHistory')           return response(getHistory(p.teacher));
+    if (action === 'getTiDraft')           return response(getTiDraft(p.teacher));   // v18.82: 수업기록표 임시저장(기기 간 이어쓰기)
     if (action === 'getReceipts')          return response(getReceipts(p.teacher, p.yearMonth));
     if (action === 'getTeachers')          return response(getTeachers(p.teacher, p.isAdmin, p.v));   // [속도] v = 앱이 가진 버전
     if (action === 'getCenters')           return response(getCenters(p.v));                          // [속도]
@@ -106,7 +107,7 @@ function doPost(e) {
   catch (err) { return response({ ok: false, message: '요청 파싱 실패' }); }
   // [안전 2단계] 쓰기 잠금 — 저장을 한 번에 하나씩만 처리(동시 저장 충돌 방지).
   //  접속현황·영수증 업로드처럼 '줄 추가만 하는(충돌 무해)' 동작은 잠금 없이 통과 → 강사 활동은 안 느려짐.
-  var _NO_LOCK = { updatePresence: 1, removePresence: 1, uploadReceipt: 1 };
+  var _NO_LOCK = { updatePresence: 1, removePresence: 1, uploadReceipt: 1, saveTiDraft: 1 };   // v18.82: 임시저장은 강사별 한 줄만 고침(충돌 무해)
   var _lock = null;
   if (!_NO_LOCK[action]) {
     _lock = LockService.getScriptLock();
@@ -122,6 +123,7 @@ function doPost(e) {
     if (action === 'saveTeacher')           return response(saveTeacher(body.teacher));
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
+    if (action === 'saveTiDraft')           return response(saveTiDraft(body.teacher, body.draft));   // v18.82: 수업기록표 임시저장
     if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'removeCenterTomb')      { try { _removeCenterTombGas(body.name, body.region); } catch (e) {} return response({ ok: true }); }   // v16.20: 삭제기록 해제(관리/테스트용)
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
@@ -1744,4 +1746,59 @@ function depAddLogs(logs) {
     rg.setValues(rows);
   }
   return { ok: true, added: rows.length, ids: ids };
+}
+
+
+/* ════════ v18.82: 수업기록표 임시저장 — 기기 간 이어쓰기 ════════
+ *  예전엔 임시저장이 그 기기 브라우저에만 있어서, 휴대폰에서 쓰던 걸 컴퓨터에서 이어 쓸 수 없었다.
+ *  강사별로 '가장 최근 임시저장' 한 줄만 보관(계좌번호는 앱이 보내지 않음). 더 옛것이 늦게 도착하면 덮어쓰지 않음.
+ *  내용(JSON)은 셀 한도(5만 자) 때문에 45,000자씩 최대 8칸에 나눠 저장. */
+var SHEET_TIDRAFT = '임시저장';
+var TIDRAFT_CHUNK = 45000, TIDRAFT_COLS = 8;
+function _tiDraftSheet() {
+  var ss = ss_(), sh = ss.getSheetByName(SHEET_TIDRAFT);
+  if (!sh) {
+    sh = ss.insertSheet(SHEET_TIDRAFT);
+    var hdr = ['teacher', 'savedTs', 'savedAt'];
+    for (var i = 1; i <= TIDRAFT_COLS; i++) hdr.push('json' + i);
+    sh.getRange(1, 1, 1, hdr.length).setValues([hdr]);
+  }
+  return sh;
+}
+function getTiDraft(teacher) {
+  teacher = String(teacher || '').trim();
+  if (!teacher) return { ok: false, message: '강사 이름 없음' };
+  var v = _tiDraftSheet().getDataRange().getValues(), best = null, bestTs = -1;
+  for (var i = 1; i < v.length; i++) {
+    if (String(v[i][0]).trim() !== teacher) continue;
+    var ts = Number(v[i][1]) || 0;
+    if (ts > bestTs) { bestTs = ts; best = v[i]; }
+  }
+  if (!best) return { ok: true, data: null };
+  var json = '';
+  for (var j = 3; j < 3 + TIDRAFT_COLS; j++) json += String(best[j] || '');
+  try { return { ok: true, data: JSON.parse(json) }; } catch (e) { return { ok: true, data: null }; }
+}
+function saveTiDraft(teacher, draft) {
+  teacher = String(teacher || '').trim();
+  if (!teacher || !draft || typeof draft !== 'object') return { ok: false, message: '내용 없음' };
+  delete draft.account;   // 계좌번호는 서버 임시저장에 두지 않음
+  var ts = Number(draft.savedTs) || Date.now();
+  var json = JSON.stringify(draft);
+  if (json.length > TIDRAFT_CHUNK * TIDRAFT_COLS) return { ok: false, message: '임시저장 내용이 너무 커요' };
+  var row = [teacher, ts, String(draft.savedAt || '')];
+  for (var k = 0; k < TIDRAFT_COLS; k++) row.push(json.substr(k * TIDRAFT_CHUNK, TIDRAFT_CHUNK));
+  var sh = _tiDraftSheet(), v = sh.getDataRange().getValues();
+  for (var i = 1; i < v.length; i++) {
+    if (String(v[i][0]).trim() !== teacher) continue;
+    if ((Number(v[i][1]) || 0) > ts) return { ok: true, skipped: true };   // 서버에 더 최신이 있음
+    var rg = sh.getRange(i + 1, 1, 1, row.length);
+    rg.setNumberFormat('@'); sh.getRange(i + 1, 2).setNumberFormat('0');
+    rg.setValues([row]);
+    return { ok: true };
+  }
+  var r = sh.getLastRow() + 1, rg2 = sh.getRange(r, 1, 1, row.length);
+  rg2.setNumberFormat('@'); sh.getRange(r, 2).setNumberFormat('0');
+  rg2.setValues([row]);
+  return { ok: true };
 }
