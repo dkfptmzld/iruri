@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.79">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.80">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.79">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.80">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.79</title>
+<title>수업기록표 정산 시스템 v18.80</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2170,6 +2170,14 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
   <div id="landingCustomCards" style="display:contents;"></div>
  </div>
 
+ <!-- v18.80: 관리자 전용 — 면접 신청자 조회 버튼 -->
+ <div id="recruitAdminBtn" style="display:none;margin-top:18px;text-align:center;">
+  <button onclick="openRecruitAdmin()" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5B21B6,#7C3AED);color:#fff;border:none;border-radius:16px;padding:11px 22px;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(124,58,237,.35);font-family:inherit;transition:.15s;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+   면접 신청자 조회
+  </button>
+ </div>
+
  <!-- v18.76: 관리자 지원 모달 -->
  <div id="recruitOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow-y:auto;padding:20px 0;" onclick="if(event.target===this)closeRecruitModal()">
   <div style="background:#fff;border-radius:24px;max-width:480px;margin:0 auto;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.28);position:relative;">
@@ -2341,6 +2349,23 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
     </div>
 
    </div>
+  </div>
+ </div>
+
+ <!-- v18.80: 관리자 전용 — 면접 신청자 목록 모달 -->
+ <div id="recruitAdminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9100;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);overflow-y:auto;padding:20px 0;" onclick="if(event.target===this)closeRecruitAdmin()">
+  <div style="background:#fff;border-radius:24px;max-width:480px;margin:0 auto;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.28);">
+   <!-- 헤더 -->
+   <div style="background:linear-gradient(135deg,#5B21B6,#7C3AED);padding:22px 24px;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+     <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.5px;margin-bottom:4px;">관리자 전용</div>
+     <div style="font-size:18px;font-weight:800;color:#fff;">면접 신청자 목록</div>
+     <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;">2026년 11월 20일 면접</div>
+    </div>
+    <button onclick="closeRecruitAdmin()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+   </div>
+   <!-- 목록 -->
+   <div style="padding:20px 24px;" id="recruitAdminList"></div>
   </div>
  </div>
 
@@ -5120,7 +5145,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.79';
+const SYSTEM_VERSION='v18.80';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -19812,6 +19837,8 @@ function _applyHomeModeDisplays(){
   if(cc) [...cc.children].forEach(el=>{ el.style.display=(_homeMode==='admin')?'':'none'; });
   // 권한 관리(마스터 전용)는 관리자 홈에서만 노출
   try{ const pr=document.getElementById('landingPermRow'); if(pr) pr.style.display=(typeof _isMaster==='function'&&_isMaster()&&_homeMode==='admin')?'flex':'none'; }catch(_){}
+  // v18.80: 면접 신청자 조회 버튼 — 관리자 홈에서만 노출
+  try{ const rb=document.getElementById('recruitAdminBtn'); if(rb) rb.style.display=(_homeMode==='admin')?'block':'none'; }catch(_){}
   _refreshHomeModeToggle();
 }
 function _refreshHomeModeToggle(){
@@ -29308,6 +29335,19 @@ function changeFontSize(dir){
       `연락처: ${esc(phone)}<br><br>` +
       `면접 당일 교구교체 후 대기해 주세요.<br>문의사항은 관리자에게 연락 주세요.`;
     document.getElementById('recruitDone').style.display='block';
+
+    /* ── GAS 시트에도 저장 (비동기, 실패해도 화면엔 영향 없음) ── */
+    try{
+      if(typeof GAS_URL !== 'undefined' && GAS_URL){
+        fetch(GAS_URL, {
+          method:'POST',
+          body: JSON.stringify({
+            action: 'recruitApply',
+            data: { name, phone, time, date: RECRUIT_DATE, appliedAt: new Date().toISOString() }
+          })
+        }).catch(()=>{});
+      }
+    }catch(_){}
   };
 
   /* ── 모달 열기/닫기 ── */
@@ -29330,10 +29370,62 @@ function changeFontSize(dir){
 
   /* ESC 키 닫기 */
   document.addEventListener('keydown',function(e){
-    if(e.key==='Escape'&&document.getElementById('recruitOverlay').style.display==='block'){
-      window.closeRecruitModal();
+    if(e.key==='Escape'){
+      if(document.getElementById('recruitAdminOverlay').style.display==='block') window.closeRecruitAdmin();
+      else if(document.getElementById('recruitOverlay').style.display==='block') window.closeRecruitModal();
     }
   });
+
+  /* ── 관리자 전용: 신청자 목록 조회 ── */
+  window.openRecruitAdmin = function(){
+    const overlay = document.getElementById('recruitAdminOverlay');
+    const listEl = document.getElementById('recruitAdminList');
+    if(!overlay||!listEl) return;
+
+    const booked = getSlots();
+    const entries = SLOT_LABELS.map(t=>({ time:t, info: booked[t]||null }));
+    const total = entries.filter(e=>e.info).length;
+
+    listEl.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:13px;color:#6B7280;">총 <strong style="color:#5B21B6;">${total}명</strong> 신청 / 7슬롯</div>
+        <div style="font-size:11px;color:#9CA3AF;">이 기기 기준 · 실시간</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${entries.map(e=>{
+          if(e.info){
+            const d = new Date(e.info.at);
+            const appliedStr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            return `<div style="background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+              <div style="width:40px;height:40px;background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;flex-shrink:0;">${e.time.replace(':','<br style="line-height:.8">').substring(0,2)}<br style="line-height:.5">${e.time.substring(3)}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:14px;font-weight:700;color:#4C1D95;">${esc(e.info.name)}</div>
+                <div style="font-size:12px;color:#7C3AED;margin-top:1px;">${esc(e.info.phone)}</div>
+                <div style="font-size:10px;color:#A78BFA;margin-top:2px;">신청: ${appliedStr}</div>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:#7C3AED;background:#EDE9FE;padding:4px 10px;border-radius:8px;white-space:nowrap;">${e.time}</div>
+            </div>`;
+          } else {
+            return `<div style="background:#F9FAFB;border:1.5px dashed #E5E7EB;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;opacity:.55;">
+              <div style="width:40px;height:40px;background:#E5E7EB;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:12px;font-weight:700;flex-shrink:0;line-height:1.2;text-align:center;">${e.time}</div>
+              <div style="font-size:13px;color:#9CA3AF;">신청 없음</div>
+            </div>`;
+          }
+        }).join('')}
+      </div>
+      <div style="margin-top:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;font-size:11.5px;color:#92400E;line-height:1.6;">
+        ⚠️ 신청자 정보는 <strong>이 기기의 앱에만</strong> 저장됩니다.<br>
+        다른 기기에서 신청한 경우 여기에 표시되지 않을 수 있어요.
+      </div>
+    `;
+
+    overlay.style.display='block';
+    document.body.style.overflow='hidden';
+  };
+  window.closeRecruitAdmin = function(){
+    document.getElementById('recruitAdminOverlay').style.display='none';
+    document.body.style.overflow='';
+  };
 })();
 </script>
 </body></html>
