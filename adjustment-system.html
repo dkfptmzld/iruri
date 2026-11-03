@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.99">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.00">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.99">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.00">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.99</title>
+<title>수업기록표 정산 시스템 v19.00</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -3678,7 +3678,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    </div>
    <div style="display:flex;gap:6px;">
     <button class="btn sm" onclick="renderSubmissionsView()" style="gap:4px;">🔄 새로고침</button>
-    <button class="btn sm" onclick="recoverSubmissionsUI()" title="GAS 제출이력에서 최신 2026년 월 제출 기록표를 대기중으로 불러옵니다" style="gap:4px;background:#FEF3C7;color:#92400E;border-color:#FCD34D;font-weight:600;">📥 제출 기록표 불러오기</button>
+    <button class="btn sm" onclick="recoverSubmissionsUI()" title="제출이력에서 강사를 골라 최신 제출 기록표를 대기중으로 불러옵니다" style="gap:4px;background:#FEF3C7;color:#92400E;border-color:#FCD34D;font-weight:600;">📥 제출 기록표 불러오기</button>
     <button class="btn sm primary" onclick="_applyAllSubs()" id="applyAllBtn" style="gap:4px;">✅ 전체 반영</button>
    </div>
   </div>
@@ -5130,7 +5130,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.99';
+const SYSTEM_VERSION='v19.00';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -9177,7 +9177,8 @@ function _forceLoadMismatchedSnap(){
  * GAS 저장은 됐지만 오류로 제출데이터(대기중)에서 사라진 기록표를, 제출이력에서 찾아
  * 기록표 관리 '대기중'으로 불러온다. (정산 탭으로 보내지 않음 — 검토 후 '반영하기'로 반영)
  */
-function recoverSubmissionsUI(){
+function recoverSubmissionsUI(){ return _recoverPickOpen(); }   // v19.00: 강사를 골라서 불러오기
+function _recoverSubmissionsUIOld(){
  showConfirm({
   icon:'📥',
   title:'제출 기록표 불러오기',
@@ -9217,6 +9218,100 @@ function _histFullRecord(h){
   yearMonth: rec.yearMonth || h.yearMonth,
   submittedAt: rec.submittedAt || h.submittedAt
  });
+}
+
+/* ═══ v19.00: 제출 기록표 '골라서' 불러오기 ═══
+ *  예전엔 최신 달 제출이력을 강사 전원 한 번에 대기중으로 넣었음 → 강사 이름 목록을 보여 주고 체크한 강사만 불러옴.
+ *  · 기본 = 정산할 최신 달(제출이력 중 가장 최근 달), 다른 달도 고를 수 있음
+ *  · 강사별 가장 최근 제출 1건 · '대기중'·'정산에 있음' 표시, 기본 체크는 둘 다 아닌 강사만 */
+let _rpHist=null, _rpYm='', _rpRows=[];
+const _rpMonthNum = y=>{ const mm=String(y||'').match(/(\d+)년\s*(\d+)월/); return mm ? parseInt(mm[1])*100+parseInt(mm[2]) : 0; };
+async function _recoverPickOpen(){
+ showBusyToast('제출이력 불러오는 중…');
+ let r;
+ try{ r = await gasGet({ action:'getHistory', teacher:'__all__' }); }
+ catch(e){ showToast('제출이력 조회 실패 — 네트워크를 확인해주세요'); return; }
+ const raw = (r && r.ok && Array.isArray(r.data)) ? r.data : [];
+ if(!raw.length){ showToast('제출이력이 비어있어요'); return; }
+ _rpHist = raw.map(_histFullRecord).map(h=>({ ...h, _ym:_normYM(h.yearMonth) })).filter(h=>h._ym);
+ const months=[...new Set(_rpHist.map(h=>h._ym))].sort((a,b)=>_rpMonthNum(b)-_rpMonthNum(a));
+ if(!months.length){ showToast('제출이력에 월 정보가 없어요'); return; }
+ try{ if(_afTimer){ clearTimeout(_afTimer); _afTimer=null; } _actionActive=false; document.getElementById('actionFlash')?.classList.remove('show'); _afProgEnd(true); }catch(_){}   // '불러오는 중' 닫기
+ _rpRender(months[0], months);
+}
+function _rpBuildRows(ym){
+ const byName=new Map();
+ _rpHist.filter(h=>h._ym===ym).forEach((h,idx)=>{
+  const nm=h.name||('__noname_'+idx); const prev=byName.get(nm);
+  if(!prev || new Date(h.submittedAt||0) > new Date(prev.submittedAt||0)) byName.set(nm,h);
+ });
+ const pend=new Set((Array.isArray(_subPendingData)?_subPendingData:[]).map(x=>`${x.name}|${_normYM(x.yearMonth)}`));
+ let inSettle=new Set();
+ try{ const snap=JSON.parse(localStorage.getItem(MONTHLY_KEY_PREFIX+ym.replace(/\s/g,'_'))||'null'); ((snap&&snap.data&&snap.data.teachers)||[]).forEach(t=>t&&t.name&&inSettle.add(t.name)); }catch(_){}
+ try{ if(STATE && STATE.data && Array.isArray(STATE.data.teachers) && _normYM(STATE.data.teachers[0]?.yearMonth)===ym) STATE.data.teachers.forEach(t=>t&&t.name&&inSettle.add(t.name)); }catch(_){}
+ const regionOf=n=>((DB.teachers||[]).find(t=>t.name===n)||{}).region||'';
+ let applied=[]; try{ applied=JSON.parse(localStorage.getItem('ti_submissions_applied')||'[]')||[]; }catch(_){}
+ const appliedAt=nm=>Math.max(0,...applied.filter(a=>a&&a.name===nm&&_normYM(a.yearMonth)===ym).map(a=>Number(a.appliedAt)||0));
+ const rows=[...byName.values()].map(h=>{ const nm=h.name||''; const pending=pend.has(`${nm}|${ym}`), settled=inSettle.has(nm);
+  const subT=new Date(h.submittedAt||0).getTime()||0, apT=appliedAt(nm);
+  const resub = settled && apT>0 && subT>apT;   // 정산 반영 뒤 다시 제출함
+  return { h, name:nm, region:regionOf(nm), at:h.submittedAt||'', pending, settled, resub, on: !pending && (!settled || resub) }; });
+ const ro={'서울':1,'인천':2,'수원':3};
+ rows.sort((a,b)=>((ro[a.region]||9)-(ro[b.region]||9)) || a.name.localeCompare(b.name,'ko'));
+ return rows;
+}
+function _rpRender(ym, months){
+ _rpYm=ym; _rpRows=_rpBuildRows(ym);
+ months = months || [...new Set(_rpHist.map(h=>h._ym))].sort((a,b)=>_rpMonthNum(b)-_rpMonthNum(a));
+ let ov=document.getElementById('rpOverlay');
+ if(!ov){ ov=document.createElement('div'); ov.id='rpOverlay'; ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;'; ov.onclick=e=>{ if(e.target===ov) ov.remove(); }; document.body.appendChild(ov); }
+ const fmtAt=a=>{ const d=new Date(a); return isNaN(d)?escH(String(a||'')):`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
+ const badge=r=>r?`<span class="badge ${r==='서울'?'blue':r==='인천'?'teal':'purple'}" style="flex-shrink:0;">${escH(r)}</span>`:'';
+ const rows=_rpRows.map((x,i)=>`
+  <label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;${x.on?'':'opacity:.75;'}">
+   <input type="checkbox" class="rp-ck" data-i="${i}" ${x.on?'checked':''} onchange="_rpCount()" style="width:17px;height:17px;flex-shrink:0;">
+   <b style="font-size:14px;min-width:58px;">${escH(x.name||'(이름 없음)')}</b>${badge(x.region)}
+   <span style="font-size:12px;color:var(--text3);margin-left:auto;white-space:nowrap;">제출 ${fmtAt(x.at)}</span>
+   ${x.pending?'<span style="font-size:11px;font-weight:700;color:#92400E;background:#FEF3C7;border-radius:8px;padding:1px 7px;white-space:nowrap;">대기중</span>':''}
+   ${x.resub?'<span style="font-size:11px;font-weight:700;color:#B91C1C;background:#FEE2E2;border-radius:8px;padding:1px 7px;white-space:nowrap;">반영 뒤 다시 제출</span>':(x.settled?'<span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-bg);border-radius:8px;padding:1px 7px;white-space:nowrap;">정산에 있음</span>':'')}
+  </label>`).join('');
+ ov.innerHTML=`<div style="background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.2);text-align:left;">
+  <div style="padding:16px 18px 10px;border-bottom:1px solid var(--border);">
+   <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:17px;font-weight:800;">📥 제출 기록표 불러오기</span>
+    <select onchange="_rpRender(this.value)" style="margin-left:auto;height:30px;border:1px solid var(--border);border-radius:7px;padding:0 6px;font-size:13px;">${months.map(m=>`<option ${m===ym?'selected':''}>${escH(m)}</option>`).join('')}</select></div>
+   <div style="font-size:12px;color:var(--text3);margin-top:6px;">불러올 강사를 체크하세요 · 강사마다 <b>가장 최근 제출본</b>을 대기중으로 불러와요</div>
+   <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn sm" onclick="_rpSet('all')">전체 선택</button>
+    <button class="btn sm" onclick="_rpSet('new')">아직 안 불러온 강사만</button>
+    <button class="btn sm" onclick="_rpSet('none')">선택 해제</button>
+   </div>
+  </div>
+  <div style="overflow:auto;flex:1;">${rows||'<div style="padding:24px;text-align:center;color:var(--text3);">이 달 제출이력이 없어요</div>'}</div>
+  <div style="display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--border);align-items:center;">
+   <span id="rpCount" style="font-size:13px;color:var(--text2);"></span>
+   <button class="btn" style="margin-left:auto;" onclick="document.getElementById('rpOverlay').remove()">취소</button>
+   <button class="btn primary" id="rpOk" onclick="_rpApply()">불러오기</button>
+  </div></div>`;
+ _rpCount();
+}
+function _rpSet(mode){ document.querySelectorAll('#rpOverlay .rp-ck').forEach(cb=>{ const x=_rpRows[+cb.dataset.i]; cb.checked = mode==='all' ? true : mode==='none' ? false : !!(x && x.on); }); _rpCount(); }
+function _rpCount(){ const n=[...document.querySelectorAll('#rpOverlay .rp-ck')].filter(c=>c.checked).length; const c=document.getElementById('rpCount'); if(c) c.textContent=`${n}명 선택 / ${_rpRows.length}명`; const b=document.getElementById('rpOk'); if(b){ b.disabled=!n; b.textContent=n?`${n}명 불러오기`:'불러오기'; } }
+function _rpApply(){
+ const picked=[...document.querySelectorAll('#rpOverlay .rp-ck')].filter(c=>c.checked).map(c=>_rpRows[+c.dataset.i]).filter(Boolean);
+ if(!picked.length) return;
+ const ym=_rpYm;
+ const recs=picked.map(x=>_fillSettleFields({ ...x.h, yearMonth: ym }));
+ if(!Array.isArray(_subPendingData)) _subPendingData=[];
+ const key=x=>`${x.name}|${_normYM(x.yearMonth)}`;
+ const newKeys=new Set(recs.map(key));
+ // 이미 대기중인 같은 강사·월은 고른 최신 제출본으로 바꿈
+ _subPendingData=[..._subPendingData.filter(x=>!newKeys.has(key(x))), ...recs];
+ document.getElementById('rpOverlay')?.remove();
+ const pendingEl=document.getElementById('subPendingList'); if(pendingEl) pendingEl.innerHTML=_renderSubPendingList(_subPendingData);
+ const badge=document.getElementById('submissionsBadge'); if(badge){ badge.textContent=_subPendingData.length; badge.style.display=_subPendingData.length>0?'block':'none'; }
+ const countEl=document.getElementById('subPendingCount'); if(countEl) countEl.textContent=_subPendingData.length;
+ try{ switchSubTab('pending'); }catch(_){}
+ showToast(`${ym} 기록표 ${recs.length}명(${picked.map(x=>x.name).slice(0,4).join(', ')}${picked.length>4?' 외':''})을 대기중으로 불러왔어요 — '반영하기'로 정산에 반영하세요`);
 }
 
 async function recoverSubmissionsFromHistory(){
@@ -20389,9 +20484,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.99&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.00&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.99&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.00&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
