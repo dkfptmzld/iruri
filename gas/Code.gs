@@ -126,6 +126,7 @@ function doPost(e) {
     if (action === 'saveCenter')            return response(saveCenter(body.center));
     if (action === 'saveTiDraft')           return response(saveTiDraft(body.teacher, body.draft));   // v18.82: 수업기록표 임시저장
     if (action === 'recruitApply')          return response(recruitApply(body.data));   // v18.84: 관리자 지원 면접 신청(한 시간대 한 명)
+    if (action === 'recruitCancel')         return response(recruitCancel(body.data));  // v18.87: 면접 신청 취소(이름+연락처 확인)
     if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'removeCenterTomb')      { try { _removeCenterTombGas(body.name, body.region); } catch (e) {} return response({ ok: true }); }   // v16.20: 삭제기록 해제(관리/테스트용)
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
@@ -1841,11 +1842,32 @@ function recruitApply(d) {
   var rows = _recruitRows(date);
   for (var i = 0; i < rows.length; i++) {
     if (rows[i].time !== time) continue;
-    if (rows[i].name === name && rows[i].phone === phone) return { ok: true, already: true };   // 같은 사람이 다시 보냄
+    if (rows[i].name === name && _recruitPhone(rows[i].phone) === _recruitPhone(phone)) return { ok: true, already: true };   // 같은 사람이 다시 보냄
     return { ok: false, taken: true, message: '이미 신청된 시간이에요' };
+  }
+  // v18.87: 1인 1슬롯 — 같은 사람이 다른 시간에 이미 신청했으면 먼저 취소하게
+  for (var j = 0; j < rows.length; j++) {
+    if (rows[j].name === name && _recruitPhone(rows[j].phone) === _recruitPhone(phone)) return { ok: false, dup: true, time: rows[j].time, message: '이미 ' + rows[j].time + '에 신청했어요' };
   }
   var sh = _recruitSheet(), r = sh.getLastRow() + 1, rg = sh.getRange(r, 1, 1, 6);
   rg.setNumberFormat('@');
   rg.setValues([[date, time, name, phone, String(d.appliedAt || new Date().toISOString()), '']]);
   return { ok: true };
+}
+function _recruitPhone(p) { return String(p || '').replace(/[^0-9]/g, ''); }
+/* v18.87: 면접 신청 취소 — 이름과 연락처(숫자만 비교)가 맞는 신청의 상태 칸에 '취소'를 적음(줄은 남겨 기록 보존) */
+function recruitCancel(d) {
+  d = d || {};
+  var date = String(d.date || ''), time = String(d.time || ''), name = String(d.name || '').trim(), phone = _recruitPhone(d.phone);
+  if (!date || !name || !phone) return { ok: false, message: '이름·연락처를 확인해주세요' };
+  var sh = _recruitSheet(), v = sh.getDataRange().getDisplayValues(), n = 0, times = [];
+  for (var i = 1; i < v.length; i++) {
+    if (String(v[i][0]) !== date || String(v[i][2]).trim() !== name || _recruitPhone(v[i][3]) !== phone) continue;
+    if (time && String(v[i][1]) !== time) continue;
+    if (String(v[i][5] || '').indexOf('취소') >= 0) continue;
+    sh.getRange(i + 1, 6).setNumberFormat('@').setValue('취소 ' + Utilities.formatDate(new Date(), 'Asia/Seoul', 'MM/dd HH:mm'));
+    n++; times.push(String(v[i][1]));
+  }
+  if (!n) return { ok: false, notFound: true, message: '이름·연락처가 맞는 신청이 없어요' };
+  return { ok: true, count: n, times: times };
 }
