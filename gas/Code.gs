@@ -122,6 +122,7 @@ function doPost(e) {
     if (action === 'deleteSubmission')      return response(deleteSubmission(body.teacher, body.yearMonth, body.submittedAt));
     if (action === 'uploadReceipt')         return response(uploadReceipt(body.teacher, body.yearMonth, body.fileName, body.base64, body.mimeType));
     if (action === 'saveTeacher')           return response(saveTeacher(body.teacher));
+    if (action === 'setTeacherFlag')        return response(setTeacherFlag(body.name, body.key, body.value));   // v18.95: 강사 정보 한 칸만(매뉴얼 봄 등) — 통째 저장으로 옛 값 덮어쓰기 방지
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
     if (action === 'saveTiDraft')           return response(saveTiDraft(body.teacher, body.draft));   // v18.82: 수업기록표 임시저장
@@ -466,6 +467,9 @@ function syncTeachers(teachers, force) {
     }
   }
 
+  // v18.95: 옛 기기 목록이 '강사료 0'으로 덮어쓰지 않게(이미 강사료가 있는 강사는 강사료·인상예정일·자격증 정보 보존)
+  const _oldJson = {}; { const vv = sheet.getDataRange().getValues(); for (let i = 1; i < vv.length; i++) if (vv[i][0]) _oldJson[String(vv[i][0])] = vv[i][7]; }
+  teachers = (teachers||[]).map(t => (t && t.name && _oldJson[t.name] !== undefined) ? _keepTeacherPay_(t, _oldJson[t.name]) : t);
   const rows = teachers.map(t => [t.name, t.region||'', t.feeType||'fixed', t.feeVal||0, t.hireDate||'', t.raiseDate||'', t.account||'', JSON.stringify(t)]);
 
   // [속도] 쓸 내용이 지난번과 똑같고 시트 행 수도 그대로면 → 시트 쓰기 자체를 건너뛴다
@@ -487,9 +491,18 @@ function syncTeachers(teachers, force) {
   return { ok: true, version: ver, message: '강사 ' + teachers.length + '명 동기화 완료' };
 }
 
+/* v18.95: 이미 강사료가 있는 강사를 '강사료 0'(가입 승인 직후 값)으로 덮어쓰지 않음 — 옛 기기 정보가 올라와도 강사료·인상예정일·자격증 정보 보존 */
+function _keepTeacherPay_(incoming, oldJsonStr) {
+  var old = null; try { old = oldJsonStr ? JSON.parse(String(oldJsonStr)) : null; } catch (e) { old = null; }
+  if (!old || !(Number(old.feeVal) > 0) || Number(incoming.feeVal) > 0) return incoming;
+  var t = JSON.parse(JSON.stringify(incoming));
+  ['feeType', 'feeVal', 'raiseDate', 'certFee', 'certReturnDate'].forEach(function (k) { if (old[k] !== undefined && old[k] !== '' && old[k] !== null) t[k] = old[k]; });
+  return t;
+}
 function saveTeacher(teacher) {
   const sheet = getSheet(SHEET_TEACHERS);
   const values = sheet.getDataRange().getValues();
+  for (let j = 1; j < values.length; j++) { if (String(values[j][0]) === teacher.name) { teacher = _keepTeacherPay_(teacher, values[j][7]); break; } }   // v18.95
   const row = [teacher.name, teacher.region||'', teacher.feeType||'fixed', teacher.feeVal||0, teacher.hireDate||'', teacher.raiseDate||'', teacher.account||'', JSON.stringify(teacher)];
   for (let i = 1; i < values.length; i++) {
     if (String(values[i][0]) === teacher.name) {
@@ -501,6 +514,26 @@ function saveTeacher(teacher) {
   sheet.appendRow(row);
   touchDb_('teachers');
   return { ok: true, message: '추가 완료' };
+}
+
+/* v18.95: 강사 정보의 '한 칸'만 바꿈(허용된 칸만). 예전엔 강사 기기가 매뉴얼을 보면 자기 기기에 남은 옛 강사 정보를
+ *  통째로 saveTeacher 해서, 관리자가 나중에 넣은 강사료·인상예정일·자격증 정보가 가입 승인 때 값(강사료 0)으로 되돌아갔다. */
+function setTeacherFlag(name, key, value) {
+  var ALLOW = { menualSeen: 1 };
+  name = String(name || '').trim();
+  if (!name || !ALLOW[key]) return { ok: false, message: '바꿀 수 없는 항목' };
+  var sheet = getSheet(SHEET_TEACHERS), values = sheet.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() !== name) continue;
+    var t = null; try { t = values[i][7] ? JSON.parse(String(values[i][7])) : null; } catch (e) { t = null; }
+    if (!t) return { ok: false, message: '강사 정보 형식 오류' };
+    if (t[key] === value) return { ok: true, unchanged: true };
+    t[key] = value;
+    sheet.getRange(i + 1, 8).setValue(JSON.stringify(t));
+    touchDb_('teachers');
+    return { ok: true };
+  }
+  return { ok: false, message: '해당 강사 없음' };
 }
 
 function deleteTeacher(name) {

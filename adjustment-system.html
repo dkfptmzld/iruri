@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v18.94">
+<meta property="og:title" content="수업기록표 정산 시스템 v18.95">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v18.94">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v18.95">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v18.94</title>
+<title>수업기록표 정산 시스템 v18.95</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5117,7 +5117,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v18.94';
+const SYSTEM_VERSION='v18.95';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -7646,6 +7646,30 @@ function _depNormPeriodId(p){
  if(d){ const mi='JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(d[1])/3+1; if(mi>0) return d[2]+'-'+String(mi).padStart(2,'0'); }
  return s;
 }
+/* v18.76: 서버 시트에 회차 이름이 옛 글자('Thu Oct 01 2026 …' 등)로 남은 행은 앱에선 '2026-10'으로 보이지만,
+   서버는 '2026-10'으로 저장해도 그 옛 행을 지우지 못해 저장할 때마다 같은 입금이 한 벌씩 더 쌓였음.
+   → 서버에서 받은 '옛 이름'을 기억해 두었다가 그 회차를 올릴 때 옛 이름 행도 함께 지움 */
+let _depPeriodAlias={};   // {정규화된 회차: [서버에 다른 글자로 저장된 회차 이름…]}
+// v18.76: 같은 회차 안에서 완전히 같은 입금(계좌·날짜·초 단위 시각·적요·기재·취급점·금액)은 하나만 남김
+//  옛 시트에서 숫자로 바뀌어 앞의 0이 빠진 취급점·계좌('0064978'→'64978')도 같은 것으로 봄 → 0이 붙은 원래 글자를 남김
+function _depDupKey(r){
+ const z=v=>{ const t=String(v||'').trim(); return /^\d+$/.test(t) ? t.replace(/^0+/,'') : t; };
+ return [r.periodId||'', z(r.account), _depNormDate(r.date), _depNormTime(r.time), r.summary||'', String(r.depositorName||'').trim(), z(r.branchRaw), Number(r.amount)||0].join('\u0001');
+}
+function _depDedupeRecs(recs){
+ const at=new Map(), out=[], periods=new Set(); let removed=0;
+ recs.forEach(r=>{
+  if(!/\d:\d{2}:\d{2}/.test(String(r.time||''))){ out.push(r); return; }   // 초가 없는 시각은 진짜 다른 입금일 수 있어 건드리지 않음
+  const k=_depDupKey(r);
+  if(at.has(k)){
+   removed++; periods.add(r.periodId||'');
+   const i=at.get(k); if(String(r.branchRaw||'').length>String(out[i].branchRaw||'').length) out[i]=r;   // 앞의 0이 살아 있는 쪽을 남김
+   return;
+  }
+  at.set(k, out.length); out.push(r);
+ });
+ return { recs:out, removed, periods };
+}
 function _depHash(str){ let h=5381; for(let i=0;i<str.length;i++){ h=((h<<5)+h+str.charCodeAt(i))|0; } return (h>>>0).toString(36); }
 function _depRecSig(r){ return [r.account||'', _depNormDate(r.date), _depNormTime(r.time), r.summary||'', String(r.depositorName||'').trim(), r.branchRaw||'', r.branchKey||'', Number(r.amount)||0].join('\u0001'); }
 function _depPeriodSigs(recs){
@@ -7667,16 +7691,19 @@ async function _depPushRecords(){
  _depRecPushing=true;
  const sigs=_depPeriodSigs(depositDB.records), periods={};
  dirty.forEach(p=>{ periods[p]=depositDB.records.filter(r=>(r.periodId||'')===p).map(_depRecPayload); });
+ // v18.76: 같은 회차가 서버에 옛 이름으로도 저장돼 있으면 그 행은 비움(빈 배열 = 서버에서 삭제)
+ const localIds=new Set(depositDB.records.map(r=>r.periodId||''));
+ dirty.forEach(p=>{ (_depPeriodAlias[p]||[]).forEach(a=>{ if(a && a!==p && !localIds.has(a) && !(a in periods)) periods[a]=[]; }); });
  let ok=false;
  try{
   const r=await gasPost({action:'saveDepositRecords', periods}, 90000);
   if(r && r.ok && Array.isArray(r.periods)) ok=true;
   else if(r && r.ok){   // 예전 GAS(여러 회차 미지원) → 회차별로 한 번씩
    ok=true;
-   for(const p of dirty){ const r2=await gasPost({action:'saveDepositRecords', period:p, records:periods[p]}, 90000); if(!(r2&&r2.ok)) ok=false; }
+   for(const p of Object.keys(periods)){ const r2=await gasPost({action:'saveDepositRecords', period:p, records:periods[p]}, 90000); if(!(r2&&r2.ok)) ok=false; }
   }
  }catch(_){ ok=false; }
- if(ok){ dirty.forEach(p=>{ if(sigs[p]) _depSyncBase[p]=sigs[p]; else delete _depSyncBase[p]; }); _depSaveSyncBase(); }
+ if(ok){ dirty.forEach(p=>{ if(sigs[p]) _depSyncBase[p]=sigs[p]; else delete _depSyncBase[p]; delete _depPeriodAlias[p]; }); _depSaveSyncBase(); }
  _depRecPushing=false;
  if(_depRecPushAgain){ _depRecPushAgain=false; return _depPushRecords(); }
  return ok;
@@ -7735,8 +7762,15 @@ async function _depSyncRecordsFromGAS(){
   const r = await gasGet({action:'getDepositRecords'}, 60000);
   if(!(r && r.ok===true && Array.isArray(r.data))) return false;
   if(_depRegTarget || _depRecPushing) return false;   // 등록 창을 쓰는 중이거나 저장 중이면 다음 기회에
-  const server=r.data.map(x=>({ ...x, periodId:_depNormPeriodId(x.periodId), date:_depNormDate(x.date), time:_depNormTime(x.time),
+  // v18.76: 서버에 옛 이름으로 남은 회차 기억(올릴 때 같이 지움)
+  const alias={};
+  r.data.forEach(x=>{ const raw=String(x.periodId==null?'':x.periodId); const n=_depNormPeriodId(raw); if(raw && raw!==n){ (alias[n]=alias[n]||[]).includes(raw) || alias[n].push(raw); } });
+  _depPeriodAlias=alias;
+  let server=r.data.map(x=>({ ...x, periodId:_depNormPeriodId(x.periodId), date:_depNormDate(x.date), time:_depNormTime(x.time),
     depositId:_depUid('dep'), uploadBatchId:'gas', matchedCenterName:x.matchedCenterName||null, matchStatus:x.matchStatus||'unmatched' }));
+  // v18.76: 이미 쌓인 똑같은 입금(중복)은 하나만 남기고, 그 회차는 정리본으로 다시 저장
+  const sd=_depDedupeRecs(server); server=sd.recs;
+  const fix=new Set([...Object.keys(alias), ...sd.periods]);
   const sSig=_depPeriodSigs(server), lSig=_depPeriodSigs(depositDB.records), base=_depSyncBase;
   const take=new Set();   // 서버본으로 바꿀 회차
   [...new Set([...Object.keys(sSig), ...Object.keys(lSig)])].forEach(p=>{
@@ -7755,10 +7789,20 @@ async function _depSyncRecordsFromGAS(){
    depositDB.records = depositDB.records.filter(x=>!take.has(x.periodId||'')).concat(server.filter(x=>take.has(x.periodId||'')));
    depositDB.batches = (depositDB.batches||[]).filter(b=>!take.has(b.period));
   }
-  _depSyncBase = sSig; _depSaveSyncBase();   // 서버와 맞춘 기준점
+  const ld=_depDedupeRecs(depositDB.records);   // v18.76: 이 기기에 이미 들어온 중복도 정리
+  if(ld.removed){ depositDB.records=ld.recs; ld.periods.forEach(p=>fix.add(p)); }
+  _depSyncBase = sSig;   // 서버와 맞춘 기준점
+  fix.forEach(p=>{ _depSyncBase[p]='fix'; });   // v18.76: 정리할 회차는 '바뀜'으로 표시 → 곧 정리본 업로드(옛 이름 행 삭제)
+  _depSaveSyncBase();
+  const dupN=Math.max(sd.removed, ld.removed);
+  if(dupN){
+   const ps=[...new Set([...sd.periods, ...ld.periods])].filter(Boolean).sort();
+   try{ _depLog('rec', `중복 입금 정리: ${dupN}건`, `같은 입금(계좌·날짜·시각·기재·금액이 모두 같음)이 여러 번 저장돼 있던 것을 하나만 남김\n회차 ${ps.join(', ')}`, ps.join(', ')); }catch(_){}
+   setTimeout(()=>{ try{ showToast(`같은 입금이 여러 번 들어가 있던 ${dupN}건을 정리했어요`); }catch(_){} }, 300);
+  }
   try{ localStorage.setItem(LS_DEPOSIT, JSON.stringify(depositDB)); }catch(_){}
   if(_depDirtyPeriods().length) _depSchedulePush();   // 내 쪽 변경분 업로드
-  return take.size>0;
+  return take.size>0 || fix.size>0;
  }catch(e){}
  return false;
 }
@@ -7977,11 +8021,12 @@ window.addEventListener('load', ()=>{
  const _tVerKey = _teacherVerKey();   // v15.87
  gasGet({ action: 'getTeachers', teacher: sessionStorage.getItem('iruri_session') || '', isAdmin: sessionStorage.getItem('iruri_admin_session') === 'true' ? 'true' : 'false', v: _dbVerGet(_tVerKey) })
   .then(r => {
-   if(r && r.unchanged) return;   // v15.87: 서버가 그대로 → 받을 것도 할 일도 없음
+   if(r && r.unchanged){ if(!_tShadow) _tShadowSet(DB.teachers); return; }   // v15.87: 서버가 그대로 → 받을 것도 할 일도 없음 (v18.95: 이 상태를 비교 기준으로)
    if(r.ok && r.data && r.data.length > 0){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
     // Sheets 데이터로 DB 업데이트 (v15.15: 계좌는 로컬 값 보존)
     DB.teachers = _mergeTeacherAccounts(r.data);
+    _tShadowSet(DB.teachers);   // v18.95: 서버에서 받은 상태 기억(저장 전 합치기 기준)
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     _dbVerSet(_tVerKey, r.version);   // v15.87: 반영을 끝낸 뒤에만 버전 저장
     try{ _refillSettleFees(); }catch(_){}   // v17.79: 늦게 도착한 강사료로 정산 빈칸 채우기
@@ -7996,7 +8041,7 @@ window.addEventListener('load', ()=>{
  // Sheets 센터 DB 백그라운드 동기화 (v6: 전체 필드 포함)
  gasGet({ action: 'getCenters', v: _dbVerGet('centers') })
   .then(r => {
-   if(r && r.unchanged) return;   // v15.87: 서버가 그대로 → 센터 전체 수신 생략
+   if(r && r.unchanged){ window._ctrPulled=true; return; }   // v15.87: 서버가 그대로 → 센터 전체 수신 생략 (v18.77: 서버 목록 확인됨)
    if(r.ok && r.data && r.data.length > 0){
     // 스케줄 데이터 유효성 확인: 스케줄이 하나도 없으면 구버전 Sheets 데이터 → 무시
     const hasSchedule = r.data.some(c => c.schedule && c.schedule.length > 0);
@@ -8009,7 +8054,7 @@ window.addEventListener('load', ()=>{
     const dedupMap1 = new Map();
     r.data.forEach(c => { const key=`${c.name}||${c.region||''}`; if(!dedupMap1.has(key)) dedupMap1.set(key,c); });
     const dedupedCenters1 = Array.from(dedupMap1.values());
-    try{ _applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
+    try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
     // v15.52: 병합(union) — 사람이 삭제(도장)한 것만 빠지고, GAS에 없던 로컬 센터는 살려서 재저장. 구조적으로 유실 불가.
     const _mrg1 = _mergeCenters(dedupedCenters1);
     DB.centers = _mrg1.merged;
@@ -8021,6 +8066,7 @@ window.addEventListener('load', ()=>{
     // v11.7: GAS에서 받은 원본 데이터에도 자동 정리 적용 (cross-region + 보강 이력 제거)
     cleanInvalidData();
     _dbVerSet('centers', r.version);   // v15.87: 반영을 끝낸 뒤에만 버전 저장
+    window._ctrPulled=true;   // v18.77
     if(document.getElementById('centersView')?.style.display === 'block'){
      renderRegionStats(); populateTeacherFilter(); renderCenterTreeView();
     }
@@ -8225,13 +8271,14 @@ async function _syncDBOnTabSwitch(tab, renderFn){
   if(tab === 'teachers'){
    // v11.31: 강사 관리 탭은 관리자 전용 → isAdmin:'true' 고정
    const r = await gasGet({action:'getTeachers', teacher:'', isAdmin:'true', v:_dbVerGet('teachers|a')}, 45000, 'teachers');
-   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); return; }   // v15.87: 서버 그대로
+   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); if(!_tShadow) _tShadowSet(DB.teachers); return; }   // v15.87: 서버 그대로 (v18.95)
    if(!r.ok || !r.data?.length) return;
    _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록 (실패는 다음 진입에 즉시 재시도)
    // 변경 있을 때만 업데이트
    if(JSON.stringify(r.data) !== JSON.stringify(DB.teachers)){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
     DB.teachers = _mergeTeacherAccounts(r.data);   // v15.15: 계좌 보존
+    _tShadowSet(DB.teachers);   // v18.95
     localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
     try{ _refillSettleFees(); }catch(_){}   // v17.79
     renderFn(); // 최신 데이터로 다시 렌더
@@ -8240,7 +8287,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
    _dbVerSet('teachers|a', r.version);   // v15.87
   } else if(tab === 'centers'){
    const r = await gasGet({action:'getCenters', v:_dbVerGet('centers')}, 45000, 'centers');
-   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); return; }   // v15.87: 서버 그대로
+   if(r && r.unchanged){ _tabSyncAt[tab] = Date.now(); window._ctrPulled=true; return; }   // v15.87: 서버 그대로
    if(!r.ok || !r.data?.length) return;
    _tabSyncAt[tab] = Date.now();   // v15.86: 성공했을 때만 기록
    // v11.30 fix: 페이지 로드와 동일하게 hasSchedule 검사 추가
@@ -8250,7 +8297,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     console.warn('[센터탭 동기화] 스케줄 없는 GAS 데이터 → 무시');
     return;
    }
-   let _tombRemoved2=0; try{ _tombRemoved2=_applyServerCenterTombs(r.tombs); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
+   let _tombRemoved2=0; try{ _tombRemoved2=_applyServerCenterTombs(r.tombs, r.data); }catch(_){}   // v16.20: 서버 삭제기록 먼저 반영 → 삭제된 센터 부활 차단
    if(_tombRemoved2){ try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); _initCenterShadow(); renderFn(); }catch(_){} }
    if(JSON.stringify(r.data) !== JSON.stringify(DB.centers)){
     // v15.52: 병합(union) + 삭제 도장 반영 + 로컬 전용 센터 재저장 (앱 시작 동기화와 동일 정책)
@@ -8266,6 +8313,7 @@ async function _syncDBOnTabSwitch(tab, renderFn){
     try{ _srvFresh('centers', DB.centers.length+'곳'); }catch(_){}   // v15.89
    }
    _dbVerSet('centers', r.version);   // v15.87
+   window._ctrPulled=true;   // v18.77
   }
  } catch(e){ console.warn('탭 동기화 실패:', e); }
 }
@@ -11579,7 +11627,7 @@ function _almUpdateCenters(ti){
  // 표시할 센터 필터링
  let ctrs;
  if(isSub && forTeacher){
-  ctrs = dbCenters.filter(c=>c.teachers&&c.teachers.includes(forTeacher));
+  ctrs = dbCenters.filter(c=>_ctrHasTeacher(c, forTeacher));   // v18.77
   if(!ctrs.length) ctrs = dbCenters; // 폴백: 전체
  } else if(isSub){
   ctrs = dbCenters;
@@ -13759,6 +13807,33 @@ function _resolveAccount(t){
  return rec;
 }
 // v15.15: GAS 강사 응답에 계좌가 비어 있으면(비관리자 권한 응답 등) 기존 로컬 계좌를 유지해 덮어쓰기 방지
+/* v18.95: 강사 정보 '저장 전 합치기' — 관리자 기기에 남은 옛 강사 정보로 서버의 최신 값(다른 기기에서 바꾼 강사료·인상예정일 등)을
+   덮어쓰지 않게, 강사 전체 저장 직전에 서버 최신을 받아 '이 기기에서 바꾸지 않은 강사'는 서버 값으로 맞춘 뒤 올림 */
+let _tShadow=null;   // {이름: 서버에서 받은 때의 JSON}
+function _tShadowSet(list){ try{ const m={}; (list||[]).forEach(t=>{ if(t && t.name) m[t.name]=JSON.stringify(t); }); _tShadow=m; }catch(_){} }
+async function _tPullBeforePush(){
+ if(typeof gasGet!=='function') return true;
+ try{
+  const r=await gasGet({action:'getTeachers', teacher:sessionStorage.getItem('iruri_session')||'', isAdmin:'true'}, 30000);
+  if(!(r && r.ok && Array.isArray(r.data) && r.data.length)) return false;
+  const sh=_tShadow, loc=new Map((DB.teachers||[]).map(t=>[t.name,t])), out=[], took=[];
+  r.data.forEach(sv=>{
+   if(!sv || !sv.name) return;
+   const l=loc.get(sv.name); loc.delete(sv.name);
+   if(!l){ out.push(sv); took.push(sv.name); return; }   // 다른 기기에서 새로 추가한 강사
+   const editedHere = sh && sh[sv.name]!==undefined && JSON.stringify(l)!==sh[sv.name];
+   if(editedHere){ out.push(l); return; }               // 이 기기에서 고친 강사 → 내 값
+   if(JSON.stringify(l)!==JSON.stringify(sv)) took.push(sv.name);
+   out.push((!(sv.account||'').trim() && (l.account||'').trim()) ? {...sv, account:l.account} : sv);
+  });
+  loc.forEach((l,n)=>{ if(!sh || sh[n]===undefined) out.push(l); });   // 이 기기에서 새로 추가한 강사만 유지(서버에서 지운 강사는 되살리지 않음)
+  DB.teachers=out;
+  try{ localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers)); }catch(_){}
+  _tShadowSet(r.data);
+  if(took.length){ try{ pushErrorLog('강사 정보 자동 보존 (동기화 전)', `서버의 최신 값으로 맞춘 강사: ${took.join(', ')}`); }catch(_){} }
+  return true;
+ }catch(_){ return false; }
+}
 function _mergeTeacherAccounts(incoming){
  const prev = Array.isArray(DB.teachers) ? DB.teachers : [];
  return (incoming||[]).map(nt=>{
@@ -13869,7 +13944,11 @@ const CENTER_TOMB_KEY='iruri_center_tombstones';
 function _tombKey(n,r){ return String(n||'').trim()+'||'+String(r||'').trim(); }
 function _getCenterTombs(){ try{ return JSON.parse(localStorage.getItem(CENTER_TOMB_KEY)||'[]'); }catch(_){ return []; } }
 function _isCenterTombed(n,r){ const k=_tombKey(n,r); return _getCenterTombs().some(x=>_tombKey(x.name,x.region)===k); }
-function _addCenterTomb(n,r){ const t=_getCenterTombs(); const k=_tombKey(n,r); if(!t.some(x=>_tombKey(x.name,x.region)===k)){ t.push({name:n,region:r||'',at:new Date().toISOString()}); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} } }
+function _addCenterTomb(n,r,src){ const t=_getCenterTombs(); const k=_tombKey(n,r); if(!t.some(x=>_tombKey(x.name,x.region)===k)){ const e={name:n,region:r||'',at:new Date().toISOString()}; if(src) e.src=src; t.push(e); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} } }
+/* v18.77: 예전엔 서버 삭제기록을 받아 이 기기에 쌓기만 하고 지우지 않아서, 관리자가 센터를 다시 추가해도(서버 삭제기록 해제)
+   강사 기기에선 계속 숨겨지고, 다른 관리자 기기는 그 센터를 서버에서 다시 지워 버렸음(예: '괜찮은'이 자꾸 빠짐).
+   → 이 기기 업데이트 후 한 번은 센터 전체를 다시 받아 삭제기록을 서버 기준으로 맞춤 */
+try{ if(!localStorage.getItem('iruri_tombfix_1877')){ const o=JSON.parse(localStorage.getItem(LS_DBVER)||'{}'); delete o.centers; localStorage.setItem(LS_DBVER, JSON.stringify(o)); localStorage.setItem('iruri_tombfix_1877','1'); } }catch(_){}
 function _removeCenterTomb(n,r){ const k=_tombKey(n,r); const t=_getCenterTombs().filter(x=>_tombKey(x.name,x.region)!==k); try{ localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(t)); }catch(_){} }
 
 /* GAS 재시도 래퍼 (실패 시 지수 백오프로 최대 tries회) */
@@ -13921,9 +14000,29 @@ function _persistCentersAfterMerge(localOnly, tombedOnGas){
 /* v16.20: 서버 공용 삭제기록을 로컬에 반영.
  *  서버가 "이 센터 삭제됨"이라고 알려주면 → 로컬 삭제도장에 추가하고, 캐시에 남은 그 센터를 조용히 제거.
  *  → 삭제한 기기가 아니어도 부활을 막는다(핵심). 다시 추가된 센터는 서버가 삭제기록을 지워 보내므로 영향 없음. */
-function _applyServerCenterTombs(tombs){
- if(!Array.isArray(tombs) || !tombs.length) return 0;
- tombs.forEach(t=>{ if(t && t.name!=null) try{ _addCenterTomb(t.name, t.region); }catch(_){} });
+function _applyServerCenterTombs(tombs, srvCenters){
+ if(!Array.isArray(tombs)) return 0;
+ // v18.77: 서버가 다시 살린 센터(서버 목록에 있고 서버 삭제기록엔 없음)는 이 기기의 삭제 도장도 해제.
+ //  단, 이 기기에서 방금(30분 안) 지운 센터는 서버 반영 전일 수 있어 그대로 둠
+ if(Array.isArray(srvCenters)){
+  try{
+   const srvTomb=new Set(tombs.filter(t=>t && t.name!=null).map(t=>_tombKey(t.name,t.region)));
+   const alive=new Set(srvCenters.filter(c=>c && c.name!=null).map(c=>_tombKey(c.name,c.region)));
+   const now=Date.now(), cur=_getCenterTombs(), freed=[];
+   const keep=cur.filter(x=>{
+    const k=_tombKey(x.name,x.region);
+    if(srvTomb.has(k) || !alive.has(k)) return true;
+    const fresh = x.src!=='srv' && (now-(Date.parse(x.at)||0)) < 30*60*1000;
+    if(fresh) return true;
+    freed.push(x.name+(x.region?`(${x.region})`:'')); return false;
+   });
+   if(freed.length){
+    localStorage.setItem(CENTER_TOMB_KEY, JSON.stringify(keep));
+    try{ pushErrorLog('센터 삭제기록 정리', `서버에 다시 등록된 센터의 옛 삭제기록을 이 기기에서 지웠어요: ${freed.join(', ')}`); }catch(_){}
+   }
+  }catch(_){}
+ }
+ tombs.forEach(t=>{ if(t && t.name!=null) try{ _addCenterTomb(t.name, t.region, 'srv'); }catch(_){} });
  let removed=0;
  if(DB.centers && DB.centers.length){
   const before=DB.centers.length;
@@ -16003,6 +16102,29 @@ function _checkCenterDup(){
   hint.innerHTML = `ℹ️ <b>${escH(name)}</b>과 같은 이름의 센터가 있어요: ${regionList}<br><span style="opacity:.8;">지역이 다르면 별개 센터로 등록 가능합니다.</span>`;
  }
 }
+/* v18.95: 강사 관리에서 강사료를 바꿔도 이미 반영된 달 정산(기록에 저장된 강사료)은 그대로라 헷갈렸음
+   → 지금 열려 있는 달 정산의 강사료가 새 값과 다르면 '이번 달 정산에도 적용할까요?'를 물어 바로 다시 계산 */
+function _offerApplyFeeToOpenMonth(obj){
+ if(!obj || !STATE || !STATE.data || !Array.isArray(STATE.data.teachers)) return;
+ const v=Number(obj.feeVal)||0; if(!(v>0)) return;
+ const np = obj.feeType==='pct' ? v/100 : v;
+ const ti = STATE.data.teachers.findIndex(t=>t && t.name===obj.name);
+ if(ti<0) return;
+ const rec = STATE.data.teachers[ti];
+ if(Number(rec.feePct)===np) return;
+ const ym = rec.yearMonth || '';
+ const fl = x => (x>0 && x<=1) ? Math.round(x*100)+'%' : (Number(x)||0).toLocaleString()+'원/회';
+ setTimeout(()=>showConfirm({icon:'💰', title:`${ym||'이번 달'} 정산에도 적용할까요?`,
+  desc:`<b>${escH(obj.name)}</b> 강사의 ${escH(ym)} 정산 강사료가 아직 <b>${fl(rec.feePct)}</b>예요.<br>새 강사료 <b>${fl(np)}</b>로 바꿔 다시 계산할까요?<br><small style="color:var(--text3)">다른 달 정산은 그대로예요.</small>`,
+  okText:'이번 달에도 적용', okStyle:'primary', cancelText:'다음 달부터',
+  onOk:()=>{
+   rec.feePct = np;
+   try{ recalcTeacher(ti); }catch(_){}
+   if(ym) saveMonthlySnapshot(ym, STATE.data);
+   try{ if(typeof renderTeacher==='function') renderTeacher(STATE.cur); if(typeof _renderNewTeacherList==='function') _renderNewTeacherList(); }catch(_){}
+   showToast(`${obj.name} 강사 ${ym} 정산을 ${fl(np)}로 다시 계산했어요`);
+  }}), 250);
+}
 function saveModal(){
  const type=STATE.modalType;
  const name=document.getElementById('fi_name')?.value.trim();
@@ -16070,6 +16192,7 @@ function saveModal(){
  // v12.18: 옵션 8 매트릭스 갱신 (과목 변경 시)
  try{ if(typeof renderTeacherStats==='function') renderTeacherStats(); }catch{}
  closeModal(); showToast('저장되었습니다');   // v14.56: 강사 저장 후 모달 닫기 (누락 버그 수정)
+ try{ _offerApplyFeeToOpenMonth(obj); }catch(_){}   // v18.95: 지금 열린 달 정산에도 새 강사료 적용할지
  } else {
  const region=document.getElementById('fi_region')?.value||'';
  if(!region){showConfirm({icon:'⚠️',title:'입력 오류',desc:'지역을 선택하세요.<br><small>(동명 센터 구분을 위해 필수)</small>',okText:'확인',cancelText:'',okStyle:'default',onOk:null});document.getElementById('confirmCancelBtn').style.display='none'; return;}
@@ -17875,7 +17998,36 @@ async function _uploadSnapshotsBg(tasks){
   }
  } finally { _snapBgRunning = false; }
 }
+/* v18.77: 서버 센터 목록을 아직 한 번도 못 받았으면(앱 시작 직후·느린 회선) 먼저 받아서 합친 뒤 올림.
+   센터 전체 저장(syncCenters)은 1곳 삭제는 확인 없이 통과하므로, 옛 목록으로 올리면 다른 기기에서 막 추가한 센터가 조용히 지워질 수 있었음 */
+async function _ctrPullBeforePush(){
+ if(window._ctrPulled || typeof gasGet!=='function') return true;
+ try{
+  const r=await gasGet({action:'getCenters'}, 30000);
+  if(r && r.ok && Array.isArray(r.data) && r.data.length && r.data.some(c=>c.schedule && c.schedule.length)){
+   try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}
+   // 이 기기 값은 그대로 두고(방금 고친 내용 보존), 서버에만 있는 센터(지운 기록 없음)만 더함
+   const have=new Set((DB.centers||[]).map(c=>_tombKey(c.name,c.region)));
+   let add=0; r.data.forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(have.has(k) || _isCenterTombed(c.name,c.region)) return; have.add(k); DB.centers.push(c); add++; });
+   try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+   if(add){ try{ pushErrorLog('센터 자동 보존 (동기화 전)', `서버에만 있던 센터 ${add}곳을 지우지 않고 합쳤어요`); }catch(_){} }
+   try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+   if(r.version) _dbVerSet('centers', r.version);
+   window._ctrPulled=true;
+  }
+ }catch(_){}
+ return !!window._ctrPulled;
+}
 async function syncAllToDB(force){
+ if(!_canWriteCenters()) return false;   // v18.95: 강사 기기는 강사·센터 전체 저장을 하지 않음(옛 목록으로 서버 덮어쓰기 방지)
+ if(!(await _tPullBeforePush())){   // v18.95: 서버 최신 강사 정보와 먼저 합침
+  showToast('⚠️ 서버 강사 정보를 확인하지 못해 동기화를 미뤘어요. 잠시 후 다시 시도해 주세요');
+  return false;
+ }
+ if(!(await _ctrPullBeforePush())){   // v18.77
+  showToast('⚠️ 서버 센터 목록을 확인하지 못해 동기화를 미뤘어요. 잠시 후 다시 시도해 주세요');
+  return false;
+ }
  const btn = document.getElementById('syncDBBtn');
  const chip = document.getElementById('syncStatusChip');
  // 버튼 원본은 알려진 정상 HTML로 복구(이전에 스피너 상태로 끊긴 경우에도 안전)
@@ -20218,9 +20370,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.94&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=18.95&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.94&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=18.95&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -22147,13 +22299,13 @@ function renderTiLedger(){
 
  if(isS && forTeacher){
  // 보강: 해당 강사 담당 센터만
- displayCtrs = DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(forTeacher));
+ displayCtrs = DB.centers.filter(ct=>_ctrHasTeacher(ct, forTeacher));   // v18.77
  } else if(isS && !forTeacher){
  // 보강 체크했지만 강사 미선택: 전체
  displayCtrs = DB.centers;
  } else {
  // 일반: 본인 담당 센터만
- displayCtrs = teacher ? DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(teacher)) : DB.centers;
+ displayCtrs = teacher ? DB.centers.filter(ct=>_ctrHasTeacher(ct, teacher)) : DB.centers;   // v18.77: 스케줄에만 있는 센터도
  }
  const sorted=[...displayCtrs].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
 
@@ -23192,6 +23344,8 @@ function onTeacherSelect(){
 }
 
 // 강사의 센터별 스케줄 조회 (교시 순서 반영)
+// v18.77: 강사 담당 센터 = 담당강사 목록 또는 스케줄에 이 강사가 있는 센터(수업 행을 만드는 getTeacherSchedule 과 같은 기준 → 드롭다운에 '센터 선택'으로 비어 보이지 않게)
+function _ctrHasTeacher(ct, t){ return !!ct && ((Array.isArray(ct.teachers) && ct.teachers.includes(t)) || (Array.isArray(ct.schedule) && ct.schedule.some(s=>s && (s.teacher===t || (Array.isArray(s.teachers) && s.teachers.includes(t)))))); }
 function getTeacherSchedule(teacher){
  const result = {}; // {요일: [{name, region, order}, ...]}
  const unscheduled = []; // schedule 없거나 본인 days 없는 센터 (v11.19)
@@ -24917,12 +25071,12 @@ function renderMobileLedger(){
     const forT = c.substituteFor;
     let displayCtrs;
     if(isS && forT){
-     displayCtrs = DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(forT));
+     displayCtrs = DB.centers.filter(ct=>_ctrHasTeacher(ct, forT));   // v18.77
     } else if(isS && !forT){
      displayCtrs = DB.centers;
     } else {
      // 일반: 본인 담당 센터만 (PC 버전과 동일)
-     displayCtrs = teacherName ? DB.centers.filter(ct=>ct.teachers&&ct.teachers.includes(teacherName)) : DB.centers;
+     displayCtrs = teacherName ? DB.centers.filter(ct=>_ctrHasTeacher(ct, teacherName)) : DB.centers;   // v18.77: 스케줄에만 있는 센터도
     }
     const sorted=[...displayCtrs].sort((a,b)=>a.name.localeCompare(b.name,'ko'));
     const prev = centerSel.value;
@@ -28459,6 +28613,7 @@ function toggleGrowthDetail(idx){
 // _autoSyncTimer / AUTO_SYNC_DEBOUNCE는 상단(lsGet 정의 직후)에서 선언됨 — 초기 로드 TDZ 방지
 
 function _scheduleAutoSync(){
+ try{ if(!_canWriteCenters()) return; }catch(_){}   // v18.95: 강사 기기에선 자동 전체 저장 안 함
  clearTimeout(_autoSyncTimer);
  // 미동기화 badge 표시
  _showUnsyncedBadge(true);
@@ -29301,7 +29456,8 @@ function changeFontSize(dir){
  }
  function markSeen(name){
   try{localStorage.setItem('iruri_menual_seen_'+name,'1');}catch(e){}
-  try{var t=((typeof DB!=='undefined'&&DB.teachers)||[]).filter(function(x){return x.name===name;})[0];if(t){t.menualSeen=true;if(typeof gasPost==='function')gasPost({action:'saveTeacher',teacher:t}).catch(function(){});}}catch(e){}
+  // v18.95: 강사 정보를 통째로 저장하지 않고 '매뉴얼 봄' 한 칸만 — 강사 기기의 옛 정보로 강사료·인상예정일이 되돌아가던 문제
+  try{var t=((typeof DB!=='undefined'&&DB.teachers)||[]).filter(function(x){return x.name===name;})[0];if(t){t.menualSeen=true;}if(typeof gasPost==='function')gasPost({action:'setTeacherFlag',name:name,key:'menualSeen',value:true}).catch(function(){});}catch(e){}
  }
  window._mnlMaybeAutoShow=function(name){
   if(!name||window._mnlAutoDone)return;
