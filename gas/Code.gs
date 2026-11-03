@@ -78,6 +78,7 @@ function doGet(e) {
     if (action === 'getSubmissions')       return response(getSubmissions());
     if (action === 'getHistory')           return response(getHistory(p.teacher));
     if (action === 'getTiDraft')           return response(getTiDraft(p.teacher));   // v18.82: 수업기록표 임시저장(기기 간 이어쓰기)
+    if (action === 'getRecruitSlots')      return response(getRecruitSlots(p.date, p.isAdmin));   // v18.84: 관리자 지원 면접 신청 현황
     if (action === 'getReceipts')          return response(getReceipts(p.teacher, p.yearMonth));
     if (action === 'getTeachers')          return response(getTeachers(p.teacher, p.isAdmin, p.v));   // [속도] v = 앱이 가진 버전
     if (action === 'getCenters')           return response(getCenters(p.v));                          // [속도]
@@ -124,6 +125,7 @@ function doPost(e) {
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
     if (action === 'saveTiDraft')           return response(saveTiDraft(body.teacher, body.draft));   // v18.82: 수업기록표 임시저장
+    if (action === 'recruitApply')          return response(recruitApply(body.data));   // v18.84: 관리자 지원 면접 신청(한 시간대 한 명)
     if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'removeCenterTomb')      { try { _removeCenterTombGas(body.name, body.region); } catch (e) {} return response({ ok: true }); }   // v16.20: 삭제기록 해제(관리/테스트용)
     if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
@@ -1800,5 +1802,50 @@ function saveTiDraft(teacher, draft) {
   var r = sh.getLastRow() + 1, rg2 = sh.getRange(r, 1, 1, row.length);
   rg2.setNumberFormat('@'); sh.getRange(r, 2).setNumberFormat('0');
   rg2.setValues([row]);
+  return { ok: true };
+}
+
+
+/* ════════ v18.84: 관리자 지원 — 면접 신청 ════════
+ *  v18.78~81 앱은 신청을 그 기기에만 저장하고 서버엔 'recruitApply'를 보냈지만 받을 코드가 없었다.
+ *  → 시트 '면접신청'에 한 줄씩 저장. 한 시간대에 한 명만(이미 있으면 taken). 잠금은 doPost 가 처리.
+ *  조회: 강사 화면엔 마감 여부만, 관리자 화면(isAdmin=true)엔 이름·연락처까지. */
+var SHEET_RECRUIT = '면접신청';
+function _recruitSheet() {
+  var ss = ss_(), sh = ss.getSheetByName(SHEET_RECRUIT);
+  if (!sh) { sh = ss.insertSheet(SHEET_RECRUIT); sh.getRange(1, 1, 1, 6).setValues([['면접일', '시간', '이름', '연락처', '신청시각', '상태']]); }
+  return sh;
+}
+function _recruitRows(date) {
+  var v = _recruitSheet().getDataRange().getDisplayValues(), out = [];
+  for (var i = 1; i < v.length; i++) {
+    if (!v[i][1]) continue;
+    if (date && String(v[i][0]) !== String(date)) continue;
+    if (String(v[i][5] || '').indexOf('취소') >= 0) continue;   // 관리자가 상태 칸에 '취소'라고 적으면 그 시간은 다시 열림
+    out.push({ date: String(v[i][0]), time: String(v[i][1]), name: String(v[i][2]), phone: String(v[i][3]), at: String(v[i][4]) });
+  }
+  return out;
+}
+function getRecruitSlots(date, isAdmin) {
+  var admin = (isAdmin === true || String(isAdmin) === 'true'), data = {};
+  _recruitRows(date).forEach(function (r) {
+    if (data[r.time]) return;   // 먼저 신청한 사람
+    data[r.time] = admin ? { name: r.name, phone: r.phone, at: r.at } : { taken: true };
+  });
+  return { ok: true, data: data };
+}
+function recruitApply(d) {
+  d = d || {};
+  var date = String(d.date || ''), time = String(d.time || ''), name = String(d.name || '').trim(), phone = String(d.phone || '').trim();
+  if (!date || !time || !name || !phone) return { ok: false, message: '이름·연락처·시간을 확인해주세요' };
+  var rows = _recruitRows(date);
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].time !== time) continue;
+    if (rows[i].name === name && rows[i].phone === phone) return { ok: true, already: true };   // 같은 사람이 다시 보냄
+    return { ok: false, taken: true, message: '이미 신청된 시간이에요' };
+  }
+  var sh = _recruitSheet(), r = sh.getLastRow() + 1, rg = sh.getRange(r, 1, 1, 6);
+  rg.setNumberFormat('@');
+  rg.setValues([[date, time, name, phone, String(d.appliedAt || new Date().toISOString()), '']]);
   return { ok: true };
 }
