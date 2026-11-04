@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.02">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.03">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.02">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.03">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.02</title>
+<title>수업기록표 정산 시스템 v19.03</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5130,7 +5130,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.02';
+const SYSTEM_VERSION='v19.03';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8032,8 +8032,10 @@ window.addEventListener('load', ()=>{
  // v11.31: 권한 정보 함께 전송 (teacher: 본인 이름, isAdmin: 관리자 여부)
  //         GAS의 getTeachers가 권한별로 응답 분기 (강사: 본인 계좌만, 관리자: 30명 전체)
  const _tVerKey = _teacherVerKey();   // v15.87
- gasGet({ action: 'getTeachers', teacher: sessionStorage.getItem('iruri_session') || '', isAdmin: sessionStorage.getItem('iruri_admin_session') === 'true' ? 'true' : 'false', v: _dbVerGet(_tVerKey) })
+ // v19.03: 앱을 열 때마다 서버 최신 목록을 '통째로' 받는다(v 비움) → 기기에 남은 옛 목록은 화면 표시용으로만 잠깐 쓰고 서버 내용으로 교체
+ window._freshT = gasGet({ action: 'getTeachers', teacher: sessionStorage.getItem('iruri_session') || '', isAdmin: sessionStorage.getItem('iruri_admin_session') === 'true' ? 'true' : 'false', v: '' })
   .then(r => {
+   if(r && (r.ok || r.unchanged)) window._freshTOk = true;   // v19.03
    if(r && r.unchanged){ if(!_tShadow) _tShadowSet(DB.teachers); return; }   // v15.87: 서버가 그대로 → 받을 것도 할 일도 없음 (v18.95: 이 상태를 비교 기준으로)
    if(r.ok && r.data && r.data.length > 0){
     if(!_acceptDbPull('teachers', r.data)) return;   // v14.54 L1: 강사 급감이면 거부
@@ -8052,8 +8054,9 @@ window.addEventListener('load', ()=>{
   .catch(() => {}); // 오프라인이면 캐시 사용
 
  // Sheets 센터 DB 백그라운드 동기화 (v6: 전체 필드 포함)
- gasGet({ action: 'getCenters', v: _dbVerGet('centers') })
+ window._freshC = gasGet({ action: 'getCenters', v: '' })   // v19.03: 항상 서버 최신 전체
   .then(r => {
+   if(r && (r.ok || r.unchanged)) window._freshCOk = true;   // v19.03
    if(r && r.unchanged){ window._ctrPulled=true; return; }   // v15.87: 서버가 그대로 → 센터 전체 수신 생략 (v18.77: 서버 목록 확인됨)
    if(r.ok && r.data && r.data.length > 0){
     // 스케줄 데이터 유효성 확인: 스케줄이 하나도 없으면 구버전 Sheets 데이터 → 무시
@@ -8087,6 +8090,7 @@ window.addEventListener('load', ()=>{
   })
   .catch(() => {});
 
+ window._freshP = Promise.allSettled([window._freshT, window._freshC]).then(()=>{ window._freshDone = true; });   // v19.03
  // Sheets 월별 정산 스냅샷 목록 동기화
  // v11.32: localStorage보다 GAS가 더 최신이면 자동 반영 (다중 관리자 동기화 버그 수정)
  //         이전: localStorage에 없는 달만 가져옴 → 다른 관리자 수정사항 안 보임
@@ -14077,16 +14081,37 @@ async function _gasPostRetry(body, tries=3){
 
 /* 병합: GAS 목록 + 로컬 목록을 union. 도장 찍힌(삭제된) 센터만 빠짐.
  *  반환: {merged(최종 목록), localOnly(GAS에 없던 로컬 센터=재저장 필요), tombedOnGas(GAS에 남은 삭제분=서버삭제 재시도)} */
+/* v19.03: '서버에 아직 못 올린 센터' 목록(이 기기에서 저장하다 실패한 것만). 7일 지나면 잊음.
+ *  예전엔 서버에 없고 기기에만 있는 센터를 무조건 다시 올려서, 다른 기기에서 지우거나 바꾼 센터가 옛 기기 때문에 되살아났다. */
+const LS_CTR_UNSENT='iruri_ctr_unsent';
+function _ctrUnsentAll(){
+ try{ const o=JSON.parse(localStorage.getItem(LS_CTR_UNSENT)||'{}')||{}; const now=Date.now(); let ch=false;
+  Object.keys(o).forEach(k=>{ if(now-(Number(o[k])||0) > 7*864e5){ delete o[k]; ch=true; } });
+  if(ch) localStorage.setItem(LS_CTR_UNSENT, JSON.stringify(o)); return o; }catch(_){ return {}; }
+}
+function _ctrUnsentMark(c, on){
+ try{ if(!c || c.name==null) return; const o=_ctrUnsentAll(), k=_tombKey(c.name,c.region);
+  if(on) o[k]=Date.now(); else delete o[k]; localStorage.setItem(LS_CTR_UNSENT, JSON.stringify(o)); }catch(_){}
+}
 function _mergeCenters(gasCenters){
- const seen=new Set(); const merged=[]; const localOnly=[]; const tombedOnGas=[];
+ // v19.03: 서버 목록이 기준. 기기에만 있거나 기기 내용이 다른 센터는 '이 기기에서 저장하다 못 올린 것'일 때만 기기 값을 쓰고 다시 올림
+ const seen=new Set(); const merged=[]; const localOnly=[]; const tombedOnGas=[]; const dropped=[];
+ const unsent=_ctrUnsentAll();
+ const locMap=new Map(); (DB.centers||[]).forEach(c=>{ if(c && c.name!=null) locMap.set(_tombKey(c.name,c.region), c); });
  (gasCenters||[]).forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(seen.has(k)) return;
   if(_isCenterTombed(c.name,c.region)){ tombedOnGas.push(c); return; }   // 사용자가 삭제 → 부활 금지
-  seen.add(k); merged.push(c);
+  seen.add(k);
+  const l=locMap.get(k);
+  if(unsent[k] && l && JSON.stringify(l)!==JSON.stringify(c)){ merged.push(l); localOnly.push(l); return; }   // 이 기기에서 고쳤는데 못 올림 → 다시 올림
+  merged.push(c);
  });
  (DB.centers||[]).forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(seen.has(k)) return;
   if(_isCenterTombed(c.name,c.region)) return;                            // 사용자가 삭제 → 되살리지 않음
-  seen.add(k); merged.push(c); localOnly.push(c);                         // 로컬에만 있음 → 서버에 다시 저장 필요
+  seen.add(k);
+  if(!unsent[k]){ dropped.push(c); return; }                              // 서버에 없음 → 다른 기기에서 지웠거나 옛 정보 → 버림
+  merged.push(c); localOnly.push(c);                                      // 이 기기에서 추가했는데 못 올림 → 다시 올림
  });
+ if(dropped.length){ try{ pushErrorLog('센터 서버 기준 정리', `서버에 없어 이 기기의 옛 목록에서 뺀 센터 ${dropped.length}곳: ${dropped.slice(0,20).map(c=>c.name+(c.region?`(${c.region})`:'')).join(', ')}`); }catch(_){} }
  return { merged, localOnly, tombedOnGas };
 }
 
@@ -19868,9 +19893,15 @@ async function gasPost(body, ms=45000){
  try{
   // v19.02: 저장 요청마다 앱 버전을 같이 보냄 → 서버가 기준보다 옛 앱의 '덮어쓰기 저장'을 거절할 수 있게
   const _b = Object.assign({}, body, {appVer:(typeof SYSTEM_VERSION!=='undefined'?SYSTEM_VERSION:'')});
+  const _ctrSave = body && body.action==='saveCenter' && body.center;   // v19.03: 저장 성공 전까지 '못 올린 센터'로 기억
+  if(_ctrSave) _ctrUnsentMark(body.center, true);
   const res = await fetch(GAS_URL, {method:'POST', body:JSON.stringify(_b), signal:ctrl.signal});
   const r = _gasParse(await res.text());
   if(r && r.oldApp){ try{ _onOldAppBlocked(r); }catch(_){} }
+  if(r && r.ok!==false && !r._busy){
+   if(_ctrSave) _ctrUnsentMark(body.center, false);
+   else if(body && body.action==='deleteCenter') _ctrUnsentMark({name:body.name, region:body.region}, false);
+  }
   return r;
  }finally{ clearTimeout(id); }
 }
@@ -20515,9 +20546,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.02&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.03&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.02&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.03&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -20593,7 +20624,24 @@ function checkAdminPw(){
  gasPost({ action:'loginCheck', teacher:'관리자', hashedPw:simpleHash(pw) }).catch(()=>{});
 }
 
+/* v19.03: 관리자 화면은 서버 최신 강사·센터를 받은 뒤에 쓰게 — 옛 목록 위에서 고치고 저장하는 것 방지.
+ *  보통 로그인하는 사이 이미 받아져 있어 바로 지나감. 서버가 느리면 최대 20초 기다린 뒤 안내하고 진행 */
+function _awaitFreshForAdmin(){
+ if(window._freshDone || !window._freshP) return;
+ let o=document.getElementById('freshWaitOv');
+ if(!o){ o=document.createElement('div'); o.id='freshWaitOv';
+  o.style.cssText='position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;';
+  o.innerHTML='<div style="background:var(--surface,#fff);color:var(--text,#111);border-radius:16px;padding:22px 26px;box-shadow:0 10px 30px rgba(0,0,0,.2);text-align:center;max-width:320px;"><div style="font-size:30px;">📥</div><div style="font-weight:800;font-size:16px;margin-top:6px;">최신 정보를 받는 중이에요</div><div style="font-size:13px;color:var(--text3,#6B7280);margin-top:6px;line-height:1.5;">다른 기기에서 바꾼 강사·센터 정보를<br>서버에서 받아오고 있어요 (보통 1~3초)</div></div>';
+  document.body.appendChild(o); }
+ const t0=Date.now();
+ const done=(late)=>{ try{ o.remove(); }catch(_){}
+  if(late || !(window._freshTOk && window._freshCOk)){ try{ showToast('⚠️ 서버 응답이 늦어 기기에 저장된 정보로 보여요. 고치기 전에 잠시 후 새로고침해 주세요'); }catch(_){} }
+  else if(Date.now()-t0>800){ try{ showToast('✅ 최신 정보로 맞췄어요'); }catch(_){} } };
+ const to=setTimeout(()=>done(true), 20000);
+ window._freshP.then(()=>{ clearTimeout(to); done(false); });
+}
 function _enterAdminMode(){
+ try{ _awaitFreshForAdmin(); }catch(_){}   // v19.03
  try{ sessionStorage.setItem('iruri_screen','admin'); }catch(_){}   // v18.57
  _initSyncChip();
  setTimeout(updateChangelogBadge, 300);
