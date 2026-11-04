@@ -121,7 +121,7 @@ function doPost(e) {
     if (action === 'loginCheck')            return response(loginCheck(body.teacher, body.hashedPw, body.legacyPw));
     if (action === 'deleteSubmission')      return response(deleteSubmission(body.teacher, body.yearMonth, body.submittedAt));
     if (action === 'uploadReceipt')         return response(uploadReceipt(body.teacher, body.yearMonth, body.fileName, body.base64, body.mimeType));
-    if (action === 'saveTeacher')           return response(saveTeacher(body.teacher));
+    if (action === 'saveTeacher')           return response(saveTeacher(body.teacher, body.allowAdd));   // v19.01: 새 강사는 allowAdd(관리자 '강사 추가')일 때만
     if (action === 'setTeacherFlag')        return response(setTeacherFlag(body.name, body.key, body.value));   // v18.95: 강사 정보 한 칸만(매뉴얼 봄 등) — 통째 저장으로 옛 값 덮어쓰기 방지
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
     if (action === 'saveCenter')            return response(saveCenter(body.center));
@@ -130,7 +130,7 @@ function doPost(e) {
     if (action === 'recruitCancel')         return response(recruitCancel(body.data));  // v18.87: 면접 신청 취소(이름+연락처 확인)
     if (action === 'deleteCenter')          return response(deleteCenter(body.name, body.region));
     if (action === 'removeCenterTomb')      { try { _removeCenterTombGas(body.name, body.region); } catch (e) {} return response({ ok: true }); }   // v16.20: 삭제기록 해제(관리/테스트용)
-    if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force));
+    if (action === 'syncTeachers')          return response(syncTeachers(body.teachers, body.force, body.allowAdd));
     if (action === 'syncCenters')           return response(syncCenters(body.centers, body.force));
     if (action === 'saveMonthlySnapshot')   return response(saveMonthlySnapshot(body.yearMonth, body.data, body.force, body.savedAt));
     if (action === 'deleteMonthlySnapshot') return response(deleteMonthlySnapshot(body.yearMonth));
@@ -293,7 +293,7 @@ function approveSignup(name){
   for(let i=1;i<vals.length;i++){
     if(String(vals[i][0]).trim() === String(name).trim()){
       const [nm, hash, region, hireDate, account, subject, requestedAt, status, phone, address] = vals[i];
-      saveTeacher({ name:String(nm), region:String(region||''), feeType:'pct', feeVal:0,
+      saveTeacher({ name:String(nm), region:String(region||''), feeType:'pct', feeVal:0, _allowAdd:true,
                     hireDate:String(hireDate||''), raiseDate:'', account:String(account||''), subject:String(subject||''),
                     phone:String(phone||''), address:String(address||'') });
       signupAccount(String(nm), String(hash));
@@ -434,8 +434,13 @@ function getTeachers(requesterName, isAdmin, clientVer) {
   return { ok: true, data: teachers, version: ver };
 }
 
-function syncTeachers(teachers, force) {
+function syncTeachers(teachers, force, allowAdd) {
   const sheet = getSheet(SHEET_TEACHERS);
+  // v19.01: 전체 저장으로는 시트에 없는 강사를 새로 만들지 않음(지운 강사 되살아남 방지). 되돌리기 등은 allowAdd
+  if (!(allowAdd === true || allowAdd === 'true')) {
+    const _have = {}; const _vv = sheet.getDataRange().getValues(); for (let i = 1; i < _vv.length; i++) if (_vv[i][0]) _have[String(_vv[i][0]).trim()] = 1;
+    if (Object.keys(_have).length) teachers = (teachers || []).filter(t => t && t.name && _have[String(t.name).trim()]);
+  }
   const curCount = Math.max(0, sheet.getLastRow() - 1);
   // [안전 2단계] force로도 못 넘는 대량 유실 하드 차단
   if (DB_HARD_WIPE(curCount, (teachers||[]).length)) {
@@ -499,10 +504,15 @@ function _keepTeacherPay_(incoming, oldJsonStr) {
   ['feeType', 'feeVal', 'raiseDate', 'certFee', 'certReturnDate'].forEach(function (k) { if (old[k] !== undefined && old[k] !== '' && old[k] !== null) t[k] = old[k]; });
   return t;
 }
-function saveTeacher(teacher) {
+function saveTeacher(teacher, allowAdd) {
   const sheet = getSheet(SHEET_TEACHERS);
   const values = sheet.getDataRange().getValues();
-  for (let j = 1; j < values.length; j++) { if (String(values[j][0]) === teacher.name) { teacher = _keepTeacherPay_(teacher, values[j][7]); break; } }   // v18.95
+  // v19.01: 시트에 없는 강사는 관리자 '강사 추가'·가입 승인일 때만 새로 만듦
+  //  (예전엔 옛 정보를 가진 기기가 저장하면 지운 강사(임준우·김정섭 등)가 매번 되살아났음)
+  const _add = allowAdd === true || teacher._allowAdd === true; delete teacher._allowAdd;
+  let _exists = false;
+  for (let j = 1; j < values.length; j++) { if (String(values[j][0]) === teacher.name) { _exists = true; teacher = _keepTeacherPay_(teacher, values[j][7]); break; } }   // v18.95
+  if (!_exists && !_add) return { ok: false, notExist: true, message: '없는 강사라 새로 만들지 않았어요(강사 추가는 관리자 화면에서)' };
   const row = [teacher.name, teacher.region||'', teacher.feeType||'fixed', teacher.feeVal||0, teacher.hireDate||'', teacher.raiseDate||'', teacher.account||'', JSON.stringify(teacher)];
   for (let i = 1; i < values.length; i++) {
     if (String(values[i][0]) === teacher.name) {
