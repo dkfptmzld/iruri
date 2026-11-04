@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.00">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.01">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.00">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.01">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.00</title>
+<title>수업기록표 정산 시스템 v19.01</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5130,7 +5130,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.00';
+const SYSTEM_VERSION='v19.01';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -16264,6 +16264,7 @@ function saveModal(){
  const phone=(document.getElementById('fi_tphone')?.value||'').trim();
  const address=(document.getElementById('fi_taddr')?.value||'').trim();
  const obj={name,region,feeType,feeVal,hireDate,raiseDate,certFee,certReturnDate,account,subject,phone,address};
+ const _tAllowAdd = STATE.editIdx===null || String((DB.teachers[STATE.editIdx]||{}).name||'')!==String(name);   // v19.01: 새 강사·이름 변경만 서버에 새 줄 허용
  if(STATE.editIdx!==null){
   const prev=JSON.parse(JSON.stringify(DB.teachers));
   const old=DB.teachers[STATE.editIdx];
@@ -16285,8 +16286,8 @@ function saveModal(){
   DB.teachers.push(obj);
   try{ const fl=(ft,fv)=> ft==='pct'?((fv||0)+'%'):(Number(fv||0).toLocaleString()+'원'); _logCenterMemoAuto(obj.region, {cat:'tadd', head:obj.name, lines:['강사료 '+fl(obj.feeType,obj.feeVal)+(obj.region?' · '+obj.region:'')]}); }catch(_){}   // v17.27
  }
- // Sheets에도 저장
- gasPost({action:'saveTeacher', teacher:obj}).catch(()=>{});
+ // Sheets에도 저장 (v19.01: 새 강사일 때만 서버가 새 줄을 만들도록 allowAdd)
+ gasPost({action:'saveTeacher', teacher:obj, allowAdd: _tAllowAdd}).catch(()=>{});
  localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
  renderTeacherMgr();
  // v12.12: 강사 정보 변경 시 모든 관련 화면 즉시 갱신 (박기남님 요청)
@@ -17909,7 +17910,7 @@ function _restoreChangelog_UNUSED(id){
   if(entry.type==='teacher_delete'||entry.type==='teacher_edit'){
    if(snap.teachers) DB.teachers = snap.teachers;
    lsSave();
-   gasPost({action:'syncTeachers', teachers:DB.teachers}).catch(()=>{});
+   gasPost({action:'syncTeachers', teachers:DB.teachers, allowAdd:true}).catch(()=>{});   // v19.01: 되돌리기는 지운 강사를 다시 만들 수 있어야 함
    localStorage.setItem(LS_T_SHEETS, JSON.stringify(DB.teachers));
    if(document.getElementById('teachersView')?.style.display==='block'){ renderTeacherStats();renderTeacherMgr(); }
   } else if(entry.type==='center_delete'||entry.type==='center_edit'){
@@ -18115,22 +18116,40 @@ async function _uploadSnapshotsBg(tasks){
 /* v18.77: 서버 센터 목록을 아직 한 번도 못 받았으면(앱 시작 직후·느린 회선) 먼저 받아서 합친 뒤 올림.
    센터 전체 저장(syncCenters)은 1곳 삭제는 확인 없이 통과하므로, 옛 목록으로 올리면 다른 기기에서 막 추가한 센터가 조용히 지워질 수 있었음 */
 async function _ctrPullBeforePush(){
- if(window._ctrPulled || typeof gasGet!=='function') return true;
+ /* v19.01: 저장할 때마다 서버 최신 센터 목록을 받아 '이 기기에서 고친 센터만 내 값, 나머지는 서버 값'으로 합친 뒤 올림.
+    (v18.77은 서버에만 있는 센터를 더하기만 해서, 이 기기의 옛 내용이 다른 기기에서 고친 센터를 되돌리거나
+     — 예: 성동데이케어(양홍준 화·양성모 월)가 옛 내용(이인경·스케줄 없음)으로 바뀐 뒤 통째로 빠짐 — 할 수 있었음)
+    · 지우기는 이 기기에서 '삭제' 버튼으로 지운 센터(삭제 도장)만 — 목록에서 그냥 빠진 센터는 서버 값으로 되살림 */
+ if(typeof gasGet!=='function') return true;
  try{
   const r=await gasGet({action:'getCenters'}, 30000);
-  if(r && r.ok && Array.isArray(r.data) && r.data.length && r.data.some(c=>c.schedule && c.schedule.length)){
-   try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}
-   // 이 기기 값은 그대로 두고(방금 고친 내용 보존), 서버에만 있는 센터(지운 기록 없음)만 더함
-   const have=new Set((DB.centers||[]).map(c=>_tombKey(c.name,c.region)));
-   let add=0; r.data.forEach(c=>{ if(!c) return; const k=_tombKey(c.name,c.region); if(have.has(k) || _isCenterTombed(c.name,c.region)) return; have.add(k); DB.centers.push(c); add++; });
-   try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
-   if(add){ try{ pushErrorLog('센터 자동 보존 (동기화 전)', `서버에만 있던 센터 ${add}곳을 지우지 않고 합쳤어요`); }catch(_){} }
-   try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
-   if(r.version) _dbVerSet('centers', r.version);
-   window._ctrPulled=true;
-  }
- }catch(_){}
- return !!window._ctrPulled;
+  if(!(r && r.ok && Array.isArray(r.data) && r.data.length && r.data.some(c=>c.schedule && c.schedule.length))) return false;
+  try{ _applyServerCenterTombs(r.tombs, r.data); }catch(_){}
+  const key=c=>String(c.name)+'\u0001'+String(c.region||'');
+  const sh=_centerShadow;   // 마지막으로 서버와 맞춘 상태
+  const loc=new Map((DB.centers||[]).map(c=>[key(c),c]));
+  const out=[], took=[];
+  r.data.forEach(sv=>{
+   if(!sv || sv.name==null) return;
+   const k=key(sv);
+   if(_isCenterTombed(sv.name, sv.region)){ loc.delete(k); return; }          // 이 기기에서 지운 센터
+   const l=loc.get(k); loc.delete(k);
+   if(!l){ out.push(sv); took.push(sv.name); return; }                         // 이 기기 목록에 없음 → 서버 값으로 되살림
+   const editedHere = sh ? (!sh.has(k) || JSON.stringify(l)!==sh.get(k)) : false;
+   if(editedHere){ out.push(l); return; }                                       // 이 기기에서 고친 센터 → 내 값
+   if(JSON.stringify(l)!==JSON.stringify(sv)) took.push(sv.name);
+   out.push(sv);
+  });
+  loc.forEach((l,k)=>{ if(sh && sh.has(k)) return; out.push(l); });            // 서버에 없는 센터: 이 기기에서 새로 만든 것만 유지
+  DB.centers=out;
+  try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+  try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+  _centerShadow=new Map(r.data.filter(c=>c && c.name!=null).map(c=>[key(c), JSON.stringify(c)]));
+  if(r.version) _dbVerSet('centers', r.version);
+  window._ctrPulled=true;
+  if(took.length){ try{ pushErrorLog('센터 정보 자동 보존 (동기화 전)', `서버의 최신 값으로 맞춘 센터 ${took.length}곳: ${took.slice(0,20).join(', ')}${took.length>20?' 외':''}`); }catch(_){} }
+  return true;
+ }catch(_){ return false; }
 }
 async function syncAllToDB(force){
  if(!_canWriteCenters()) return false;   // v18.95: 강사 기기는 강사·센터 전체 저장을 하지 않음(옛 목록으로 서버 덮어쓰기 방지)
@@ -20484,9 +20503,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.00&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.01&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.00&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.01&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
