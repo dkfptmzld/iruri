@@ -102,10 +102,52 @@ function doGet(e) {
   } catch (err) { return response({ ok: false, message: err.toString() }); }
 }
 
+/* ════════ v19.02: 옛 버전 앱의 '덮어쓰기 저장' 차단 ════════
+ *  기기마다 강사·센터 등 목록을 따로 들고 있어서, 며칠 전 앱(옛 코드·옛 목록)이 저장하면
+ *  그동안 다른 기기에서 바꾼 내용이 옛날로 돌아갔다(지운 강사 부활, 센터 사라짐, 강사료 되돌아감 등).
+ *  옛 앱 코드는 고칠 수 없으니 서버가 막는다: 앱은 저장할 때 appVer 를 같이 보내고,
+ *  기준(MIN_WRITE_VER)보다 옛 앱(버전을 안 보내는 예전 앱 포함)이 보내는 '공용 데이터 덮어쓰기'는 거절.
+ *  · 수업기록표 제출·임시저장·영수증·가입·로그인·면접신청 같은 '추가만 하는/본인 것만' 저장은 그대로 받음.
+ *  · 기준 버전은 스크립트 속성 MIN_WRITE_VER 로 바꿀 수 있음(없으면 아래 값). */
+var MIN_WRITE_VER = 'v19.02';
+var _GUARDED_WRITES = {
+  saveTeacher: 1, deleteTeacher: 1, syncTeachers: 1,
+  saveCenter: 1, deleteCenter: 1, syncCenters: 1,
+  saveMonthlySnapshot: 1, deleteMonthlySnapshot: 1, finalizeSettlement: 1, deleteSubmission: 1,
+  saveSystemSettings: 1, saveDepositMappings: 1, saveDepositRecords: 1
+};
+function _verNum_(v) { var m = String(v || '').match(/(\d+)\.(\d+)/); return m ? (+m[1]) * 1000 + (+m[2]) : 0; }
+function _minWriteVer_() { try { var p = props_().getProperty('MIN_WRITE_VER'); if (p) return p; } catch (e) {} return MIN_WRITE_VER; }
+function _oldAppBlocked_(action, body) {
+  if (!_GUARDED_WRITES[action]) return null;
+  if (action === 'saveSystemSettings') {   // 강사가 '스케줄 확인 완료'를 남기는 칸(본인 것만)은 막지 않음
+    var ks = Object.keys((body && body.settings) || {});
+    if (ks.length && ks.every(function (k) { return k.indexOf('schedDone|') === 0; })) return null;
+  }
+  var min = _minWriteVer_();
+  if (_verNum_(body && body.appVer) >= _verNum_(min)) return null;
+  try { _logOldApp_(action, body); } catch (e) {}
+  return { ok: false, oldApp: true, minVer: min,
+           message: '앱이 옛 버전(' + ((body && body.appVer) || '예전 버전') + ')이라 저장하지 않았어요. 앱을 완전히 껐다 켜거나 새로고침한 뒤 다시 저장해 주세요.' };
+}
+/* 막은 기록 — 어느 기기(누구)가 아직 옛 앱인지 확인용. 같은 내용은 10분에 한 번만 남김 */
+function _logOldApp_(action, body) {
+  var t = body && body.teacher, who = (body && body.name) || (t && typeof t === 'object' ? t.name : t) || '';
+  var key = 'oldapp|' + action + '|' + ((body && body.appVer) || '') + '|' + who;
+  var cache = CacheService.getScriptCache();
+  if (cache.get(key)) return;
+  cache.put(key, '1', 600);
+  var ss = ss_(), sh = ss.getSheetByName('옛앱차단기록');
+  if (!sh) { sh = ss.insertSheet('옛앱차단기록'); sh.appendRow(['시각', '저장 종류', '앱 버전', '관련 이름']); }
+  sh.appendRow([new Date(), action, (body && body.appVer) || '(버전 없음 = v19.01 이하)', String(who)]);
+}
+
 function doPost(e) {
   var body, action;
   try { body = JSON.parse(e.postData.contents); action = body.action; }
   catch (err) { return response({ ok: false, message: '요청 파싱 실패' }); }
+  var _old = _oldAppBlocked_(action, body);   // v19.02: 옛 앱의 덮어쓰기 저장 거절
+  if (_old) return response(_old);
   // [안전 2단계] 쓰기 잠금 — 저장을 한 번에 하나씩만 처리(동시 저장 충돌 방지).
   //  접속현황·영수증 업로드처럼 '줄 추가만 하는(충돌 무해)' 동작은 잠금 없이 통과 → 강사 활동은 안 느려짐.
   var _NO_LOCK = { updatePresence: 1, removePresence: 1, uploadReceipt: 1, saveTiDraft: 1 };   // v18.82: 임시저장은 강사별 한 줄만 고침(충돌 무해)
