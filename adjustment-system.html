@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.06">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.07">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.06">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.07">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.06</title>
+<title>수업기록표 정산 시스템 v19.07</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.06';
+const SYSTEM_VERSION='v19.07';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14179,6 +14179,15 @@ function centerIdx(c){
 function _centerIdxByKey(name, region){
  return (DB.centers||[]).findIndex(x=>x.name===name && (x.region||'')===(region||''));
 }
+/* v19.07: 수정창을 연 뒤 서버 동기화가 센터 목록을 새로 받아 오면 순서가 바뀐다.
+ *  창을 열 때 기억한 '몇 번째'(인덱스)로 저장하면 엉뚱한 센터를 덮어쓰므로(예: 3층을 고쳤는데 4층이 3층으로 바뀜),
+ *  저장·삭제 직전에 '이름+지역'으로 그 센터를 다시 찾는다. 못 찾으면 null. */
+function _centerKeyOf(c){ return c ? {name:c.name, region:c.region||''} : null; }
+function _centerIdxOfKey(k){ return k ? _centerIdxByKey(k.name, k.region) : -1; }
+function _teacherIdxOfKey(k){ return k ? (DB.teachers||[]).findIndex(t=>t && t.name===k.name) : -1; }
+function _staleEditAlert(what){
+ try{ showConfirm({icon:'⚠️',title:`${what}를 다시 찾지 못했어요`,desc:`이 창을 여는 동안 다른 기기에서 ${what} 이름이 바뀌었거나 지워졌어요.<br>엉뚱한 ${what}에 저장되지 않도록 <b>저장을 멈췄어요</b>.<br><small style="color:var(--text3)">창을 닫고 목록에서 다시 열어 주세요.</small>`,okText:'확인',cancelText:'',okStyle:'default',onOk:null}); document.getElementById('confirmCancelBtn').style.display='none'; }catch(_){ alert(`${what}를 다시 찾지 못해 저장을 멈췄어요. 목록에서 다시 열어 주세요.`); }
+}
 function openCenterByKey(name, region){
  const i=_centerIdxByKey(name, region);
  if(i<0){ try{ showToast('센터를 찾을 수 없어요 — 목록을 새로고침해 주세요'); }catch(_){} return; }
@@ -14193,9 +14202,11 @@ function delCenterByKey(name, region){
 function _ncDelete(){
  if(_ncEditIdx==null) return;
  const c=DB.centers[_ncEditIdx]; if(!c){ showToast('센터를 찾을 수 없어요'); return; }
- const idx=_ncEditIdx, nm=c.name, rg=c.region||'';
+ const nm=c.name, rg=c.region||'';
  showConfirm({icon:'🗑',title:'센터 삭제',desc:`<b>「${escH(nm)}」</b>${rg?` <span style="font-size:11px;color:var(--text3)">(${escH(rg)})</span>`:''} 센터를 삭제할까요?<br><small style="color:var(--text3)">정산·계좌매칭 명단에서 사라집니다. 변경 이력에서 복구할 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
   try{ _ncClose(); }catch(_){}
+  const idx=_centerIdxByKey(nm, rg);   // v19.07: 확인을 누르는 사이 목록이 바뀌어도 이 센터를 지움
+  if(idx<0){ _staleEditAlert('센터'); return; }
   _doDelItem('center', idx);
   try{ if(typeof renderDepositView==='function') renderDepositView(); }catch(_){}
  }});
@@ -15857,6 +15868,7 @@ function renderCenterMgr(){
 function openModal(type,idx=null,prefillName='',prefillTeacher='',resvOverride=null){
  STATE.resvMode=null; STATE.resvOrig=null; // v15.33: 일반 열기는 예약모드 아님 (예약 열기는 openModal 호출 후 설정)
  STATE.modalType=type;STATE.editIdx=idx;
+ STATE.editKey = idx==null ? null : (type==='center' ? _centerKeyOf(DB.centers[idx]) : (DB.teachers[idx]?{name:DB.teachers[idx].name}:null));   // v19.07
  const isEdit=idx!==null;
  const item=resvOverride||(isEdit?(type==='teacher'?DB.teachers[idx]:DB.centers[idx]):null);
  document.getElementById('modalTitle').textContent=isEdit?(type==='teacher'?'강사 정보 수정':'센터 정보 수정'):(type==='teacher'?'신규 강사 추가':'신규 센터 추가');
@@ -16445,6 +16457,12 @@ function _offerApplyFeeToOpenMonth(obj){
 }
 function saveModal(){
  const type=STATE.modalType;
+ // v19.07: 창을 연 뒤 동기화로 목록 순서가 바뀌었을 수 있음 → 이름(+지역)으로 다시 찾기
+ if(STATE.editIdx!==null && STATE.editKey){
+  const _i = type==='center' ? _centerIdxOfKey(STATE.editKey) : _teacherIdxOfKey(STATE.editKey);
+  if(_i<0){ _staleEditAlert(type==='center'?'센터':'강사'); return; }
+  STATE.editIdx=_i;
+ }
  const name=document.getElementById('fi_name')?.value.trim();
  if(!name){showConfirm({icon:'⚠️',title:'입력 오류',desc:'이름을 입력하세요.',okText:'확인',cancelText:'',okStyle:'default',onOk:null});document.getElementById('confirmCancelBtn').style.display='none'; return;}
  if(type==='teacher'){
@@ -16625,7 +16643,7 @@ function saveModal(){
  *  · 강사별 배정(여러 시간대) · 강사·시간대별 수업료 · 교시는 시간순 자동
  *  · 저장은 기존 DB.centers/GAS(saveCenter) 경로 그대로. 센터 기본 수업료 없음.
  * ════════════════════════════════════════════════════════════ */
-let _ncEditIdx=null, _ncRegion='';
+let _ncEditIdx=null, _ncRegion='', _ncEditKey=null;   // v19.07: _ncEditKey = 수정 중인 센터의 이름+지역(저장 직전 다시 찾기용)
 const _NC_DAYS=['월','화','수','목','금','토','일'];
 // v16.33: 강사별 구분용 바탕색 팔레트 (이름 기준으로 항상 같은 색)
 const _NC_TINTS=[
@@ -16659,6 +16677,7 @@ function _ncCenterTeachers(c){
 }
 function _ncOpen(editIdx=null, prefillName=''){
  _ncEditIdx = (editIdx==null?null:editIdx);
+ _ncEditKey = _ncEditIdx!=null ? _centerKeyOf(DB.centers[_ncEditIdx]) : null;   // v19.07
  document.getElementById('ncTitle').textContent = (_ncEditIdx!=null?'센터 수정':'센터 추가');
  // 지역 버튼 · 검색창 핸들러(열 때마다 안전하게 재바인딩)
  document.querySelectorAll('#ncRgnRow .nc-rgn').forEach(b=>b.onclick=()=>{
@@ -16691,7 +16710,7 @@ function _ncRenderResults(qstr){
   const ad = c.address? `<div class="nc-addr">📍 ${esc(c.address)}</div>` : `<div class="nc-addr noaddr">📍 주소 미입력</div>`;
   const b=document.createElement('button'); b.className='nc-result';
   b.innerHTML=`<div class="grow"><div class="nm">${esc(c.name)}</div><div class="meta"><span class="nc-rbadge">${esc(c.region||'지역?')}</span><span>${tc}</span></div>${ad}</div><span class="pick">이 센터 쓰기 ›</span>`;
-  b.onclick=()=>_ncOpenExist(o.idx);
+  b.onclick=()=>{ const i=_centerIdxOfKey(_centerKeyOf(o.c)); if(i>=0) _ncOpenExist(i); else _staleEditAlert('센터'); };   // v19.07
   wrap.appendChild(b);
  });
  const nb=document.getElementById('ncNewbar'), btn=document.getElementById('ncNewBtn');
@@ -16727,9 +16746,9 @@ function _ncOpenExist(idx){
   });
  }
  card.innerHTML=`<div style="display:flex;align-items:center;gap:9px;"><span class="en">${esc(c.name)}</span><span class="nc-rbadge">${esc(c.region||'지역?')}</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:#146142;background:#fff;border:1px solid #B8E0CC;border-radius:20px;padding:2px 9px;">${tnames.length?`강사 ${tnames.length}명 · 수업 ${(c.schedule||[]).length}개`:'수업 없음'}</span></div><div class="nc-addr" style="margin-top:7px;">${addr}</div><div style="font-size:12px;color:#6A6760;margin-top:12px;font-weight:700;">수업 배정</div>${blocks}`;
- document.getElementById('ncExistEditBtn').onclick=()=>_ncOpen(idx);
+ { const k=_centerKeyOf(c); document.getElementById('ncExistEditBtn').onclick=()=>{ const i=_centerIdxOfKey(k); if(i<0){ _staleEditAlert('센터'); return; } _ncOpen(i); }; }   // v19.07
 }
-function _ncOpenNew(){ _ncEditIdx=null; _ncOpenForm(null); }
+function _ncOpenNew(){ _ncEditIdx=null; _ncEditKey=null; _ncOpenForm(null); }
 function _ncOpenForm(center){
  _ncShow('form');
  _ncPvSel=0;   // v16.35: 미리보기는 첫 강사부터
@@ -16839,6 +16858,13 @@ function _ncBuildPreview(){
   +teacherBlock
   +`<div class="nc-pvlegend"><span class="sw"></span> 초록 = 이번에 추가하는 수업 · 회색 = 이미 하는 다른 센터</div>`;
 }
+/* v19.07: 수정 중인 센터의 현재 위치를 이름+지역으로 다시 찾음. 사라졌으면 false */
+function _ncResolveEdit(){
+ if(_ncEditIdx==null) return true;
+ const i=_centerIdxOfKey(_ncEditKey);
+ if(i<0){ _staleEditAlert('센터'); return false; }
+ _ncEditIdx=i; return true;
+}
 function _ncTrySave(){
  const name=document.getElementById('ncName').value.trim();
  if(!name){ showToast('⚠️ 센터명을 입력하세요'); try{document.getElementById('ncName').focus();}catch(_){} return; }
@@ -16859,7 +16885,7 @@ function _ncTrySave(){
   return;
  }
  const nn=_ncNorm(name);
- if(_ncEditIdx!=null){ _ncRealSave(); return; }
+ if(_ncEditIdx!=null){ if(!_ncResolveEdit()) return; _ncRealSave(); return; }
  const sameIdx=(DB.centers||[]).findIndex(c=>_ncNorm(c.name)===nn && (c.region||'')===_ncRegion);
  if(sameIdx>=0){ _ncOpenDup([sameIdx], true); return; }
  const sim=(DB.centers||[]).map((c,idx)=>({c,idx})).filter(o=>{const cn=_ncNorm(o.c.name); return cn===nn||(nn.length>=2&&(cn.includes(nn)||nn.includes(cn)));});
@@ -16872,14 +16898,14 @@ function _ncOpenDup(idxs, exact){
   const c=DB.centers[idx], nt=_ncCenterTeachers(c).length;
   const d=document.createElement('div'); d.className='nc-dup';
   d.innerHTML=`<div style="flex:1;"><span class="dn">${esc(c.name)}</span> <span class="nc-rbadge">${esc(c.region||'?')}</span><div class="dd">강사 ${nt}명${c.address?` · 📍 ${esc(c.address)}`:''}</div></div>`;
-  d.onclick=()=>{ _ncCloseDup(); _ncOpenExist(idx); };
+  const _k=_centerKeyOf(c); d.onclick=()=>{ _ncCloseDup(); const i=_centerIdxOfKey(_k); if(i>=0) _ncOpenExist(i); else _staleEditAlert('센터'); };   // v19.07
   list.appendChild(d);
  });
  document.getElementById('ncDupTitle').textContent = exact?'이미 있는 센터예요':'혹시 이 센터인가요?';
  document.getElementById('ncDupDesc').innerHTML = exact ? '같은 지역에 <b>똑같은 이름</b>의 센터가 이미 있어요. 새로 만들 수 없어요 — 아래 센터를 쓰세요.' : '비슷한 이름의 센터가 있어요. 같은 센터라면 새로 만들지 말고 <b>기존 것을 쓰는 게</b> 좋아요.';
  document.getElementById('ncDupUseBtn').textContent = exact?'이 센터 쓰기':'네, 기존 센터 쓰기';
  document.getElementById('ncDupNewBtn').style.display = exact?'none':'';
- document.getElementById('ncDupUseBtn').onclick=()=>{ _ncCloseDup(); _ncOpenExist(idxs[0]); };
+ { const _k0=_centerKeyOf(DB.centers[idxs[0]]); document.getElementById('ncDupUseBtn').onclick=()=>{ _ncCloseDup(); const i=_centerIdxOfKey(_k0); if(i>=0) _ncOpenExist(i); else _staleEditAlert('센터'); }; }   // v19.07
  document.getElementById('ncDupScrim').classList.add('on');
 }
 function _ncCloseDup(){ const el=document.getElementById('ncDupScrim'); if(el) el.classList.remove('on'); }
@@ -16940,6 +16966,7 @@ function _cmCenterDiffLines(old, obj){
 }
 function _ncRealSave(){
  _ncCloseDup();
+ if(!_ncResolveEdit()) return;   // v19.07
  const obj=_ncBuildObj();
  try{ _removeCenterTomb(obj.name, obj.region); }catch(_){}
  if(_ncEditIdx!=null){
@@ -17031,10 +17058,10 @@ function delItem(type,i){
   } else {
    listHtml=`<div style="margin-top:10px;font-size:12px;color:var(--text3);">이 강사에게 배정된 센터가 없어요.</div>`;
   }
-  showConfirm({icon:'🗑',title:'강사 삭제',desc:`<b>「${escH(name)}」</b> 강사를 삭제할까요?${listHtml}`,okText:'삭제',okStyle:'danger',onOk:()=>_doDelItem(type,i)});
+  showConfirm({icon:'🗑',title:'강사 삭제',desc:`<b>「${escH(name)}」</b> 강사를 삭제할까요?${listHtml}`,okText:'삭제',okStyle:'danger',onOk:()=>{ const j=_teacherIdxOfKey({name}); if(j<0){ _staleEditAlert('강사'); return; } _doDelItem(type,j); }});   // v19.07: 확인 순간 다시 찾기
   return;
  }
- showConfirm({icon:'🗑',title:'삭제',desc:`<b>「${escH(arr[i].name)}」</b>를 삭제할까요?`,okText:'삭제',okStyle:'danger',onOk:()=>_doDelItem(type,i)});
+ const _dk=_centerKeyOf(arr[i]); showConfirm({icon:'🗑',title:'삭제',desc:`<b>「${escH(arr[i].name)}」</b>를 삭제할까요?`,okText:'삭제',okStyle:'danger',onOk:()=>{ const j=_centerIdxOfKey(_dk); if(j<0){ _staleEditAlert('센터'); return; } _doDelItem(type,j); }});   // v19.07: 확인 순간 다시 찾기
 }
 
 /* ═══ RECOMPUTE ═══ */
@@ -20725,9 +20752,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.06&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.07&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.06&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.07&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
