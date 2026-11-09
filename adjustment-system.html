@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.07">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.08">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.07">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.08">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.07</title>
+<title>수업기록표 정산 시스템 v19.08</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.07';
+const SYSTEM_VERSION='v19.08';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -17061,7 +17061,7 @@ function delItem(type,i){
   showConfirm({icon:'🗑',title:'강사 삭제',desc:`<b>「${escH(name)}」</b> 강사를 삭제할까요?${listHtml}`,okText:'삭제',okStyle:'danger',onOk:()=>{ const j=_teacherIdxOfKey({name}); if(j<0){ _staleEditAlert('강사'); return; } _doDelItem(type,j); }});   // v19.07: 확인 순간 다시 찾기
   return;
  }
- const _dk=_centerKeyOf(arr[i]); showConfirm({icon:'🗑',title:'삭제',desc:`<b>「${escH(arr[i].name)}」</b>를 삭제할까요?`,okText:'삭제',okStyle:'danger',onOk:()=>{ const j=_centerIdxOfKey(_dk); if(j<0){ _staleEditAlert('센터'); return; } _doDelItem(type,j); }});   // v19.07: 확인 순간 다시 찾기
+ const _dref=arr[i], _dk=_centerKeyOf(arr[i]); showConfirm({icon:'🗑',title:'삭제',desc:`<b>「${escH(arr[i].name)}」</b>를 삭제할까요?`,okText:'삭제',okStyle:'danger',onOk:()=>{ let j=DB.centers.indexOf(_dref); if(j<0) j=_centerIdxOfKey(_dk); if(j<0){ _staleEditAlert('센터'); return; } _doDelItem(type,j); }});   // v19.07: 확인 순간 다시 찾기
 }
 
 /* ═══ RECOMPUTE ═══ */
@@ -18760,9 +18760,19 @@ function _doDelItem(type, i){
   showToast(`${deletedName} 삭제됨${affectedCenters>0?` · ${affectedCenters}개 센터 미배정 처리`:''}`);
   return;
  } else {
-  _addCenterTomb(deletedName, deletedRegion);   // v15.52: 삭제 도장 — 동기화가 이 센터를 되살리지 않음
-  try{ _logCenterMemoAuto(deletedRegion, {cat:'del', head:deletedName, lines:[]}); }catch(_){}   // v17.26
-  gasPost({action:'deleteCenter', name:deletedName}).catch(()=>{});
+  // v19.08: 똑같은 이름+지역 센터가 아직 남아 있으면(중복 정리로 한 줄만 지운 것) 센터 자체를 지운 게 아님.
+  //  예전엔 여기서도 '이름+지역' 삭제 도장을 찍고 서버 삭제를 보내서, 남겨 둔 진짜 센터까지 모든 기기·서버에서 사라졌다(예: '괜찮은').
+  const _dk=_tombKey(deletedName, deletedRegion);
+  const _twin=(DB.centers||[]).find(c=>c && _tombKey(c.name, c.region)===_dk);
+  if(_twin){
+   try{ _removeCenterTomb(deletedName, deletedRegion); }catch(_){}
+   gasPost({action:'saveCenter', center:JSON.parse(JSON.stringify(_twin))}).catch(()=>{});   // 서버엔 남은 센터 값으로(이름+지역 한 줄)
+  } else {
+   _addCenterTomb(deletedName, deletedRegion);   // v15.52: 삭제 도장 — 동기화가 이 센터를 되살리지 않음
+   try{ _logCenterMemoAuto(deletedRegion, {cat:'del', head:deletedName, lines:[]}); }catch(_){}   // v17.26
+   // v19.08: 지역도 같이 보냄 — 예전엔 이름만 보내서 서버가 '같은 이름의 첫 줄'(다른 지역 센터일 수 있음)을 지웠다
+   gasPost({action:'deleteCenter', name:deletedName, region:deletedRegion}).catch(()=>{});
+  }
   renderCenterMgr();
   // v12.36~37: 센터 삭제 시 모든 관련 화면 즉시 갱신 (박기남님 요청)
   // v12.37: 좌측 트리 + 우측 상세 테이블 모두 갱신 (선택 상태 보존)
@@ -20752,9 +20762,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.07&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.08&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.07&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.08&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
