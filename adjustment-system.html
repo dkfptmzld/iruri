@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.08">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.09">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.08">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.09">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.08</title>
+<title>수업기록표 정산 시스템 v19.09</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.08';
+const SYSTEM_VERSION='v19.09';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -19747,6 +19747,7 @@ async function doLogin(){
 
  const newHash = await sha256(pw);   // SHA-256 (신규)
  const oldHash = simpleHash(pw);     // legacy (기존)
+ try{ _sbSignIn(name, newHash); }catch(_){}   // v19.09: 새 서버(Supabase)에도 같은 비밀번호로 조용히 로그인(비교용, 실패해도 무관)
  const accounts = getTeacherAccounts();
 
  // ── 즉시 로그인: localStorage에 계정이 있으면 GAS 대기 없이 바로 진입 ──
@@ -20060,7 +20061,259 @@ const _gasInflight = new Map();
 const _GAS_GET_RETRY = 2;          // 최초 1회 + 재시도 2회
 const _GAS_GET_GAP   = [900, 2200]; // 재시도 전 대기(ms) — 서버가 숨 돌릴 틈
 /* v15.89: scope 를 주면 그 탭의 상태 줄에 '확인 중 / 다시 시도 (2/3) / 실패' 가 자동으로 표시된다. */
-async function gasGet(params, ms=45000, scope){
+/* ═══ v19.09: Supabase 나란히 비교(그림자 읽기) ═══
+ *  새 서버(Supabase)로 옮기기 전 확인 단계. 앱은 지금처럼 GAS로 읽고 저장한다.
+ *  · 로그인할 때 같은 비밀번호 지문으로 Supabase에도 조용히 로그인(실패해도 앱 사용엔 영향 없음)
+ *  · GAS에서 읽은 뒤 뒤에서 Supabase에서도 같은 걸 읽어 비교 → 다를 때만 shadow_diffs 에 기록
+ *    (같음도 행동·사람별 1시간에 한 번만 기록 → 비교가 실제로 돌고 있는지 확인용)
+ *  · 같은 요청은 10분에 한 번, 이 기기에서 방금 저장했으면 12분은 건너뜀(Supabase는 10분마다 따라오므로)
+ *  · 공개용 키(publishable)만 사용 — 권한은 Supabase 행 단위 규칙(RLS)이 지킴 */
+const SB_URL = 'https://lprdtjxdvmqoohvcxzwu.supabase.co';
+const SB_KEY = 'sb_publishable_D7-VldCJxPbmZhrZ1LTakw_qWYUIAlE';
+const SB_SESSION_KEY = 'iruri_sb_session';
+function _sbEmail(name){ return 'n' + Array.from(new TextEncoder().encode(String(name||'').trim())).map(b=>b.toString(16).padStart(2,'0')).join('') + '@member.erurisilver.com'; }
+function _sbGetSession(){ try{ return JSON.parse(localStorage.getItem(SB_SESSION_KEY)||'null'); }catch(_){ return null; } }
+function _sbSetSession(s){ try{ if(s) localStorage.setItem(SB_SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SB_SESSION_KEY); }catch(_){} }
+async function _sbAuth(grant, body){
+ const r = await fetch(SB_URL + '/auth/v1/token?grant_type=' + grant, { method:'POST', headers:{ apikey:SB_KEY, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+ const j = await r.json().catch(()=>null);
+ if(!r.ok || !j || !j.access_token) throw new Error((j && (j.msg || j.error_description || j.message)) || ('auth ' + r.status));
+ return { access_token:j.access_token, refresh_token:j.refresh_token, expires_at: j.expires_at ? j.expires_at*1000 : Date.now() + (j.expires_in||3600)*1000 };
+}
+async function _sbSignIn(name, hash){
+ try{ const s = await _sbAuth('password', { email:_sbEmail(name), password:hash }); s.name = name; _sbSetSession(s); return true; }
+ catch(_){ return false; }
+}
+function _sbSignOut(){
+ const s = _sbGetSession(); _sbSetSession(null);
+ if(s && s.access_token) fetch(SB_URL + '/auth/v1/logout', { method:'POST', headers:{ apikey:SB_KEY, Authorization:'Bearer ' + s.access_token } }).catch(()=>{});
+}
+let _sbRefreshing = null;
+async function _sbToken(){
+ const s = _sbGetSession(); if(!s || !s.access_token) return null;
+ const me = (typeof _currentUser === 'function') ? _currentUser() : '';
+ if(me && s.name && s.name !== me) return null;            // 다른 사람이 로그인한 기기면 쓰지 않음
+ if(Date.now() < s.expires_at - 60000) return s.access_token;
+ if(!_sbRefreshing){
+  _sbRefreshing = _sbAuth('refresh_token', { refresh_token:s.refresh_token })
+   .then(n=>{ n.name = s.name; _sbSetSession(n); return n.access_token; })
+   .catch(()=>{ _sbSetSession(null); return null; })
+   .finally(()=>{ setTimeout(()=>{ _sbRefreshing = null; }, 0); });
+ }
+ return _sbRefreshing;
+}
+async function _sbRest(path, opt){
+ const t = await _sbToken(); if(!t) throw new Error('no-session');
+ const o = Object.assign({}, opt || {});
+ o.headers = Object.assign({ apikey:SB_KEY, Authorization:'Bearer ' + t }, (opt && opt.headers) || {});
+ const r = await fetch(SB_URL + '/rest/v1/' + path, o);
+ if(!r.ok) throw new Error('sb ' + r.status + ' ' + (await r.text()).slice(0, 200));
+ return r.status === 204 ? null : r.json();
+}
+async function _sbAll(path){   // 1,000행 넘게 나눠 받기
+ const out = [];
+ for(let from = 0; ; from += 1000){
+  const part = await _sbRest(path + (path.includes('?') ? '&' : '?') + 'offset=' + from + '&limit=1000');
+  out.push(...part); if(part.length < 1000) break;
+ }
+ return out;
+}
+const _sbQ = v => encodeURIComponent(String(v == null ? '' : v));
+
+/* GAS 응답과 같은 모양으로 Supabase에서 읽기 */
+const _SB_GET = {
+ async getTeachers(){
+  const [ts, acc] = await Promise.all([_sbAll('teachers?select=name,data&deleted_at=is.null&order=id'), _sbAll('teacher_accounts?select=teacher_name,account')]);
+  const am = new Map(acc.map(a=>[a.teacher_name, a.account]));
+  return { ok:true, data: ts.map(t=>Object.assign({}, t.data, { account: am.has(t.name) ? am.get(t.name) : '' })) };
+ },
+ async getCenters(){
+  const rows = await _sbAll('centers?select=name,region,data,deleted_at&order=id');
+  return { ok:true, data: rows.filter(r=>!r.deleted_at).map(r=>r.data),
+           tombs: rows.filter(r=>r.deleted_at).map(r=>({ name:r.name, region:r.region||'', at:r.deleted_at })) };
+ },
+ async getCenterTombs(){
+  const rows = await _sbAll('centers?select=name,region,deleted_at&deleted_at=not.is.null&order=id');
+  return { ok:true, data: rows.map(r=>({ name:r.name, region:r.region||'', at:r.deleted_at })) };
+ },
+ async getSystemSettings(){
+  const rows = await _sbAll('settings?select=key,value');
+  const d = {}; rows.forEach(r=>{ d[r.key] = (r.value !== null && typeof r.value === 'object') ? JSON.stringify(r.value) : r.value; });
+  return { ok:true, data:d };
+ },
+ async getMonthlySnapshots(){
+  const rows = await _sbAll('monthly_settlements?select=year_month,saved_at');
+  return { ok:true, data: rows.map(r=>({ yearMonth:r.year_month, savedAt:r.saved_at })) };
+ },
+ async getMonthlySnapshot(p){
+  const rows = await _sbRest('monthly_settlements?select=year_month,data,saved_at_text&year_month=eq.' + _sbQ(p.yearMonth));
+  const r = rows && rows[0];
+  if(!r) return { ok:false, message:'저장된 데이터 없음' };
+  if(p.since && r.saved_at_text && String(p.since) === r.saved_at_text) return { ok:true, unchanged:true, yearMonth:r.year_month, savedAt:r.saved_at_text };
+  return { ok:true, yearMonth:r.year_month, savedAt:r.saved_at_text || '', data:r.data };
+ },
+ async getHistory(p){
+  const f = (p.teacher && p.teacher !== '__all__') ? '&teacher_name=eq.' + _sbQ(p.teacher) : '';
+  const rows = await _sbAll('submissions?select=teacher_name,year_month,submitted_at_text,data,is_finalized,finalized_at_text&order=submitted_at.desc.nullslast' + f);
+  return { ok:true, data: rows.map(r=>{ const d = r.data || {}; return {
+   yearMonth:r.year_month, submittedAt:r.submitted_at_text || '', teacher:r.teacher_name,
+   dayGroups:d.dayGroups || [], notes: d.notes ? d.notes : (d.note ? [d.note] : []), note:d.note || '',
+   notesData:d.notesData || null, account:d.account || '', lessons:d.lessons || [],
+   isFinalized: !!r.is_finalized, finalizedAt: r.finalized_at_text || '' }; }) };
+ },
+ async getSubmissions(){
+  const rows = await _sbAll('submission_queue?select=row_no,teacher_name,year_month,submitted_at_text,data,reflected,rev_count&reflected=neq.Y&order=row_no');
+  return { ok:true, data: rows.map(r=>Object.assign({}, r.data, { submittedAt:r.submitted_at_text || '', isRevision:r.rev_count > 0, revCount:r.rev_count, _rowIndex:r.row_no })) };
+ },
+ async getReceipts(p){
+  let f = '';
+  if(p.teacher) f += '&teacher_name=eq.' + _sbQ(p.teacher);
+  if(p.yearMonth) f += '&year_month=eq.' + _sbQ(p.yearMonth);
+  const rows = await _sbAll('receipts?select=teacher_name,year_month,file_name,drive_url,uploaded_at&order=uploaded_at.desc.nullslast' + f);
+  return { ok:true, data: rows.map(r=>({ teacher:r.teacher_name, yearMonth:r.year_month, fileName:r.file_name, url:r.drive_url || '', uploadedAt:r.uploaded_at || '' })) };
+ },
+ async getTiDraft(p){
+  const rows = await _sbRest('drafts?select=data&teacher_name=eq.' + _sbQ(p.teacher));
+  return { ok:true, data: (rows && rows[0]) ? rows[0].data : null };
+ },
+ async getScheduleRequests(){
+  const rows = await _sbAll('schedule_requests?select=id,teacher_name,region,changes,message,requested_at&status=eq.' + _sbQ('대기'));
+  return { ok:true, data: rows.map(r=>({ id:r.id, teacher:r.teacher_name, region:r.region || '', changes:r.changes || [], message:r.message || '', requestedAt:r.requested_at || '' })) };
+ },
+ async getPendingSignups(){
+  const rows = await _sbAll('signup_requests?select=name,region,hire_date,account,subject,phone,address,requested_at&status=neq.' + _sbQ('승인'));
+  return { ok:true, data: rows.map(r=>({ name:r.name, region:r.region||'', hireDate:r.hire_date||'', account:r.account||'', subject:r.subject||'', phone:r.phone||'', address:r.address||'', requestedAt:r.requested_at||'' })) };
+ },
+ async getSettlementStatus(p){
+  const rows = await _sbAll('submissions?select=year_month,finalized_at_text&is_finalized=is.true&teacher_name=eq.' + _sbQ(p.teacher));
+  const out = []; rows.forEach(r=>{ if(!out.find(x=>x.yearMonth === r.year_month)) out.push({ yearMonth:r.year_month, finalizedAt:r.finalized_at_text || '' }); });
+  return { ok:true, data:out };
+ },
+ async getRecruitSlots(p){
+  const admin = (p.isAdmin === true || String(p.isAdmin) === 'true');
+  const data = {};
+  if(admin){
+   const rows = await _sbAll('recruit_applications?select=slot,name,phone,applied_at&status=not.like.' + _sbQ('취소*') + '&interview_date=eq.' + _sbQ(p.date) + '&order=id');
+   rows.forEach(r=>{ if(!data[r.slot]) data[r.slot] = { name:r.name, phone:r.phone, at:r.applied_at }; });
+  } else {
+   const slots = await _sbRest('rpc/recruit_taken_slots', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ p_date:String(p.date||'') }) });
+   (slots || []).forEach(s=>{ data[s] = { taken:true }; });
+  }
+  return { ok:true, data };
+ },
+ async getDepositMappings(){
+  const [rows, meta] = await Promise.all([_sbAll('deposit_mappings?select=data'), _sbAll('deposit_meta?select=key,value')]);
+  const m = {}; meta.forEach(x=>{ m[x.key] = x.value; });
+  return { ok:true, data: rows.map(r=>r.data), seen: Array.isArray(m.seenCenters) ? m.seenCenters : [], periods: Array.isArray(m.periods) ? m.periods : null };
+ },
+ async getDepositRecords(){
+  const rows = await _sbAll('deposit_records?select=period_id,account,date,time,summary,depositor_name,branch_raw,branch_key,amount,match_status,matched_center_name,region&order=id');
+  return { ok:true, data: rows.map(r=>({ periodId:r.period_id, account:r.account||'', date:r.date||'', time:r.time||'', summary:r.summary||'',
+   depositorName:r.depositor_name||'', branchRaw:r.branch_raw||'', branchKey:r.branch_key||'', amount:Number(r.amount)||0,
+   matchStatus:r.match_status||'unmatched', matchedCenterName:r.matched_center_name === null ? null : r.matched_center_name, region:r.region||'' })) };
+ },
+ async getDepositLogs(p){
+  const limit = Math.min(Math.max(Number(p.limit) || 1500, 1), 5000);
+  const rows = await _sbAll('deposit_logs?select=data&order=at.desc.nullslast');
+  return { ok:true, data: rows.slice(0, limit).map(r=>{ const d = Object.assign({}, r.data); delete d.undo; return d; }).reverse() };
+ },
+ async getDepositLogUndo(p){
+  const rows = await _sbRest('deposit_logs?select=data&id=eq.' + _sbQ(p.id));
+  const u = rows && rows[0] && rows[0].data && rows[0].data.undo;
+  return u ? { ok:true, undo:u } : { ok:false, message:'되돌리기 정보 없음' };
+ },
+ async getDbMeta(){
+  const [t, c] = await Promise.all([_sbAll('teachers?select=id&deleted_at=is.null'), _sbAll('centers?select=id&deleted_at=is.null')]);
+  return { ok:true, teachers:t.length, centers:c.length };
+ }
+};
+
+/* 비교용 정리: 빈 값 제거, 키 정렬, JSON 글자는 풀어서, 숫자·글자 차이는 무시(모두 글자로) */
+function _sbNorm(x){
+ if(x === null || x === undefined || x === '') return undefined;
+ if(typeof x === 'string'){
+  const s = x.trim();
+  if((s[0] === '{' || s[0] === '[') && s.length > 1){ try{ return _sbNorm(JSON.parse(s)); }catch(_){} }
+  return s;
+ }
+ if(typeof x === 'number' || typeof x === 'boolean') return String(x);
+ if(Array.isArray(x)) return x.map(_sbNorm);
+ if(typeof x === 'object'){
+  const o = {}; Object.keys(x).sort().forEach(k=>{ const v = _sbNorm(x[k]); if(v !== undefined && !(Array.isArray(v) && !v.length) && !(v && typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length)) o[k] = v; });
+  return o;
+ }
+ return String(x);
+}
+const _sbSortBy = (arr, keyFn) => (arr || []).slice().sort((a, b)=>{ const x = keyFn(a), y = keyFn(b); return x < y ? -1 : x > y ? 1 : 0; });
+const _sbPick = (o, keys) => { const r = {}; keys.forEach(k=>{ r[k] = o ? o[k] : undefined; }); return r; };
+/* 행동별로 '비교할 부분'만 골라냄(undefined = 이번엔 비교 안 함) */
+const _SB_PROJ = {
+ getTeachers: r => _sbSortBy(r.data, t=>String(t.name)),
+ getCenters: r => ({ data:_sbSortBy(r.data, c=>c.name + '|' + (c.region||'')), tombs:_sbSortBy((r.tombs||[]).map(t=>t.name + '|' + (t.region||'')), x=>x) }),
+ getCenterTombs: r => _sbSortBy((r.data||[]).map(t=>t.name + '|' + (t.region||'')), x=>x),
+ getSystemSettings: r => r.data,
+ getMonthlySnapshots: r => _sbSortBy((r.data||[]).map(x=>x.yearMonth), x=>x),
+ getMonthlySnapshot: r => (r.unchanged || !r.ok) ? undefined : { yearMonth:r.yearMonth, data:r.data },
+ getHistory: r => _sbSortBy((r.data||[]).map(x=>_sbPick(x, ['teacher','yearMonth','submittedAt','dayGroups','note','notesData','account','lessons','isFinalized'])), x=>x.teacher + '|' + x.submittedAt + '|' + x.yearMonth),
+ getSubmissions: r => _sbSortBy((r.data||[]).map(x=>{ const o = Object.assign({}, x); delete o._rowIndex; return o; }), x=>(x.name||x.teacher) + '|' + x.submittedAt),
+ getReceipts: r => _sbSortBy((r.data||[]).map(x=>_sbPick(x, ['teacher','yearMonth','fileName','url'])), x=>x.url + '|' + x.fileName),
+ getTiDraft: r => r.data,
+ getScheduleRequests: r => _sbSortBy((r.data||[]).map(x=>_sbPick(x, ['id','teacher','region','changes','message'])), x=>x.id),
+ getPendingSignups: r => _sbSortBy((r.data||[]).map(x=>_sbPick(x, ['name','region','hireDate','account','subject','phone','address'])), x=>x.name),
+ getSettlementStatus: r => _sbSortBy((r.data||[]).map(x=>x.yearMonth), x=>x),
+ getRecruitSlots: r => { const o = {}; Object.keys(r.data||{}).forEach(k=>{ const v = r.data[k]; o[k] = v.taken ? 'taken' : (v.name + '|' + v.phone); }); return o; },
+ getDepositMappings: r => ({ data:_sbSortBy(r.data, m=>String(m.mapId)), seen:_sbSortBy(r.seen, x=>x), periods:r.periods }),
+ getDepositRecords: r => _sbSortBy(r.data, x=>[x.periodId, x.date, x.time, x.account, x.amount, x.depositorName, x.branchKey].join('|')),
+ getDepositLogs: r => _sbSortBy(r.data, x=>String(x.id)),
+ getDepositLogUndo: r => r.ok ? r.undo : undefined,
+ getDbMeta: r => ({ teachers:r.teachers, centers:r.centers })
+};
+/* 첫 번째로 다른 곳 찾기 */
+function _sbFirstDiff(a, b, path){
+ if(JSON.stringify(a) === JSON.stringify(b)) return null;
+ if(a && b && typeof a === 'object' && typeof b === 'object'){
+  if(Array.isArray(a) && Array.isArray(b) && a.length !== b.length) return { path, gasCount:a.length, sbCount:b.length };
+  const keys = Array.from(new Set(Object.keys(a).concat(Object.keys(b))));
+  for(const k of keys){ const d = _sbFirstDiff(a[k], b[k], path + '/' + k); if(d) return d; }
+ }
+ const snip = v => { const s = JSON.stringify(v); return s === undefined ? '(없음)' : s.slice(0, 300); };
+ return { path, gas:snip(a), sb:snip(b) };
+}
+const _sbShadowAt = {};
+let _sbLastWriteAt = 0;
+function _sbShadowOn(){ try{ return localStorage.getItem('iruri_shadow') !== 'off'; }catch(_){ return true; } }
+function _sbShadowAfterGet(params, r){
+ if(!_sbShadowOn() || !params || !r || r._busy || r.unchanged || r.ok === false) return;
+ const action = params.action;
+ if(!_SB_GET[action] || !_SB_PROJ[action] || !_sbGetSession()) return;
+ if(Date.now() - _sbLastWriteAt < 12*60*1000) return;     // 방금 저장 → Supabase가 아직 따라오는 중
+ const p = Object.assign({}, params); delete p.v;
+ const key = JSON.stringify(p);
+ if(_sbShadowAt[key] && Date.now() - _sbShadowAt[key] < 10*60*1000) return;
+ _sbShadowAt[key] = Date.now();
+ setTimeout(()=>{ _sbShadowCompare(action, p, r).catch(()=>{}); }, 1500);
+}
+async function _sbShadowCompare(action, p, gasRes){
+ const sbRes = await _SB_GET[action](p);
+ const ga = _sbNorm(_SB_PROJ[action](gasRes)), sa = _sbNorm(_SB_PROJ[action](sbRes));
+ if(ga === undefined && sa === undefined) return;
+ const d = _sbFirstDiff(ga, sa, '');
+ const okKey = 'iruri_shadow_ok_' + action;
+ if(!d){
+  try{ if(Date.now() - Number(localStorage.getItem(okKey)||0) < 3600*1000) return; localStorage.setItem(okKey, String(Date.now())); }catch(_){}
+ }
+ await _sbRest('shadow_diffs', { method:'POST', headers:{ 'Content-Type':'application/json', Prefer:'return=minimal' },
+  body: JSON.stringify({ app_ver: (typeof SYSTEM_VERSION !== 'undefined' ? SYSTEM_VERSION : ''), action, params:p,
+   summary: d ? '다름' : '같음', detail: d || null }) });
+}
+
+/* v19.09: 읽은 뒤 Supabase와 나란히 비교(화면·동작은 그대로) */
+async function gasGet(params, ms, scope){
+ const r = await _gasGetRaw(params, ms, scope);
+ try{ _sbShadowAfterGet(params, r); }catch(_){}
+ return r;
+}
+async function _gasGetRaw(params, ms=45000, scope){
  const qs = new URLSearchParams(params).toString();
  if(scope) _srvBegin(scope);
  // v17.30: '서버가 응답했는가'로 판정. 서버가 정상 JSON을 주면(설령 {ok:false} '데이터 없음'
@@ -20110,6 +20363,7 @@ async function gasPost(body, ms=45000){
   // v19.02: 저장 요청마다 앱 버전을 같이 보냄 → 서버가 기준보다 옛 앱의 '덮어쓰기 저장'을 거절할 수 있게
   const _b = Object.assign({}, body, {appVer:(typeof SYSTEM_VERSION!=='undefined'?SYSTEM_VERSION:'')});
   const _ctrSave = body && body.action==='saveCenter' && body.center;   // v19.03: 저장 성공 전까지 '못 올린 센터'로 기억
+  if(body && body.action!=='updatePresence' && body.action!=='removePresence') _sbLastWriteAt = Date.now();   // v19.09: 방금 저장 → 비교 잠시 쉼
   if(_ctrSave) _ctrUnsentMark(body.center, true);
   const res = await fetch(GAS_URL, {method:'POST', body:JSON.stringify(_b), signal:ctrl.signal});
   const r = _gasParse(await res.text());
@@ -20691,6 +20945,7 @@ function goTeacherFromLanding(){
 // 로그아웃 (수동) - sessionStorage 클리어
 function doLogout(){
  if(_pendingSyncList().length){ _syncThen(doLogout); return; }   // v18.64: 반영 중이면 다 올린 뒤 로그아웃
+ try{ _sbSignOut(); }catch(_){}   // v19.09
  sessionStorage.removeItem('iruri_session');
  _stopPresence(window._loggedInTeacher);
  sessionStorage.removeItem('iruri_admin_session'); try{ sessionStorage.removeItem('iruri_last_view'); }catch(_){}
@@ -20762,9 +21017,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.08&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.09&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.08&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.09&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
