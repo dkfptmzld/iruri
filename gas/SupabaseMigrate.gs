@@ -78,6 +78,14 @@ function sbMigSheets_() {
     var sh = sheets[s], name = sh.getName();
     var rng = sh.getDataRange();
     var vals = rng.getValues(), disp = rng.getDisplayValues();
+    sbPushSheet_(name, vals, disp);
+    summary.push({ sheet: name, rows: vals.length, cols: vals.length ? vals[0].length : 0 });
+  }
+  sbLog_('sheets', { spreadsheet: ss_().getId().slice(0, 6) + '…', count: sheets.length, sheets: summary });
+  return summary;
+}
+/* 시트 한 탭을 Supabase에 그대로(행 번호 그대로, 줄어든 행은 정리) */
+function sbPushSheet_(name, vals, disp) {
     var rows = [];
     for (var i = 0; i < vals.length; i++) {
       rows.push({ sheet: name, row_no: i + 1, cells: disp[i], vals: vals[i].map(sbCellVal_) });
@@ -95,10 +103,6 @@ function sbMigSheets_() {
       batch.push(rows[j]); size += len;
     }
     if (batch.length) sbJson_('post', '/rest/v1/legacy_sheet_rows?on_conflict=sheet,row_no', batch, { Prefer: 'resolution=merge-duplicates,return=minimal' });
-    summary.push({ sheet: name, rows: vals.length, cols: vals.length ? vals[0].length : 0 });
-  }
-  sbLog_('sheets', { spreadsheet: ss_().getId().slice(0, 6) + '…', count: sheets.length, sheets: summary });
-  return summary;
 }
 
 /* ── 2) 드라이브: 시스템 폴더 4개의 모든 파일 ── */
@@ -217,4 +221,92 @@ function sbClearTriggers_() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
     if (t.getHandlerFunction() === 'migrateAllToSupabase') ScriptApp.deleteTrigger(t);
   });
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+ *  2단계: 따라 저장(미러) — 전환 전까지 구글 시트·드라이브의 변화를 Supabase에 계속 반영
+ *
+ *  · 10분마다: 스프레드시트가 바뀌었으면 탭마다 내용 지문(MD5)을 비교해 '바뀐 탭만' 다시 복사
+ *             (앱이 바꾼 것 + 시트를 손으로 고친 것 모두), 정산스냅샷 폴더는 이름·수정시각 비교,
+ *             영수증·일지 시트가 바뀌면 그 폴더의 새 파일만 올림 → 바뀐 게 있으면 정리 테이블 다시 맞춤
+ *  · 매일 새벽 4시: 모든 탭·모든 폴더(자동백업 포함)를 한 번 더 전부 맞춤
+ *  · 원본은 읽기만 함. 앱 저장(Code.gs)과 무관하게 돌아가므로 앱 속도에 영향 없음
+ *
+ *  설치: setupSupabaseMirror 실행(한 번) / 중지: stopSupabaseMirror
+ * ════════════════════════════════════════════════════════════════════ */
+var SB_MIRROR = 'SB_MIRROR_STATE';
+
+function setupSupabaseMirror() {
+  stopSupabaseMirror();
+  ScriptApp.newTrigger('supabaseMirrorTick').timeBased().everyMinutes(10).create();
+  ScriptApp.newTrigger('supabaseMirrorNightly').timeBased().everyDays(1).atHour(4).create();
+  supabaseMirrorTick();   // 지금 한 번(처음엔 모든 탭 지문을 새로 기록)
+  Logger.log('✅ 따라 저장 설치 완료 — 10분마다 + 매일 새벽 4시');
+}
+function stopSupabaseMirror() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var fn = t.getHandlerFunction();
+    if (fn === 'supabaseMirrorTick' || fn === 'supabaseMirrorNightly') ScriptApp.deleteTrigger(t);
+  });
+}
+function supabaseMirrorNightly() { supabaseMirrorTick(true); }
+
+function supabaseMirrorTick(force) {
+  force = (force === true);
+  var p = PropertiesService.getScriptProperties();
+  var st = JSON.parse(p.getProperty(SB_MIRROR) || '{}');
+  if (st.running && Date.now() - st.running < 6 * 60 * 1000) return;   // 앞 실행이 아직 도는 중
+  st.running = Date.now(); p.setProperty(SB_MIRROR, JSON.stringify(st));
+  var changed = [], files = 0;
+  try {
+    // ① 시트: 스프레드시트 수정시각이 바뀌었을 때만 탭별 지문 비교
+    var lu = 0; try { lu = DriveApp.getFileById(ss_().getId()).getLastUpdated().getTime(); } catch (e) {}
+    if (force || !lu || lu !== st.lu) {
+      var hashes = st.h || {};
+      ss_().getSheets().forEach(function (sh) {
+        var name = sh.getName(), rng = sh.getDataRange();
+        var vals = rng.getValues(), disp = rng.getDisplayValues();
+        var h = md5hex_(JSON.stringify(disp) + '\u0001' + JSON.stringify(vals.map(function (r) { return r.map(sbCellVal_); })));
+        if (force || hashes[name] !== h) { sbPushSheet_(name, vals, disp); hashes[name] = h; changed.push(name); }
+      });
+      st.h = hashes; st.lu = lu;
+    }
+    // ② 파일: 정산스냅샷은 매번(작음), 영수증·일지는 그 시트가 바뀌었을 때, 자동백업은 매일 새벽
+    var F = {}; sbMigFolders_().forEach(function (c) { F[c.key] = c; });
+    if (F.snapshots) files += sbSyncFolder_(F.snapshots, true);
+    if (F.receipts && (force || changed.indexOf(SHEET_RECEIPTS) >= 0)) files += sbSyncFolder_(F.receipts, false);
+    if (F.journal  && (force || changed.indexOf(SHEET_JOURNAL) >= 0))  files += sbSyncFolder_(F.journal, false);
+    if (F.backups  && force) files += sbSyncFolder_(F.backups, false);
+    // ③ 바뀐 게 있으면 정리 테이블 다시 맞춤
+    if (changed.length || files) {
+      var res = sbJson_('post', '/rest/v1/rpc/sb_rebuild', {});
+      sbLog_(force ? 'mirror_full' : 'mirror', { sheets: changed, files: files, rebuilt: res });
+    }
+    st.last = new Date().toISOString(); st.lastError = '';
+  } catch (e) {
+    st.lastError = String(e).slice(0, 300);
+    sbLog_('mirror_error', { message: st.lastError, sheets: changed });
+  } finally {
+    st.running = 0; p.setProperty(SB_MIRROR, JSON.stringify(st));
+  }
+}
+
+/* 폴더 맞추기: 새 파일은 올리고, checkChanged 면 이름·수정시각이 바뀐 파일도 다시 올림(정산스냅샷의 .bak 이름 바뀜 포함) */
+function sbSyncFolder_(cfgItem, checkChanged) {
+  var have = {}, from = 0, step = 1000;
+  while (true) {
+    var part = sbJson_('get', '/rest/v1/legacy_files?select=drive_id,name,modified_at&folder=like.' +
+      encodeURIComponent(cfgItem.key + '*') + '&order=drive_id&offset=' + from + '&limit=' + step);
+    (part || []).forEach(function (r) { have[r.drive_id] = r; });
+    if (!part || part.length < step) break;
+    from += step;
+  }
+  var items = sbWalk_(cfgItem.folder, '', []), n = 0;
+  items.forEach(function (it) {
+    var f = it.file, old = have[f.getId()];
+    var need = !old || (checkChanged && (old.name !== f.getName() || Date.parse(old.modified_at) !== f.getLastUpdated().getTime()));
+    if (need) { sbUploadFile_(f, it.path, cfgItem); n++; }
+  });
+  return n;
 }
