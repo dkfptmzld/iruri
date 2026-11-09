@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.04">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.05">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.04">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.05">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.04</title>
+<title>수업기록표 정산 시스템 v19.05</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -252,6 +252,7 @@ tbody tr:hover td{background:var(--surface2);}
 .dep-gchip b{font-weight:600;color:var(--text3);font-variant-numeric:tabular-nums;}   /* v18.15: 표 위 도구 줄(고정) */
 .dep-bar > div:last-child{border-bottom:none !important;}
 .dep-table tr:hover td{background:var(--surface2);}
+.dep-new-badge{display:inline-block;background:var(--blue);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.3px;padding:1px 6px;border-radius:6px;margin-right:6px;vertical-align:1px;}
 .dep-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;}
 .dep-pill.matched{background:var(--green-bg);color:var(--green);}
 .dep-pill.unmatched{background:var(--red-bg);color:var(--red);}
@@ -283,6 +284,7 @@ tbody tr:hover td{background:var(--surface2);}
  .dep-table th.dep-refh{padding-left:22px;}
  .dep-table td.dep-ref.dep-gap{padding-left:22px;}
  .dep-table tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--surface2) 45%,var(--surface));}
+.dep-rectbl tbody tr.dep-rnew:not(.dep-rsel) td{background:var(--blue-bg);}   /* v19.05: 최근 업로드로 새로 들어온 입금 */
  .dep-table tbody tr:hover td{background:var(--surface2);}
  .dep-table tbody tr.dep-rsel td{background:var(--red-bg);}
  .dep-maptbl td.mb.dep-wrap{white-space:normal;max-width:300px;}
@@ -302,6 +304,7 @@ tbody tr:hover td{background:var(--surface2);}
  .dep-rectbl tr.dep-rsel{background:var(--red-bg);}
  .dep-rectbl tr:hover, .dep-unmtbl tr:hover{background:var(--surface2);}
  .dep-rectbl tr.dep-rsel:hover{background:var(--red-bg);}
+.dep-rectbl tbody tr.dep-rnew:not(.dep-rsel){background:var(--blue-bg);}   /* v19.05: 최근 업로드로 새로 들어온 입금 */
 }
 .dcp-pop{position:fixed;z-index:100000;display:none;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:4px;text-align:left;}
 .dcp-it{padding:7px 10px;border-radius:7px;font-size:13px;color:var(--text);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -3857,6 +3860,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
      <div style="font-size:30px;line-height:1;margin-bottom:8px;">📥</div>
      <div style="font-size:14px;font-weight:700;color:var(--text);">엑셀 파일을 끌어다 놓거나 클릭해서 선택</div>
      <div style="font-size:12px;color:var(--text3);margin-top:4px;">우리은행 거래내역 .xlsx · 회사 계좌가 여러 개면 모두 추가하세요</div>
+     <div style="font-size:11.5px;color:var(--blue);margin-top:6px;">🆕 이미 등록된 입금은 건너뛰고 <b>새 입금만 추가</b>돼요 — 기간이 겹쳐도 괜찮아요</div>
     </div>
 
     <div id="depUploadList" style="margin-top:14px;"></div>
@@ -5130,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.04';
+const SYSTEM_VERSION='v19.05';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -6738,10 +6742,15 @@ let _depRecStatus='all', _depRecSort='recent', _depRecQ='';
 function _depSetRecStatus(k){ _depRecStatus=k; renderDepRecords(); }
 function _depSetRecSort(k){ _depRecSort=k; renderDepRecords(); }
 function _depRecSearch(v){ _depRecQ=v; _depRenderRecBody(); }   // 입력창 유지(한글 조합 안 깨짐)
+function _depFmtStamp(iso){ const d=new Date(iso); if(isNaN(d)) return ''; const p=n=>String(n).padStart(2,'0'); return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+/* v19.05: 가장 최근 엑셀 업로드로 새로 들어온 입금인지 */
+function _depIsNew(r){ const L=depositDB.lastUpload; return !!(L && L.batchId && r.uploadBatchId===L.batchId); }
+function _depRecStatusHit(r,k){ return k==='all' || (k==='new' ? _depIsNew(r) : k==='old' ? !_depIsNew(r) : (r.matchStatus||'unmatched')===k); }
+function _depShowNewRecs(){ _depSwitchSub('records'); _depRecStatus='new'; renderDepRecords(); }
 function _depRecView(){
  const all=_depPeriodRecs();
  let rs=_depRecAcct==='all' ? all : all.filter(r=>(r.account||'')===_depRecAcct);
- if(_depRecStatus!=='all') rs=rs.filter(r=>(r.matchStatus||'unmatched')===_depRecStatus);
+ if(_depRecStatus!=='all') rs=rs.filter(r=>_depRecStatusHit(r,_depRecStatus));
  const q=String(_depRecQ||'').trim().toLowerCase();
  if(q) rs=rs.filter(r=>[r.depositorName,r.branchRaw,r.matchedCenterName,r.region,_depMaskAcct(r.account),String(r.amount),r.date].join(' ').toLowerCase().includes(q));
  const key=r=>(r.date||'')+' '+(r.time||'');
@@ -6750,10 +6759,12 @@ function _depRecView(){
 }
 function _depRecBodyHTML(rs){
  const rows=rs.map(r=>{ const cn=r.matchedCenterName?`${escH(r.matchedCenterName)}${r.region?` <span style="color:var(--text3)">(${escH(r.region)})</span>`:''}`:'';
-  return `<tr${_depRecSel.has(r.depositId)?' class="dep-rsel"':''}>
+  const nw=_depIsNew(r);
+  const tc=[_depRecSel.has(r.depositId)?'dep-rsel':'', nw?'dep-rnew':''].filter(Boolean).join(' ');
+  return `<tr${tc?` class="${tc}"`:''}>
    <td class="rc" style="width:28px;"><input type="checkbox" class="dep-rchk" data-id="${escH(r.depositId)}" ${_depRecSel.has(r.depositId)?'checked':''} onchange="_depRecToggle(this)" style="width:15px;height:15px;cursor:pointer;"></td>
    <td class="rd dep-fit" style="white-space:nowrap;font-variant-numeric:tabular-nums;">${_depFmtDate(r)}</td>
-   <td class="rn dep-fit" style="font-weight:600;">${escH(r.depositorName||'')}</td>
+   <td class="rn dep-fit" style="font-weight:600;">${nw?'<span class="dep-new-badge" title="가장 최근 엑셀 업로드로 새로 들어온 입금">NEW</span>':''}${escH(r.depositorName||'')}</td>
    <td class="rm dep-fit" style="text-align:right;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;">${fmtDepWon(r.amount)}</td>
    <td class="rs dep-fit">${_depStatusPill(r)}${cn?`<span class="dep-rk-m">→ ${cn}</span>`:''}</td>
    <td class="rk dep-fit" style="font-weight:600;">${cn}</td>
@@ -6763,7 +6774,7 @@ function _depRecBodyHTML(rs){
      ? `<button class="dep-tbtn primary sm" onclick="_depRecRegister('${escAttrJS(r.depositId)}')" title="이 입금을 센터에 연결(같은 취급점·비슷한 이름 입금도 함께)">센터 등록</button> `
      : (r.matchStatus==='matched' ? `<button class="dep-tbtn sm" onclick="_depRecRelink('${escAttrJS(r.depositId)}')" title="잘못 연결됐으면 다른 센터로 옮기기">센터 변경</button> ` : '')}<button class="dep-tbtn danger sm" onclick="_depDeleteRecord('${escAttrJS(r.depositId)}')" title="이 입금 삭제">삭제</button></td>
  </tr>`; }).join('');
- return rows || `<tr><td colspan=9 class="dep-empty">${!_depPeriodRecs().length?'입금내역이 없습니다.':(_depRecStatus==='unmatched'&&!_depRecQ?'미등록 입금이 없어요 🎉 모든 입금이 센터에 연결됐어요':'조건에 맞는 입금이 없습니다.')}</td></tr>`;
+ return rows || `<tr><td colspan=9 class="dep-empty">${!_depPeriodRecs().length?'입금내역이 없습니다.':(_depRecStatus==='unmatched'&&!_depRecQ?'미등록 입금이 없어요 🎉 모든 입금이 센터에 연결됐어요':(_depRecStatus==='new'&&!_depRecQ?'이 회차에는 최근 업로드로 새로 들어온 입금이 없어요':'조건에 맞는 입금이 없습니다.'))}</td></tr>`;
 }
 /* v18.43: 입금내역에서 바로 센터 등록 / 센터 변경 */
 function _depRecRegister(depositId){
@@ -6796,13 +6807,14 @@ function renderDepRecords(){
  if(_depRecAcct!=='all' && !accts.includes(_depRecAcct)) _depRecAcct='all';
  const live=new Set(all.map(r=>r.depositId)); [..._depRecSel].forEach(id=>{ if(!live.has(id)) _depRecSel.delete(id); });
  const rs=_depRecView();
- const cnt=k=>all.filter(r=>(_depRecAcct==='all'||(r.account||'')===_depRecAcct) && (k==='all'||(r.matchStatus||'unmatched')===k)).length;
+ const cnt=k=>all.filter(r=>(_depRecAcct==='all'||(r.account||'')===_depRecAcct) && _depRecStatusHit(r,k)).length;
  const fb=(key,label)=>`<button class="btn sm${_depRecStatus===key?' primary':''}" onclick="_depSetRecStatus('${key}')">${label} <span style="opacity:.7;font-weight:400;">${cnt(key)}</span></button>`;
  const sb=(key,label)=>`<button class="btn sm${_depRecSort===key?' primary':''}" onclick="_depSetRecSort('${key}')">${label}</button>`;
  const head=`<div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border);">
     <span id="depRecSum" style="font-size:12.5px;color:var(--text2)">${_depRecSummary(rs)}</span>
     <span style="flex:1"></span>
     ${fb('all','전체')} ${fb('matched','✅ 매칭')} ${fb('unmatched','⚠ 미등록')} ${fb('excluded','제외')}
+    ${depositDB.lastUpload?`<span style="width:1px;height:18px;background:var(--border);"></span>${fb('new','🆕 신규')} ${fb('old','기존')}`:''}
     <span style="width:1px;height:18px;background:var(--border);"></span>
     ${sb('recent','🕒 최근순')} ${sb('amount','💰 금액 큰 순')}
     <input value="${escH(_depRecQ)}" oninput="_depRecSearch(this.value)" placeholder="기재·취급점·센터 검색" style="height:26px;border:1px solid var(--border2);border-radius:8px;padding:0 10px;font-size:12px;background:var(--surface);color:var(--text);outline:none;min-width:150px;">
@@ -6813,12 +6825,16 @@ function renderDepRecords(){
    + abtn('all',`전체 (${accts.length}개)`,all.length,allAmt)
    + accts.map(a=>abtn(a,escH(_depMaskAcct(a)),byAcct[a].n,byAcct[a].amt)).join('')
    + `</div>` : '';
+ const L=depositDB.lastUpload, nNew=all.filter(_depIsNew).length;
+ const newLine = L && nNew ? `<div style="padding:7px 12px;font-size:12.5px;color:var(--blue);background:var(--blue-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span class="dep-new-badge">NEW</span><span>최근 업로드 <b>${escH(_depFmtStamp(L.at))}</b> — 이 회차에 새 입금 <b>${nNew}건</b> 추가 · 나머지 <b>${all.length-nNew}건</b>은 기존 입금</span>
+    <span style="flex:1"></span>${_depRecStatus==='new'?`<button class="dep-tbtn sm" onclick="_depSetRecStatus('all')">전체 보기</button>`:`<button class="dep-tbtn sm" onclick="_depSetRecStatus('new')">신규만 보기</button>`}</div>` : '';
  const selBar=`<div id="depRecSelBar" style="padding:7px 12px;font-size:12.5px;color:var(--text2);border-bottom:1px solid var(--border);display:${_depRecSel.size?'flex':'none'};align-items:center;gap:8px;flex-wrap:wrap;background:var(--red-bg);">
     <b id="depRecSelN">${_depRecSel.size}건 선택</b><span id="depRecSelAmt" style="color:var(--text3);"></span><span style="flex:1"></span>
     <button class="dep-tbtn sm" onclick="_depRecSelClear()">선택 해제</button>
     <button class="dep-tbtn danger sm" onclick="_depDeleteSelected()">선택 삭제</button></div>`;
  const inner=`<table class="dep-table dep-rectbl"><thead><tr><th style="width:28px;"><input type="checkbox" id="depRecAll" onchange="_depRecToggleAll(this.checked)" title="보이는 입금 모두 선택" style="width:15px;height:15px;cursor:pointer;"></th><th>입금일시</th><th>기재내용</th><th style="text-align:right;">금액</th><th>상태</th><th>매칭 센터</th><th class="dep-refh">취급점</th><th>계좌</th><th></th></tr></thead><tbody id="depRecBody">${_depRecBodyHTML(rs)}</tbody></table>`;
- el.innerHTML=_depPanelHTML('입금내역',`(${all.length}건${_depRecAcct!=='all'?' · '+escH(_depMaskAcct(_depRecAcct)):''})`,inner,head+acctLine+selBar);
+ el.innerHTML=_depPanelHTML('입금내역',`(${all.length}건${_depRecAcct!=='all'?' · '+escH(_depMaskAcct(_depRecAcct)):''})`,inner,head+newLine+acctLine+selBar);
  _depRecSelUpdate();
 }
 let _depRecSel=new Set();
@@ -6841,6 +6857,7 @@ function _depDeleteSelected(){
  showConfirm({icon:'🗑️',title:`입금 ${recs.length}건 삭제`,desc:`선택한 입금 <b>${recs.length}건</b>(합계 ${fmtDepWon(amt)})을 삭제할까요?<br><small style="color:var(--text3)">${list}</small><br><small style="color:var(--text3)">미등록 입금처·입금현황에서도 빠져요. 잘못 지웠으면 변경이력에서 되돌릴 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
   const ids=new Set(recs.map(r=>r.depositId));
   _depLog('rec', `입금 ${recs.length}건 삭제 (입금내역에서 선택)`, recs.slice(0,40).map(r=>`${_depNormDate(r.date)} ${String(r.time||'').slice(0,5)} · ${r.depositorName||''} · ${fmtDepWon(r.amount)}`).join('\n')+(recs.length>40?`\n… 외 ${recs.length-40}건`:'')+`\n합계 ${fmtDepWon(amt)}`, [...new Set(recs.map(r=>r.periodId))].join(', '));
+  _depRememberDeleted(recs);   // v19.05: 누적 업로드 때 되살리지 않게
   depositDB.records=depositDB.records.filter(r=>!ids.has(r.depositId));   // ①
   _depRecSel.clear();
   saveDepositDB();          // ③
@@ -6955,6 +6972,7 @@ function _depDeleteRecord(depositId){
  const label=`${_depFmtDate(rec)} · ${esc(rec.depositorName||'')} · ${fmtDepWon(rec.amount)}`;
  showConfirm({icon:'🗑️',title:'입금내역 삭제',desc:`아래 입금내역을 삭제할까요?<br><small style="color:var(--text3)">${label}</small><br><small style="color:var(--text3)">필요 없는 내역(본인이체·이자 등)만 지우세요. 잘못 지웠으면 변경이력에서 되돌릴 수 있어요.</small>`,okText:'삭제',okStyle:'danger',onOk:()=>{
   _depLog('rec', `입금 삭제: ${rec.depositorName||'(기재 없음)'}`, `${_depNormDate(rec.date)} ${String(rec.time||'').slice(0,5)} · ${fmtDepWon(rec.amount)} · 취급점 ${rec.branchRaw||'-'} · 계좌 ${_depMaskAcct(rec.account)}`, rec.periodId);
+  _depRememberDeleted([rec]);   // v19.05: 누적 업로드 때 되살리지 않게
   depositDB.records = depositDB.records.filter(r=>r.depositId!==depositId); // ①
   saveDepositDB();          // ③
   renderDepositView();      // ④
@@ -7298,30 +7316,61 @@ function _depRunUploadMatch(){
  }, 60);
 }
 
+/* ── v19.05: 누적 업로드 ──
+   예전: 같은 회차+계좌를 다시 올리면 기존 내역을 통째로 교체 → 새로 들어온 부분만 올리면 앞부분이 사라짐
+   지금: 이미 있는 입금(어느 회차에 있든)은 건너뛰고 '새 입금만' 추가. 기존 매칭·센터 연결은 그대로 유지.
+   같은 입금 = 계좌·날짜·시각·적요·기재·취급점·금액이 모두 같음(_depDupKey, 회차는 빼고 비교)
+   입금내역에서 지운 입금은 기억해 두고(deletedKeys) 다시 올려도 되살리지 않음 */
+function _depTxKey(r){ return _depDupKey(Object.assign({}, r, {periodId:''})); }
+function _depRememberDeleted(recs){
+ const s=new Set(depositDB.deletedKeys||[]); (recs||[]).forEach(r=>s.add(_depTxKey(r)));
+ depositDB.deletedKeys=[...s].slice(-3000);
+}
+function _depMergeUpload(recs, B){
+ const at=new Date().toISOString();
+ const have=new Map();   // 이미 있는 입금: 키 → {남은 개수, 들어 있는 회차}
+ depositDB.records.forEach(r=>{ const k=_depTxKey(r), o=have.get(k); if(o) o.n++; else have.set(k,{n:1, period:r.periodId||''}); });
+ const del=new Set(depositDB.deletedKeys||[]);
+ const fresh=[], dupSame=[], dupOther=[], gone=[];
+ recs.forEach(r=>{
+  const k=_depTxKey(r), h=have.get(k);
+  if(h && h.n>0){ h.n--; r._inPeriod=h.period; (h.period===(r.periodId||'') ? dupSame : dupOther).push(r); return; }
+  if(del.has(k)){ gone.push(r); return; }
+  r.uploadBatchId=B; r.addedAt=at; fresh.push(r);
+ });
+ depositDB.records = depositDB.records.concat(fresh);
+ return { fresh, dupSame, dupOther, gone, at };
+}
+/* 업로드 결과 기록(배치·최근 업로드·변경이력) — 두 업로드 경로 공통 */
+function _depRecordUpload(mg, B, files, periods){
+ const byPA={}; mg.fresh.forEach(r=>{ const k=(r.periodId||'')+'|'+(r.account||''); byPA[k]=(byPA[k]||0)+1; });
+ Object.keys(byPA).forEach(k=>{ const [p,a]=k.split('|');
+  (depositDB.batches=depositDB.batches||[]).push({batchId:B,period:p,account:a,label:files.join(', ')||'엑셀',uploadedAt:mg.at,count:byPA[k]}); });
+ depositDB.lastUpload={ batchId:B, at:mg.at, files, periods, newCount:mg.fresh.length,
+   dupSame:mg.dupSame.length, dupOther:mg.dupOther.length, gone:mg.gone.length };
+ const accts=[...new Set([...mg.fresh,...mg.dupSame,...mg.dupOther].map(r=>_depMaskAcct(r.account)))];
+ const lines=mg.fresh.slice(0,40).map(r=>`+ ${_depNormDate(r.date)} ${String(r.time||'').slice(0,5)} · ${r.depositorName||''} · ${fmtDepWon(r.amount)}`).join('\n')+(mg.fresh.length>40?`\n… 외 ${mg.fresh.length-40}건`:'');
+ const skip=[mg.dupSame.length?`이미 있던 ${mg.dupSame.length}건 그대로`:'', mg.dupOther.length?`다른 회차에 이미 있는 ${mg.dupOther.length}건 건너뜀`:'', mg.gone.length?`예전에 삭제한 ${mg.gone.length}건 제외`:''].filter(Boolean).join(' · ');
+ _depLog('upload', `엑셀 업로드: 새 입금 ${mg.fresh.length}건 추가`, `파일 ${files.join(', ')||'엑셀'}\n회차 ${periods.join(', ')} · 계좌 ${accts.join(', ')}${skip?`\n${skip}`:''}${lines?`\n${lines}`:''}`, periods.join(', '));
+}
+
 function _depCommitUploadQueue(items){
  const autosplit=!!(document.getElementById('depAutoSplit')&&document.getElementById('depAutoSplit').checked);
  const B=_depUid('up');
- const allNew=[], periodsSet=new Set(), coverKeys=new Set();
+ const allNew=[], periodsSet=new Set();
  items.forEach(it=>{
   const acct=it.account||('file:'+(it.name||'기타'));
   it.records.forEach(r=>{
    r.account=acct;
    r.periodId = autosplit ? (((r.date||'').slice(0,7))||_depActivePeriod()) : _depActivePeriod();
-   r.uploadBatchId=B;
-   periodsSet.add(r.periodId); coverKeys.add(r.periodId+'|'+acct); allNew.push(r);
+   periodsSet.add(r.periodId); allNew.push(r);
   });
  });
- // 덮는 (회차+계좌)만 교체, 나머지 유지
- { const replaced=depositDB.records.filter(r=> coverKeys.has((r.periodId||'')+'|'+(r.account||''))).length;
-   const accts=[...new Set(items.map(it=>_depMaskAcct(it.account||'')))];
-   _depLog('upload', `엑셀 업로드: 입금 ${allNew.length}건`, `파일 ${items.map(it=>it.name||'엑셀').join(', ')}\n회차 ${[...periodsSet].sort().join(', ')} · 계좌 ${accts.join(', ')}${replaced?` · 기존 ${replaced}건 교체`:''}`, [...periodsSet].sort().join(', ')); }
- depositDB.records = depositDB.records.filter(r=> !coverKeys.has((r.periodId||'')+'|'+(r.account||'')) ).concat(allNew);
- depositDB.batches = (depositDB.batches||[]).filter(b=> !coverKeys.has((b.period||'')+'|'+(b.account||'')) );
- items.forEach(it=>{
-  const acct=it.account||('file:'+(it.name||'기타'));
-  [...new Set(it.records.map(r=>r.periodId))].forEach(p=>
-   depositDB.batches.push({batchId:B,period:p,account:acct,label:it.name||'엑셀',uploadedAt:new Date().toISOString(),count:it.records.filter(r=>r.periodId===p).length}));
- });
+ // v19.05: 교체 대신 누적 — 새 입금만 추가 (되돌리기 정보가 남도록 바꾸기 전에 상태를 찍어 둠)
+ _depTxStart();
+ const mg=_depMergeUpload(allNew, B);
+ _depRecordUpload(mg, B, items.map(it=>it.name||'엑셀'), [...periodsSet].sort());
+ _depLastMerge=mg;
  const periods=[...periodsSet].sort();
  _depPeriod = periods[periods.length-1] || _depPeriod;
  const res=runMatching();     // ②③ 재매칭 + 저장
@@ -7335,10 +7384,58 @@ function _depCommitUploadQueue(items){
  const matchRate = denom>0 ? Math.round(res.matched/denom*100) : 0;   // 입금 건 중 센터 매칭된 비율
  const payRate = roster.length>0 ? Math.round((roster.length-unpaid.length)/roster.length*100) : 0; // 명단 중 입금 완료 비율
  return { matched:res.matched, unmatched:res.unmatched, excluded:res.excluded, matchRate, payRate,
-          newCount:allNew.length, periods, period:_depActivePeriod(),
+          newCount:mg.fresh.length, fileCount:allNew.length, merge:mg, periods, period:_depActivePeriod(),
           rosterTotal:roster.length, paidCnt:roster.length-unpaid.length, unpaidCnt:unpaid.length, byRegion };
 }
 
+/* v19.05: 업로드 결과 — 새로 추가된 입금 / 이미 있던 입금 구분 */
+let _depLastMerge=null;
+function _depUploadMergeHTML(mg){
+ if(!mg) return '';
+ const cur=new Map((depositDB.records||[]).map(r=>[r.depositId,r]));
+ const row=(r,tag)=>{ const x=cur.get(r.depositId)||r;
+   const cn=x.matchStatus==='matched'&&x.matchedCenterName ? `<span style="color:var(--green);">→ ${esc(x.matchedCenterName)}</span>` : (x.matchStatus==='excluded'?'<span style="color:var(--text3);">제외</span>':(tag?'':'<span style="color:var(--amber);">미등록</span>'));
+   return `<div style="display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px dashed var(--border);font-size:12px;">
+     <span style="color:var(--text3);white-space:nowrap;font-variant-numeric:tabular-nums;">${esc(_depNormDate(r.date).slice(5))} ${esc(String(r.time||'').slice(0,5))}</span>
+     <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:var(--text);">${esc(r.depositorName||'')}</span>
+     <span style="white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums;">${fmtDepWon(r.amount)}</span>
+     <span style="white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis;">${tag||cn}</span></div>`; };
+ const sum=a=>a.reduce((t,r)=>t+(Number(r.amount)||0),0);
+ const box=(title,col,bg,list,tagFn,open)=> list.length ? `<details ${open?'open':''} style="margin:10px 22px 0;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);overflow:hidden;">
+   <summary style="cursor:pointer;padding:10px 14px;font-size:12.5px;font-weight:700;color:${col};background:${bg};list-style:none;display:flex;align-items:center;gap:6px;">${title} <b>${list.length}건</b><span style="font-weight:500;color:var(--text3);">· ${fmtDepWon(sum(list))}</span><span style="flex:1"></span><span style="font-size:11px;color:var(--text3);font-weight:500;">펼치기/접기</span></summary>
+   <div style="max-height:190px;overflow-y:auto;padding:2px 14px 8px;">${list.slice().sort((a,b)=>((b.date||'')+(b.time||'')).localeCompare((a.date||'')+(a.time||''))).map(r=>row(r,tagFn?tagFn(r):'')).join('')}</div></details>` : '';
+ const tile=(n,label,col)=>`<div style="flex:1;text-align:center;padding:10px 4px;"><div style="font-size:22px;font-weight:800;color:${col};line-height:1;">${n}</div><div style="font-size:11px;color:var(--text3);margin-top:4px;">${label}</div></div>`;
+ const dupAll=mg.dupSame.length+mg.dupOther.length;
+ return `<div style="margin:14px 22px 0;display:flex;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);">
+    ${tile('+'+mg.fresh.length,'🆕 새로 추가','var(--blue)')}
+    <div style="width:1px;background:var(--border);"></div>
+    ${tile(dupAll,'이미 있어서 건너뜀','var(--text2)')}
+    ${mg.gone.length?`<div style="width:1px;background:var(--border);"></div>${tile(mg.gone.length,'예전에 삭제한 입금','var(--text3)')}`:''}
+  </div>
+  ${mg.fresh.length?'':`<div style="margin:8px 22px 0;font-size:12px;color:var(--text3);text-align:center;">새로 들어온 입금이 없어요 — 파일 속 입금이 모두 이미 등록돼 있어요</div>`}
+  ${box('🆕 새로 추가된 입금','var(--blue)','var(--blue-bg)',mg.fresh,null,true)}
+  ${box('기존에 있던 입금 (그대로 둠)','var(--text2)','var(--surface2)',mg.dupSame,null,false)}
+  ${box('다른 회차에 이미 있는 입금 (건너뜀)','var(--amber)','var(--amber-bg)',mg.dupOther,r=>`<span style="color:var(--amber);">${esc(r._inPeriod||'')} 회차</span>`,false)}
+  ${mg.gone.length?`${box('예전에 삭제한 입금 (다시 넣지 않음)','var(--text3)','var(--surface2)',mg.gone,()=>'<span style="color:var(--text3);">삭제했던 입금</span>',false)}
+   <div style="margin:6px 22px 0;text-align:right;"><button class="dep-tbtn sm" onclick="_depReAddDeleted()" title="삭제했던 입금을 이번 회차에 다시 넣어요">삭제했던 ${mg.gone.length}건도 넣기</button></div>`:''}`;
+}
+/* 업로드 때 '예전에 삭제한 입금'으로 빠진 것을 다시 넣기 */
+function _depReAddDeleted(){
+ const mg=_depLastMerge; if(!mg || !mg.gone.length) return;
+ const B=(depositDB.lastUpload&&depositDB.lastUpload.batchId)||_depUid('up');
+ const keys=new Set(mg.gone.map(_depTxKey));
+ _depTxStart();
+ depositDB.deletedKeys=(depositDB.deletedKeys||[]).filter(k=>!keys.has(k));
+ const at=new Date().toISOString();
+ mg.gone.forEach(r=>{ r.uploadBatchId=B; r.addedAt=at; });
+ depositDB.records=depositDB.records.concat(mg.gone);
+ _depLog('upload', `삭제했던 입금 ${mg.gone.length}건 다시 넣기`, mg.gone.slice(0,40).map(r=>`+ ${_depNormDate(r.date)} ${String(r.time||'').slice(0,5)} · ${r.depositorName||''} · ${fmtDepWon(r.amount)}`).join('\n'), [...new Set(mg.gone.map(r=>r.periodId))].join(', '));
+ if(depositDB.lastUpload){ depositDB.lastUpload.newCount+=mg.gone.length; depositDB.lastUpload.gone=0; }
+ mg.fresh=mg.fresh.concat(mg.gone); mg.gone=[];
+ runMatching(); renderDepositView();
+ showToast(`삭제했던 입금 ${keys.size}건을 다시 넣었어요`);
+ _depCloseUpload();
+}
 function _depShowUploadResult(s){
  document.getElementById('depUploadProgress').style.display='none';
  const el=document.getElementById('depUploadResult'); el.style.display='block';
@@ -7357,8 +7454,9 @@ function _depShowUploadResult(s){
    <div style="font-size:17px;font-weight:800;margin-top:7px;color:var(--text);">매칭 완료</div>
    <div style="margin-top:10px;font-size:40px;font-weight:800;color:var(--green);letter-spacing:-1px;line-height:1;">${s.matchRate}<span style="font-size:20px;">%</span></div>
    <div style="font-size:12px;color:var(--text3);margin-top:3px;">매칭률 — 입금 ${s.matched+s.unmatched}건 중 <b style="color:var(--green)">${s.matched}건</b> 센터 매칭</div>
-   <div style="font-size:12px;color:var(--text3);margin-top:6px;">회차 <b style="color:var(--text2)">${esc(s.periods.join(', '))}</b> · 입금 <b style="color:var(--text2)">${s.newCount}건</b> 반영</div>
+   <div style="font-size:12px;color:var(--text3);margin-top:6px;">회차 <b style="color:var(--text2)">${esc(s.periods.join(', '))}</b> · 파일 속 입금 <b style="color:var(--text2)">${s.fileCount}건</b></div>
   </div>
+  ${_depUploadMergeHTML(s.merge)}
   <div style="display:flex;gap:9px;padding:14px 22px 2px;">
    ${tile('입금 확인', s.paidCnt+'곳', 'var(--green)')}
    ${tile('미입금', s.unpaidCnt+'곳', 'var(--red)')}
@@ -7371,6 +7469,7 @@ function _depShowUploadResult(s){
   </div>
   <div style="display:flex;justify-content:center;gap:12px;padding:20px 22px 22px;">
    <button class="dep-btn-lg ghost" onclick="_depCloseUpload()">닫기</button>
+   ${s.newCount?`<button class="dep-btn-lg ghost" onclick="_depCloseUpload();_depShowNewRecs();">🆕 새 입금만 보기</button>`:''}
    <button class="dep-btn-lg primary" onclick="_depCloseUpload();_depSwitchSub('unpaid');_depSetStatusFilter('unpaid');">미입금 자세히 보기</button>
   </div>`;
 }
@@ -20622,9 +20721,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.04&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.05&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.04&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.05&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
