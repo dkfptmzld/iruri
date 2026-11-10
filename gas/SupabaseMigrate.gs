@@ -310,3 +310,231 @@ function sbSyncFolder_(cfgItem, checkChanged) {
   });
   return n;
 }
+
+
+/* ════════════════════════════════════════════════════════════════════
+ *  3단계: 매일 밤 백업 — Supabase 의 모든 데이터를 구글 드라이브에 보관
+ *
+ *  · 매일 새벽 3시: Supabase 모든 테이블(새 테이블 생겨도 자동 포함) + 로그인 계정 + 내부 설정 + 저장소 파일 목록을
+ *    파일 하나(…json.gz)로 만들어  이루리/이루리_Supabase백업  폴더에 저장. 최근 60개(약 두 달) 보관
+ *  · 테이블마다 '서버의 행 수 = 받은 행 수' 를 확인하고, 다르면 한 번 더 받음(그래도 다르면 실패 처리)
+ *  · 앱에서 새로 올린 영수증 사진 등(드라이브에 원본이 없는 파일)은  …/파일  폴더에 한 번씩 복사(지우지 않음)
+ *  · 실패하면 구글이 자동으로 실패 알림 메일을 보냄(트리거 실패 알림)
+ *  · 매일 Supabase 를 쓰므로, 무료 플랜의 '7일 안 쓰면 일시정지'도 막아 줌
+ *  · 전환(따라 저장 중지) 뒤에도 그대로 계속 돌아감
+ *
+ *  설치: setupSupabaseBackup 실행(한 번, 지금 한 번 바로 백업) / 중지: stopSupabaseBackup
+ *  확인: checkSupabaseBackup — 마지막 백업 파일을 열어 지금 Supabase 와 행 수 비교
+ *  비상 복구: restoreSupabaseFromBackup — 아래 설명 참고(평소엔 절대 실행하지 말 것)
+ * ════════════════════════════════════════════════════════════════════ */
+var SB_BACKUP_FOLDER = '이루리_Supabase백업';
+var SB_BACKUP_FILES  = '파일';
+var SB_BACKUP_KEEP   = 60;
+var SB_BACKUP_STATE  = 'SB_BACKUP_STATE';
+var SB_BACKUP_PREFIX = 'supabase_백업_';
+var SB_BACKUP_FILE_BUDGET_MS = 300000;   // 파일 복사는 5분까지만(남은 건 다음 날 이어서)
+
+function setupSupabaseBackup() {
+  stopSupabaseBackup();
+  ScriptApp.newTrigger('supabaseNightlyBackup').timeBased().everyDays(1).atHour(3).create();
+  supabaseNightlyBackup();
+  Logger.log('✅ 매일 밤 백업 설치 완료 — 매일 새벽 3시, 폴더: 이루리/' + SB_BACKUP_FOLDER);
+}
+function stopSupabaseBackup() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'supabaseNightlyBackup') ScriptApp.deleteTrigger(t);
+  });
+}
+
+function sbBackupRoot_() {
+  var root = getIruriRoot(), it = root.getFoldersByName(SB_BACKUP_FOLDER);
+  return it.hasNext() ? it.next() : root.createFolder(SB_BACKUP_FOLDER);
+}
+function sbBackupFilesFolder_() {
+  var root = sbBackupRoot_(), it = root.getFoldersByName(SB_BACKUP_FILES);
+  return it.hasNext() ? it.next() : root.createFolder(SB_BACKUP_FILES);
+}
+
+/* 서버의 행 수(정확한 값) */
+function sbCount_(table, firstPk) {
+  var c = sbCfg_();
+  var r = sbFetch_(c.url + '/rest/v1/' + table + '?select=' + encodeURIComponent(firstPk || '*') + '&limit=1', {
+    method: 'get', muteHttpExceptions: true, headers: sbHeaders_({ Prefer: 'count=exact' })
+  });
+  var h = r.getHeaders(), cr = h['Content-Range'] || h['content-range'] || '';
+  var m = /\/(\d+)\s*$/.exec(cr);
+  if (!m) throw new Error(table + ' 행 수를 알 수 없음: ' + cr);
+  return Number(m[1]);
+}
+/* 한 테이블 전부(1000행씩) */
+function sbFetchTable_(table, pk) {
+  var rows = [], from = 0, step = 1000;
+  var order = pk ? '&order=' + encodeURIComponent(pk) : '';
+  while (true) {
+    var part = sbJson_('get', '/rest/v1/' + table + '?select=*' + order + '&offset=' + from + '&limit=' + step) || [];
+    for (var i = 0; i < part.length; i++) rows.push(part[i]);
+    if (part.length < step) break;
+    from += step;
+  }
+  return rows;
+}
+function sbBackupTableChecked_(t) {
+  var first = t.pk ? t.pk.split(',')[0] : '';
+  for (var attempt = 0; attempt < 2; attempt++) {
+    var rows = sbFetchTable_(t.table, t.pk);
+    var n = sbCount_(t.table, first);
+    if (rows.length === n) return rows;
+    if (attempt === 1) throw new Error(t.table + ' 행 수 불일치: 받은 ' + rows.length + ' / 서버 ' + n);
+    Utilities.sleep(3000);   // 백업 중에 누가 저장했을 수 있음 → 한 번 더
+  }
+}
+
+function supabaseNightlyBackup() {
+  var p = PropertiesService.getScriptProperties();
+  var st = JSON.parse(p.getProperty(SB_BACKUP_STATE) || '{}');
+  if (st.running && Date.now() - st.running < 6 * 60 * 1000) return;   // 앞 실행이 아직 도는 중
+  st.running = Date.now(); p.setProperty(SB_BACKUP_STATE, JSON.stringify(st));
+  var t0 = Date.now();
+  try {
+    // ① 데이터: 모든 테이블 + 로그인 계정·설정·파일 목록
+    var tables = sbJson_('post', '/rest/v1/rpc/sb_backup_tables', {}) || [];
+    if (!tables.length) throw new Error('테이블 목록이 비어 있음');
+    var out = {
+      format: 'iruri-supabase-backup', formatVersion: 1,
+      backedUpAt: new Date().toISOString(), project: sbCfg_().url,
+      counts: {}, tables: {}, extra: null
+    };
+    tables.forEach(function (t) {
+      var rows = sbBackupTableChecked_(t);
+      out.tables[t.table] = { pk: t.pk, rows: rows };
+      out.counts[t.table] = rows.length;
+    });
+    out.extra = sbJson_('post', '/rest/v1/rpc/sb_backup_extra', {});
+    out.counts.auth_users = (out.extra.auth_users || []).length;
+    out.counts.storage_objects = (out.extra.storage_objects || []).length;
+
+    // ② 파일 하나로 저장(압축)
+    var stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyyMMdd_HHmmss');
+    var name = SB_BACKUP_PREFIX + stamp + '.json';
+    var json = JSON.stringify(out);
+    var gz = Utilities.gzip(Utilities.newBlob(json, 'application/json', name), name + '.gz');
+    var folder = sbBackupRoot_();
+    var file = folder.createFile(gz);
+    // 저장한 파일을 다시 열어 확인
+    var back = JSON.parse(Utilities.ungzip(file.getBlob().setContentType('application/x-gzip')).getDataAsString());
+    if (back.backedUpAt !== out.backedUpAt || Object.keys(back.tables).length !== tables.length)
+      throw new Error('저장한 백업 파일을 다시 열어 보니 내용이 다름');
+
+    // ③ 오래된 백업 정리(최근 SB_BACKUP_KEEP 개만)
+    var removed = sbPruneBackups_(folder);
+
+    // ④ 드라이브에 원본이 없는 저장소 파일 복사
+    var copied = sbBackupStorageFiles_(out.extra.storage_objects || [], t0);
+
+    st.last = out.backedUpAt; st.lastFile = file.getName(); st.lastSize = file.getSize();
+    st.counts = out.counts; st.filesCopied = copied; st.lastError = '';
+    sbLog_('backup', { file: file.getName(), bytes: file.getSize(), rawBytes: json.length, counts: out.counts,
+                       filesCopied: copied, pruned: removed, sec: Math.round((Date.now() - t0) / 1000) });
+  } catch (e) {
+    st.lastError = String(e).slice(0, 300);
+    sbLog_('backup_error', { message: st.lastError });
+    throw e;   // 트리거 실패 → 구글이 실패 알림 메일 보냄
+  } finally {
+    st.running = 0; p.setProperty(SB_BACKUP_STATE, JSON.stringify(st));
+  }
+}
+
+function sbListBackups_(folder) {
+  var list = [], it = folder.getFiles();
+  while (it.hasNext()) {
+    var f = it.next();
+    if (f.getName().indexOf(SB_BACKUP_PREFIX) === 0) list.push(f);
+  }
+  list.sort(function (a, b) { return a.getName() < b.getName() ? 1 : -1; });   // 최신 먼저
+  return list;
+}
+function sbPruneBackups_(folder) {
+  var list = sbListBackups_(folder), n = 0;
+  for (var i = SB_BACKUP_KEEP; i < list.length; i++) { list[i].setTrashed(true); n++; }   // 휴지통(30일간 되살리기 가능)
+  return n;
+}
+
+/* 드라이브에 원본이 없는 파일 = 'legacy' 저장소가 아니고, 드라이브에서 옮겨 온 'receipts/…' 도 아닌 것
+ * (앱에서 새로 올린 영수증 사진 등). 이름: 저장소__경로(/ 는 __ 로). 한 번 복사하면 다시 복사하지 않음 */
+function sbStorageBackupName_(o) { return o.bucket_id + '__' + String(o.name).replace(/\//g, '__'); }
+function sbBackupStorageFiles_(objects, t0) {
+  var need = objects.filter(function (o) {
+    return o.bucket_id !== 'legacy' && !(o.bucket_id === 'receipts' && /^receipts\//.test(o.name));
+  });
+  if (!need.length) return 0;
+  var folder = sbBackupFilesFolder_(), have = {}, it = folder.getFiles();
+  while (it.hasNext()) have[it.next().getName()] = 1;
+  var c = sbCfg_(), n = 0;
+  for (var i = 0; i < need.length; i++) {
+    var o = need[i], nm = sbStorageBackupName_(o);
+    if (have[nm]) continue;
+    if (Date.now() - t0 > SB_BACKUP_FILE_BUDGET_MS) break;   // 남은 건 다음 날
+    var path = String(o.name).split('/').map(encodeURIComponent).join('/');
+    var r = sbFetch_(c.url + '/storage/v1/object/' + o.bucket_id + '/' + path,
+                     { method: 'get', muteHttpExceptions: true, headers: sbHeaders_() });
+    folder.createFile(r.getBlob().setName(nm));
+    n++;
+  }
+  return n;
+}
+
+/* 확인: 마지막 백업 파일을 열어 지금 Supabase 와 행 수 비교(아무것도 바꾸지 않음) */
+function checkSupabaseBackup() {
+  var st = JSON.parse(PropertiesService.getScriptProperties().getProperty(SB_BACKUP_STATE) || '{}');
+  Logger.log('마지막 백업: ' + (st.last || '없음') + ' / 파일: ' + (st.lastFile || '-') + ' / 오류: ' + (st.lastError || '없음'));
+  var list = sbListBackups_(sbBackupRoot_());
+  if (!list.length) { Logger.log('백업 파일이 아직 없어요 — setupSupabaseBackup 을 먼저 실행하세요'); return; }
+  var b = sbReadBackup_(list[0]);
+  Logger.log('백업 파일 ' + list.length + '개 보관 중. 가장 최근: ' + list[0].getName());
+  var tables = sbJson_('post', '/rest/v1/rpc/sb_backup_tables', {}) || [];
+  tables.forEach(function (t) {
+    var now = sbCount_(t.table, t.pk ? t.pk.split(',')[0] : '');
+    var inB = b.tables[t.table] ? b.tables[t.table].rows.length : '(없음)';
+    Logger.log((now === inB ? '  ' : '≠ ') + t.table + ': 백업 ' + inB + ' / 지금 ' + now);
+  });
+  Logger.log('로그인 계정: 백업 ' + b.extra.auth_users.length + '명');
+}
+function sbReadBackup_(file) {
+  var b = JSON.parse(Utilities.ungzip(file.getBlob().setContentType('application/x-gzip')).getDataAsString());
+  if (b.format !== 'iruri-supabase-backup') throw new Error('이루리 Supabase 백업 파일이 아님: ' + file.getName());
+  return b;
+}
+
+/* ── 비상 복구(평소엔 실행 금지) ──
+ *  Supabase 데이터가 잘못 지워지거나 망가졌을 때만. 실행하기 전에 꼭 담당자와 상의.
+ *  1) 아래 RESTORE_FILE 에 되살릴 백업 파일 이름(예: supabase_백업_20261201_030012.json.gz)을 적고
+ *  2) RESTORE_TABLES 에 되살릴 테이블 이름들(예: ['centers'])을 적거나, 전부면 ['*']
+ *  3) RESTORE_REPLACE: false = 백업에 있는 행만 되돌림(지금 있는 다른 행은 그대로, 안전)
+ *                      true  = 테이블을 백업 시점과 똑같이(백업 뒤에 생긴 행은 지워짐)
+ *  4) restoreSupabaseFromBackup 실행. 테이블마다 한 번에(전부 되거나 전혀 안 되거나) 처리됨
+ *  ※ 로그인 계정은 '없어진 계정만' 다시 만들고, 있는 계정·비밀번호는 건드리지 않음 */
+var RESTORE_FILE = '';
+var RESTORE_TABLES = [];
+var RESTORE_REPLACE = false;
+
+function restoreSupabaseFromBackup() {
+  if (!RESTORE_FILE || !RESTORE_TABLES.length) throw new Error('RESTORE_FILE 과 RESTORE_TABLES 를 먼저 적어 주세요(설명은 코드 위 주석)');
+  var it = sbBackupRoot_().getFilesByName(RESTORE_FILE);
+  if (!it.hasNext()) throw new Error('백업 파일을 찾을 수 없음: ' + RESTORE_FILE);
+  var b = sbReadBackup_(it.next());
+  var all = RESTORE_TABLES.length === 1 && RESTORE_TABLES[0] === '*';
+  var names = all ? Object.keys(b.tables) : RESTORE_TABLES.slice();
+  names.forEach(function (n) { if (!b.tables[n]) throw new Error('백업에 없는 테이블: ' + n); });
+  // 계정 → 강사 → 나머지 순서(서로 이어진 테이블 때문)
+  var rank = { teachers: 1, teacher_accounts: 2, profiles: 0 };
+  names.sort(function (x, y) { return (rank[x] !== undefined ? rank[x] : 9) - (rank[y] !== undefined ? rank[y] : 9) || (x < y ? -1 : 1); });
+  if (all || names.indexOf('profiles') >= 0) {
+    var ra = sbJson_('post', '/rest/v1/rpc/sb_restore_auth', { p_users: b.extra.auth_users, p_identities: b.extra.auth_identities });
+    sbLog_('restore_auth', ra);
+  }
+  names.forEach(function (n) {
+    var res = sbJson_('post', '/rest/v1/rpc/sb_restore_table', { p_table: n, p_rows: b.tables[n].rows, p_replace: RESTORE_REPLACE === true });
+    sbLog_('restore_table', { file: RESTORE_FILE, replace: RESTORE_REPLACE === true, result: res });
+  });
+  Logger.log('✅ 복구 끝 — ' + names.join(', ') + ' (백업 시각 ' + b.backedUpAt + ')');
+}
