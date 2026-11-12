@@ -49,6 +49,7 @@
 
 /* ⚠️ 이 저장소는 공개(GitHub Pages)라서 실제 스프레드시트 ID를 비워뒀습니다.
  *    붙여넣을 때는 아래 한 줄만 실제 값으로 바꾸세요.
+ *    (한 번이라도 실제 값으로 실행했거나 스크립트 속성 SPREADSHEET_ID 가 있으면, 이 줄을 안 바꿔도 그 값을 씁니다)
  *    값은 스프레드시트 주소의  /d/  와  /edit  사이 문자열입니다.
  *    (기존 Apps Script 편집기에 있던 값을 그대로 쓰면 됩니다) */
 const SPREADSHEET_ID   = '여기에_스프레드시트_ID_를_넣으세요';
@@ -241,8 +242,21 @@ function contentHash_(rows) {
  *  한 번의 요청 안에서는 같은 핸들을 재사용한다. */
 var _SS_CACHE = null;
 function ss_() {
-  if (!_SS_CACHE) _SS_CACHE = SpreadsheetApp.openById(SPREADSHEET_ID);
+  if (!_SS_CACHE) _SS_CACHE = SpreadsheetApp.openById(ssId_());
   return _SS_CACHE;
+}
+/* 스프레드시트 ID: 코드에 실제 값이 있으면 그 값을 스크립트 속성(SPREADSHEET_ID)에도 기억해 두고,
+ * 코드가 '여기에_…' 그대로면(전체 코드를 새로 붙여넣은 경우) 기억해 둔 값을 씀 → 붙여넣기 실수로 서버가 멈추지 않게 */
+function ssId_() {
+  const placeholder = /^여기에_/.test(String(SPREADSHEET_ID || '')) || !SPREADSHEET_ID;
+  const p = PropertiesService.getScriptProperties();
+  if (!placeholder) {
+    try { if (p.getProperty('SPREADSHEET_ID') !== SPREADSHEET_ID) p.setProperty('SPREADSHEET_ID', SPREADSHEET_ID); } catch (e) {}
+    return SPREADSHEET_ID;
+  }
+  const saved = p.getProperty('SPREADSHEET_ID');
+  if (saved) return saved;
+  throw new Error('스프레드시트 ID가 없어요 — Code.gs 위쪽 SPREADSHEET_ID 를 실제 값으로 바꾸거나, 스크립트 속성에 SPREADSHEET_ID 를 넣어 주세요');
 }
 
 /* [속도 2] 폴더 위치 기억 — 이름으로 매번 찾던 것을 ID로 바로 연다.
