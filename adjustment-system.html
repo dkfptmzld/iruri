@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.10">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.11">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.10">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.11">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.10</title>
+<title>수업기록표 정산 시스템 v19.11</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.10';
+const SYSTEM_VERSION='v19.11';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13711,6 +13711,73 @@ function closeEmergencyContacts(){ const ov=document.getElementById('emgOverlay'
 
 /* ══════ 관리자: 스케줄 수정 요청 검토 ══════ */
 let _schReqCache=[];
+/* v19.11: 처리된(반영·거절) 요청도 볼 수 있게 — '처리완료' 탭 + 다시 반영 */
+let _schReqDone=[], _schReqTab='wait', _schReqDoneLoaded=false;
+function _schReqFmtTs(v){ if(!v) return ''; const s=String(v); if(!/^\d{4}-\d{2}-\d{2}T/.test(s)) return s; const d=new Date(s); return isNaN(d)?s:d.toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}); }
+async function _schReqDoneFromSb(){
+ const rows=await _sbRest('schedule_requests?select=id,teacher_name,region,changes,message,requested_at,status,resolved_at&status=neq.'+_sbQ('대기')+'&order=requested_at.desc.nullslast&limit=80');
+ return (rows||[]).map(r=>({ id:r.id, teacher:r.teacher_name, region:r.region||'', changes:r.changes||[], message:r.message||'',
+   requestedAt:_schReqFmtTs(r.requested_at), status:r.status||'', resolvedAt:_schReqFmtTs(r.resolved_at) }));
+}
+async function _loadSchedReqDone(){
+ let list=null;
+ try{ const r=await gasGet({action:'getScheduleRequestsDone'}); if(r && r.ok!==false && Array.isArray(r.data)) list=r.data; }catch(_){}
+ if(!list){   // 서버(Code.gs)가 아직 옛 버전이면 Supabase 사본에서 읽기(관리자 로그인 시)
+  try{ if(typeof _sbGetSession==='function' && _sbGetSession()) list=await _schReqDoneFromSb(); }catch(_){}
+ }
+ _schReqDone=Array.isArray(list)?list:[];
+ _schReqDone.sort((a,b)=>_schReqTs(b)-_schReqTs(a));
+ _schReqDoneLoaded=true;
+}
+function _schReqSetTab(t){
+ _schReqTab=t; _renderSchedReqPanel();
+ if(t==='done'){ _loadSchedReqDone().then(()=>{ _renderSchedReqPanel(); }).catch(()=>{ _schReqDoneLoaded=true; _renderSchedReqPanel(); }); }
+}
+function _schReqDoneHTML(){
+ const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
+ if(!_schReqDoneLoaded) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청을 불러오는 중…</div>';
+ if(!_schReqDone.length) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청이 없어요<br><span style="font-size:11.5px;">(서버에서 목록을 못 받았을 수도 있어요 — 잠시 후 다시 눌러 보세요)</span></div>';
+ return _schReqDone.map(r=>{
+  const applied=/반영|applied/.test(String(r.status||''));
+  const badge=applied?'<span style="font-size:11px;font-weight:800;background:#DCFCE7;color:#166534;border-radius:20px;padding:2px 9px;">✓ 반영완료</span>'
+                     :'<span style="font-size:11px;font-weight:800;background:#F1F0EC;color:#6B6860;border-radius:20px;padding:2px 9px;">거절</span>';
+  const ch=(r.changes||[]);
+  const nC=new Set(ch.map(c=>(c.center||'')+'|'+(c.day||''))).size, nAdd=ch.filter(c=>c&&c.type==='add').length;
+  const rows=ch.length?_schReqTableHTML(r.teacher, ch):'<div style="padding:10px;font-size:12.5px;color:#9A968C;">변경 항목이 없어요</div>';
+  const msg=String(r.message||'').trim()?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.6;">✉️ ${e(r.message)}</div>`:'';
+  const idq=escAttrJS(String(r.id));
+  return `<details style="border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;">
+    <summary style="display:flex;align-items:center;gap:9px;padding:10px 14px;background:#FCFBF7;cursor:pointer;flex-wrap:wrap;list-style:none;">
+     <span style="font-size:13.5px;font-weight:800;">${e(r.teacher)}</span>
+     ${r.region?`<span style="font-size:11px;font-weight:700;background:var(--green-bg,#E8F5EE);color:var(--green,#1A7A50);border-radius:20px;padding:2px 9px;">${e(r.region)}지사</span>`:''}
+     ${badge}
+     <span style="font-size:11.5px;color:var(--text2);">센터 ${nC}곳 · ${ch.length}개 항목${nAdd?` · <b style="color:#1A7A50;">새 센터 ${nAdd}</b>`:''}</span>
+     <span style="margin-left:auto;font-size:11px;color:#9A968C;">요청 ${e(r.requestedAt||'')}${r.resolvedAt?` · 처리 ${e(r.resolvedAt)}`:''}</span>
+    </summary>
+    <div style="padding:10px 14px;">${rows}</div>
+    ${msg}
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
+     <span style="flex:1;font-size:11.5px;color:var(--text2);">센터 목록에서 빠졌거나 다르게 바뀌었으면 <b>다시 반영</b>으로 이 요청 내용을 한 번 더 넣을 수 있어요.</span>
+     <button class="btn sm primary" onclick="_reapplySchedRequest('${idq}')">↻ 다시 반영</button>
+    </div>
+   </details>`;
+ }).join('');
+}
+function _reapplySchedRequest(id){
+ const req=(_schReqDone||[]).find(r=>String(r.id)===String(id)); if(!req) return;
+ const n=(req.changes||[]).length;
+ showConfirm({icon:'↻', title:'요청 다시 반영', okText:'다시 반영', okStyle:'primary',
+  desc:`<b>${escH(req.teacher)}</b> 강사의 요청(${escH(req.requestedAt||'')}) <b>${n}개 항목</b>을 지금 센터 목록에 다시 넣을까요?<br><small style="color:var(--text3)">새 센터는 이미 있으면 그 센터에 수업 시간만 맞추고, 없으면 새로 만들어요. 같은 수업이 두 번 생기지 않아요.</small>`,
+  onOk:()=>{
+   showBusyToast(`${req.teacher} 요청 다시 반영 중…`);
+   let ok=0, miss=0;
+   (req.changes||[]).forEach(c=>{ if(_applyChangeToDB(req.teacher, c)) ok++; else miss++; });
+   try{ lsSave(); }catch(_){}
+   try{ _saveAllCentersToGas(); }catch(_){}
+   try{ if(document.getElementById('centersView')?.style.display==='block'){ renderCenterTreeView&&renderCenterTreeView(); } }catch(_){}
+   try{ showToast(`✓ ${req.teacher} 요청 ${ok}개 다시 반영${miss?` · ${miss}개는 센터를 못 찾음`:''}`); }catch(_){}
+  }});
+}
 function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='phone'?'센터 번호':f==='email'?'이메일':f==='weeks'?'특이사항(주차)':f; }
 /* v16.27: 스케줄 수정 요청을 '강사 스케줄표'에 적용한 '요청 후' 표로 보여준다 — 바뀐 칸만 강조.
  *  현재 스케줄(_teacherScheduleRows)을 복제 → 요청(changes) 적용 → 표로 렌더(요일별 rowspan). */
@@ -13721,16 +13788,19 @@ function _schReqAfterRows(teacher, changes){
  const adds=[];
  (changes||[]).forEach(c=>{
   if(c.type==='add'){
+   // v19.11: 이미 목록에 있는 센터·요일이면(반영된 요청) 줄을 두 번 만들지 않고 그 줄에 표시
+   const ex=rows.find(r=>String(r.center||'').trim()===String(c.center||'').trim() && r.day===c.day);
+   if(ex){ const t=c.time||''; if(t && _normTime(ex.time||'')!==_normTime(t)){ ex._chg.time={from:ex.time}; ex.time=t; } ex._chg.center={from:''}; return; }
    adds.push({ day:c.day, center:c.center, region:c.region||'', area:_areaFromAddress(c.address),
      time:c.time||'', address:c.address||'', phone:c.phone||'', email:c.email||'', weeksTxt:'4주차 수업', _new:true, _chg:{} });
    return;
   }
   if(c.field==='time'){
-   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ r._chg.time={from:r.time}; r.time=c.to; });
+   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ if(_normTime(r.time||'')!==_normTime(c.to||'')) r._chg.time={from:r.time}; r.time=c.to; });   // v19.11: 이미 같은 값이면 강조 안 함
   } else if(c.field==='weeks'){   // v17.82
-   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ r._chg.weeksTxt={from:r.weeksTxt}; r.weeksTxt=_wk(c.to); });
+   rows.filter(r=>r.center===c.center && r.day===c.day).forEach(r=>{ if(r.weeksTxt!==_wk(c.to)) r._chg.weeksTxt={from:r.weeksTxt}; r.weeksTxt=_wk(c.to); });
   } else if(c.field==='address' || c.field==='email' || c.field==='phone'){
-   rows.filter(r=>r.center===c.center).forEach(r=>{ r._chg[c.field]={from:r[c.field]}; r[c.field]=c.to;
+   rows.filter(r=>r.center===c.center).forEach(r=>{ if(String(r[c.field]||'').trim()!==String(c.to||'').trim()) r._chg[c.field]={from:r[c.field]}; r[c.field]=c.to;
      if(c.field==='address') r.area=_areaFromAddress(c.to); });
   }
  });
@@ -13758,7 +13828,7 @@ function _schReqTableHTML(teacher, changes){
  let body='';
  _SCH_DAYS.forEach(day=>{ const list=byDay[day]; if(!list||!list.length) return;
   list.forEach((r,i)=>{
-   const nameCell = `<td style="${TD}font-weight:600;${(r._new)?'background:#E9F7EF;':''}white-space:nowrap;">${r._new?'<span style="font-size:9px;font-weight:800;color:#0F7A4E;background:#D8F0E2;border:1px solid #A9DCC0;border-radius:5px;padding:0 4px;margin-right:4px;">새</span>':''}${e(r.center)}</td>`;
+   const nameCell = `<td style="${TD}font-weight:600;${(r._new||(r._chg&&r._chg.center))?'background:#E9F7EF;':''}white-space:nowrap;">${r._new?'<span style="font-size:9px;font-weight:800;color:#0F7A4E;background:#D8F0E2;border:1px solid #A9DCC0;border-radius:5px;padding:0 4px;margin-right:4px;">새</span>':''}${e(r.center)}</td>`;
    body += `<tr>`
      + (i===0?`<td rowspan="${list.length}" style="${TD}text-align:center;font-weight:700;background:#F7F5EE;">${day}</td>`:'')
      + nameCell + cell(r,'time','center') + cell(r,'address','left') + cell(r,'email','left') + cell(r,'weeksTxt','center')
@@ -13784,13 +13854,19 @@ function _renderSchedReqBanner(){
  const host=document.getElementById('schedReqBanner');
  if(!host) return;
  const n=_schReqCache.length;
- if(!n){ host.style.display='none'; host.innerHTML=''; return; }
+ if(!n){   // v19.11: 대기 요청이 없어도 처리완료 목록은 볼 수 있게
+  host.style.display='flex';
+  host.innerHTML=`<span style="font-size:12.5px;color:var(--text2);">📬 스케줄 수정요청 — 대기 중인 요청이 없어요</span>
+   <button class="btn sm" onclick="_openSchedReqPanel('done')" style="gap:4px;margin-left:auto;">✓ 반영완료 보기</button>`;
+  return;
+ }
  host.style.display='flex';
  const _np=new Set(_schReqCache.map(r=>r.teacher)).size;   // v18.72: 같은 사람 요청은 합쳐서
  host.innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;background:#B45309;color:#fff;font-size:12.5px;font-weight:800;border-radius:20px;padding:5px 12px;">📬 스케줄 수정요청 ${_np}명${n>_np?` (요청 ${n}건)`:''}</span>
-   <button class="btn sm" onclick="_openSchedReqPanel()" style="gap:4px;">확인하기</button>`;
+   <button class="btn sm" onclick="_openSchedReqPanel()" style="gap:4px;">확인하기</button>
+   <button class="btn sm" onclick="_openSchedReqPanel('done')" style="gap:4px;margin-left:auto;">✓ 반영완료 보기</button>`;
 }
-function _openSchedReqPanel(){
+function _openSchedReqPanel(tab){
  let ov=document.getElementById('schedReqOverlay');
  if(!ov){
   ov=document.createElement('div'); ov.id='schedReqOverlay';
@@ -13800,7 +13876,7 @@ function _openSchedReqPanel(){
   document.body.appendChild(ov);
  }
  ov.style.display='flex';
- _renderSchedReqPanel();
+ _schReqSetTab(tab==='done'?'done':'wait');
 }
 /* v18.72: 한 강사가 여러 번 보낸 수정 요청을 하나로 합쳐서 보여주고, 한 번에 반영/거절
  *  - 같은 칸(센터·요일·교시·항목)을 여러 번 고쳤으면 '처음 값 → 마지막 값'으로 합침, 결국 원래대로면 뺌
@@ -13830,7 +13906,8 @@ function _renderSchedReqPanel(){
  const card=document.getElementById('schedReqCard'); if(!card) return;
  const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
  let list='';
- if(!_schReqCache.length){
+ if(_schReqTab==='done'){ list=_schReqDoneHTML(); }
+ else if(!_schReqCache.length){
   list='<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">대기 중인 수정 요청이 없어요</div>';
  } else {
   _schReqGroups().forEach(g=>{
@@ -13859,10 +13936,12 @@ function _renderSchedReqPanel(){
   });
  }
  const _np=new Set((_schReqCache||[]).map(r=>r.teacher)).size, _nr=(_schReqCache||[]).length;
- card.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-    <div style="flex:1;font-size:15px;font-weight:800;">📬 스케줄 수정 요청 ${_nr?`<span style="font-size:12px;font-weight:600;color:#9A968C;">${_np}명 · 요청 ${_nr}건${_nr>_np?' (같은 사람 요청은 합쳐서 보여줘요)':''}</span>`:''}</div>
+ const _tb=(t,txt)=>`<button onclick="_schReqSetTab('${t}')" style="font-size:12.5px;font-weight:${_schReqTab===t?'800':'600'};padding:6px 14px;border-radius:20px;cursor:pointer;border:1px solid ${_schReqTab===t?'#1A7A50':'#D8D5CE'};background:${_schReqTab===t?'#1A7A50':'#fff'};color:${_schReqTab===t?'#fff':'#5C574D'};">${txt}</button>`;
+ card.innerHTML=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <div style="flex:1;font-size:15px;font-weight:800;">📬 스케줄 수정 요청 ${(_schReqTab==='wait'&&_nr)?`<span style="font-size:12px;font-weight:600;color:#9A968C;">${_np}명 · 요청 ${_nr}건${_nr>_np?' (같은 사람 요청은 합쳐서 보여줘요)':''}</span>`:''}</div>
     <button class="btn sm" onclick="document.getElementById('schedReqOverlay').style.display='none'">닫기</button>
-   </div>${list}`;
+   </div>
+   <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">${_tb('wait',`대기 ${_nr}`)}${_tb('done',`✓ 처리완료${_schReqDoneLoaded?' '+_schReqDone.length:''}`)}</div>${list}`;
 }
 async function _applySchedGroup(teacher){
  const g=_schReqGroups().find(x=>x.teacher===teacher); if(!g) return;
@@ -13872,6 +13951,7 @@ async function _applySchedGroup(teacher){
  try{ lsSave(); }catch(_){}
  try{ _saveAllCentersToGas(); }catch(_){}   // 관리자 기기만 센터DB 씀(안전)
  for(const id of g.ids){ try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'applied'}); }catch(_){} }
+ _schReqMoveToDone(g.reqs, '반영');
  const done=new Set(g.ids.map(String));
  _schReqCache=_schReqCache.filter(r=>!done.has(String(r.id)));
  _renderSchedReqPanel(); _renderSchedReqBanner();
@@ -13882,10 +13962,17 @@ async function _rejectSchedGroup(teacher){
  const g=_schReqGroups().find(x=>x.teacher===teacher); if(!g) return;
  showBusyToast(`${teacher} 요청 거절 처리 중…`);
  for(const id of g.ids){ try{ await gasPost({action:'resolveScheduleRequest', id:id, status:'rejected'}); }catch(_){} }
+ _schReqMoveToDone(g.reqs, '거절');
  const done=new Set(g.ids.map(String));
  _schReqCache=_schReqCache.filter(r=>!done.has(String(r.id)));
  _renderSchedReqPanel(); _renderSchedReqBanner();
  try{ showToast(`${teacher} 요청${g.ids.length>1?' '+g.ids.length+'건':''}을 거절했어요`); }catch(_){}
+}
+function _schReqMoveToDone(reqs, st){
+ const now=new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'});
+ const ids=new Set((reqs||[]).map(r=>String(r.id)));
+ _schReqDone=(_schReqDone||[]).filter(r=>!ids.has(String(r.id))).concat((reqs||[]).map(r=>Object.assign({}, r, {status:st, resolvedAt:now})));
+ _schReqDone.sort((a,b)=>_schReqTs(b)-_schReqTs(a));
 }
 function _applyChangeToDB(teacher, c){
  // v16.08: 새 센터 추가 — 같은 이름·지사가 있으면 그 센터에 수업을 붙이고, 없으면 새로 만든다
@@ -13893,11 +13980,16 @@ function _applyChangeToDB(teacher, c){
   let cc=(DB.centers||[]).find(x=>x && String(x.name).trim()===String(c.center).trim() && String(x.region||'')===String(c.region||''));
   const gyosiFor=(center,day)=>{ const g=(center.schedule||[]).filter(s=>s&&(s.days||[]).includes(day)).map(s=>s.gyosi||1); return (g.length?Math.max.apply(null,g):0)+1; };
   const t=_normTime(c.time||'');
+  try{ _removeCenterTomb(String(c.center||'').trim(), String(c.region||'')); }catch(_){}   // v19.11: 옛 삭제기록 때문에 다시 빠지지 않게
   if(cc){
    if(!Array.isArray(cc.schedule)) cc.schedule=[];
    if(!(cc.teachers||[]).includes(teacher)) (cc.teachers=cc.teachers||[]).push(teacher);
    if(c.address && !cc.address) cc.address=c.address;
    if(c.email && !cc.email) cc.email=c.email;
+   // v19.11: 이미 같은 강사·요일 수업이 있으면(같은 시간이거나 시간 미정) 새로 만들지 않음 → 다시 반영해도 중복 없음
+   const mine=cc.schedule.filter(s=>s && s.teacher===teacher && (s.days||[]).includes(c.day));
+   const same=mine.find(s=>t && _normTime(s.time||'')===t) || mine.find(s=>!s.time) || (!t ? mine[0] : null);
+   if(same){ if(t) same.time=t; return true; }
    const entry={teacher, days:[c.day], order:(cc.schedule.length+1), fee:0, gyosi:gyosiFor(cc,c.day)};
    if(t) entry.time=t;
    cc.schedule.push(entry);
@@ -14387,7 +14479,8 @@ function _saveAllCentersToGas(){
   });
   const deleted = [];
   shadow.forEach((v,k)=>{ if(!seen[k]){ const p=k.split(''); deleted.push({name:p[0], region:p[1]||''}); } });
-  changed.forEach(c=>{ try{ _gasPostRetry({action:'saveCenter', center: JSON.parse(JSON.stringify(c))}); }catch(_){} });
+  changed.forEach(c=>{ try{ const cc=JSON.parse(JSON.stringify(c)); _ctrUnsentMark(cc,true);   // v19.11: 서버 저장 끝날 때까지 '못 올린 센터'로 표시
+   _gasPostRetry({action:'saveCenter', center: cc}).then(ok=>{ if(ok) _ctrUnsentMark(cc,false); }).catch(()=>{}); }catch(_){} });
   deleted.forEach(d=>{ try{ _gasPostRetry({action:'deleteCenter', name:d.name, region:d.region}); }catch(_){} });
   _centerShadow = _snapCenters();   // 기준선 갱신(다음 저장은 이 이후 변경분만)
  }catch(_){
@@ -18382,7 +18475,26 @@ async function _ctrPullBeforePush(){
   return true;
  }catch(_){ return false; }
 }
-async function syncAllToDB(force){
+/* v19.11: 서버에만 있고 이 기기에서 지운 적 없는 센터(강사 요청 반영·다른 관리자 기기에서 새로 추가)를 이 기기 목록에 가져옴 */
+async function _ctrImportServerOnly(names){
+ const want=new Set((names||[]).map(n=>String(n||'').trim()).filter(Boolean)); if(!want.size) return [];
+ const r=await gasGet({action:'getCenters'}, 30000);
+ if(!(r && r.ok && Array.isArray(r.data))) return [];
+ const have=new Set((DB.centers||[]).filter(c=>c&&c.name!=null).map(c=>_tombKey(c.name,c.region)));
+ const got=[];
+ r.data.forEach(sv=>{ if(!sv || sv.name==null) return; const nm=String(sv.name).trim(); if(!want.has(nm)) return;
+  const k=_tombKey(sv.name, sv.region); if(have.has(k) || _isCenterTombed(sv.name, sv.region)) return;
+  DB.centers.push(JSON.parse(JSON.stringify(sv))); have.add(k); got.push(sv); });
+ if(got.length){
+  try{ localStorage.setItem(LS_C, JSON.stringify(DB.centers)); }catch(_){}
+  try{ _rebuildCenterFeesFromCenters(DB.centers); }catch(_){}
+  try{ if(_centerShadow) got.forEach(c=>_centerShadow.set(String(c.name)+'\u0001'+String(c.region||''), JSON.stringify(c))); }catch(_){}
+  try{ pushErrorLog('새 센터 가져옴 (동기화)', `서버에 새로 생긴 센터를 지우지 않고 이 기기에 가져왔어요: ${got.map(c=>c.name+(c.region?`(${c.region})`:'')).join(', ')}`); }catch(_){}
+  try{ if(document.getElementById('centersView')?.style.display==='block'){ renderCenterTreeView&&renderCenterTreeView(); } }catch(_){}
+ }
+ return got;
+}
+async function syncAllToDB(force, _importedOnce){
  if(!_canWriteCenters()) return false;   // v18.95: 강사 기기는 강사·센터 전체 저장을 하지 않음(옛 목록으로 서버 덮어쓰기 방지)
  if(!(await _tPullBeforePush())){   // v18.95: 서버 최신 강사 정보와 먼저 합침
   showToast('⚠️ 서버 강사 정보를 확인하지 못해 동기화를 미뤘어요. 잠시 후 다시 시도해 주세요');
@@ -18448,6 +18560,19 @@ async function syncAllToDB(force){
   const now = new Date().toISOString();
   // v14.55/v15.26: 서버가 차단(blocked)하면 → 무엇이 바뀌는지 보여주고 확인 후 force 재시도
   //  - reason='drop'(급감) 또는 reason='bulk'(2건 이상 변경). 확인 못 하면 하나도 반영 안 됨.
+  if(!force && !_importedOnce && cr && cr.blocked && Array.isArray(cr.changes)){
+   // v19.11: '삭제'로 잡힌 센터 중 이 기기에서 지운 기록이 없는 건 새로 생긴 센터 → 지우지 말고 가져온 뒤 다시 동기화
+   const _nm=c=>String(c).replace(/^\s*(추가|수정|삭제)\s*:\s*/,'').trim();
+   const _unk=cr.changes.filter(c=>/^\s*삭제/.test(String(c))).map(_nm).filter(n=>!_getCenterTombs().some(t=>String(t.name||'').trim()===n));
+   if(_unk.length){
+    let got=[]; try{ got=await _ctrImportServerOnly(_unk); }catch(_){}
+    if(got.length){
+     _done=true; clearTimeout(_watchdog); _syncInFlight=false; _restore();
+     showToast(`📥 새로 생긴 센터 ${got.length}곳(${got.slice(0,3).map(c=>c.name).join(', ')}${got.length>3?' 외':''})을 가져왔어요 — 이어서 동기화해요`);
+     return syncAllToDB(false, true);
+    }
+   }
+  }
   if(!force && ((tr&&tr.blocked) || (cr&&cr.blocked))){
    // v16.18: 삭제·급감(데이터 유실 위험)만 확인창을 띄우고, 추가·수정만이면 조용히 자동 반영
    //  (예전 추가/수정 내역이 반복해서 뜨던 불편 해소 — 삭제/급감 안전장치는 유지)
@@ -20368,6 +20493,7 @@ async function _sbRememberVersions(){
 
 /* 테스트 모드 읽기(비교용 _SB_GET 위에 몇 가지를 더함) */
 const _SB_READ = Object.assign({}, _SB_GET, {
+ async getScheduleRequestsDone(){ return { ok:true, data: await _schReqDoneFromSb() }; },   // v19.11: 처리완료 요청
  async getTeachers(p){
   if(!(await _sbToken())){   // 로그인 전: 이름·지역만(계좌번호 등은 안 줌)
    const rows = await _sbRpc('teacher_names', {}, true);
@@ -21318,9 +21444,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.10&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.11&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.10&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.11&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -27412,7 +27538,8 @@ function _renderRegionKpis(){
    _newByReg[rr].push(x); });
  _churnNames.forEach(([x,per])=>{ const rr=_dbRegOf(x)||_lessonRegOf(per,x); if(_validReg(rr)) _churnByReg[rr].push(x); });   // 이탈은 등록 여부 무관
 
- const cards=names.map((rg,idx)=>{
+ const cards=rank.map(x=>x.r).map((rg)=>{   // v19.11: 위 '지역 성장 순위'와 같은 순서로
+  const idx=names.indexOf(rg);
   const c=cur.R[rg], p=prev?prev.R[rg]:null;
   const [c1,c2,bg]=pal(rg);
   const profit=c.revenue-c.labor-c.cost;
