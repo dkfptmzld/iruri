@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.11">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.12">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.11">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.12">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.11</title>
+<title>수업기록표 정산 시스템 v19.12</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.11';
+const SYSTEM_VERSION='v19.12';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13733,49 +13733,66 @@ function _schReqSetTab(t){
  _schReqTab=t; _renderSchedReqPanel();
  if(t==='done'){ _loadSchedReqDone().then(()=>{ _renderSchedReqPanel(); }).catch(()=>{ _schReqDoneLoaded=true; _renderSchedReqPanel(); }); }
 }
+function _schReqIsApplied(r){ return /반영|applied/.test(String(r&&r.status||'')); }
+/* v19.11.1: 처리완료도 같은 강사 요청은 하나로 합침(최신 값 기준) — 반영된 요청끼리 합치고, 거절만 있으면 거절 요청끼리 */
+function _schReqDoneGroups(){
+ const by={};
+ (_schReqDone||[]).forEach(r=>{ const k=String(r.teacher||''); (by[k]=by[k]||[]).push(r); });
+ return Object.keys(by).map(t=>{
+  const all=by[t].slice().sort((a,b)=>_schReqTs(a)-_schReqTs(b));
+  const ap=all.filter(_schReqIsApplied);
+  const g=_schReqGroups(ap.length?ap:all)[0];
+  const last=all[all.length-1]||{};
+  return Object.assign(g, { all, nAp:ap.length, nRj:all.length-ap.length, mergedApplied:ap.length>0,
+    lastResolved:last.resolvedAt||'', lastReq:last.requestedAt||'', lastTsAll:_schReqTs(last) });
+ }).sort((a,b)=>b.lastTsAll-a.lastTsAll);
+}
 function _schReqDoneHTML(){
  const e=(v)=>{ try{ return esc(String(v==null?'':v)); }catch(_){ return String(v==null?'':v); } };
  if(!_schReqDoneLoaded) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청을 불러오는 중…</div>';
  if(!_schReqDone.length) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청이 없어요<br><span style="font-size:11.5px;">(서버에서 목록을 못 받았을 수도 있어요 — 잠시 후 다시 눌러 보세요)</span></div>';
- return _schReqDone.map(r=>{
-  const applied=/반영|applied/.test(String(r.status||''));
-  const badge=applied?'<span style="font-size:11px;font-weight:800;background:#DCFCE7;color:#166534;border-radius:20px;padding:2px 9px;">✓ 반영완료</span>'
-                     :'<span style="font-size:11px;font-weight:800;background:#F1F0EC;color:#6B6860;border-radius:20px;padding:2px 9px;">거절</span>';
-  const ch=(r.changes||[]);
+ const pill=(bg,fg,txt)=>`<span style="font-size:11px;font-weight:800;background:${bg};color:${fg};border-radius:20px;padding:2px 9px;">${txt}</span>`;
+ return _schReqDoneGroups().map(g=>{
+  const ch=g.changes||[];
   const nC=new Set(ch.map(c=>(c.center||'')+'|'+(c.day||''))).size, nAdd=ch.filter(c=>c&&c.type==='add').length;
-  const rows=ch.length?_schReqTableHTML(r.teacher, ch):'<div style="padding:10px;font-size:12.5px;color:#9A968C;">변경 항목이 없어요</div>';
-  const msg=String(r.message||'').trim()?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.6;">✉️ ${e(r.message)}</div>`:'';
-  const idq=escAttrJS(String(r.id));
-  return `<details style="border:1px solid var(--border);border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;">
+  const rows=ch.length?_schReqTableHTML(g.teacher, ch):'<div style="padding:10px;font-size:12.5px;color:#9A968C;">여러 번 고쳤지만 결국 원래 값과 같아요 — 바뀌는 곳이 없어요</div>';
+  const badges=(g.nAp?pill('#DCFCE7','#166534',`✓ 반영완료${g.nAp>1?' '+g.nAp+'건':''}`):'')+(g.nRj?' '+pill('#F1F0EC','#6B6860',`거절${g.nRj>1?' '+g.nRj+'건':''}`):'');
+  const merged=g.ids.length>1;
+  const msgs=g.reqs.filter(r=>String(r.message||'').trim());
+  const msgHtml=msgs.length?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.6;">✉️ <b>메시지${msgs.length>1?' '+msgs.length+'개':''}</b>${msgs.map(r=>`<div style="margin-top:3px;">${msgs.length>1?`<span style="color:#B59A4A;font-size:11px;">${e(r.requestedAt||'')}</span> · `:''}${e(r.message)}</div>`).join('')}</div>`:'';
+  const hist=g.all.length>1?`<details style="margin:0 14px 10px;font-size:11.5px;color:#7A776C;"><summary style="cursor:pointer;">요청 ${g.all.length}건 보낸 기록 보기</summary><div style="margin-top:5px;line-height:1.7;">${g.all.map((r,i)=>`${i+1}. ${e(r.requestedAt||'')} · ${(r.changes||[]).length}개 항목 · <b style="color:${_schReqIsApplied(r)?'#166534':'#8A8578'};">${_schReqIsApplied(r)?'반영':'거절'}</b>${r.resolvedAt?` (${e(r.resolvedAt)})`:''}${r.message?' · ✉️':''}`).join('<br>')}<div style="color:#9A968C;margin-top:3px;">${g.mergedApplied?(g.nRj?'거절된 요청은 빼고, ':'')+'반영된 요청을 합쳤어요':'거절된 요청을 합쳤어요'} — 같은 칸을 여러 번 고친 건 마지막 값으로 (${g.raw}개 → ${ch.length}개)</div></div></details>`:'';
+  const tq=escAttrJS(g.teacher);
+  return `<details style="border:1px solid ${merged?'#F2C960':'var(--border)'};border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;">
     <summary style="display:flex;align-items:center;gap:9px;padding:10px 14px;background:#FCFBF7;cursor:pointer;flex-wrap:wrap;list-style:none;">
-     <span style="font-size:13.5px;font-weight:800;">${e(r.teacher)}</span>
-     ${r.region?`<span style="font-size:11px;font-weight:700;background:var(--green-bg,#E8F5EE);color:var(--green,#1A7A50);border-radius:20px;padding:2px 9px;">${e(r.region)}지사</span>`:''}
-     ${badge}
+     <span style="font-size:13.5px;font-weight:800;">${e(g.teacher)}</span>
+     ${g.region?`<span style="font-size:11px;font-weight:700;background:var(--green-bg,#E8F5EE);color:var(--green,#1A7A50);border-radius:20px;padding:2px 9px;">${e(g.region)}지사</span>`:''}
+     ${badges}
+     ${merged?pill('#FFF3CD','#8A5A00',`요청 ${g.ids.length}건 합침`):''}
      <span style="font-size:11.5px;color:var(--text2);">센터 ${nC}곳 · ${ch.length}개 항목${nAdd?` · <b style="color:#1A7A50;">새 센터 ${nAdd}</b>`:''}</span>
-     <span style="margin-left:auto;font-size:11px;color:#9A968C;">요청 ${e(r.requestedAt||'')}${r.resolvedAt?` · 처리 ${e(r.resolvedAt)}`:''}</span>
+     <span style="margin-left:auto;font-size:11px;color:#9A968C;">최근 요청 ${e(g.lastReq||g.last||'')}${g.lastResolved?` · 처리 ${e(g.lastResolved)}`:''}</span>
     </summary>
     <div style="padding:10px 14px;">${rows}</div>
-    ${msg}
+    ${msgHtml}${hist}
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
-     <span style="flex:1;font-size:11.5px;color:var(--text2);">센터 목록에서 빠졌거나 다르게 바뀌었으면 <b>다시 반영</b>으로 이 요청 내용을 한 번 더 넣을 수 있어요.</span>
-     <button class="btn sm primary" onclick="_reapplySchedRequest('${idq}')">↻ 다시 반영</button>
+     <span style="flex:1;font-size:11.5px;color:var(--text2);">센터 목록에서 빠졌거나 다르게 바뀌었으면 <b>다시 반영</b>으로 ${merged?'합친 최신 내용을':'이 요청 내용을'} 한 번 더 넣을 수 있어요.</span>
+     <button class="btn sm primary" onclick="_reapplySchedGroup('${tq}')" ${ch.length?'':'disabled'}>↻ ${merged?'합쳐서 ':''}다시 반영</button>
     </div>
    </details>`;
  }).join('');
 }
-function _reapplySchedRequest(id){
- const req=(_schReqDone||[]).find(r=>String(r.id)===String(id)); if(!req) return;
- const n=(req.changes||[]).length;
+function _reapplySchedGroup(teacher){
+ const g=_schReqDoneGroups().find(x=>x.teacher===teacher); if(!g || !(g.changes||[]).length) return;
+ const n=g.changes.length;
  showConfirm({icon:'↻', title:'요청 다시 반영', okText:'다시 반영', okStyle:'primary',
-  desc:`<b>${escH(req.teacher)}</b> 강사의 요청(${escH(req.requestedAt||'')}) <b>${n}개 항목</b>을 지금 센터 목록에 다시 넣을까요?<br><small style="color:var(--text3)">새 센터는 이미 있으면 그 센터에 수업 시간만 맞추고, 없으면 새로 만들어요. 같은 수업이 두 번 생기지 않아요.</small>`,
+  desc:`<b>${escH(teacher)}</b> 강사의 ${g.ids.length>1?`요청 ${g.ids.length}건을 합친 최신 내용`:`요청(${escH(g.last||'')})`} <b>${n}개 항목</b>을 지금 센터 목록에 다시 넣을까요?<br><small style="color:var(--text3)">새 센터는 이미 있으면 그 센터에 수업 시간만 맞추고, 없으면 새로 만들어요. 같은 수업이 두 번 생기지 않아요.</small>`,
   onOk:()=>{
-   showBusyToast(`${req.teacher} 요청 다시 반영 중…`);
+   showBusyToast(`${teacher} 요청 다시 반영 중…`);
    let ok=0, miss=0;
-   (req.changes||[]).forEach(c=>{ if(_applyChangeToDB(req.teacher, c)) ok++; else miss++; });
+   g.changes.forEach(c=>{ if(_applyChangeToDB(teacher, c)) ok++; else miss++; });
    try{ lsSave(); }catch(_){}
    try{ _saveAllCentersToGas(); }catch(_){}
    try{ if(document.getElementById('centersView')?.style.display==='block'){ renderCenterTreeView&&renderCenterTreeView(); } }catch(_){}
-   try{ showToast(`✓ ${req.teacher} 요청 ${ok}개 다시 반영${miss?` · ${miss}개는 센터를 못 찾음`:''}`); }catch(_){}
+   try{ showToast(`✓ ${teacher} 요청 ${ok}개 다시 반영${g.ids.length>1?` (요청 ${g.ids.length}건 합침)`:''}${miss?` · ${miss}개는 센터를 못 찾음`:''}`); }catch(_){}
   }});
 }
 function _fieldLabel(f){ return f==='time'?'강의시간':f==='address'?'주소':f==='phone'?'센터 번호':f==='email'?'이메일':f==='weeks'?'특이사항(주차)':f; }
@@ -13883,9 +13900,9 @@ function _openSchedReqPanel(tab){
  *  - 새 센터 추가는 같은 센터·요일이면 마지막 것만
  *  - 메시지는 보낸 순서대로 모두 */
 function _schReqTs(r){ const m=String(r&&r.id||'').match(/^SR(\d{13})/); if(m) return Number(m[1]); const t=Date.parse(r&&r.requestedAt); return isNaN(t)?0:t; }
-function _schReqGroups(){
+function _schReqGroups(src){   // v19.11.1: src 없으면 대기 요청, 있으면 그 목록(처리완료 합치기에도 사용)
  const by={};
- (_schReqCache||[]).forEach(r=>{ const k=String(r.teacher||''); (by[k]=by[k]||[]).push(r); });
+ (src||_schReqCache||[]).forEach(r=>{ const k=String(r.teacher||''); (by[k]=by[k]||[]).push(r); });
  return Object.keys(by).map(teacher=>{
   const reqs=by[teacher].slice().sort((a,b)=>_schReqTs(a)-_schReqTs(b));
   const fieldMap=new Map(), addMap=new Map();
@@ -13941,7 +13958,7 @@ function _renderSchedReqPanel(){
     <div style="flex:1;font-size:15px;font-weight:800;">📬 스케줄 수정 요청 ${(_schReqTab==='wait'&&_nr)?`<span style="font-size:12px;font-weight:600;color:#9A968C;">${_np}명 · 요청 ${_nr}건${_nr>_np?' (같은 사람 요청은 합쳐서 보여줘요)':''}</span>`:''}</div>
     <button class="btn sm" onclick="document.getElementById('schedReqOverlay').style.display='none'">닫기</button>
    </div>
-   <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">${_tb('wait',`대기 ${_nr}`)}${_tb('done',`✓ 처리완료${_schReqDoneLoaded?' '+_schReqDone.length:''}`)}</div>${list}`;
+   <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">${_tb('wait',`대기 ${_nr}`)}${_tb('done',`✓ 처리완료${_schReqDoneLoaded?' '+new Set(_schReqDone.map(r=>r.teacher)).size+'명':''}`)}</div>${list}`;
 }
 async function _applySchedGroup(teacher){
  const g=_schReqGroups().find(x=>x.teacher===teacher); if(!g) return;
@@ -21444,9 +21461,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.11&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.12&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.11&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.12&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
