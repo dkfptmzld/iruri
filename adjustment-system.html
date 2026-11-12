@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.15">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.16">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.15">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.16">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.15</title>
+<title>수업기록표 정산 시스템 v19.16</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.15';
+const SYSTEM_VERSION='v19.16';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -12841,7 +12841,7 @@ function _teacherScheduleRows(teacher){
  return out;
 }
 /* 관리자 스케줄 보기에서 '4주차↔5주차' 토글 */
-function _toggleSchedWeeks(name, region, teacher, day, gyosi){
+function _toggleSchedWeeks(name, region, teacher, day, gyosi, fromCenterView){
  const c=(DB.centers||[]).find(x=>x && x.name===name && String(x.region||'')===String(region||''));
  if(!c || !Array.isArray(c.schedule)) return;
  const cand=c.schedule.filter(s=>s && s.teacher===teacher && (s.days||[]).includes(day));
@@ -12850,6 +12850,7 @@ function _toggleSchedWeeks(name, region, teacher, day, gyosi){
  s.weeks=((s.weeks===5)?4:5);
  try{ lsSave(); }catch(_){}
  try{ _saveAllCentersToGas(); }catch(_){}
+ if(fromCenterView){ try{ _refreshCenterView(); }catch(_){} return; }   // v19.16: 센터 관리 표에서 누른 경우 → 그 표를 그대로 다시 그림
  try{ openSchedule(teacher, _schCurShowFee); }catch(_){}   // v16.67: 보던 화면(수업료 표시 여부) 그대로 다시 그림
 }
 function _schTitle(teacher){
@@ -15284,12 +15285,14 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
  const dupNames = new Set(Object.keys(nameCount).filter(k=>nameCount[k]>1));
  const dispName = (c) => dupNames.has(c.name) ? `${escH(c.name)} <span style="font-size:10px;color:var(--text3);">(${escH(c.region)})</span>` : escH(c.name);
  const cols = window._teacherCols;
+ if(cols.weeks===undefined) cols.weeks=true;   // v19.16: 특이사항(4/5주차) 칸
 
  // 체크박스 필터 바
  const filterBar = `
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:12px;border:1px solid var(--border);">
    <span style="font-size:11px;font-weight:600;color:var(--text3);">표시할 정보:</span>
    ${[
+     {key:'weeks',   label:'특이사항(주차)'},
      {key:'fee',     label:'수업료'},
      {key:'address', label:'주소'},
      {key:'contact', label:'담당자·연락처'},
@@ -15320,6 +15323,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">교시</th>
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">시간</th>
   <th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">센터명</th>
+  ${cols.weeks   ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:center;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">특이사항</th>' : ''}
   ${cols.fee     ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">수업료</th>' : ''}
   ${cols.address ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);">주소</th>' : ''}
   ${cols.contact ? '<th style="padding:7px 10px;font-size:11px;font-weight:600;text-align:left;border-right:1px solid var(--border);border-bottom:2px solid var(--border);white-space:nowrap;">담당자·연락처</th>' : ''}
@@ -15392,6 +15396,10 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
     ${periodCell}
     ${timeCell(x)}
     <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;">${dispName(c)}</td>
+    ${cols.weeks ? (()=>{ const w=(x.sched&&x.sched.weeks===5)?5:4;   // v19.16: 4/5주차 — 눌러서 바꾸기
+      return `<td style="padding:4px 8px;text-align:center;border-right:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;" onclick="event.stopPropagation();">
+       <button type="button" onclick="event.stopPropagation();_toggleSchedWeeks('${escAttrJS(c.name)}','${escAttrJS(c.region||'')}','${escAttrJS(teacher)}','${day}',${(x&&x.gyosi)||1},true)" title="눌러서 ${w===5?4:5}주차로 바꾸기" style="border:1px solid ${w===5?'#D9B45A':'#D8D5CE'};background:${w===5?'#FFF7E3':'#fff'};color:${w===5?'#8A5A12':'#5C574D'};border-radius:12px;padding:2px 9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${w}주차 🔄</button>
+      </td>`; })() : ''}
     ${activeCols.map(col=>col.render(c)).join('')}
     ${cols.memo ? `<td style="padding:7px 10px;font-size:11px;color:${c.memo?'#92670B':'var(--text3)'};border-right:1px solid var(--border);border-bottom:1px solid var(--border);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.memo?esc(c.memo):'—'}</td>` : ''}
     <td style="padding:5px 8px;text-align:center;white-space:nowrap;">
@@ -15410,6 +15418,7 @@ function renderTeacherTable(region, teacher, dayMap, unscheduled, totalCenters){
    <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);">—</td>
    <td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center;">—</td>
    <td style="padding:7px 10px;font-size:13px;font-weight:600;border-right:1px solid var(--border);">${dispName(c)}</td>
+   ${cols.weeks   ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text3);text-align:center;">—</td>` : ''}
    ${cols.fee     ? _feeCell(c) : ''}
    ${cols.address ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">${c.address||'—'}</td>` : ''}
    ${cols.contact ? `<td style="padding:7px 10px;border-right:1px solid var(--border);font-size:11px;color:var(--text2);">${[c.contactName,c.phone].filter(Boolean).join(' · ')||'—'}</td>` : ''}
@@ -21518,9 +21527,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.15&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.16&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.15&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.16&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
