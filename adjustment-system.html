@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.13">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.14">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.13">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.14">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.13</title>
+<title>수업기록표 정산 시스템 v19.14</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5134,7 +5134,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.13';
+const SYSTEM_VERSION='v19.14';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13735,6 +13735,38 @@ function _schReqSetTab(t){
 }
 function _schReqIsApplied(r){ return /반영|applied/.test(String(r&&r.status||'')); }
 /* v19.11.1: 처리완료도 같은 강사 요청은 하나로 합침(최신 값 기준) — 반영된 요청끼리 합치고, 거절만 있으면 거절 요청끼리 */
+/* v19.14: 처리된 요청이 '지금 센터 목록'과 다른 곳 찾기 — 반영 뒤에 지워졌거나 다시 바뀐 것 */
+let _schReqOnlyDiff=false;
+function _schReqDiffs(teacher, changes){
+ const T=v=>String(v==null?'':v).trim();
+ const out=[];
+ (changes||[]).forEach(c=>{
+  if(!c) return;
+  const add=c.type==='add';
+  const cc=(DB.centers||[]).find(x=>x && T(x.name)===T(c.center) && String(x.region||'')===String(c.region||''));
+  const lab=add?'새 센터':_fieldLabel(c.field);
+  if(!cc){ out.push({c, lab, want:add?(c.time||'수업 추가'):c.to, now:'센터가 목록에 없음'}); return; }
+  const mine=(cc.schedule||[]).filter(s=>s && s.teacher===teacher && (s.days||[]).includes(c.day));
+  if(add){
+   if(!mine.length){ out.push({c, lab, want:(c.day+' '+(c.time||'수업')).trim(), now:`${c.day}요일 ${teacher} 수업 없음`}); return; }
+   const t=_normTime(c.time||'');
+   if(t && !mine.some(s=>_normTime(s.time||'')===t)) out.push({c, lab:'강의시간', want:t, now:mine.map(s=>s.time||'시간 없음').join(', ')});
+   return;
+  }
+  if(c.field==='time' || c.field==='weeks'){
+   if(!mine.length){ out.push({c, lab, want:c.to, now:`${c.day}요일 ${teacher} 수업 없음`}); return; }
+   const s=mine.find(x=>(x.gyosi||1)===c.gyosi) || mine[0];
+   if(c.field==='time'){ const want=_normTime(c.to||''); if(want!==_normTime(s.time||'')) out.push({c, lab, want:want||'(비움)', now:s.time||'(비어 있음)'}); }
+   else { const want=Number(c.to)===5?5:4, now=s.weeks===5?5:4; if(want!==now) out.push({c, lab, want:want+'주차', now:now+'주차'}); }
+   return;
+  }
+  if(c.field==='address' || c.field==='email' || c.field==='phone'){
+   if(T(cc[c.field])!==T(c.to)) out.push({c, lab, want:T(c.to)||'(비움)', now:T(cc[c.field])||'(비어 있음)'});
+  }
+ });
+ return out;
+}
+function _schReqToggleDiff(){ _schReqOnlyDiff=!_schReqOnlyDiff; _renderSchedReqPanel(); }
 function _schReqDoneGroups(){
  const by={};
  (_schReqDone||[]).forEach(r=>{ const k=String(r.teacher||''); (by[k]=by[k]||[]).push(r); });
@@ -13743,7 +13775,7 @@ function _schReqDoneGroups(){
   const ap=all.filter(_schReqIsApplied);
   const g=_schReqGroups(ap.length?ap:all)[0];
   const last=all[all.length-1]||{};
-  return Object.assign(g, { all, nAp:ap.length, nRj:all.length-ap.length, mergedApplied:ap.length>0,
+  return Object.assign(g, { all, nAp:ap.length, nRj:all.length-ap.length, mergedApplied:ap.length>0, diffs:_schReqDiffs(t, g.changes),
     lastResolved:last.resolvedAt||'', lastReq:last.requestedAt||'', lastTsAll:_schReqTs(last) });
  }).sort((a,b)=>b.lastTsAll-a.lastTsAll);
 }
@@ -13752,8 +13784,21 @@ function _schReqDoneHTML(){
  if(!_schReqDoneLoaded) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청을 불러오는 중…</div>';
  if(!_schReqDone.length) return '<div style="padding:26px;text-align:center;color:#9A968C;font-size:13px;">처리된 요청이 없어요<br><span style="font-size:11.5px;">(서버에서 목록을 못 받았을 수도 있어요 — 잠시 후 다시 눌러 보세요)</span></div>';
  const pill=(bg,fg,txt)=>`<span style="font-size:11px;font-weight:800;background:${bg};color:${fg};border-radius:20px;padding:2px 9px;">${txt}</span>`;
- return _schReqDoneGroups().map(g=>{
+ const groups=_schReqDoneGroups();
+ const nDiff=groups.filter(g=>g.mergedApplied && g.diffs.length).length;
+ const head=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 10px;padding:8px 12px;border-radius:10px;background:${nDiff?'#FFF4E5':'#F1FAF4'};border:1px solid ${nDiff?'#F5C98A':'#C7E8D3'};font-size:12.5px;">
+   <span style="flex:1;color:${nDiff?'#9A4B00':'#166534'};">${nDiff?`⚠ 반영했던 요청 중 <b>${nDiff}명</b>은 지금 센터 목록과 다른 곳이 있어요 (반영 뒤에 지워졌거나 다시 바뀜)`:'✓ 반영했던 요청이 모두 지금 센터 목록과 같아요'}</span>
+   ${nDiff?`<button class="btn sm" onclick="_schReqToggleDiff()" style="${_schReqOnlyDiff?'background:#9A4B00;color:#fff;border-color:#9A4B00;':''}">${_schReqOnlyDiff?'전체 보기':'다른 것만 보기'}</button>`:''}
+  </div>`;
+ const shown=_schReqOnlyDiff?groups.filter(g=>g.mergedApplied && g.diffs.length):groups;
+ return head+shown.map(g=>{
   const ch=g.changes||[];
+  const dN=g.mergedApplied?g.diffs.length:0;
+  const diffBadge=g.mergedApplied?(dN?pill('#FFE8CC','#9A4B00',`⚠ 지금과 다름 ${dN}`):pill('#EEF7F1','#3F7A55','지금과 같음')):'';
+  const diffBox=dN?`<div style="margin:10px 14px 0;padding:9px 12px;background:#FFF8EE;border:1px solid #F5C98A;border-radius:8px;font-size:12px;color:#7A4A12;line-height:1.65;">
+     <b>⚠ 지금 센터 목록과 다른 곳 ${dN}개</b> <span style="color:#A07040;font-size:11px;">— 일부러 고친 거면 그대로 두고, 빠진 거면 [다시 반영]을 누르세요</span>
+     ${g.diffs.map(d=>`<div>· <b>${e(d.c.center)}</b>${d.c.day?` (${e(d.c.day)})`:''} ${e(d.lab)}: 요청 <b style="color:#0F7A4E;">${e(d.want)}</b> → 지금 <b style="color:#B42318;">${e(d.now)}</b></div>`).join('')}
+   </div>`:'';
   const nC=new Set(ch.map(c=>(c.center||'')+'|'+(c.day||''))).size, nAdd=ch.filter(c=>c&&c.type==='add').length;
   const rows=ch.length?_schReqTableHTML(g.teacher, ch):'<div style="padding:10px;font-size:12.5px;color:#9A968C;">여러 번 고쳤지만 결국 원래 값과 같아요 — 바뀌는 곳이 없어요</div>';
   const badges=(g.nAp?pill('#DCFCE7','#166534',`✓ 반영완료${g.nAp>1?' '+g.nAp+'건':''}`):'')+(g.nRj?' '+pill('#F1F0EC','#6B6860',`거절${g.nRj>1?' '+g.nRj+'건':''}`):'');
@@ -13762,15 +13807,17 @@ function _schReqDoneHTML(){
   const msgHtml=msgs.length?`<div style="margin:0 14px 10px;padding:9px 12px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;font-size:12.5px;color:#8A6D1F;line-height:1.6;">✉️ <b>메시지${msgs.length>1?' '+msgs.length+'개':''}</b>${msgs.map(r=>`<div style="margin-top:3px;">${msgs.length>1?`<span style="color:#B59A4A;font-size:11px;">${e(r.requestedAt||'')}</span> · `:''}${e(r.message)}</div>`).join('')}</div>`:'';
   const hist=g.all.length>1?`<details style="margin:0 14px 10px;font-size:11.5px;color:#7A776C;"><summary style="cursor:pointer;">요청 ${g.all.length}건 보낸 기록 보기</summary><div style="margin-top:5px;line-height:1.7;">${g.all.map((r,i)=>`${i+1}. ${e(r.requestedAt||'')} · ${(r.changes||[]).length}개 항목 · <b style="color:${_schReqIsApplied(r)?'#166534':'#8A8578'};">${_schReqIsApplied(r)?'반영':'거절'}</b>${r.resolvedAt?` (${e(r.resolvedAt)})`:''}${r.message?' · ✉️':''}`).join('<br>')}<div style="color:#9A968C;margin-top:3px;">${g.mergedApplied?(g.nRj?'거절된 요청은 빼고, ':'')+'반영된 요청을 합쳤어요':'거절된 요청을 합쳤어요'} — 같은 칸을 여러 번 고친 건 마지막 값으로 (${g.raw}개 → ${ch.length}개)</div></div></details>`:'';
   const tq=escAttrJS(g.teacher);
-  return `<details style="border:1px solid ${merged?'#F2C960':'var(--border)'};border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;">
+  return `<details style="border:1px solid ${dN?'#F5A65B':(merged?'#F2C960':'var(--border)')};border-radius:12px;margin-bottom:10px;overflow:hidden;background:#fff;">
     <summary style="display:flex;align-items:center;gap:9px;padding:10px 14px;background:#FCFBF7;cursor:pointer;flex-wrap:wrap;list-style:none;">
      <span style="font-size:13.5px;font-weight:800;">${e(g.teacher)}</span>
      ${g.region?`<span style="font-size:11px;font-weight:700;background:var(--green-bg,#E8F5EE);color:var(--green,#1A7A50);border-radius:20px;padding:2px 9px;">${e(g.region)}지사</span>`:''}
      ${badges}
      ${merged?pill('#FFF3CD','#8A5A00',`요청 ${g.ids.length}건 합침`):''}
+     ${diffBadge}
      <span style="font-size:11.5px;color:var(--text2);">센터 ${nC}곳 · ${ch.length}개 항목${nAdd?` · <b style="color:#1A7A50;">새 센터 ${nAdd}</b>`:''}</span>
      <span style="margin-left:auto;font-size:11px;color:#9A968C;">최근 요청 ${e(g.lastReq||g.last||'')}${g.lastResolved?` · 처리 ${e(g.lastResolved)}`:''}</span>
     </summary>
+    ${diffBox}
     <div style="padding:10px 14px;">${rows}</div>
     ${msgHtml}${hist}
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
@@ -21461,9 +21508,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.13&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.14&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.13&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.14&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
