@@ -404,8 +404,9 @@ function getScheduleRequestsDone(limit){
     if(!id || !status || String(status) === '대기') continue;
     let changes = [];
     try{ changes = JSON.parse(String(changesJson||'[]')); }catch(e){ changes = []; }
+    const t = v => (v instanceof Date) ? v.toLocaleString('ko-KR', { timeZone:'Asia/Seoul' }) : String(v||'');   // 시트가 날짜로 바꿔 둔 칸도 한국식 글자로
     list.push({ id:String(id), teacher:String(teacher||''), region:String(region||''), changes:changes,
-                message:String(message||''), requestedAt:String(requestedAt||''), status:String(status||''), resolvedAt:String(resolvedAt||'') });
+                message:String(message||''), requestedAt:t(requestedAt), status:String(status||''), resolvedAt:t(resolvedAt) });
   }
   return { ok:true, data:list };
 }
