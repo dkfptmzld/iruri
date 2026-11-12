@@ -93,6 +93,7 @@ function doGet(e) {
     if (action === 'getDbMeta')            return response(getDbMeta());
     if (action === 'getPendingSignups')    return response(getPendingSignups());
     if (action === 'getScheduleRequests')  return response(getScheduleRequests());   // v16.05
+    if (action === 'getScheduleRequestsDone') return response(getScheduleRequestsDone(p.limit));   // v19.11: 처리된(반영·거절) 요청
     if (action === 'getJournalRecords')    return response(getJournalRecords(p.center, p.teacher, p.year, p.month, p.region));   // 계획서 일지
     if (action === 'getDepositMappings')   return response(depGetMappings());                                                    // 계좌매칭: 매핑 조회
     if (action === 'getDepositRecords')    return response(depGetRecords());                                                     // 계좌매칭: 회차 입금내역 조회
@@ -388,6 +389,23 @@ function getScheduleRequests(){
     try{ changes = JSON.parse(String(changesJson||'[]')); }catch(e){ changes = []; }
     list.push({ id:String(id), teacher:String(teacher||''), region:String(region||''),
                 changes:changes, message:String(message||''), requestedAt:String(requestedAt||'') });
+  }
+  return { ok:true, data:list };
+}
+
+/* v19.11: 처리된(반영·거절) 요청 — 최근 것부터(기본 80건). 관리자 '처리완료' 탭 · 다시 반영용 */
+function getScheduleRequestsDone(limit){
+  const n = Math.max(1, Math.min(300, Number(limit) || 80));
+  const sheet = getSheet(SHEET_SCHEDREQ);
+  const vals = sheet.getDataRange().getValues();
+  const list = [];
+  for(let i=vals.length-1;i>=1 && list.length<n;i--){
+    const [id, teacher, region, changesJson, message, requestedAt, status, resolvedAt] = vals[i];
+    if(!id || !status || String(status) === '대기') continue;
+    let changes = [];
+    try{ changes = JSON.parse(String(changesJson||'[]')); }catch(e){ changes = []; }
+    list.push({ id:String(id), teacher:String(teacher||''), region:String(region||''), changes:changes,
+                message:String(message||''), requestedAt:String(requestedAt||''), status:String(status||''), resolvedAt:String(resolvedAt||'') });
   }
   return { ok:true, data:list };
 }
