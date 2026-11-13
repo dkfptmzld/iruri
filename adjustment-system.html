@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.22">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.23">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.22">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.23">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.22</title>
+<title>수업기록표 정산 시스템 v19.23</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -69,6 +69,16 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .logo-mark{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;}
 .logo-mark svg{width:15px;height:15px;fill:white;}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+/* v19.23: 탭 숫자 배지가 글자(예: '변경 이력'의 '력')를 가리던 문제 — 배지가 보일 때만 오른쪽 여백 */
+.nav-tab:has(> span[id$="Badge"]:not([style*="display: none"]):not([style*="display:none"])){padding-right:24px!important;}
+/* v19.23: 노트북 화면(601~1700px)에서 관리자 상단 바 버튼이 화면 밖으로 밀려 가로 스크롤 생기던 문제 */
+@media (min-width:601px) and (max-width:1700px){
+ #adminTopbar{gap:8px;padding:6px 12px;height:auto;min-height:52px;flex-wrap:wrap;row-gap:6px;}
+ #adminTopbar .logo{font-size:0;gap:0;}
+ #adminTopbar .nav-tab{padding:5px 8px;font-size:12.5px;}
+ #adminTopbar .btn{padding-left:9px!important;padding-right:9px!important;}
+ #adminTopbar .topbar-right{gap:6px;}
+}
 .chip{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);white-space:nowrap;}
 .chip.green{background:var(--green-bg);color:var(--green);border-color:#B8E0CC;}
 .nav-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:var(--radius);padding:3px;}
@@ -5159,7 +5169,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.22';
+const SYSTEM_VERSION='v19.23';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -5840,7 +5850,13 @@ function _depAllPeriods(){
 // v18.36: 회차 목록에 기록(빈 회차도 남게) — 지금 있는 회차들(입금내역 기준)과 합쳐서 저장
 function _depKeepPeriod(p){ const set=new Set(_depAllPeriods()); if(p) set.add(p); depositDB.periods=[...set]; }
 function _depDropPeriod(p){ depositDB.periods=_depAllPeriods().filter(x=>x!==p); }
-function _depActivePeriod(){ if(!_depPeriod){ const ps=_depAllPeriods(); _depPeriod = ps[0] || _depCurMonth(); } return _depPeriod; }
+function _depActivePeriod(){
+ const ps=_depAllPeriods();
+ if(!_depPeriod) _depPeriod = ps[0] || _depCurMonth();
+ // v19.23: 새 기기에선 서버 입금내역이 오기 전에 '이번 달'로 정해져 빈 화면이 계속 보였음 → 입금내역이 오면 최근 회차로
+ else if(ps.length && !ps.includes(_depPeriod) && !depositDB.records.some(r=>(r.periodId||'')===_depPeriod)) _depPeriod = ps[0];
+ return _depPeriod;
+}
 function _depInPeriod(r){ return (r.periodId||'')===_depActivePeriod(); }
 function _depPeriodRecs(){ return depositDB.records.filter(_depInPeriod); }
 
@@ -9908,11 +9924,16 @@ function loadMonthlySnapshot(ym){
   renderSettle();
   // 이미 정산완료된 강사 GAS 히스토리 동기화 (기존 데이터 호환)
   setTimeout(()=>{
+   // v19.23: 기기마다 강사·달별 한 번만 — 달을 열 때마다 다시 보내면 서버의 '정산 확정 시각'이 계속 지금으로 바뀌고 서버도 바빠짐
+   let _fz={}; try{ _fz=JSON.parse(localStorage.getItem('iruri_fin_synced')||'{}')||{}; }catch(_){ _fz={}; }
+   let _ch=false;
    (STATE.data?.teachers||[]).forEach(t=>{
-    if(t.settleStatus==='done'){
-     gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:t.yearMonth||ym, note:t.note||'', notesData:t.notesData||null}).catch(()=>{});
-    }
+    if(t.settleStatus!=='done') return;
+    const k=(t.yearMonth||ym)+'|'+t.name; if(_fz[k]) return;
+    _fz[k]=1; _ch=true;
+    gasPost({action:'finalizeSettlement', teacher:t.name, yearMonth:t.yearMonth||ym, note:t.note||'', notesData:t.notesData||null}).catch(()=>{});
    });
+   if(_ch) try{ localStorage.setItem('iruri_fin_synced', JSON.stringify(_fz)); }catch(_){}
   }, 500);
   // 로컬 데이터 있으면 즉시 표시 → 토스트 불필요 (GAS 응답 후 별도 표시)
  } else {
@@ -21796,9 +21817,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.22&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.23&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.22&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.23&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
@@ -22281,6 +22302,10 @@ switchView = function(v){
  *  앱을 열 때마다 서버 왕복이 7번씩 더 붙었다(느려짐의 큰 원인).
  *  → 서버 재전송은 강사당 하루 한 번으로 제한하고, 저장은 로컬만(개별 saveTeacher 로 이미 반영됨). */
 function checkAndApplyRaises(){
+ // v19.23: 서버 강사 정보를 받기 전(새 기기·기록 지운 브라우저)엔 코드에 든 옛 기본 강사 목록일 수 있음
+ //  → 그걸로 인상·저장하면 서버의 실제 강사 정보(계좌·연락처 등)를 옛 값으로 덮어씀. 받은 뒤에 다시 확인
+ if(window._freshP && !window._freshDone){ window._freshP.then(()=>{ try{ checkAndApplyRaises(); }catch(_){} }); return; }
+ if(!lsGet(LS_T_SHEETS)) return;   // 이 기기에 서버에서 받은 강사 목록이 아직 없음(기본 목록 그대로) → 하지 않음
  const today = new Date(); today.setHours(0,0,0,0);
  const raised = [];
  const _RK='iruri_raise_pushed';
