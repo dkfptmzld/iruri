@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.23">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.24">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.23">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.24">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.23</title>
+<title>수업기록표 정산 시스템 v19.24</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5169,7 +5169,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.23';
+const SYSTEM_VERSION='v19.24';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -8050,10 +8050,19 @@ function _depPeriodSigs(recs){
  const by={}; (recs||[]).forEach(r=>{ const p=r.periodId||''; if(!p) return; (by[p]=by[p]||[]).push(_depRecSig(r)); });
  const out={}; Object.keys(by).forEach(p=>{ out[p]=by[p].length+':'+_depHash(by[p].sort().join('\n')); }); return out;
 }
+/* v19.24: 회차별 '연결된 센터' 서명 — 입금 내용은 같아도 매핑이 바뀌어 연결 센터가 달라지면 서버에 다시 저장
+ *  (예: '10월강사비(괜찮은'이 화면에선 괜찮은인데 서버엔 처음 올린 때의 가은으로 남아 있던 문제) */
+let _depMatchBase=null;   // {period: 매칭서명} — 서버에 저장된 연결 결과. 이 세션에서 서버를 받은 뒤에만 비교
+function _depMatchSigs(recs){
+ const by={}; (recs||[]).forEach(r=>{ const p=r.periodId||''; if(!p) return; (by[p]=by[p]||[]).push(_depRecSig(r)+'\u0003'+(r.matchStatus||'unmatched')+'\u0001'+(r.matchedCenterName||'')+'\u0001'+(r.region||'')); });
+ const out={}; Object.keys(by).forEach(p=>{ out[p]=_depHash(by[p].sort().join('\n')); }); return out;
+}
 function _depDirtyPeriods(){
  if(!_depSyncBase) return [];
  const cur=_depPeriodSigs(depositDB.records);
- return [...new Set([...Object.keys(cur), ...Object.keys(_depSyncBase)])].filter(p=>cur[p]!==_depSyncBase[p]);
+ const d=new Set([...new Set([...Object.keys(cur), ...Object.keys(_depSyncBase)])].filter(p=>cur[p]!==_depSyncBase[p]));
+ if(_depMatchBase){ const cm=_depMatchSigs(depositDB.records); Object.keys(cm).forEach(p=>{ if(_depMatchBase[p]!==undefined && cm[p]!==_depMatchBase[p]) d.add(p); }); }
+ return [...d];
 }
 function _depRecPayload(r){ return { account:r.account||'', date:_depNormDate(r.date), time:_depNormTime(r.time), summary:r.summary||'', depositorName:r.depositorName||'', branchRaw:r.branchRaw||'', branchKey:r.branchKey||'', amount:Number(r.amount)||0, matchStatus:r.matchStatus||'unmatched', matchedCenterName:r.matchedCenterName||'', region:r.region||'' }; }
 
@@ -8063,7 +8072,7 @@ async function _depPushRecords(){
  if(_depRecPushing){ _depRecPushAgain=true; return true; }
  const dirty=_depDirtyPeriods(); if(!dirty.length) return true;
  _depRecPushing=true;
- const sigs=_depPeriodSigs(depositDB.records), periods={};
+ const sigs=_depPeriodSigs(depositDB.records), msigs=_depMatchSigs(depositDB.records), periods={};
  dirty.forEach(p=>{ periods[p]=depositDB.records.filter(r=>(r.periodId||'')===p).map(_depRecPayload); });
  // v18.76: 같은 회차가 서버에 옛 이름으로도 저장돼 있으면 그 행은 비움(빈 배열 = 서버에서 삭제)
  const localIds=new Set(depositDB.records.map(r=>r.periodId||''));
@@ -8077,7 +8086,7 @@ async function _depPushRecords(){
    for(const p of Object.keys(periods)){ const r2=await gasPost({action:'saveDepositRecords', period:p, records:periods[p]}, 90000); if(!(r2&&r2.ok)) ok=false; }
   }
  }catch(_){ ok=false; }
- if(ok){ dirty.forEach(p=>{ if(sigs[p]) _depSyncBase[p]=sigs[p]; else delete _depSyncBase[p]; delete _depPeriodAlias[p]; }); _depSaveSyncBase(); }
+ if(ok){ dirty.forEach(p=>{ if(sigs[p]) _depSyncBase[p]=sigs[p]; else delete _depSyncBase[p]; delete _depPeriodAlias[p]; if(_depMatchBase){ if(msigs[p]) _depMatchBase[p]=msigs[p]; else delete _depMatchBase[p]; } }); _depSaveSyncBase(); }
  _depRecPushing=false;
  if(_depRecPushAgain){ _depRecPushAgain=false; return _depPushRecords(); }
  return ok;
@@ -8166,6 +8175,7 @@ async function _depSyncRecordsFromGAS(){
   const ld=_depDedupeRecs(depositDB.records);   // v18.76: 이 기기에 이미 들어온 중복도 정리
   if(ld.removed){ depositDB.records=ld.recs; ld.periods.forEach(p=>fix.add(p)); }
   _depSyncBase = sSig;   // 서버와 맞춘 기준점
+  _depMatchBase = _depMatchSigs(server);   // v19.24: 서버에 저장된 연결 결과(이후 재매칭으로 달라지면 그 회차를 다시 저장)
   fix.forEach(p=>{ _depSyncBase[p]='fix'; });   // v18.76: 정리할 회차는 '바뀜'으로 표시 → 곧 정리본 업로드(옛 이름 행 삭제)
   _depSaveSyncBase();
   const dupN=Math.max(sd.removed, ld.removed);
@@ -21817,9 +21827,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.23&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.24&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.23&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.24&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
