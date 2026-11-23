@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.29">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.30">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.29">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.30">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.29</title>
+<title>수업기록표 정산 시스템 v19.30</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5170,7 +5170,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.29';
+const SYSTEM_VERSION='v19.30';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13919,6 +13919,33 @@ function _edLocal(){
 }
 _edLocal();
 function _edSaveLocal(){ try{ localStorage.setItem(LS_ED, JSON.stringify(_edCamp)); localStorage.setItem(LS_ED_DONE, JSON.stringify(_edDone)); }catch(_){} }
+/* v19.30: 서버 저장 — 혼잡(잠금 대기·응답 없음)이면 자동으로 다시 시도, 끝내 실패하면 서버가 말한 이유를 그대로 돌려줌 */
+const LS_ED_UNSAVED='iruri_edu_unsaved';
+async function _edPostSettings(kv){
+ let last=null;
+ for(let i=0;i<3;i++){
+  try{
+   const r=await gasPost({action:'saveSystemSettings', settings:kv});
+   if(r && r.ok!==false) return {ok:true};
+   last=r||{};
+   if(r && r.oldApp) break;                       // 옛 앱 → 새로고침 안내는 gasPost가 띄움
+  }catch(e){ last={message:(e && e.name==='AbortError')?'서버 응답 시간 초과':String((e && e.message)||e)}; }
+  if(i<2) await new Promise(res=>setTimeout(res, 2000*(i+1)));
+ }
+ return {ok:false, message:String((last && last.message)||'서버가 저장을 거절했어요')};
+}
+function _edUnsaved(){ try{ return localStorage.getItem(LS_ED_UNSAVED)||''; }catch(_){ return ''; } }
+function _edSetUnsaved(id){ try{ if(id) localStorage.setItem(LS_ED_UNSAVED, id); else localStorage.removeItem(LS_ED_UNSAVED); }catch(_){} }
+// 요청(제목·마감 등)을 서버에 저장 — 실패하면 이 기기에 '저장 안 됨'으로 기억해 두고 관리자 화면에 [다시 저장]을 띄움
+async function _edSaveCamp(c, okMsg){
+ showBusyToast('서버에 저장 중…');
+ const r=await _edPostSettings({[ED_KEY]: JSON.stringify(c)});
+ if(r.ok){ _edSetUnsaved(''); showToast(okMsg); }
+ else { _edSetUnsaved(c.id); showToast('⚠ 서버 저장 실패 — '+r.message.slice(0,80)); }
+ _edAdminRender();
+ return r.ok;
+}
+function _edRetrySave(){ if(_edCamp) _edSaveCamp(_edCamp, '✅ 서버에 저장했어요 — 이제 강사 화면에 안내가 떠요'); }
 // 같은 요청의 두 기록 합치기(과목별로 더 늦게 올린 것)
 function _edMerge(a, b){
  if(!a) return b; if(!b) return a;
@@ -13934,6 +13961,11 @@ async function _edFetch(){
   let c=null; try{ c=r.data[ED_KEY] ? JSON.parse(String(r.data[ED_KEY])) : null; }catch(_){ c=null; }
   const d={};
   Object.keys(r.data).forEach(k=>{ if(k.indexOf(ED_DONE_PREFIX)===0){ try{ d[k.slice(ED_DONE_PREFIX.length)]=JSON.parse(String(r.data[k])); }catch(_){} } });
+  // v19.30: 이 기기에서 시작·고친 요청이 아직 서버에 저장 안 됐으면(저장 실패) 서버 값으로 덮지 않음
+  // 서버에 요청이 아예 없는데 이 기기엔 진행 중 요청이 있음 = 시작 저장이 실패했던 것(v19.29 이전엔 표시가 없었음) → 저장 안 됨으로 표시
+  if(!c && _edCamp && _edCamp.id && _edCamp.on) _edSetUnsaved(_edCamp.id);
+  const us=_edUnsaved();
+  if(us && _edCamp && _edCamp.id===us){ if(c && c.id===us && JSON.stringify(c)===JSON.stringify(_edCamp)) _edSetUnsaved(''); else c=_edCamp; }
   // 이 기기에서 방금 올렸는데 서버에 아직 없으면 합쳐서 유지
   Object.keys(_edDone).forEach(n=>{ const x=_edDone[n]; if(x && c && x.cid===c.id) d[n]=_edMerge(d[n] && d[n].cid===c.id ? d[n] : null, x); });
   _edCamp=c; _edDone=d; _edSaveLocal();
@@ -14114,10 +14146,10 @@ async function _edUpload(name, cid, file){
   if(r.campFolderUrl) rec.folder=String(r.campFolderUrl);
   _edDone[name]=rec; _edSaveLocal();
   const kv={}; kv[ED_DONE_PREFIX+name]=JSON.stringify(rec);
-  const sv=await gasPost({action:'saveSystemSettings', settings:kv}).catch(()=>null);
+  const sv=await _edPostSettings(kv);
   delete _edBusy[bk];
   const all=_edIsDone(name);
-  if(!(sv && sv.ok!==false)) showToast('⚠ 파일은 올렸지만 제출 기록 저장이 안 됐어요 — 잠시 후 다시 올려 주세요');
+  if(!sv.ok) showToast('⚠ 파일은 올렸지만 제출 기록 저장이 안 됐어요 — 잠시 후 다시 올려 주세요 ('+sv.message.slice(0,40)+')');
   else showToast(all ? '🎉 수료증 3개 모두 제출 완료 — 고마워요!' : `✅ ${ci+1}번 수료증을 올렸어요 (${_edCnt(name)}/${cs.length})`);
  }catch(e){
   delete _edBusy[bk];
@@ -14304,9 +14336,11 @@ function _edAdminRender(){
   const n=_edCnt(t.name), ok=n>=cs.length;
   return `<tr><td><b>${escH(t.name)}</b> <span style="color:#9B9888;font-size:11px;">${escH(t.region)}</span></td>${cells}<td style="white-space:nowrap;font-weight:800;color:${ok?'#16A34A':(n?'#B45309':'#B91C1C')};">${ok?'완료':n+'/'+cs.length}</td></tr>`;
  }).join('') || `<tr><td colspan="${cs.length+2}" style="text-align:center;color:#16A34A;padding:14px;">모두 완료했어요 🎉</td></tr>`;
+ const unsaved=_edUnsaved()===_edCamp.id;
  const folder=Object.keys(_edDone).map(k=>_edDone[k]).find(r=>r && _edCamp && r.cid===_edCamp.id && _edSafeUrl(r.folder));
  const dl=_edDeadline(), dd=_edDday();
  box.innerHTML=head+`
+  ${unsaved?`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:12px;padding:10px 14px;margin-top:10px;font-size:12.5px;color:#991B1B;line-height:1.5;"><span style="flex:1;min-width:200px;">⚠ <b>아직 서버에 저장되지 않았어요</b> — 이 상태로는 강사 화면에 안내가 뜨지 않아요.</span><button class="btn sm" onclick="_edRetrySave()" style="background:#DC2626;border-color:#DC2626;color:#fff;font-weight:700;">🔁 서버에 다시 저장</button></div>`:''}
   <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:12px 14px;margin-top:10px;">
    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;"><b style="font-size:14px;">📢 ${escH(_edCamp.title||'')}</b><span style="font-size:11.5px;color:#64748B;">${_edWhen(_edCamp.startedAt)} 시작${dl?` · 마감 <b style="color:#B91C1C;">${escH(dl)}${dd?' '+escH(dd):''}</b>`:''}</span></div>
    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;"><div style="flex:1;height:12px;border-radius:99px;background:#EDE9FE;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#7C3AED,#16A34A);border-radius:99px;"></div></div><b style="font-size:15px;">${done.length}/${T.length}명 · ${pct}%</b></div>
@@ -14346,10 +14380,8 @@ function _edAdminStart(){
  const c=Object.assign({id:'ED'+Date.now(), on:true, startedAt:new Date().toISOString()}, f);
  c.folderName=c.title;   // 드라이브 폴더 이름 — 나중에 제목을 고쳐도 같은 폴더에 모이게
  _edCamp=c; _edSaveLocal();
- showBusyToast('필수 교육 이수 요청 시작 중…');
- gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}})
-  .then(r=>{ showToast(r && r.ok!==false ? '📢 요청을 시작했어요 — 강사가 로그인하면 안내가 떠요' : '⚠ 서버 저장 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); })
-  .catch(()=>{ showToast('⚠ 서버 연결 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); });
+ _edAdminRender();
+ _edSaveCamp(c, '📢 요청을 시작했어요 — 강사가 로그인하면 안내가 떠요');
 }
 function _edAdminSaveEdit(){
  if(!_edActive()){ _edaEdit=false; _edAdminRender(); return; }
@@ -14358,18 +14390,14 @@ function _edAdminSaveEdit(){
  const c=Object.assign({}, _edCamp, f, {editedAt:new Date().toISOString()});
  c.folderName=_edCamp.folderName||_edCamp.title||c.title;   // 제목을 고쳐도 수료증은 처음 폴더에
  _edCamp=c; _edSaveLocal(); _edaEdit=false;
- showBusyToast('고친 내용 저장 중…');
- gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}})
-  .then(r=>{ showToast(r && r.ok!==false ? '💾 저장했어요 — 강사 화면에도 바로 반영돼요' : '⚠ 서버 저장 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); })
-  .catch(()=>{ showToast('⚠ 서버 연결 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); });
  _edAdminRender();
+ _edSaveCamp(c, '💾 저장했어요 — 강사 화면에도 바로 반영돼요');
 }
 function _edAdminStop(){
  showConfirm({icon:'🛑', title:'필수 교육 이수 요청을 끝낼까요?', desc:'강사 화면의 안내 팝업·제출 띠가 사라져요.<br><small style="color:var(--text3)">드라이브에 올라간 수료증은 그대로 남아요.</small>', okText:'끝내기', okStyle:'danger', cancelText:'취소', onOk:()=>{
   const c=Object.assign({}, _edCamp||{}, {on:false, endedAt:new Date().toISOString()});
   _edCamp=c; _edSaveLocal();
-  gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}}).then(()=>showToast('요청을 끝냈어요')).catch(()=>showToast('⚠ 서버 저장 실패'));
-  _edAdminRender();
+  _edSaveCamp(c, '요청을 끝냈어요');
  }});
 }
 function _edCopyTodo(){
@@ -22323,9 +22351,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.29&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.30&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.29&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.30&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
