@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.25">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.26">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.25">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.26">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.25</title>
+<title>수업기록표 정산 시스템 v19.26</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -2536,6 +2536,7 @@ body.ti-mode #settleAlertPanel, body.ti-mode #srvStatus_settle_m { display:none!
    <div style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:4px;">강사 공지하기</div>
    <div style="font-size:13px;color:#888;">올리면 강사 로그인 시 1회 확인 팝업이 떠요</div>
    <button type="button" onclick="document.getElementById('noticeModal').style.display='none';_scAdminOpen()" style="margin-top:12px;width:100%;height:40px;border:1.5px solid #2563EB;border-radius:10px;background:#EFF6FF;color:#1D4ED8;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📅 스케줄 작성 요청 (카드뉴스 안내 · 작성 현황)</button>
+   <button type="button" onclick="document.getElementById('noticeModal').style.display='none';_edAdminOpen()" style="margin-top:8px;width:100%;height:40px;border:1.5px solid #7C3AED;border-radius:10px;background:#F5F3FF;color:#5B21B6;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📚 필수 교육 이수 요청 (수료증 제출 현황)</button>
   </div>
   <!-- 현재 공지 상태 -->
   <div id="noticeStatus" style="font-size:12px;color:#666;background:#f8f7f2;border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;">현재 게시 중인 공지가 없어요</div>
@@ -5169,7 +5170,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.25';
+const SYSTEM_VERSION='v19.26';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13892,6 +13893,401 @@ function _scRenderAdminBar(){
 }
 
 
+/* ═══ v19.26: 필수 교육 이수 요청 (신고의무자 교육 · 수료증 제출) ═══
+ *  - 관리자: 공지하기 → '📚 필수 교육 이수 요청' → 제목·안내·마감·교육 3개(이름·링크) 넣고 시작 / 강사별 제출 현황(드라이브 파일 링크) / 명단 복사 / 끝내기
+ *  - 강사: 로그인하면 안내 팝업(교육 바로가기 · 📎 수료증 올리기) — 3개 수료증을 모두 올리면 완료. 홈에 '제출 x/3' 띠
+ *  - 수료증 파일: 구글 드라이브 이루리/이루리_교육수료증/<요청 제목>/<강사>/ (Code.gs uploadEduCert)
+ *  - 저장: 시스템설정 'eduCampaign' + 강사별 'eduDone|이름' (강사마다 다른 줄 → 동시에 올려도 서로 덮어쓰지 않음) */
+const ED_KEY='eduCampaign', ED_DONE_PREFIX='eduDone|', LS_ED='iruri_edu_camp', LS_ED_DONE='iruri_edu_done';
+const ED_DEF_COURSES=[
+ {id:'c1', name:'아동학대 신고의무자 교육', url:'https://www.gseek.kr/course/online/job-mandatory/legal/child/child-abuse-prevention-2026'},
+ {id:'c2', name:'장애인학대 및 장애인 대상 성범죄 신고의무자 교육', url:'https://www.gseek.kr/course/online/job-mandatory/legal/disability/disability-abuse-reporting-korean'},
+ {id:'c3', name:'긴급복지지원 신고의무자 교육', url:'https://www.gseek.kr/course/online/job-mandatory/legal/emergency/emergency-welfare-report-sign'}
+];
+const ED_DEF_REF='https://www.goebc.kr/goebc/na/ntt/selectNttInfo.do?mi=11111&bbsId=6348&nttSn=1233832';
+let _edCamp=null, _edDone={}, _edBusy={};
+function _edLocal(){
+ try{ _edCamp=JSON.parse(localStorage.getItem(LS_ED)||'null'); }catch(_){ _edCamp=null; }
+ try{ _edDone=JSON.parse(localStorage.getItem(LS_ED_DONE)||'{}')||{}; }catch(_){ _edDone={}; }
+}
+_edLocal();
+function _edSaveLocal(){ try{ localStorage.setItem(LS_ED, JSON.stringify(_edCamp)); localStorage.setItem(LS_ED_DONE, JSON.stringify(_edDone)); }catch(_){} }
+// 같은 요청의 두 기록 합치기(과목별로 더 늦게 올린 것)
+function _edMerge(a, b){
+ if(!a) return b; if(!b) return a;
+ if(a.cid!==b.cid) return (String(a.at||'')>String(b.at||''))?a:b;
+ const certs=Object.assign({}, a.certs||{});
+ Object.keys(b.certs||{}).forEach(k=>{ const x=b.certs[k]; if(!certs[k] || String(x.at||'')>String(certs[k].at||'')) certs[k]=x; });
+ return Object.assign({}, a, b, {certs, at:(String(a.at||'')>String(b.at||''))?a.at:b.at});
+}
+async function _edFetch(){
+ try{
+  const r=await gasGet({action:'getSystemSettings'});
+  if(!(r && r.ok && r.data)) return false;
+  let c=null; try{ c=r.data[ED_KEY] ? JSON.parse(String(r.data[ED_KEY])) : null; }catch(_){ c=null; }
+  const d={};
+  Object.keys(r.data).forEach(k=>{ if(k.indexOf(ED_DONE_PREFIX)===0){ try{ d[k.slice(ED_DONE_PREFIX.length)]=JSON.parse(String(r.data[k])); }catch(_){} } });
+  // 이 기기에서 방금 올렸는데 서버에 아직 없으면 합쳐서 유지
+  Object.keys(_edDone).forEach(n=>{ const x=_edDone[n]; if(x && c && x.cid===c.id) d[n]=_edMerge(d[n] && d[n].cid===c.id ? d[n] : null, x); });
+  _edCamp=c; _edDone=d; _edSaveLocal();
+  return true;
+ }catch(_){ return false; }
+}
+function _edActive(){ return !!(_edCamp && _edCamp.on && _edCamp.id); }
+function _edCourses(){ const cs=(_edCamp && Array.isArray(_edCamp.courses) && _edCamp.courses.length) ? _edCamp.courses : ED_DEF_COURSES; return cs.filter(c=>c && c.id && c.name); }
+function _edRec(name){ const d=_edDone[name]; return (_edCamp && d && d.cid===_edCamp.id) ? d : null; }
+function _edCnt(name){ const d=_edRec(name), cs=_edCourses(); return cs.filter(c=>d && d.certs && d.certs[c.id] && d.certs[c.id].url).length; }
+function _edIsDone(name){ return _edActive() && _edCnt(name)>=_edCourses().length; }
+function _edDeadline(){
+ const v=_edCamp && _edCamp.deadline; if(!v) return '';
+ const d=new Date(v+'T00:00:00'); if(isNaN(d)) return '';
+ return `${d.getMonth()+1}/${d.getDate()}(${'일월화수목금토'[d.getDay()]})`;
+}
+function _edDday(){
+ const v=_edCamp && _edCamp.deadline; if(!v) return '';
+ const d=new Date(v+'T00:00:00'); if(isNaN(d)) return '';
+ const t=new Date(); t.setHours(0,0,0,0);
+ const n=Math.round((d-t)/86400000);
+ return n>0?`D-${n}`:(n===0?'오늘 마감':'마감 지남');
+}
+function _edWhen(iso){ const d=new Date(iso); return isNaN(d)?'':`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function _edSafeUrl(u){ u=String(u||'').trim(); return /^https:\/\//i.test(u) ? u : ''; }
+
+function _edInjectCss(){
+ if(document.getElementById('edCss')) return;
+ const st=document.createElement('style'); st.id='edCss';
+ st.textContent=`
+ #eduOverlay{position:fixed;inset:0;z-index:10045;background:rgba(15,23,20,.55);display:none;align-items:center;justify-content:center;padding:12px;}
+ .ed-box{position:relative;width:min(480px,96vw);max-height:calc(100vh - 24px);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.35);}
+ .ed-top{background:linear-gradient(135deg,#6D28D9,#2563EB);color:#fff;padding:18px 20px 16px;position:relative;}
+ .ed-top h3{margin:6px 0 0;font-size:18px;font-weight:900;line-height:1.35;letter-spacing:-.2px;word-break:keep-all;}
+ .ed-chip{display:inline-block;font-size:11px;font-weight:800;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;margin-right:4px;}
+ .ed-chip.red{background:#FEE2E2;color:#B91C1C;}
+ .ed-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:15px;cursor:pointer;}
+ .ed-body{padding:14px 18px 18px;}
+ .ed-msg{font-size:13px;color:#4A4740;line-height:1.65;word-break:keep-all;white-space:pre-line;}
+ .ed-prog{display:flex;align-items:center;gap:10px;margin:12px 0 4px;}
+ .ed-bar{flex:1;height:10px;border-radius:99px;background:#EDE9FE;overflow:hidden;}
+ .ed-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7C3AED,#16A34A);}
+ .ed-course{border:1.5px solid #E5E2D8;border-radius:14px;padding:11px 12px;margin-top:10px;background:#FCFBF8;}
+ .ed-course.ok{border-color:#BFE3CE;background:#F3FBF6;}
+ .ed-cn{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;font-weight:800;color:#1A1916;line-height:1.4;word-break:keep-all;}
+ .ed-no{flex:0 0 22px;height:22px;border-radius:50%;background:#7C3AED;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;}
+ .ed-course.ok .ed-no{background:#16A34A;}
+ .ed-st{font-size:11.5px;margin:6px 0 0 30px;color:#9B9888;}
+ .ed-course.ok .ed-st{color:#166534;}
+ .ed-st a{color:#1D4ED8;font-weight:700;}
+ .ed-btns{display:flex;gap:6px;margin:8px 0 0 30px;flex-wrap:wrap;}
+ .ed-btns a,.ed-btns button{flex:1;min-width:120px;height:36px;border-radius:10px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:4px;text-decoration:none;box-sizing:border-box;}
+ .ed-go{border:1.5px solid #C4B5FD;background:#F5F3FF;color:#5B21B6;}
+ .ed-up{border:none;background:#7C3AED;color:#fff;}
+ .ed-up.re{background:#fff;border:1.5px solid #CFCBBE;color:#4A4740;}
+ .ed-up[disabled]{opacity:.6;cursor:wait;}
+ .ed-tip{margin-top:12px;background:#F6F5F0;border-radius:12px;padding:10px 12px;font-size:12px;color:#5A5750;line-height:1.7;word-break:keep-all;}
+ .ed-foot{display:flex;gap:8px;margin-top:14px;}
+ .ed-foot button{flex:1;height:44px;border-radius:12px;border:1px solid #D8D5CB;background:#fff;color:#4A4740;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+ .ed-foot button.pri{border:none;background:#16A34A;color:#fff;}
+ #eduBanner{display:none;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;margin:0 auto 16px;max-width:640px;padding:10px 14px;border-radius:14px;background:#F5F3FF;border:1.5px solid #C4B5FD;color:#4C1D95;font-size:13px;line-height:1.5;cursor:pointer;}
+ #eduBanner b{font-weight:800;}
+ #eduBanner .eb-btn{height:32px;padding:0 12px;border-radius:9px;border:none;background:#7C3AED;color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;}
+ #eduAdminOverlay{position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:12px;}
+ .eda-box{background:#fff;border-radius:18px;width:min(760px,96vw);max-height:calc(100vh - 24px);overflow:auto;padding:20px 22px;box-sizing:border-box;}
+ .eda-in{width:100%;border:1px solid #E2E0D8;border-radius:10px;padding:9px 12px;font-size:13px;font-family:inherit;box-sizing:border-box;}
+ .eda-lb{font-size:12px;font-weight:700;color:#666;margin:12px 0 6px;display:block;}
+ .eda-tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+ .eda-tbl th{background:#F6F5F0;color:#5A5750;font-weight:700;padding:7px 6px;border-bottom:1px solid #E5E2D8;position:sticky;top:0;}
+ .eda-tbl td{padding:6px;border-bottom:1px dashed #EEE;text-align:center;}
+ .eda-tbl td:first-child{text-align:left;}
+ .eda-tbl a{color:#16A34A;font-weight:800;text-decoration:none;}
+ .eda-tbl .miss{border:1px dashed #E8B4B4;background:#FFF8F8;color:#B91C1C;border-radius:7px;font-size:11px;padding:2px 7px;cursor:pointer;font-family:inherit;}
+ .eda-wrap{max-height:46vh;overflow:auto;border:1px solid #ECE9DF;border-radius:12px;margin-top:10px;}
+ @media(max-width:600px){
+  .ed-btns{margin-left:0;} .ed-st{margin-left:0;}
+  .ed-btns a,.ed-btns button{min-width:0;}
+  .eda-box{padding:16px 12px;}
+  .eda-tbl{font-size:11.5px;} .eda-tbl th,.eda-tbl td{padding:5px 3px;}
+ }
+ `;
+ document.head.appendChild(st);
+}
+
+/* ── 파일 → base64 (사진은 줄여서 JPEG, PDF 등은 그대로) ── */
+function _edReadFile(file){
+ return new Promise((resolve)=>{
+  const isImg=/^image\//.test(file.type||'') && !/heic|heif/i.test(file.type||'');
+  const raw=()=>{ const rd=new FileReader(); rd.onload=e=>resolve({base64:String(e.target.result).split(',')[1]||'', mimeType:file.type||'application/octet-stream', ext:((file.name.match(/\.([A-Za-z0-9]{1,8})$/)||[])[1]||'pdf').toLowerCase()}); rd.onerror=()=>resolve(null); rd.readAsDataURL(file); };
+  if(!isImg){ raw(); return; }
+  const img=new Image(), url=URL.createObjectURL(file);
+  img.onload=()=>{
+   URL.revokeObjectURL(url);
+   const M=2000; let w=img.width, h=img.height;
+   if(w>M || h>M){ const r=Math.min(M/w, M/h); w=Math.round(w*r); h=Math.round(h*r); }
+   const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+   const g=cv.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,w,h); g.drawImage(img,0,0,w,h);
+   resolve({base64:cv.toDataURL('image/jpeg',0.85).split(',')[1], mimeType:'image/jpeg', ext:'jpg'});
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); raw(); };
+  img.src=url;
+ });
+}
+function _edPick(name, cid){
+ if(!_edActive()) return;
+ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,application/pdf';
+ inp.style.display='none';
+ inp.onchange=()=>{ const f=inp.files && inp.files[0]; inp.remove(); if(f) _edUpload(name, cid, f); };
+ document.body.appendChild(inp); inp.click();
+}
+async function _edUpload(name, cid, file){
+ const cs=_edCourses(), ci=cs.findIndex(c=>c.id===cid); if(ci<0 || !name) return;
+ if(file.size>15*1024*1024){ showToast('⚠ 파일이 너무 커요(15MB 이하) — 사진으로 찍어서 올려 주세요'); return; }
+ const bk=name+'|'+cid; if(_edBusy[bk]) return;
+ _edBusy[bk]=1; _edRerender(name);
+ try{
+  const fd=await _edReadFile(file);
+  if(!fd || !fd.base64) throw new Error('파일을 읽지 못했어요');
+  const course=cs[ci];
+  const fileName=`${name}_${ci+1}_${course.name}`.replace(/[\\/:*?"<>|]/g,' ').slice(0,90)+'.'+fd.ext;
+  let r=await gasPost({action:'uploadEduCert', teacher:name, campaign:_edCamp.title||'필수 교육', courseName:course.name, fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
+  if(r && r.ok===false && /알 수 없는 action/.test(String(r.message||''))){
+   // 서버(Code.gs)를 아직 새로 배포하지 않았을 때: 영수증 폴더(이루리_영수증/<강사>/<요청 제목>)에 대신 저장
+   r=await gasPost({action:'uploadReceipt', teacher:name, yearMonth:(_edCamp.title||'필수 교육').slice(0,40), fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
+  }
+  if(!(r && r.ok!==false && r.url)) throw new Error((r && r.message) || '올리기 실패');
+  const prev=_edRec(name) || {cid:_edCamp.id, certs:{}};
+  const rec=Object.assign({}, prev, {cid:_edCamp.id, at:new Date().toISOString()});
+  rec.certs=Object.assign({}, prev.certs||{});
+  rec.certs[cid]={url:String(r.url), fileId:String(r.fileId||''), fileName, at:rec.at};
+  if(r.campFolderUrl) rec.folder=String(r.campFolderUrl);
+  _edDone[name]=rec; _edSaveLocal();
+  const kv={}; kv[ED_DONE_PREFIX+name]=JSON.stringify(rec);
+  const sv=await gasPost({action:'saveSystemSettings', settings:kv}).catch(()=>null);
+  delete _edBusy[bk];
+  const all=_edIsDone(name);
+  if(!(sv && sv.ok!==false)) showToast('⚠ 파일은 올렸지만 제출 기록 저장이 안 됐어요 — 잠시 후 다시 올려 주세요');
+  else showToast(all ? '🎉 수료증 3개 모두 제출 완료 — 고마워요!' : `✅ ${ci+1}번 수료증을 올렸어요 (${_edCnt(name)}/${cs.length})`);
+ }catch(e){
+  delete _edBusy[bk];
+  showToast('⚠ 수료증 올리기 실패 — '+String((e && e.message)||e).slice(0,60));
+ }
+ _edRerender(name);
+}
+function _edMe(){ try{ return window._loggedInTeacher||sessionStorage.getItem('iruri_session')||''; }catch(_){ return ''; } }
+function _edRerender(name){
+ _edBanner(_edMe());
+ const ov=document.getElementById('eduOverlay'); if(ov && ov.style.display!=='none') _edRenderTeacher(ov.dataset.name||name);
+ const ao=document.getElementById('eduAdminOverlay'); if(ao && ao.style.display!=='none') _edAdminRender();
+}
+
+/* ── 강사: 안내·제출 팝업 ── */
+function _edOpen(name, opt){
+ opt=opt||{};
+ if(!_edActive() && !opt.preview) return;
+ _edInjectCss();
+ let ov=document.getElementById('eduOverlay');
+ if(!ov){ ov=document.createElement('div'); ov.id='eduOverlay'; ov.onclick=(e)=>{ if(e.target===ov) _edClose(); }; document.body.appendChild(ov); }
+ ov.dataset.name=name||''; ov.dataset.preview=opt.preview?'1':'';
+ ov.style.display='flex';
+ _edRenderTeacher(name);
+}
+function _edClose(){ const ov=document.getElementById('eduOverlay'); if(ov) ov.style.display='none'; }
+function _edRenderTeacher(name){
+ const ov=document.getElementById('eduOverlay'); if(!ov) return;
+ const preview=ov.dataset.preview==='1';
+ const c=_edCamp||{}, cs=_edCourses(), rec=preview?null:_edRec(name);
+ const n=cs.filter(x=>rec && rec.certs && rec.certs[x.id] && rec.certs[x.id].url).length, all=n>=cs.length;
+ const q=`'${escAttrJS(name||'')}'`;
+ const dl=_edDeadline(), dd=_edDday(), ref=_edSafeUrl(c.refUrl);
+ const rows=cs.map((x,i)=>{
+  const ct=rec && rec.certs && rec.certs[x.id], busy=_edBusy[(name||'')+'|'+x.id], u=_edSafeUrl(x.url), cu=ct && _edSafeUrl(ct.url);
+  return `<div class="ed-course${ct?' ok':''}">
+   <div class="ed-cn"><span class="ed-no">${ct?'✓':i+1}</span><span>${escH(x.name)}</span></div>
+   <div class="ed-st">${ct?`✅ 제출함 · ${_edWhen(ct.at)}${cu?` · <a href="${escH(cu)}" target="_blank" rel="noopener">올린 파일 보기</a>`:''}`:'아직 제출 안 함'}</div>
+   <div class="ed-btns">
+    ${u?`<a class="ed-go" href="${escH(u)}" target="_blank" rel="noopener">▶ 교육 바로가기</a>`:''}
+    <button type="button" class="ed-up${ct?' re':''}" ${busy||preview?'disabled':''} onclick="_edPick(${q},'${escAttrJS(x.id)}')">${busy?'⏳ 올리는 중…':(ct?'🔄 다시 올리기':'📎 수료증 올리기')}</button>
+   </div></div>`;
+ }).join('');
+ ov.innerHTML=`<div class="ed-box">
+  <div class="ed-top"><button class="ed-x" onclick="_edClose()" aria-label="닫기">✕</button>
+   <span class="ed-chip">📚 필수 교육</span>${dl?`<span class="ed-chip red">마감 ${escH(dl)}${dd?' · '+escH(dd):''}</span>`:''}
+   <h3>${escH(c.title||'필수 교육 이수 및 수료증 제출')}</h3></div>
+  <div class="ed-body">
+   ${preview?'<div style="font-size:11.5px;color:#B45309;background:#FFF8E6;border-radius:8px;padding:6px 10px;margin-bottom:10px;">👀 미리보기 — 강사에게 이렇게 보여요 (올리기 버튼은 꺼져 있어요)</div>':''}
+   <div class="ed-msg">${escH(c.message||'')}</div>
+   <div class="ed-prog"><div class="ed-bar"><i style="width:${cs.length?Math.round(n/cs.length*100):0}%"></i></div><b style="font-size:13.5px;white-space:nowrap;color:${all?'#16A34A':'#5B21B6'};">${all?'🎉 제출 완료':`${n}/${cs.length} 제출`}</b></div>
+   ${rows}
+   <div class="ed-tip"><b>수강 방법</b><br>① <b>▶ 교육 바로가기</b> → 지식(GSEEK) 로그인(처음이면 회원가입) → 강의 듣기<br>② 다 들으면 <b>수료증 출력</b> → PDF로 저장하거나 화면을 캡처<br>③ 여기서 <b>📎 수료증 올리기</b> (사진·PDF 모두 돼요) — <b>3개 모두</b> 올리면 완료예요${ref?`<br><a href="${escH(ref)}" target="_blank" rel="noopener" style="color:#1D4ED8;font-weight:700;">📄 교육청 공문 자세히 보기</a>`:''}</div>
+   <div class="ed-foot">${all?'<button class="pri" onclick="_edClose()">닫기</button>':'<button onclick="_edClose()">나중에 할게요</button>'}</div>
+  </div></div>`;
+}
+
+/* ── 강사: 홈 띠 ── */
+function _edBanner(name){
+ let b=document.getElementById('eduBanner');
+ const need=_edActive() && name && !_edIsDone(name);
+ if(!need){ if(b) b.style.display='none'; return; }
+ _edInjectCss();
+ if(!b){
+  const wrap=document.getElementById('landingCardsWrap'); if(!wrap || !wrap.parentNode) return;
+  b=document.createElement('div'); b.id='eduBanner'; b.setAttribute('role','button'); b.tabIndex=0;
+  b.onclick=()=>_edOpen(b.dataset.name||'');
+  b.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); b.click(); } };
+  wrap.parentNode.insertBefore(b, wrap);
+ }
+ b.dataset.name=name;
+ const dl=_edDeadline(), dd=_edDday(), cs=_edCourses();
+ b.innerHTML=`<span>📚 <b>${escH((_edCamp&&_edCamp.title)||'필수 교육')}</b> · 수료증 <b>${_edCnt(name)}/${cs.length}</b> 제출${dl?` · 마감 <b style="color:#B91C1C;">${escH(dl)}${dd?' '+escH(dd):''}</b>`:''}</span><button type="button" class="eb-btn">제출하기</button>`;
+ b.style.display='flex';
+}
+
+/* ── 강사: 홈에 들어올 때 (로그인마다 한 번 팝업) ── */
+function _edOnLanding(name){
+ if(!name) return;
+ _edLocal(); _edBanner(name);
+ let tries=0, timer=null;
+ const want=()=>_edActive() && !_edIsDone(name);
+ const key=()=>'ed_shown_'+(_edCamp&&_edCamp.id)+'_'+name+'_'+(sessionStorage.getItem('sc_login_at')||'s');
+ const go=()=>{
+  timer=null;
+  if(!want() || sessionStorage.getItem(key())) return;
+  const e0=document.getElementById('eduOverlay'); if(e0 && getComputedStyle(e0).display!=='none') return;
+  const busy=['confirmOverlay','noticeModal','scGuideOverlay','schedOverlay'].some(id=>{ const e=document.getElementById(id); return e && getComputedStyle(e).display!=='none'; })
+    || [...document.querySelectorAll('.mnl-ov')].some(e=>getComputedStyle(e).display!=='none');   // 공지·스케줄 안내·매뉴얼이 떠 있으면 닫힌 뒤에
+  const home=document.getElementById('modeSelectScreen');
+  if(!home || getComputedStyle(home).display==='none' || busy){ if(++tries<480) timer=setTimeout(go,250); return; }
+  sessionStorage.setItem(key(),'1');
+  _edOpen(name);
+ };
+ if(want()) timer=setTimeout(go, 700);
+ _edFetch().then(()=>{
+  _edBanner(name);
+  if(!want()){ if(timer){ clearTimeout(timer); timer=null; } return; }
+  if(!timer) timer=setTimeout(go, 300);
+ });
+}
+setTimeout(()=>{ try{ if(typeof GAS_URL!=='undefined' && GAS_URL) _edFetch(); }catch(_){} }, 1200);
+
+/* ── 관리자: 시작 · 제출 현황 · 끝내기 ── */
+async function _edAdminOpen(){
+ _edInjectCss();
+ let ov=document.getElementById('eduAdminOverlay');
+ if(!ov){ ov=document.createElement('div'); ov.id='eduAdminOverlay'; ov.onclick=(e)=>{ if(e.target===ov) ov.style.display='none'; }; ov.innerHTML='<div class="eda-box" id="edaBox"></div>'; document.body.appendChild(ov); }
+ ov.style.display='flex';
+ const box=document.getElementById('edaBox');
+ box.innerHTML='<div style="padding:30px;text-align:center;color:#9B9888;font-size:13px;">현황 불러오는 중...'+(typeof _ipBar==='function'?_ipBar('edAdmin',3000):'')+'</div>';
+ await _edFetch();
+ _edAdminRender();
+}
+let _edaOnlyTodo=false;
+function _edAdminRender(){
+ const box=document.getElementById('edaBox'); if(!box) return;
+ const head=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><div style="font-size:30px;">📚</div><div style="flex:1;"><div style="font-size:18px;font-weight:800;">필수 교육 이수 요청</div><div style="font-size:12.5px;color:#888;">강사들에게 교육 이수·수료증 제출을 요청하고, 누가 올렸는지 봐요 (수료증은 구글 드라이브에 저장)</div></div><button class="btn sm" onclick="document.getElementById('eduAdminOverlay').style.display='none'">닫기</button></div>`;
+ if(!_edActive()){
+  const defTitle='2026년 신고의무자 교육 이수 및 수료증 제출';
+  const defMsg='2026년 아동학대·긴급복지·장애인학대 신고의무자 교육을 12월 28일(월)까지 이수하고 수료증을 올려 주세요.\n평생교육시설 내국인 종사자는 아래 3개 교육을 모두 이수해야 해요.';
+  const cs=_edCourses();
+  box.innerHTML=head+`
+   <div style="background:#F6F5F0;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#5A5750;line-height:1.7;margin-top:10px;">
+    시작하면 강사가 로그인할 때 <b>안내 팝업</b>(교육 바로가기 · 📎 수료증 올리기)이 뜨고, 홈 화면 위에 <b style="color:#6D28D9;">📚 수료증 제출 0/3</b> 띠가 붙어요.<br>
+    강사가 <b>3개 수료증을 모두 올리면</b> 완료로 잡혀요. 파일은 <b>구글 드라이브 › 이루리 › 이루리_교육수료증 › (제목) › (강사)</b>에 저장돼요.</div>
+   <label class="eda-lb">제목</label><input id="edaTitle" class="eda-in" maxlength="50" value="${escH(defTitle)}">
+   <label class="eda-lb">안내 문구 <span style="font-weight:400;color:#aaa;">(팝업 맨 위에 공지로 보여요)</span></label><textarea id="edaMsg" class="eda-in" rows="4">${escH(defMsg)}</textarea>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="flex:0 0 190px;"><label class="eda-lb">마감일</label><input id="edaDl" type="date" class="eda-in" value="2026-12-28"></div>
+    <div style="flex:1;min-width:220px;"><label class="eda-lb">공문 링크 <span style="font-weight:400;color:#aaa;">(선택)</span></label><input id="edaRef" class="eda-in" value="${escH(ED_DEF_REF)}"></div>
+   </div>
+   <label class="eda-lb">교육 (이름 · 링크) — 모두 올려야 완료</label>
+   ${cs.map((x,i)=>`<div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;"><input class="eda-in edaCN" data-id="${escH(x.id)}" style="flex:1 1 220px;" value="${escH(x.name)}" placeholder="${i+1}번 교육 이름"><input class="eda-in edaCU" style="flex:1.4 1 240px;" value="${escH(x.url)}" placeholder="https://..."></div>`).join('')}
+   <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+    <button class="btn" onclick="_edAdminPreview()" style="flex:1;">👀 강사에게 보이는 화면 미리보기</button>
+    <button class="btn primary" onclick="_edAdminStart()" style="flex:1.3;background:#7C3AED;border-color:#7C3AED;color:#fff;font-weight:700;">📢 요청 시작하기</button>
+   </div>`;
+  return;
+ }
+ const cs=_edCourses(), T=_scTargets();
+ const done=T.filter(t=>_edIsDone(t.name)), todo=T.filter(t=>!_edIsDone(t.name));
+ const pct=T.length?Math.round(done.length/T.length*100):0;
+ const ord=['서울','인천','수원'];
+ const rows=T.slice().filter(t=>!_edaOnlyTodo || !_edIsDone(t.name)).sort((a,b)=>{
+  const da=_edIsDone(a.name)?1:0, db=_edIsDone(b.name)?1:0; if(da!==db) return da-db;
+  const ia=ord.indexOf(a.region), ib=ord.indexOf(b.region); return (ia<0?9:ia)-(ib<0?9:ib) || a.name.localeCompare(b.name,'ko');
+ }).map(t=>{
+  const rec=_edRec(t.name), q=`'${escAttrJS(t.name)}'`;
+  const cells=cs.map(x=>{
+   const ct=rec && rec.certs && rec.certs[x.id], cu=ct && _edSafeUrl(ct.url), busy=_edBusy[t.name+'|'+x.id];
+   if(busy) return '<td>⏳</td>';
+   return ct ? `<td>${cu?`<a href="${escH(cu)}" target="_blank" rel="noopener" title="${escH(_edWhen(ct.at))} 제출 — 드라이브에서 보기">✅ 보기</a>`:'✅'}</td>`
+             : `<td><button class="miss" title="대신 올리기(카톡 등으로 받은 수료증)" onclick="_edPick(${q},'${escAttrJS(x.id)}')">미제출</button></td>`;
+  }).join('');
+  const n=_edCnt(t.name), ok=n>=cs.length;
+  return `<tr><td><b>${escH(t.name)}</b> <span style="color:#9B9888;font-size:11px;">${escH(t.region)}</span></td>${cells}<td style="white-space:nowrap;font-weight:800;color:${ok?'#16A34A':(n?'#B45309':'#B91C1C')};">${ok?'완료':n+'/'+cs.length}</td></tr>`;
+ }).join('') || `<tr><td colspan="${cs.length+2}" style="text-align:center;color:#16A34A;padding:14px;">모두 완료했어요 🎉</td></tr>`;
+ const folder=Object.keys(_edDone).map(k=>_edDone[k]).find(r=>r && _edCamp && r.cid===_edCamp.id && _edSafeUrl(r.folder));
+ const dl=_edDeadline(), dd=_edDday();
+ box.innerHTML=head+`
+  <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:12px;padding:12px 14px;margin-top:10px;">
+   <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;"><b style="font-size:14px;">📢 ${escH(_edCamp.title||'')}</b><span style="font-size:11.5px;color:#64748B;">${_edWhen(_edCamp.startedAt)} 시작${dl?` · 마감 <b style="color:#B91C1C;">${escH(dl)}${dd?' '+escH(dd):''}</b>`:''}</span></div>
+   <div style="display:flex;align-items:center;gap:10px;margin-top:10px;"><div style="flex:1;height:12px;border-radius:99px;background:#EDE9FE;overflow:hidden;"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#7C3AED,#16A34A);border-radius:99px;"></div></div><b style="font-size:15px;">${done.length}/${T.length}명 · ${pct}%</b></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;font-size:12px;color:#6A6760;">
+   <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;"><input type="checkbox" ${_edaOnlyTodo?'checked':''} onchange="_edaOnlyTodo=this.checked;_edAdminRender()"> 아직 안 한 사람만</label>
+   <span style="flex:1;"></span>${folder?`<a href="${escH(_edSafeUrl(folder.folder))}" target="_blank" rel="noopener" style="color:#1D4ED8;font-weight:700;text-decoration:none;">📂 드라이브 수료증 폴더 열기</a>`:'<span style="color:#9B9888;">📂 첫 수료증이 올라오면 드라이브 폴더 링크가 생겨요</span>'}
+  </div>
+  <div class="eda-wrap"><table class="eda-tbl"><thead><tr><th style="text-align:left;">강사</th>${cs.map((x,i)=>`<th title="${escH(x.name)}">${i+1}. ${escH(x.name.replace(/ ?신고의무자 교육$/,'').replace(/^장애인학대 및 장애인 대상 성범죄$/,'장애인학대'))}</th>`).join('')}<th>상태</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div style="font-size:11.5px;color:#9B9888;margin-top:8px;line-height:1.6;">✅ 보기 = 드라이브에 올라간 수료증 · <b>미제출</b>을 누르면 카톡 등으로 받은 수료증을 대신 올릴 수 있어요.</div>
+  <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+   <button class="btn" onclick="_edCopyTodo()" ${todo.length?'':'disabled'} style="flex:1.3;">📋 안 한 사람 명단 복사 (카톡용)</button>
+   <button class="btn" onclick="_edAdminPreview()" style="flex:1;">👀 미리보기</button>
+   <button class="btn" onclick="_edAdminOpen()" style="flex:.8;">🔄 새로고침</button>
+   <button class="btn" onclick="_edAdminStop()" style="flex:.9;color:#DC2626;border-color:#F3C4C4;">요청 끝내기</button>
+  </div>`;
+}
+function _edFormCamp(){
+ const title=(document.getElementById('edaTitle')?.value||'').trim()||'필수 교육 이수 및 수료증 제출';
+ const message=(document.getElementById('edaMsg')?.value||'').trim();
+ const deadline=(document.getElementById('edaDl')?.value||'').trim();
+ const refUrl=_edSafeUrl(document.getElementById('edaRef')?.value);
+ const ns=[...document.querySelectorAll('#edaBox .edaCN')], us=[...document.querySelectorAll('#edaBox .edaCU')];
+ const courses=ns.map((el,i)=>({id:el.dataset.id||('c'+(i+1)), name:(el.value||'').trim(), url:_edSafeUrl(us[i] && us[i].value)})).filter(c=>c.name);
+ return {title, message, deadline, refUrl, courses};
+}
+function _edAdminPreview(){
+ if(_edActive()){ _edOpen('',{preview:true}); return; }
+ const keep=_edCamp; _edCamp=Object.assign({id:'preview', on:false}, _edFormCamp());
+ _edOpen('',{preview:true});
+ _edCamp=keep;
+}
+function _edAdminStart(){
+ const f=_edFormCamp();
+ if(!f.courses.length){ showToast('교육을 1개 이상 넣어 주세요'); return; }
+ const c=Object.assign({id:'ED'+Date.now(), on:true, startedAt:new Date().toISOString()}, f);
+ _edCamp=c; _edSaveLocal();
+ showBusyToast('필수 교육 이수 요청 시작 중…');
+ gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}})
+  .then(r=>{ showToast(r && r.ok!==false ? '📢 요청을 시작했어요 — 강사가 로그인하면 안내가 떠요' : '⚠ 서버 저장 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); })
+  .catch(()=>{ showToast('⚠ 서버 연결 실패 — 잠시 후 다시 시도해 주세요'); _edAdminRender(); });
+}
+function _edAdminStop(){
+ showConfirm({icon:'🛑', title:'필수 교육 이수 요청을 끝낼까요?', desc:'강사 화면의 안내 팝업·제출 띠가 사라져요.<br><small style="color:var(--text3)">드라이브에 올라간 수료증은 그대로 남아요.</small>', okText:'끝내기', okStyle:'danger', cancelText:'취소', onOk:()=>{
+  const c=Object.assign({}, _edCamp||{}, {on:false, endedAt:new Date().toISOString()});
+  _edCamp=c; _edSaveLocal();
+  gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}}).then(()=>showToast('요청을 끝냈어요')).catch(()=>showToast('⚠ 서버 저장 실패'));
+  _edAdminRender();
+ }});
+}
+function _edCopyTodo(){
+ const cs=_edCourses(), T=_scTargets().filter(t=>!_edIsDone(t.name));
+ const byReg={}; T.forEach(t=>{ (byReg[t.region]=byReg[t.region]||[]).push(t.name+(_edCnt(t.name)?`(${_edCnt(t.name)}/${cs.length})`:'')); });
+ const dl=_edDeadline();
+ const lines=[`[${(_edCamp&&_edCamp.title)||'필수 교육'}] 아직 수료증을 다 올리지 않은 선생님 (${T.length}명)${dl?' · 마감 '+dl:''}`, ''];
+ Object.keys(byReg).sort().forEach(r=>lines.push(`${r}: ${byReg[r].sort((a,b)=>a.localeCompare(b,'ko')).join(', ')}`));
+ lines.push('', '이루리 앱 로그인 → 📚 안내 팝업(또는 홈 위 띠)에서', '교육 3개를 듣고 수료증을 올려 주세요 🙏');
+ cs.forEach((x,i)=>lines.push(`${i+1}. ${x.name}${x.url?'\n   '+x.url:''}`));
+ const txt=lines.join('\n');
+ (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>showToast('📋 명단을 복사했어요 — 카톡에 붙여넣기 하세요')).catch(()=>{ try{ prompt('아래 내용을 복사하세요', txt); }catch(_){} });
+}
+
+
 /* ═══ 비상연락망 (관리자 전용 — 관리자 모드에서만 접근, PIN 없음) ═══
  *  강사 관리(DB.teachers)의 지역·연락처를 그대로 사용(자동 연동).
  *  직급은 소수만 매핑, 나머지는 '강사'. 대표는 최상단에 별도 표시. */
@@ -21246,7 +21642,9 @@ function _showLandingUI(){
    try{ if(typeof _mnlMaybeAutoShow==='function') _mnlMaybeAutoShow(teacher); }catch(e){}
  }
  try{ if(typeof _scOnLanding==='function') _scOnLanding(teacher); }catch(e){}   // v18.71: 스케줄 작성 요청 (v18.73: 관리자 계정도)
+ try{ if(typeof _edOnLanding==='function') _edOnLanding(teacher); }catch(e){}   // v19.26: 필수 교육 이수 요청 (수료증 제출)
  } else {
+ try{ const eb=document.getElementById('eduBanner'); if(eb) eb.style.display='none'; }catch(e){}
  if(userInfo) userInfo.style.display='none';
  if(noUser) noUser.style.display='block';
  }
@@ -21828,9 +22226,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.25&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.26&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.25&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.26&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }

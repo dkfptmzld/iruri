@@ -124,7 +124,7 @@ function _oldAppBlocked_(action, body) {
   if (!_GUARDED_WRITES[action]) return null;
   if (action === 'saveSystemSettings') {   // 강사가 '스케줄 확인 완료'를 남기는 칸(본인 것만)은 막지 않음
     var ks = Object.keys((body && body.settings) || {});
-    if (ks.length && ks.every(function (k) { return k.indexOf('schedDone|') === 0; })) return null;
+    if (ks.length && ks.every(function (k) { return k.indexOf('schedDone|') === 0 || k.indexOf('eduDone|') === 0; })) return null;   // v19.26: 수료증 제출 기록(본인 것만)도
   }
   var min = _minWriteVer_();
   if (_verNum_(body && body.appVer) >= _verNum_(min)) return null;
@@ -165,6 +165,7 @@ function doPost(e) {
     if (action === 'loginCheck')            return response(loginCheck(body.teacher, body.hashedPw, body.legacyPw));
     if (action === 'deleteSubmission')      return response(deleteSubmission(body.teacher, body.yearMonth, body.submittedAt));
     if (action === 'uploadReceipt')         return response(uploadReceipt(body.teacher, body.yearMonth, body.fileName, body.base64, body.mimeType));
+    if (action === 'uploadEduCert')         return response(uploadEduCert(body.teacher, body.campaign, body.courseName, body.fileName, body.base64, body.mimeType));   // v19.26: 필수 교육 수료증
     if (action === 'saveTeacher')           return response(saveTeacher(body.teacher, body.allowAdd));   // v19.01: 새 강사는 allowAdd(관리자 '강사 추가')일 때만
     if (action === 'setTeacherFlag')        return response(setTeacherFlag(body.name, body.key, body.value));   // v18.95: 강사 정보 한 칸만(매뉴얼 봄 등) — 통째 저장으로 옛 값 덮어쓰기 방지
     if (action === 'deleteTeacher')         return response(deleteTeacher(body.name));
@@ -926,6 +927,25 @@ function uploadReceipt(teacher, yearMonth, fileName, base64, mimeType) {
     sheet.appendRow([teacher, yearMonth, fileName, viewUrl, now]);
     return { ok: true, url: viewUrl, fileId };
   } catch(err) { return { ok: false, message: err.toString() }; }
+}
+
+/* v19.26: 필수 교육(신고의무자 교육 등) 수료증 — 드라이브 이루리/이루리_교육수료증/<요청 제목>/<강사>/ 에 저장
+ *  (폴더를 새로 만들 수 있어 잠금 안에서 처리 → 두 사람이 동시에 올려도 폴더가 둘로 갈라지지 않음) */
+const EDU_CERT_FOLDER = '이루리_교육수료증';
+function uploadEduCert(teacher, campaign, courseName, fileName, base64, mimeType) {
+  try {
+    teacher = String(teacher || '').trim();
+    if (!teacher) return { ok: false, message: '강사 이름이 없어요' };
+    if (!base64) return { ok: false, message: '파일이 비어 있어요' };
+    const clean = function (v, d) { v = String(v || '').replace(/[\\/]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60); return v || d; };
+    const cf = _subFolder_(_subFolder_(getIruriRoot(), EDU_CERT_FOLDER), clean(campaign, '필수 교육'));
+    const tf = _subFolder_(cf, clean(teacher, '이름없음'));
+    const blob = Utilities.newBlob(Utilities.base64Decode(base64), mimeType || 'application/octet-stream', clean(fileName, '수료증'));
+    const file = tf.createFile(blob);
+    try { if (courseName) file.setDescription(teacher + ' · ' + String(courseName)); } catch (e) {}
+    const fileId = file.getId();
+    return { ok: true, url: 'https://drive.google.com/file/d/' + fileId + '/view', fileId: fileId, folderUrl: tf.getUrl(), campFolderUrl: cf.getUrl() };
+  } catch (err) { return { ok: false, message: err.toString() }; }
 }
 
 function getReceipts(teacher, yearMonth) {
