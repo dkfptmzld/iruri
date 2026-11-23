@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.27">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.28">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.27">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.28">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.27</title>
+<title>수업기록표 정산 시스템 v19.28</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5170,7 +5170,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.27';
+const SYSTEM_VERSION='v19.28';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -13904,6 +13904,13 @@ const ED_DEF_COURSES=[
  {id:'c2', name:'장애인학대 및 장애인 대상 성범죄 신고의무자 교육', url:'https://www.gseek.kr/course/online/job-mandatory/legal/disability/disability-abuse-reporting-korean', deadline:''},
  {id:'c3', name:'긴급복지지원 신고의무자 교육', url:'https://www.gseek.kr/course/online/job-mandatory/legal/emergency/emergency-welfare-report-sign', deadline:'2026-12-11'}   // v19.27: 긴급복지는 12/11까지 (한국보건복지인재원 신청 마감)
 ];
+// v19.28: 홍보 이미지와 같은 말로 — 마감일은 팝업의 마감 카드가 보여 주므로 문구에서 뺌
+const ED_DEF_MSG='평생교육시설 종사자는 법정 의무교육 3개를 모두 이수해야 해요.\n교육 듣고 → 수료증을 여기에 올려 주시면 끝!';
+const ED_OLD_MSGS=[   // 예전 기본 문구로 시작한 요청은 새 기본 문구로 보여 줌(마감일이 카드와 겹치지 않게)
+ '2026년 아동학대·긴급복지·장애인학대 신고의무자 교육을 12월 28일(월)까지 이수하고 수료증을 올려 주세요.\n평생교육시설 내국인 종사자는 아래 3개 교육을 모두 이수해야 해요.',
+ '2026년 아동학대·긴급복지·장애인학대 신고의무자 교육을 이수하고 수료증을 올려 주세요.\n⏰ 긴급복지지원 교육은 12월 11일(금)까지, 나머지 2개는 12월 26일(토)까지예요.\n평생교육시설 내국인 종사자는 아래 3개 교육을 모두 이수해야 해요.'
+];
+function _edMsg(c){ const m=String((c && c.message)||''); return ED_OLD_MSGS.indexOf(m)>=0 ? ED_DEF_MSG : m; }
 const ED_DEF_REF='https://www.goebc.kr/goebc/na/ntt/selectNttInfo.do?mi=11111&bbsId=6348&nttSn=1233832';
 let _edCamp=null, _edDone={}, _edBusy={};
 function _edLocal(){
@@ -13975,14 +13982,42 @@ function _edInjectCss(){
  st.textContent=`
  #eduOverlay{position:fixed;inset:0;z-index:10045;background:rgba(15,23,20,.55);display:none;align-items:center;justify-content:center;padding:12px;}
  .ed-box{position:relative;width:min(480px,96vw);max-height:calc(100vh - 24px);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.35);}
- .ed-top{background:linear-gradient(135deg,#6D28D9,#2563EB);color:#fff;padding:18px 20px 16px;position:relative;}
- .ed-top h3{margin:6px 0 0;font-size:18px;font-weight:900;line-height:1.35;letter-spacing:-.2px;word-break:keep-all;}
+ .ed-top{background:linear-gradient(150deg,#5B21B6,#6D28D9 45%,#2563EB);color:#fff;padding:18px 20px 16px;position:relative;}
+ .ed-top h3{margin:10px 0 0;font-size:19px;font-weight:900;line-height:1.35;letter-spacing:-.2px;word-break:keep-all;}
  .ed-chip{display:inline-block;font-size:11px;font-weight:800;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;margin-right:4px;}
  .ed-chip.red{background:#FEE2E2;color:#B91C1C;}
  .ed-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.25);color:#fff;font-size:15px;cursor:pointer;}
  .ed-body{padding:14px 18px 18px;}
- .ed-msg{font-size:13px;color:#4A4740;line-height:1.65;word-break:keep-all;white-space:pre-line;}
- .ed-prog{display:flex;align-items:center;gap:10px;margin:12px 0 4px;}
+ .ed-msg{font-size:13px;color:rgba(255,255,255,.93);line-height:1.6;word-break:keep-all;white-space:pre-line;margin-top:8px;}
+ .ed-chip.yel{background:#FDE047;color:#4C1D95;font-weight:900;}
+ .ed-h{font-size:14.5px;font-weight:900;color:#1F1B2E;margin:14px 0 8px;letter-spacing:-.2px;}
+ .ed-body > .ed-h:first-child{margin-top:4px;}
+ .ed-pill{font-size:11px;font-weight:700;color:#7C3AED;background:#EDE9FE;border-radius:99px;padding:2px 9px;}
+ .ed-dls{display:flex;gap:8px;}
+ .ed-dl{flex:1;border-radius:14px;padding:10px 12px;background:#F5F3FF;border:2px solid #DDD6FE;}
+ .ed-dl.hot{background:#FEF2F2;border-color:#FCA5A5;}
+ .ed-dl.done{background:#F0FDF4;border-color:#BBF7D0;}
+ .ed-tag{display:table;font-size:10.5px;font-weight:900;color:#fff;background:#7C3AED;border-radius:6px;padding:1px 7px;}
+ .ed-dl.hot .ed-tag{background:#DC2626;} .ed-dl.done .ed-tag{background:#16A34A;}
+ .ed-d{font-size:23px;font-weight:900;letter-spacing:-.6px;line-height:1.15;margin-top:5px;color:#5B21B6;display:inline-block;}
+ .ed-dl.hot .ed-d{color:#DC2626;} .ed-dl.done .ed-d{color:#16A34A;}
+ .ed-d small{font-size:12px;font-weight:700;margin-left:1px;}
+ .ed-dd{display:inline-block;font-size:11px;font-weight:800;color:#9B98AA;margin-left:6px;}
+ .ed-w{font-size:12px;font-weight:700;color:#3F3A52;line-height:1.5;margin-top:4px;}
+ .ed-when{flex:0 0 auto;font-size:12.5px;font-weight:900;color:#5B21B6;white-space:nowrap;}
+ .ed-course.hot{border-color:#FCA5A5;background:#FFFBFB;}
+ .ed-course.hot .ed-no{background:#DC2626;} .ed-course.hot .ed-when{color:#DC2626;}
+ .ed-course.ok .ed-when{color:#16A34A;}
+ .ed-hot{display:block;font-size:11px;font-weight:700;color:#DC2626;margin-top:1px;}
+ .ed-steps{background:#fff;border:1.5px solid #ECE9F5;border-radius:14px;padding:2px 12px;}
+ .ed-steps > div{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed #E7E4F0;font-size:12.5px;color:#3F3A52;line-height:1.5;}
+ .ed-steps > div:last-child{border-bottom:none;}
+ .ed-steps i{flex:0 0 34px;height:34px;border-radius:10px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:17px;}
+ .ed-b{display:inline-block;font-size:11px;font-weight:900;border-radius:6px;padding:0 7px;}
+ .ed-b.go{background:#F5F3FF;color:#5B21B6;border:1px solid #C4B5FD;} .ed-b.up{background:#7C3AED;color:#fff;}
+ .ed-thanks{display:flex;align-items:center;gap:10px;margin-top:12px;padding:11px 14px;border-radius:14px;background:linear-gradient(135deg,#FEF9C3,#FDE68A);font-size:12.5px;color:#5A4210;line-height:1.55;}
+ .ed-thanks > span{font-size:24px;} .ed-thanks b{color:#3B2A05;}
+ .ed-prog{display:flex;align-items:center;gap:10px;margin:0 0 2px;}
  .ed-bar{flex:1;height:10px;border-radius:99px;background:#EDE9FE;overflow:hidden;}
  .ed-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7C3AED,#16A34A);}
  .ed-course{border:1.5px solid #E5E2D8;border-radius:14px;padding:11px 12px;margin-top:10px;background:#FCFBF8;}
@@ -13991,8 +14026,6 @@ function _edInjectCss(){
  .ed-no{flex:0 0 22px;height:22px;border-radius:50%;background:#7C3AED;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;}
  .ed-course.ok .ed-no{background:#16A34A;}
  .ed-st{font-size:11.5px;margin:6px 0 0 30px;color:#9B9888;}
- .ed-cdl{display:inline-block;font-size:11.5px;font-weight:700;margin:6px 0 0 30px;color:#B91C1C;background:#FEE2E2;border-radius:8px;padding:3px 9px;line-height:1.5;}
- .ed-cdl.ok{color:#166534;background:#DCFCE7;}
  .ed-course.ok .ed-st{color:#166534;}
  .ed-st a{color:#1D4ED8;font-weight:700;}
  .ed-btns{display:flex;gap:6px;margin:8px 0 0 30px;flex-wrap:wrap;}
@@ -14001,7 +14034,6 @@ function _edInjectCss(){
  .ed-up{border:none;background:#7C3AED;color:#fff;}
  .ed-up.re{background:#fff;border:1.5px solid #CFCBBE;color:#4A4740;}
  .ed-up[disabled]{opacity:.6;cursor:wait;}
- .ed-tip{margin-top:12px;background:#F6F5F0;border-radius:12px;padding:10px 12px;font-size:12px;color:#5A5750;line-height:1.7;word-break:keep-all;}
  .ed-foot{display:flex;gap:8px;margin-top:14px;}
  .ed-foot button{flex:1;height:44px;border-radius:12px;border:1px solid #D8D5CB;background:#fff;color:#4A4740;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
  .ed-foot button.pri{border:none;background:#16A34A;color:#fff;}
@@ -14020,7 +14052,7 @@ function _edInjectCss(){
  .eda-tbl .miss{border:1px dashed #E8B4B4;background:#FFF8F8;color:#B91C1C;border-radius:7px;font-size:11px;padding:2px 7px;cursor:pointer;font-family:inherit;}
  .eda-wrap{max-height:46vh;overflow:auto;border:1px solid #ECE9DF;border-radius:12px;margin-top:10px;}
  @media(max-width:600px){
-  .ed-btns{margin-left:0;} .ed-st{margin-left:0;} .ed-cdl{margin-left:0;}
+  .ed-btns{margin-left:0;} .ed-st{margin-left:0;}
   .ed-btns a,.ed-btns button{min-width:0;}
   .eda-box{padding:16px 12px;}
   .eda-tbl{font-size:11.5px;} .eda-tbl th,.eda-tbl td{padding:5px 3px;}
@@ -14065,10 +14097,10 @@ async function _edUpload(name, cid, file){
   if(!fd || !fd.base64) throw new Error('파일을 읽지 못했어요');
   const course=cs[ci];
   const fileName=`${name}_${ci+1}_${course.name}`.replace(/[\\/:*?"<>|]/g,' ').slice(0,90)+'.'+fd.ext;
-  let r=await gasPost({action:'uploadEduCert', teacher:name, campaign:_edCamp.title||'필수 교육', courseName:course.name, fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
+  let r=await gasPost({action:'uploadEduCert', teacher:name, campaign:_edCamp.folderName||_edCamp.title||'필수 교육', courseName:course.name, fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
   if(r && r.ok===false && /알 수 없는 action/.test(String(r.message||''))){
    // 서버(Code.gs)를 아직 새로 배포하지 않았을 때: 영수증 폴더(이루리_영수증/<강사>/<요청 제목>)에 대신 저장
-   r=await gasPost({action:'uploadReceipt', teacher:name, yearMonth:(_edCamp.title||'필수 교육').slice(0,40), fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
+   r=await gasPost({action:'uploadReceipt', teacher:name, yearMonth:(_edCamp.folderName||_edCamp.title||'필수 교육').slice(0,40), fileName, base64:fd.base64, mimeType:fd.mimeType}, 120000);
   }
   if(!(r && r.ok!==false && r.url)) throw new Error((r && r.message) || '올리기 실패');
   const prev=_edRec(name) || {cid:_edCamp.id, certs:{}};
@@ -14112,30 +14144,50 @@ function _edRenderTeacher(name){
  const ov=document.getElementById('eduOverlay'); if(!ov) return;
  const preview=ov.dataset.preview==='1';
  const c=_edCamp||{}, cs=_edCourses(), rec=preview?null:_edRec(name);
- const n=cs.filter(x=>rec && rec.certs && rec.certs[x.id] && rec.certs[x.id].url).length, all=n>=cs.length;
+ const has=x=>!!(rec && rec.certs && rec.certs[x.id] && rec.certs[x.id].url);
+ const n=cs.filter(has).length, all=n>=cs.length;
  const q=`'${escAttrJS(name||'')}'`;
- const dl=_edDeadline(), dd=_edDday(), ref=_edSafeUrl(c.refUrl);
+ const ref=_edSafeUrl(c.refUrl);
+ // v19.28: 마감일 카드 — 같은 마감끼리 묶어서 빠른 순(홍보 이미지와 같은 모양)
+ const groups={}; cs.forEach((x,i)=>{ const v=_edCDl(x); if(v) (groups[v]=groups[v]||[]).push({x,i}); });
+ const dls=Object.keys(groups).sort(), first=dls[0]||'';
+ const short=nm=>String(nm).replace(/ ?신고의무자 ?교육$/,'').replace(/^장애인학대 및 장애인 대상 성범죄$/,'장애인학대');
+ const dlCards=dls.length?`<div class="ed-dls">${dls.map((v,k)=>{
+   const hot=dls.length>1 && k===0, g=groups[v], left=g.filter(o=>!has(o.x)).length;
+   const tag=!left?'✅ 제출 완료':(dls.length>1?(k===0?'먼저 마감':(g.length>1?`나머지 ${g.length}개`:'마감')):'마감');
+   return `<div class="ed-dl${hot?' hot':''}${left?'':' done'}"><span class="ed-tag">${escH(tag)}</span><div class="ed-d">${escH(_edFmt(v).replace(/\(.\)$/,''))}<small>${escH((_edFmt(v).match(/\(.\)$/)||[''])[0])}</small></div><div class="ed-dd">${left?escH(_edDdOf(v)):''}</div><div class="ed-w">${g.map(o=>`${'①②③④⑤⑥'[o.i]||(o.i+1)} ${escH(short(o.x.name))}`).join('<br>')}</div></div>`;
+  }).join('')}</div>`:'';
  const rows=cs.map((x,i)=>{
   const ct=rec && rec.certs && rec.certs[x.id], busy=_edBusy[(name||'')+'|'+x.id], u=_edSafeUrl(x.url), cu=ct && _edSafeUrl(ct.url);
-  return `<div class="ed-course${ct?' ok':''}">
-   <div class="ed-cn"><span class="ed-no">${ct?'✓':i+1}</span><span>${escH(x.name)}</span></div>
-   ${(()=>{ const od=_edOwnDl(x); if(!od || od===c.deadline) return ''; return `<div class="ed-cdl${ct?' ok':''}">⏰ 이 교육은 <b>${escH(_edFmt(od))}까지</b>${ct?'':' · '+escH(_edDdOf(od))}${x.note?` — ${escH(x.note)}`:''}</div>`; })()}
+  const v=_edCDl(x), hot=!ct && dls.length>1 && v===first;
+  return `<div class="ed-course${ct?' ok':''}${hot?' hot':''}">
+   <div class="ed-cn"><span class="ed-no">${ct?'✓':i+1}</span><span style="flex:1;">${escH(x.name)}${hot?'<small class="ed-hot">가장 먼저 마감돼요!</small>':''}</span>${v?`<span class="ed-when">~${escH(_edFmt(v).replace(/\(.\)$/,''))}</span>`:''}</div>
    <div class="ed-st">${ct?`✅ 제출함 · ${_edWhen(ct.at)}${cu?` · <a href="${escH(cu)}" target="_blank" rel="noopener">올린 파일 보기</a>`:''}`:'아직 제출 안 함'}</div>
    <div class="ed-btns">
     ${u?`<a class="ed-go" href="${escH(u)}" target="_blank" rel="noopener">▶ 교육 바로가기</a>`:''}
     <button type="button" class="ed-up${ct?' re':''}" ${busy||preview?'disabled':''} onclick="_edPick(${q},'${escAttrJS(x.id)}')">${busy?'⏳ 올리는 중…':(ct?'🔄 다시 올리기':'📎 수료증 올리기')}</button>
    </div></div>`;
  }).join('');
+ const msg=_edMsg(c);
  ov.innerHTML=`<div class="ed-box">
   <div class="ed-top"><button class="ed-x" onclick="_edClose()" aria-label="닫기">✕</button>
-   <span class="ed-chip">📚 필수 교육</span>${dl?`<span class="ed-chip red">마감 ${escH(dl)}${dd?' · '+escH(dd):''}</span>`:''}
-   <h3>${escH(c.title||'필수 교육 이수 및 수료증 제출')}</h3></div>
+   <span class="ed-chip yel">📢 모든 강사님 필수</span>
+   <h3>${escH(c.title||'필수 교육 이수 및 수료증 제출')}</h3>
+   ${msg?`<div class="ed-msg">${escH(msg)}</div>`:''}</div>
   <div class="ed-body">
    ${preview?'<div style="font-size:11.5px;color:#B45309;background:#FFF8E6;border-radius:8px;padding:6px 10px;margin-bottom:10px;">👀 미리보기 — 강사에게 이렇게 보여요 (올리기 버튼은 꺼져 있어요)</div>':''}
-   <div class="ed-msg">${escH(c.message||'')}</div>
-   <div class="ed-prog"><div class="ed-bar"><i style="width:${cs.length?Math.round(n/cs.length*100):0}%"></i></div><b style="font-size:13.5px;white-space:nowrap;color:${all?'#16A34A':'#5B21B6'};">${all?'🎉 제출 완료':`${n}/${cs.length} 제출`}</b></div>
+   ${dlCards?`<div class="ed-h">⏰ 마감일을 꼭 확인해 주세요</div>${dlCards}`:''}
+   <div class="ed-h" style="display:flex;align-items:center;gap:8px;">📚 들어야 할 교육 <span class="ed-pill">${cs.length}개 모두</span><span style="flex:1;"></span><b style="font-size:13px;color:${all?'#16A34A':'#5B21B6'};">${all?'🎉 제출 완료':`${n}/${cs.length} 제출`}</b></div>
+   <div class="ed-prog"><div class="ed-bar"><i style="width:${cs.length?Math.round(n/cs.length*100):0}%"></i></div></div>
    ${rows}
-   <div class="ed-tip"><b>수강 방법</b><br>① <b>▶ 교육 바로가기</b> → 지식(GSEEK) 로그인(처음이면 회원가입) → 강의 듣기<br>② 다 들으면 <b>수료증 출력</b> → PDF로 저장하거나 화면을 캡처<br>③ 여기서 <b>📎 수료증 올리기</b> (사진·PDF 모두 돼요) — <b>3개 모두</b> 올리면 완료예요${ref?`<br><a href="${escH(ref)}" target="_blank" rel="noopener" style="color:#1D4ED8;font-weight:700;">📄 교육청 공문 자세히 보기</a>`:''}</div>
+   <div class="ed-h">📱 이렇게 하면 돼요</div>
+   <div class="ed-steps">
+    <div><i>▶️</i><span><b class="ed-b go">▶ 교육 바로가기</b> → 지식(GSEEK) 로그인<br>처음이면 회원가입 후 강의 듣기</span></div>
+    <div><i>📄</i><span>다 들으면 <b>수료증 출력</b><br>PDF로 저장하거나 화면 캡처</span></div>
+    <div><i>📎</i><span>여기서 <b class="ed-b up">📎 수료증 올리기</b><br><b>${cs.length}개 모두</b> 올리면 제출 완료 🎉</span></div>
+   </div>
+   <div class="ed-thanks"><span>🙏</span><div><b>사진·PDF 모두 올릴 수 있어요.</b><br>어려우시면 수료증을 카톡으로 보내 주셔도 돼요.</div></div>
+   ${ref?`<div style="text-align:center;margin-top:10px;"><a href="${escH(ref)}" target="_blank" rel="noopener" style="color:#1D4ED8;font-weight:700;font-size:12px;">📄 교육청 공문 자세히 보기</a></div>`:''}
    <div class="ed-foot">${all?'<button class="pri" onclick="_edClose()">닫기</button>':'<button onclick="_edClose()">나중에 할게요</button>'}</div>
   </div></div>`;
 }
@@ -14202,7 +14254,7 @@ let _edaOnlyTodo=false, _edaEdit=false;
 function _edFormHTML(src){
  const edit=!!src;
  const title=edit ? (src.title||'') : '2026년 신고의무자 교육 이수 및 수료증 제출';
- const msg=edit ? (src.message||'') : '2026년 아동학대·긴급복지·장애인학대 신고의무자 교육을 이수하고 수료증을 올려 주세요.\n⏰ 긴급복지지원 교육은 12월 11일(금)까지, 나머지 2개는 12월 26일(토)까지예요.\n평생교육시설 내국인 종사자는 아래 3개 교육을 모두 이수해야 해요.';
+ const msg=edit ? _edMsg(src) : ED_DEF_MSG;
  const dl=edit ? (src.deadline||'') : '2026-12-26';
  const ref=edit ? (src.refUrl||'') : ED_DEF_REF;
  const cs=edit ? _edCourses().map(x=>Object.assign({}, x, {deadline:_edOwnDl(x)})) : ED_DEF_COURSES;
@@ -14288,6 +14340,7 @@ function _edAdminStart(){
  const f=_edFormCamp();
  if(!f.courses.length){ showToast('교육을 1개 이상 넣어 주세요'); return; }
  const c=Object.assign({id:'ED'+Date.now(), on:true, startedAt:new Date().toISOString()}, f);
+ c.folderName=c.title;   // 드라이브 폴더 이름 — 나중에 제목을 고쳐도 같은 폴더에 모이게
  _edCamp=c; _edSaveLocal();
  showBusyToast('필수 교육 이수 요청 시작 중…');
  gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}})
@@ -14299,6 +14352,7 @@ function _edAdminSaveEdit(){
  const f=_edFormCamp();
  if(!f.courses.length){ showToast('교육을 1개 이상 넣어 주세요'); return; }
  const c=Object.assign({}, _edCamp, f, {editedAt:new Date().toISOString()});
+ c.folderName=_edCamp.folderName||_edCamp.title||c.title;   // 제목을 고쳐도 수료증은 처음 폴더에
  _edCamp=c; _edSaveLocal(); _edaEdit=false;
  showBusyToast('고친 내용 저장 중…');
  gasPost({action:'saveSystemSettings', settings:{[ED_KEY]: JSON.stringify(c)}})
@@ -22265,9 +22319,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.27&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.28&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.27&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.28&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
