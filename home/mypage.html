@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마이페이지 · 이루리 원격평생교육원</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="../icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --g9:#123D2A; --g8:#1A5A3C; --g7:#1A7A50; --g6:#2E9A63; --g2:#DCEFC4; --g1:#F1F8E8;
+  --lime:#B9DC6A; --coral:#F07A54; --ink:#1B2420; --ink2:#4B5852; --ink3:#87928C;
+  --line:#E6EAE7; --bg:#FFFFFF; --bg2:#F6F8F5; --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;word-break:keep-all;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+.hide{display:none!important}
+svg.i{width:20px;height:20px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* 헤더 (홈페이지와 같은 모양) */
+header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;height:76px;gap:28px}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.brand img{width:46px;height:46px;border-radius:50%}
+.brand .bn{font-size:20px;font-weight:800;letter-spacing:-.02em;color:var(--g8);line-height:1.15}
+.brand .bs{font-size:11.5px;color:var(--ink3);font-weight:500;letter-spacing:.02em}
+nav.gnb{display:flex;gap:4px;margin-left:auto}
+nav.gnb a{padding:10px 14px;font-weight:700;font-size:16px;border-radius:10px}
+nav.gnb a:hover{background:var(--g1);color:var(--g7)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 18px;border-radius:12px;font-weight:700;font-size:15px;transition:transform .15s,background .15s,border-color .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn-line{border:1.5px solid var(--line);color:var(--ink2);background:#fff}
+.btn-line:hover{border-color:var(--g6);color:var(--g7)}
+.btn-pri{background:var(--g7);color:#fff;box-shadow:0 6px 16px -6px rgba(26,122,80,.6)}
+.btn-pri:hover{background:var(--g8)}
+.btn-pri.on{background:var(--g9)}
+
+/* 시안 안내 */
+.demo{background:#FFF8E6;border-bottom:1px solid #F2DFA6;color:#6B5212;font-size:13px}
+.demo .wrap{padding-top:9px;padding-bottom:9px}
+
+/* 프로필 */
+.prof{padding:40px 0 30px;border-bottom:1px solid var(--line)}
+.prof .wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--g7),var(--lime));color:#fff;font-size:32px;font-weight:800;display:grid;place-items:center;box-shadow:0 10px 24px -10px rgba(26,122,80,.6)}
+.prof h1{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.prof h1 small{font-size:15px;font-weight:600;color:var(--ink3);margin-left:4px}
+.prof .em{font-size:13.5px;color:var(--ink3);margin-top:2px}
+.stats{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.stat{min-width:104px;padding:12px 16px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);text-align:center;transition:border-color .15s,background .15s}
+.stat:hover{border-color:var(--g6);background:var(--g1)}
+.stat b{display:block;font-size:24px;font-weight:800;color:var(--g7);line-height:1.2}
+.stat span{font-size:12.5px;color:var(--ink2);font-weight:600}
+
+/* 본문 */
+.body{padding:32px 0 80px}
+.body .wrap{display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:start}
+.side{position:sticky;top:96px;display:flex;flex-direction:column;gap:2px}
+.side a{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:12px;font-weight:600;font-size:15px;color:var(--ink2)}
+.side a:hover{background:var(--bg2);color:var(--ink)}
+.side a.on{background:var(--g1);color:var(--g7);font-weight:800}
+.side a .cnt{margin-left:auto;font-size:12px;font-weight:800;color:#fff;background:var(--coral);border-radius:99px;padding:0 7px;line-height:20px}
+.side hr{border:0;border-top:1px solid var(--line);margin:8px 4px}
+.side .out{color:var(--ink3)}
+
+.pane h2{font-size:22px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.pane .desc{color:var(--ink2);font-size:14.5px;margin-top:4px}
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-top:20px}
+.tabs button{flex:1;padding:14px 8px;font-weight:700;font-size:15px;color:var(--ink3);border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.tabs button.on{color:var(--g7);border-color:var(--g7)}
+.tabs button span{font-size:13px;margin-left:3px}
+
+/* 강의 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;margin-top:24px}
+.card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 18px 36px -18px rgba(18,61,42,.3)}
+.cv{position:relative;height:138px;padding:16px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.cv.c1{background:linear-gradient(135deg,#1A7A50,#58B26B)}
+.cv.c2{background:linear-gradient(135deg,#E0663F,#F4A261)}
+.cv.c3{background:linear-gradient(135deg,#3B5BA9,#6C8FD8)}
+.cv svg.deco{position:absolute;right:-8px;top:-8px;width:120px;height:120px;opacity:.22;fill:none;stroke:#fff;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.cv small{position:relative;font-size:12.5px;opacity:.92}
+.cv h3{position:relative;font-size:19px;font-weight:800;letter-spacing:-.02em;line-height:1.3}
+.cv .chip{position:absolute;left:14px;top:14px;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.24);backdrop-filter:blur(4px)}
+.cb{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.st{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--ink3)}
+.st .s{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--g6)}
+.st .s i{width:8px;height:8px;border-radius:50%;background:currentColor}
+.st .s.done{color:#3B5BA9}
+.bar{height:7px;border-radius:99px;background:var(--g1);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--g7),var(--lime))}
+.nums{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink3)}
+.nums b{font-size:17px;font-weight:800;color:var(--g7);margin-left:4px}
+.nums .dd b{color:var(--coral)}
+.until{font-size:12px;color:var(--ink3);margin-top:-6px}
+.card .btn{height:44px;width:100%;margin-top:auto}
+.card .row2{display:flex;gap:8px;margin-top:auto}
+.card .row2 .btn{flex:1;padding:0 10px;font-size:14px}
+
+.empty{margin-top:24px;padding:48px 20px;border:1.5px dashed var(--line);border-radius:18px;text-align:center;color:var(--ink3)}
+.empty .btn{margin-top:14px}
+
+/* 표 · 목록 */
+.box{margin-top:22px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{background:var(--bg2);color:var(--ink2);font-weight:700;font-size:13.5px;padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right}
+.pill{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:2px 10px;white-space:nowrap}
+.pill.g{background:var(--g1);color:var(--g7)} .pill.o{background:#FFF1EA;color:#C2410C} .pill.b{background:#EEF2FF;color:#3B5BA9} .pill.x{background:#F1F2F1;color:var(--ink3)}
+
+/* 자격증 발급 단계 */
+.cert{padding:20px;border-bottom:1px solid var(--line)}
+.cert:last-child{border-bottom:0}
+.cert .hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cert .hd b{font-size:17px;font-weight:800}
+.cert .hd .meta{margin-left:auto;font-size:13px;color:var(--ink3)}
+.steps{display:flex;margin-top:16px}
+.steps div{flex:1;position:relative;text-align:center;font-size:12.5px;color:var(--ink3);font-weight:600;padding-top:34px}
+.steps div:before{content:'';position:absolute;top:13px;left:-50%;width:100%;height:3px;background:var(--line)}
+.steps div:first-child:before{display:none}
+.steps div i{position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--line);font-style:normal;font-size:13px;line-height:22px;color:var(--ink3);z-index:1}
+.steps div.ok{color:var(--g7)} .steps div.ok:before{background:var(--g6)} .steps div.ok i{background:var(--g7);border-color:var(--g7);color:#fff}
+.steps div.cur{color:var(--ink);font-weight:800} .steps div.cur:before{background:var(--g6)} .steps div.cur i{border-color:var(--g7);color:var(--g7)}
+.cert .foot{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;justify-content:flex-end}
+.cert .foot .btn{height:40px;font-size:14px}
+
+.coupon{display:flex;border:1.5px solid var(--g2);border-radius:16px;overflow:hidden;margin-top:14px;background:#fff}
+.coupon .amt{flex:0 0 130px;background:var(--g1);color:var(--g7);display:grid;place-items:center;font-size:24px;font-weight:900;border-right:1.5px dashed var(--g2)}
+.coupon .tx{padding:14px 16px;flex:1}
+.coupon .tx b{font-size:15.5px} .coupon .tx div{font-size:13px;color:var(--ink3);margin-top:2px}
+.coupon.used{opacity:.5}
+
+.qna{padding:16px 20px;border-bottom:1px solid var(--line)}
+.qna:last-child{border-bottom:0}
+.qna .q{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.qna .q .d{margin-left:auto;font-size:12.5px;color:var(--ink3);font-weight:500}
+.qna .a{margin-top:10px;padding:12px 14px;border-radius:12px;background:var(--bg2);font-size:14px;color:var(--ink2)}
+.qna .a b{color:var(--g7)}
+
+.form{margin-top:22px;max-width:560px;display:grid;gap:14px}
+.form label{display:block;font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:6px}
+.form input{width:100%;height:48px;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;font:inherit;font-size:15px;background:#fff}
+.form input:focus{outline:none;border-color:var(--g6)}
+.form input[readonly]{background:var(--bg2);color:var(--ink3)}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .agree{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2)}
+.form .agree input{width:18px;height:18px}
+
+footer{background:var(--g9);color:#A9C2B3;padding:34px 0;font-size:13px}
+footer .wrap{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+footer .links{display:flex;gap:18px} footer .links a:hover{color:#fff}
+
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:var(--g9);color:#fff;padding:13px 20px;border-radius:12px;font-size:14.5px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:calc(100vw - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:980px){
+  nav.gnb{display:none}
+  header .wrap{gap:12px} .hd-cta{margin-left:auto}
+  .body .wrap{grid-template-columns:1fr;gap:18px}
+  .side{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .side a{white-space:nowrap;padding:9px 13px;border:1.5px solid var(--line);font-size:14px}
+  .side a.on{border-color:var(--g6)}
+  .side hr{display:none}
+}
+@media (max-width:600px){
+  header .wrap{height:64px}
+  .brand img{width:38px;height:38px} .brand .bn{font-size:16.5px} .brand .bs{display:none}
+  .hd-cta .btn{height:38px;padding:0 12px;font-size:13.5px}
+  .hd-cta .btn-line{display:none}
+  .prof{padding:24px 0 20px}
+  .avatar{width:64px;height:64px;font-size:25px}
+  .prof h1{font-size:20px}
+  .stats{margin-left:0;width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .stat{min-width:0;padding:10px 4px} .stat b{font-size:20px} .stat span{font-size:11.5px}
+  .pane h2{font-size:19px}
+  .tabs button{font-size:14px;padding:12px 4px}
+  .cards{grid-template-columns:1fr}
+  th,td{padding:11px 10px;font-size:13.5px}
+  .hide-m{display:none}
+  .steps div{font-size:11px}
+  .coupon .amt{flex-basis:96px;font-size:19px}
+  .form .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="이루리 원격평생교육원 처음으로">
+      <img src="../logo.png" alt="">
+      <div><div class="bn">이루리 원격평생교육원</div><div class="bs">IRURI SILVER ACADEMY</div></div>
+    </a>
+    <nav class="gnb" aria-label="주 메뉴">
+      <a href="index.html#about">교육원 소개</a>
+      <a href="index.html#courses">자격과정</a>
+      <a href="index.html#process">취득 절차</a>
+      <a href="index.html#faq">고객센터</a>
+    </nav>
+    <div class="hd-cta">
+      <a class="btn btn-line" href="index.html#consult">수강 상담</a>
+      <a class="btn btn-pri on" href="mypage.html">마이페이지</a>
+    </div>
+  </div>
+</header>
+
+<div class="demo"><div class="wrap">🛠 <b>시안</b> — 화면 모양을 보기 위한 예시 데이터예요. 회원 로그인·결제가 연결되면 실제 수강 정보로 바뀌어요.</div></div>
+
+<section class="prof">
+  <div class="wrap">
+    <div class="avatar" id="pfAvatar">홍</div>
+    <div>
+      <h1><span id="pfName">홍길동</span><small>님</small></h1>
+      <div class="em" id="pfEmail">hong@example.com</div>
+    </div>
+    <div class="stats">
+      <a class="stat" href="#classroom" data-go="classroom" data-tab="ing"><b id="stIng">0</b><span>수강 중</span></a>
+      <a class="stat" href="#classroom" data-go="classroom" data-tab="done"><b id="stDone">0</b><span>수료</span></a>
+      <a class="stat" href="#cert" data-go="cert"><b id="stCert">0</b><span>자격증</span></a>
+      <a class="stat" href="#coupon" data-go="coupon"><b id="stCoupon">0</b><span>쿠폰</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="body">
+  <div class="wrap">
+    <nav class="side" id="side" aria-label="마이페이지 메뉴">
+      <a href="#classroom" data-go="classroom"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/></svg>내 강의실</a>
+      <a href="#cert" data-go="cert"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M14 10h4M14 14h4M6 17c.8-1.5 2-2 3-2s2.2.5 3 2"/></svg>자격증 발급 현황</a>
+      <a href="#pay" data-go="pay"><svg class="i" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6 15h4"/></svg>결제 내역</a>
+      <a href="#coupon" data-go="coupon"><svg class="i" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M10 6v12" stroke-dasharray="2 2"/></svg>쿠폰함<span class="cnt hide" id="sdCoupon"></span></a>
+      <a href="#qna" data-go="qna"><svg class="i" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>1:1 문의</a>
+      <a href="#profile" data-go="profile"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>회원정보 관리</a>
+      <hr>
+      <a href="#" class="out" id="btnOut"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>로그아웃</a>
+    </nav>
+
+    <div id="main">
+      <!-- 내 강의실 -->
+      <div class="pane" data-pane="classroom">
+        <h2>내 강의실</h2>
+        <p class="desc">강의를 끝까지 들으면 수료증이 나오고, 자격증을 신청할 수 있어요.</p>
+        <div class="tabs" role="tablist">
+          <button type="button" data-tab="ing" class="on">수강 중<span id="tbIng"></span></button>
+          <button type="button" data-tab="done">수료<span id="tbDone"></span></button>
+          <button type="button" data-tab="all">전체<span id="tbAll"></span></button>
+        </div>
+        <div class="cards" id="cards"></div>
+        <div class="empty hide" id="cardsEmpty"></div>
+      </div>
+
+      <!-- 자격증 발급 현황 -->
+      <div class="pane hide" data-pane="cert">
+        <h2>자격증 발급 현황</h2>
+        <p class="desc">수료 후 자격증을 신청하면 심사를 거쳐 발급되고, 실물 자격증은 우편으로 보내 드려요.</p>
+        <div class="box" id="certBox"></div>
+      </div>
+
+      <!-- 결제 내역 -->
+      <div class="pane hide" data-pane="pay">
+        <h2>결제 내역</h2>
+        <p class="desc">수강료·자격증 발급비 결제 기록이에요.</p>
+        <div class="box"><table><thead><tr><th>결제일</th><th>내용</th><th class="hide-m">결제 수단</th><th class="r">금액</th><th class="r">상태</th></tr></thead><tbody id="payBody"></tbody></table></div>
+      </div>
+
+      <!-- 쿠폰함 -->
+      <div class="pane hide" data-pane="coupon">
+        <h2>쿠폰함</h2>
+        <p class="desc">수강 신청할 때 쓸 수 있어요.</p>
+        <div id="couponList"></div>
+      </div>
+
+      <!-- 1:1 문의 -->
+      <div class="pane hide" data-pane="qna">
+        <h2 style="justify-content:space-between;">1:1 문의 <a class="btn btn-pri" href="index.html#consult" style="height:40px;font-size:14px;">문의 남기기</a></h2>
+        <p class="desc">남기신 문의와 답변을 볼 수 있어요.</p>
+        <div class="box" id="qnaBox"></div>
+      </div>
+
+      <!-- 회원정보 관리 -->
+      <div class="pane hide" data-pane="profile">
+        <h2>회원정보 관리</h2>
+        <p class="desc">자격증은 아래 이름·주소로 발급·발송돼요. 바뀐 내용이 있으면 고쳐 주세요.</p>
+        <form class="form" id="pfForm" onsubmit="return saveProfile(event)">
+          <div class="two">
+            <div><label for="fName">이름</label><input id="fName" readonly></div>
+            <div><label for="fBirth">생년월일</label><input id="fBirth" readonly></div>
+          </div>
+          <div><label for="fEmail">이메일 (아이디)</label><input id="fEmail" readonly></div>
+          <div><label for="fPhone">휴대전화</label><input id="fPhone" inputmode="tel"></div>
+          <div><label for="fAddr">자격증 받을 주소</label><input id="fAddr"></div>
+          <label class="agree"><input type="checkbox" id="fSms"> 개강·이벤트 소식을 문자로 받을게요</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-pri" type="submit">저장하기</button>
+            <button class="btn btn-line" type="button" onclick="toast('비밀번호 변경은 로그인 연동 후 열려요')">비밀번호 변경</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© <span id="yr"></span> 이루리 실버 아카데미</div>
+    <div class="links"><a href="index.html">홈</a><a href="index.html#courses">자격과정</a><a href="index.html#consult">상담 신청</a></div>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ── 예시 데이터 (회원 로그인·결제가 연결되면 서버 값으로 바뀌는 자리) ── */
+window.MY = {
+  user:{ name:'홍길동', email:'hong@example.com', birth:'1968-05-12', phone:'010-1234-5678', addr:'인천광역시 남동구 ○○로 12, 101동 1001호', sms:true },
+  courses:[
+    { id:'c1', name:'실버운동지도사', sub:'체력 · 균형 · 관절 가동', color:'c1', total:4, done:3, start:'2026-11-02', until:'2027-02-02' },
+    { id:'c2', name:'시니어레크레이션지도사', sub:'놀이 · 노래 · 소통', color:'c2', total:4, done:4, start:'2026-09-15', until:'2026-12-15', finishedAt:'2026-10-03' },
+    { id:'c3', name:'실버도구인지지도사', sub:'손 활동 · 인지 자극', color:'c3', total:4, done:0, start:'2026-11-20', until:'2027-02-20' }
+  ],
+  certs:[
+    { course:'시니어레크레이션지도사', no:'제2025-004763', appliedAt:'2026-10-05', step:3, certNo:'IR-2026-0187', note:'11/18 등기우편 발송 (등기번호 1234-5678-9012)' },
+  ],
+  pays:[
+    { at:'2026-11-20', item:'실버도구인지지도사 수강료', method:'카드', amount:0, status:'무료' },
+    { at:'2026-11-02', item:'실버운동지도사 수강료', method:'카드', amount:0, status:'무료' },
+    { at:'2026-10-05', item:'시니어레크레이션지도사 자격증 발급비', method:'계좌이체', amount:70000, status:'결제 완료' },
+    { at:'2026-09-15', item:'시니어레크레이션지도사 수강료', method:'카드', amount:0, status:'무료' }
+  ],
+  coupons:[
+    { title:'자격증 발급비 할인', amount:'10,000원', until:'2026-12-31', cond:'자격증 2개 이상 신청 시' },
+    { title:'첫 수강 감사 쿠폰', amount:'5,000원', until:'2026-10-31', cond:'사용 완료', used:true }
+  ],
+  qna:[
+    { at:'2026-11-03', q:'수료증은 어디서 출력하나요?', a:'내 강의실 → 수료 탭에서 [수료증 출력]을 누르시면 PDF로 저장·인쇄할 수 있어요.' },
+    { at:'2026-11-21', q:'자격증 주소를 바꾸고 싶어요', a:'' }
+  ]
+};
+
+(function(){
+  const M=window.MY;
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const today=new Date(); today.setHours(0,0,0,0);
+  const d=v=>{ const x=new Date(v+'T00:00:00'); return isNaN(x)?null:x; };
+  const fmt=v=>{ const x=d(v); return x?`${x.getFullYear()}.${String(x.getMonth()+1).padStart(2,'0')}.${String(x.getDate()).padStart(2,'0')}`:''; };
+  const dday=v=>{ const x=d(v); if(!x) return ''; const n=Math.round((x-today)/864e5); return n>0?'D-'+n:(n===0?'D-DAY':'기간 끝'); };
+  const won=n=>n?Number(n).toLocaleString('ko-KR')+'원':'0원';
+  const DECO={
+    c1:'<circle cx="13" cy="4" r="2"/><path d="M7 21l3-6 3 2v4M10 15l1-6 4 3 3 1M8 10l3-1"/>',
+    c2:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
+    c3:'<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2zM14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2z"/>'
+  };
+  const isDone=c=>c.done>=c.total;
+  const ing=M.courses.filter(c=>!isDone(c)), done=M.courses.filter(isDone);
+  const coupons=M.coupons.filter(c=>!c.used);
+
+  // 프로필 · 숫자
+  $('pfName').textContent=M.user.name; $('pfEmail').textContent=M.user.email; $('pfAvatar').textContent=(M.user.name||'?').slice(0,1);
+  $('stIng').textContent=ing.length; $('stDone').textContent=done.length; $('stCert').textContent=M.certs.filter(c=>c.step>=3).length; $('stCoupon').textContent=coupons.length;
+  if(coupons.length){ $('sdCoupon').textContent=coupons.length; $('sdCoupon').classList.remove('hide'); }
+  $('tbIng').textContent=ing.length; $('tbDone').textContent=done.length; $('tbAll').textContent=M.courses.length;
+  $('yr').textContent=new Date().getFullYear();
+
+  // 강의 카드
+  let tab='ing';
+  function cards(){
+    const list=tab==='ing'?ing:tab==='done'?done:M.courses;
+    document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+    $('cards').innerHTML=list.map(c=>{
+      const fin=isDone(c), pct=Math.round(c.done/c.total*100), dd=dday(c.until);
+      const chip=fin?'수료':(c.done?`${c.done+1}차시 차례`:'시작 전');
+      return `<article class="card">
+        <div class="cv ${esc(c.color)}"><span class="chip">${esc(chip)}</span><svg class="deco" viewBox="0 0 24 24">${DECO[c.color]||''}</svg><small>${esc(c.sub)}</small><h3>${esc(c.name)}</h3></div>
+        <div class="cb">
+          <div class="st"><span class="s${fin?' done':''}"><i></i>${fin?'수료 완료':'수강 중'}</span><span>온라인 ${c.total}차시</span></div>
+          <div class="bar"><i style="width:${pct}%"></i></div>
+          <div class="nums"><span>${fin?'수료일':'남은 수강기간'}<b style="${fin?'color:#3B5BA9':''}">${fin?esc(fmt(c.finishedAt)):esc(dd)}</b></span><span>진도율<b>${pct}%</b></span></div>
+          ${fin?'':`<div class="until">${esc(fmt(c.until))} 까지 · ${c.done}/${c.total}차시 들음</div>`}
+          ${fin
+            ? `<div class="row2"><button class="btn btn-line" type="button" data-act="replay" data-name="${esc(c.name)}">다시 보기</button><button class="btn btn-pri" type="button" data-act="print" data-name="${esc(c.name)}">수료증 출력</button></div>`
+            : `<button class="btn btn-pri" type="button" data-act="study" data-name="${esc(c.name)}">${c.done?'이어서 수강하기':'수강 시작하기'}</button>`}
+        </div></article>`;
+    }).join('');
+    const em=$('cardsEmpty');
+    if(!list.length){ em.innerHTML=tab==='done'?'아직 수료한 강의가 없어요.<br>4차시를 모두 들으면 수료돼요.':'수강 중인 강의가 없어요.<br><a class="btn btn-pri" href="index.html#courses">자격과정 둘러보기</a>'; em.classList.remove('hide'); }
+    else em.classList.add('hide');
+  }
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; cards(); });
+  $('cards').addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]'); if(!b) return;
+    const n=b.dataset.name;
+    toast(b.dataset.act==='print'?`「${n}」 수료증 출력은 로그인 연동 후 열려요`:`「${n}」 강의실은 영상 연결 후 열려요`);
+  });
+
+  // 자격증 발급 현황
+  const STEPS=['수료','발급 신청','심사','발급 · 발송'];
+  const canApply=done.filter(c=>!M.certs.some(x=>x.course===c.name));
+  $('certBox').innerHTML=M.certs.map(c=>`
+    <div class="cert">
+      <div class="hd"><b>${esc(c.course)}</b><span class="pill ${c.step>=3?'g':'o'}">${c.step>=3?'발급 완료':STEPS[c.step]+' 중'}</span><span class="meta">신청 ${esc(fmt(c.appliedAt))}${c.certNo?' · 자격번호 '+esc(c.certNo):''}</span></div>
+      <div class="steps">${STEPS.map((s,i)=>`<div class="${i<c.step||c.step>=3?'ok':(i===c.step?'cur':'')}"><i>${i<c.step||c.step>=3?'✓':i+1}</i>${esc(s)}</div>`).join('')}</div>
+      ${c.note?`<div style="font-size:13px;color:var(--ink2);margin-top:12px;">📮 ${esc(c.note)}</div>`:''}
+      <div class="foot"><button class="btn btn-line" type="button" onclick="toast('자격증 사본 출력은 로그인 연동 후 열려요')">자격증 사본 출력</button></div>
+    </div>`).join('')
+   + canApply.map(c=>`
+    <div class="cert">
+      <div class="hd"><b>${esc(c.name)}</b><span class="pill b">신청 가능</span><span class="meta">수료 ${esc(fmt(c.finishedAt))}</span></div>
+      <div class="steps">${STEPS.map((s,i)=>`<div class="${i===0?'ok':(i===1?'cur':'')}"><i>${i===0?'✓':i+1}</i>${esc(s)}</div>`).join('')}</div>
+      <div class="foot"><button class="btn btn-pri" type="button" onclick="toast('자격증 발급 신청은 결제 연동 후 열려요')">자격증 발급 신청</button></div>
+    </div>`).join('')
+   || '<div class="empty" style="margin:20px;">아직 신청한 자격증이 없어요.<br>강의를 수료하면 여기서 자격증을 신청할 수 있어요.</div>';
+
+  // 결제 내역
+  $('payBody').innerHTML=M.pays.map(p=>`<tr><td>${esc(fmt(p.at))}</td><td>${esc(p.item)}</td><td class="hide-m">${esc(p.method)}</td><td class="r"><b>${esc(won(p.amount))}</b></td><td class="r"><span class="pill ${p.status==='결제 완료'?'g':p.status==='무료'?'b':'x'}">${esc(p.status)}</span></td></tr>`).join('')
+    || '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:30px;">결제 내역이 없어요</td></tr>';
+
+  // 쿠폰
+  $('couponList').innerHTML=M.coupons.map(c=>`<div class="coupon${c.used?' used':''}"><div class="amt">${esc(c.amount)}</div><div class="tx"><b>${esc(c.title)}</b><div>${esc(c.cond)} · ${esc(fmt(c.until))}까지</div></div></div>`).join('')
+    || '<div class="empty">가지고 있는 쿠폰이 없어요</div>';
+
+  // 1:1 문의
+  $('qnaBox').innerHTML=M.qna.map(x=>`<div class="qna"><div class="q"><span class="pill ${x.a?'g':'o'}">${x.a?'답변 완료':'답변 대기'}</span>${esc(x.q)}<span class="d">${esc(fmt(x.at))}</span></div>${x.a?`<div class="a"><b>이루리</b> · ${esc(x.a)}</div>`:''}</div>`).join('')
+    || '<div class="empty" style="margin:20px;">남긴 문의가 없어요</div>';
+
+  // 회원정보
+  const U=M.user;
+  $('fName').value=U.name; $('fBirth').value=fmt(U.birth); $('fEmail').value=U.email; $('fPhone').value=U.phone; $('fAddr').value=U.addr; $('fSms').checked=!!U.sms;
+
+  // 메뉴 전환 (#classroom 처럼 주소로도 열림)
+  function go(p, t){
+    if(!document.querySelector(`[data-pane="${p}"]`)) p='classroom';
+    document.querySelectorAll('[data-pane]').forEach(e=>e.classList.toggle('hide',e.dataset.pane!==p));
+    document.querySelectorAll('#side a[data-go]').forEach(a=>a.classList.toggle('on',a.dataset.go===p));
+    if(p==='classroom'){ if(t) tab=t; cards(); }
+    if(location.hash!=='#'+p) history.replaceState(null,'','#'+p);
+  }
+  document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{
+    e.preventDefault(); go(a.dataset.go, a.dataset.tab);
+    if(window.innerWidth<=980) document.getElementById('main').scrollIntoView({behavior:'smooth',block:'start'});
+  }));
+  window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
+  go(location.hash.slice(1)||'classroom');
+
+  $('btnOut').onclick=e=>{ e.preventDefault(); if(confirm('로그아웃할까요?')){ toast('로그아웃했어요'); setTimeout(()=>location.href='index.html',700); } };
+})();
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),2800); }
+function saveProfile(e){ e.preventDefault(); const p=document.getElementById('fPhone').value.trim(); if(!/^[0-9\-\s]{9,14}$/.test(p)){ toast('휴대전화를 숫자로 정확히 적어 주세요'); return false; } toast('저장했어요 (시안 — 실제 저장은 로그인 연동 후)'); return false; }
+</script>
+</body>
+</html>
