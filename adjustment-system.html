@@ -13,7 +13,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/iruri/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://dkfptmzld.github.io/iruri/adjustment-system.html">
-<meta property="og:title" content="수업기록표 정산 시스템 v19.32">
+<meta property="og:title" content="수업기록표 정산 시스템 v19.33">
 <meta property="og:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta property="og:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 <meta property="og:image:type" content="image/png">
@@ -22,12 +22,12 @@
 <meta property="og:site_name" content="이루리 실버 아카데미">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="수업기록표 정산 시스템 v19.32">
+<meta name="twitter:title" content="수업기록표 정산 시스템 v19.33">
 <meta name="twitter:description" content="이루리 실버 아카데미 수업기록표 정산 시스템">
 <meta name="twitter:image" content="https://dkfptmzld.github.io/iruri/og-image.png">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>수업기록표 정산 시스템 v19.32</title>
+<title>수업기록표 정산 시스템 v19.33</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
@@ -5170,7 +5170,7 @@ const DEFAULT_CENTERS = [{"name": "153", "region": "인천", "fee": 55000, "teac
  * - 정산 계산 3곳(tiUpdateSettleSummary/submitTiData/엑셀): name+region 매칭
  * - 기존 저장 데이터(region 없음)는 이름만으로 fallback → 호환성 유지
  */
-const SYSTEM_VERSION='v19.32';
+const SYSTEM_VERSION='v19.33';
 const BLOCK_MOBILE_ADMIN = false; // 모바일 관리자 모드 차단 (해제: false로 변경)
 const LS_T='settle_t_v4', LS_C='settle_c_v6', LS_CF='settle_cf_v2';
 /**
@@ -14521,8 +14521,38 @@ async function _schReqDoneFromSb(){
  return (rows||[]).map(r=>({ id:r.id, teacher:r.teacher_name, region:r.region||'', changes:r.changes||[], message:r.message||'',
    requestedAt:_schReqFmtTs(r.requested_at), status:r.status||'', resolvedAt:_schReqFmtTs(r.resolved_at) }));
 }
+/* v19.33: 처리된 요청 중 '틀린 항목'(잘못 적은 새 센터·시간 등)을 목록에서 지우기
+ *  — 요청 원본은 그대로 두고, 관리자가 지운 항목 표시만 시스템설정 'schReqHide' 한 줄에 저장(관리자 기기끼리 같이 보임)
+ *  — 지운 항목은 '지금과 다른 곳'·요청 표·[다시 반영]에서 모두 빠짐. [되돌리기]로 다시 보이게 할 수 있음 */
+const SRH_KEY='schReqHide', LS_SRH='iruri_schreq_hide';
+let _srHide={};
+try{ _srHide=JSON.parse(localStorage.getItem(LS_SRH)||'{}')||{}; }catch(_){ _srHide={}; }
+function _srKey(c){ return [c.type||'chg', _ctrNameKey(c.center), c.region||'', c.day||'', c.gyosi||'', c.field||'', _ctrNameKey(c.to!=null?c.to:(c.time||''))].join('|'); }
+function _srHidden(t,c){ const l=_srHide[t]; return !!(l && l.indexOf(_srKey(c))>=0); }
+async function _srFetch(){
+ try{ const r=await gasGet({action:'getSystemSettings'}); if(r && r.ok && r.data){ let v={}; try{ v=r.data[SRH_KEY]?JSON.parse(String(r.data[SRH_KEY])):{}; }catch(_){ v={}; }
+  _srHide=v||{}; try{ localStorage.setItem(LS_SRH, JSON.stringify(_srHide)); }catch(_){} } }catch(_){}
+}
+async function _srSave(){
+ try{ localStorage.setItem(LS_SRH, JSON.stringify(_srHide)); }catch(_){}
+ try{ const r=await gasPost({action:'saveSystemSettings', settings:{[SRH_KEY]: JSON.stringify(_srHide)}}); if(r && r.ok!==false) return true; showToast('⚠ 서버 저장 실패 — 이 기기에서만 지워졌어요'+(r&&r.message?' ('+String(r.message).slice(0,40)+')':'')); }
+ catch(_){ showToast('⚠ 서버 연결 실패 — 이 기기에서만 지워졌어요'); }
+ return false;
+}
+function _srHideItem(teacher, key, label){
+ showConfirm({icon:'🗑', title:'이 요청 항목을 지울까요?', okText:'지우기', okStyle:'danger', cancelText:'취소',
+  desc:`<b>${escH(teacher)}</b> · ${escH(label||'')}<br><small style="color:var(--text3)">잘못 적은 요청이면 지워 주세요. '지금과 다른 곳'·요청 표·[다시 반영]에서 빠져요.<br>센터 목록은 바뀌지 않고, 강사가 보낸 원래 요청 기록도 남아요. 아래 [되돌리기]로 다시 보이게 할 수 있어요.</small>`,
+  onOk:async()=>{ const l=_srHide[teacher]=_srHide[teacher]||[]; if(l.indexOf(key)<0) l.push(key);
+   window._schReqKeepOpen=teacher; try{ _renderSchedReqPanel(); }catch(_){}
+   if(await _srSave()) showToast('🗑 요청 항목을 지웠어요'); }});
+}
+async function _srRestore(teacher){
+ delete _srHide[teacher]; window._schReqKeepOpen=teacher; try{ _renderSchedReqPanel(); }catch(_){}
+ if(await _srSave()) showToast('↩ 지운 항목을 다시 보이게 했어요');
+}
 async function _loadSchedReqDone(){
  let list=null;
+ try{ await _srFetch(); }catch(_){}
  try{ const r=await gasGet({action:'getScheduleRequestsDone'}); if(r && r.ok!==false && Array.isArray(r.data)) list=r.data; }catch(_){}
  if(!list){   // 서버(Code.gs)가 아직 옛 버전이면 Supabase 사본에서 읽기(관리자 로그인 시)
   try{ if(typeof _sbGetSession==='function' && _sbGetSession()) list=await _schReqDoneFromSb(); }catch(_){}
@@ -14577,7 +14607,8 @@ function _schReqDoneGroups(){
   const ap=all.filter(_schReqIsApplied);
   const g=_schReqGroups(ap.length?ap:all)[0];
   const last=all[all.length-1]||{};
-  return Object.assign(g, { all, nAp:ap.length, nRj:all.length-ap.length, mergedApplied:ap.length>0, diffs:_schReqDiffs(t, g.changes),
+  const _ch0=g.changes||[]; g.changes=_ch0.filter(c=>!(c && _srHidden(t,c)));   // v19.33: 관리자가 지운 틀린 항목 빼기
+  return Object.assign(g, { nHid:_ch0.length-g.changes.length, all, nAp:ap.length, nRj:all.length-ap.length, mergedApplied:ap.length>0, diffs:_schReqDiffs(t, g.changes),
     lastResolved:last.resolvedAt||'', lastReq:last.requestedAt||'', lastTsAll:_schReqTs(last) });
  }).sort((a,b)=>b.lastTsAll-a.lastTsAll);
 }
@@ -14599,7 +14630,7 @@ function _schReqDoneHTML(){
   const diffBadge=g.mergedApplied?(dN?pill('#FFE8CC','#9A4B00',`⚠ 지금과 다름 ${dN}`):pill('#EEF7F1','#3F7A55','지금과 같음')):'';
   const diffBox=dN?`<div style="margin:10px 14px 0;padding:9px 12px;background:#FFF8EE;border:1px solid #F5C98A;border-radius:8px;font-size:12px;color:#7A4A12;line-height:1.65;">
      <b>⚠ 지금 센터 목록과 다른 곳 ${dN}개</b> <span style="color:#A07040;font-size:11px;">— 일부러 고친 거면 그대로 두고, 빠진 거면 [다시 반영]을 누르세요</span>
-     ${g.diffs.map(d=>`<div>· <b>${e(d.c.center)}</b>${d.c.day?` (${e(d.c.day)})`:''} ${e(d.lab)}: 요청 <b style="color:#0F7A4E;">${e(d.want)}</b> → 지금 <b style="color:#B42318;">${e(d.now)}</b></div>`).join('')}
+     ${g.diffs.map(d=>`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><span style="flex:1;min-width:200px;">· <b>${e(d.c.center)}</b>${d.c.day?` (${e(d.c.day)})`:''} ${e(d.lab)}: 요청 <b style="color:#0F7A4E;">${e(d.want)}</b> → 지금 <b style="color:#B42318;">${e(d.now)}</b></span><button type="button" onclick="event.stopPropagation();_srHideItem('${escAttrJS(g.teacher)}','${escAttrJS(_srKey(d.c))}','${escAttrJS((d.c.center||'')+(d.c.day?' ('+d.c.day+')':'')+' '+d.lab+': '+d.want)}')" title="잘못 적은 요청이면 지우기" style="flex-shrink:0;height:24px;padding:0 9px;border:1px solid #F3B4B4;border-radius:7px;background:#fff;color:#B42318;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">✕ 틀린 요청 지우기</button></div>`).join('')}
    </div>`:'';
   const nC=new Set(ch.map(c=>(c.center||'')+'|'+(c.day||''))).size, nAdd=ch.filter(c=>c&&c.type==='add').length;
   const rows=ch.length?_schReqTableHTML(g.teacher, ch):'<div style="padding:10px;font-size:12.5px;color:#9A968C;">여러 번 고쳤지만 결국 원래 값과 같아요 — 바뀌는 곳이 없어요</div>';
@@ -14620,6 +14651,7 @@ function _schReqDoneHTML(){
      <span style="margin-left:auto;font-size:11px;color:#9A968C;">최근 요청 ${e(g.lastReq||g.last||'')}${g.lastResolved?` · 처리 ${e(g.lastResolved)}`:''}</span>
     </summary>
     ${diffBox}
+    ${g.nHid?`<div style="margin:8px 14px 0;font-size:11.5px;color:#7A776C;">🗑 지운 틀린 요청 <b>${g.nHid}개</b>는 숨겼어요 · <a href="#" onclick="event.preventDefault();_srRestore('${tq}')" style="color:#1D4ED8;font-weight:700;">되돌리기</a></div>`:''}
     <div style="padding:10px 14px;">${rows}</div>
     ${msgHtml}${hist}
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F7F5EE;border-top:1px solid var(--border);">
@@ -22358,9 +22390,9 @@ function _goPlan(){
   ov.innerHTML='<div style="height:48px;flex-shrink:0;background:#fff;border-bottom:1px solid #E3E1D8;display:flex;align-items:center;justify-content:space-between;padding:0 14px;">'
    +'<span style="font-size:14px;font-weight:800;color:#12603E;display:flex;align-items:center;gap:7px;">🗓️ 계획서</span>'
    +'<button onclick="_closePlan()" aria-label="닫기" style="border:0;background:#f0f0eb;border-radius:9px;width:36px;height:36px;font-size:16px;cursor:pointer;color:#555;">✕</button></div>'
-   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.32&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
+   +'<iframe id="planAppFrame" src="recreation-plan.html?v=19.33&t='+Date.now()+'" style="flex:1;width:100%;border:0;display:block;" allow="fullscreen"></iframe>';
   document.body.appendChild(ov);
- } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.32&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
+ } else { ov.style.display='flex'; const _pu='recreation-plan.html?v=19.33&t='+Date.now(); try{ const f=document.getElementById('planAppFrame'); if(f&&f.contentWindow){ f.contentWindow.location.replace(_pu); } else if(f){ f.src=_pu; } }catch(_){ try{ document.getElementById('planAppFrame').src=_pu; }catch(__){} } }
  try{ document.body.style.overflow='hidden'; }catch(_){}
 }
 function _closePlan(){ const ov=document.getElementById('planAppOverlay'); if(ov) ov.style.display='none'; try{ document.body.style.overflow=''; }catch(_){} }
